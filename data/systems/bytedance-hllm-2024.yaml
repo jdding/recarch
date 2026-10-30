@@ -1,0 +1,69 @@
+id: bytedance-hllm-2024
+name: "HLLM"
+company: ByteDance
+surface: Sequential recommendation on PixelRec and Amazon Reviews; online A/B mentioned
+year: 2024
+era: generative
+era_reason: "LLM-based item and user models at 7B scale; LLM backbone for sequential recommendation"
+first_public: "2024-09"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2409.12740"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: research
+evidence_level: research_only
+tldr: "Two LLMs: an Item LLM turns item text into embeddings, a User LLM predicts future interests from that history; scaled to 7B, with 'notable' online gains reported."
+summary: 'Two-tier LLM: an Item LLM encodes item text into embeddings and a User LLM predicts future interests from the embedding history;
+  scaled to 7B parameters.'
+paradigms:
+- llm-based
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: Item LLM -> item embedding; User LLM over sequence
+  details: Discriminative (not generative) recommendation used in online test.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Item text
+- Interaction history
+training:
+  mode: Offline
+  objectives:
+  - Next-item prediction
+  notes: null
+serving_infra: null
+scale:
+- metric: Largest model
+  value: 7B parameters
+  note: abstract
+results_reported: Paper reports online A/B with 'notable gains'.
+caveats:
+- Platform and traffic size of the online test were not found in the sections read, so marked research_only.
+unknown_fields:
+- online platform
+- online metric sizes
+sources:
+- title: HLLM, arXiv 2409.12740
+  url: https://arxiv.org/abs/2409.12740
+  type: paper
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/bytedance/HLLM
+    owner: ByteDance
+    official: true
+    note: Training/eval code linked from the paper's abstract (public datasets). Repo is archived.
+core_idea: An Item LLM embeds item text and a User LLM predicts future interests from the embedding history.
+deployed_in: Research system, evaluated on PixelRec and Amazon Reviews with an online A/B mentioned
+scale_short: Largest model 7 billion parameters
+key_result: Online A/B with notable gains is mentioned, no figure given
+results_table:
+  note: The paper reports an online A/B with notable gains. The card sources give no figures.
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: evidence stays research_only because the sources read give no platform or traffic size for the online test, and citations are below the 500 that exempt a card from the online evidence rule."

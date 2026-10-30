@@ -1,0 +1,101 @@
+id: meta-wukong-2024
+name: "Wukong"
+company: Meta
+surface: Large-scale recommendation ranking, evaluated on an internal dataset
+year: 2024
+era: deep
+era_reason: "Scaling law for discriminative ranking with stacked factorization machines, as in Wukong; dominant paradigm is scaling discriminative ranking models, not generative or semantic-ID modeling"
+first_public: "2024-03"
+venue: "ICML 2024"
+venue_year: 2024
+published_version_checked: true
+primary_source: "https://proceedings.mlr.press/v235/zhang24ao.html"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Era moved from generative to deep by owner decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
+system_type: research
+evidence_level: research_only
+tldr: "Wukong stacks factorization-machine blocks to scale ranking quality across about two orders of magnitude of compute, beating prior models on all six public datasets."
+summary: 'ICML 2024 paper from Meta AI: Wukong, a ranking architecture made only of stacked factorization-machine blocks plus linear
+  compress blocks that captures higher-order feature interactions by getting deeper and wider, shown to keep improving quality across
+  about two orders of magnitude in compute, beyond 100 GFLOP/example, on an internal dataset.'
+paradigms:
+- dlrm
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'Wukong: embedding layer, then an interaction stack of Wukong layers, each a Factorization Machine Block plus a Linear Compress Block with residual and Add & Norm, then an MLP for prediction'
+  details: Treats each embedding as a unit (embedding-wise interactions), which the paper says cuts compute versus element-wise interaction
+    architectures. Compared against AutoInt+, AFN+, DLRM, MaskNet, FinalMLP and DCNv2; DCNv2, the strongest baseline on the internal
+    dataset, needs about 40x the complexity to match Wukong's quality.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Public datasets (six) and an internal large dataset
+training:
+  mode: Offline one-pass training on large click datasets, namely Criteo Terabyte with 24 days and the last day for test, plus five other public datasets and a large internal dataset
+  objectives:
+  - CTR prediction (AUC / LogLoss)
+  notes: 'Distributed training: column-wise sharded embedding bag from Neo, FSDP with tuned sharding factor, automatic operator fusion,
+    FP16 embedding tables and aggressive quantization; nearly 3000 hyper-parameter search runs on Criteo for fair baseline comparison.'
+serving_infra: null
+scale:
+- metric: Model complexity range
+  value: two orders of magnitude, beyond 100 GFLOP/example
+  note: abstract
+results_reported: Wukong beats the compared state-of-the-art models on AUC across all six public datasets per Table 2. On the internal
+  dataset it beats existing models at comparable complexity and keeps improving across two orders of magnitude in model complexity,
+  beyond 100 GFLOP/example, where baselines plateau (AFN+, DLRM, FinalMLP) or stop improving (AutoInt+, DCNv2, MaskNet).
+caveats:
+- The paper is an architecture and scaling study; the sections read give no statement of production launch or online A/B result, so
+  evidence level is research_only.
+- The internal dataset is not named and exact size is not given in the sections read.
+- Table 2 per-dataset values are not reproduced here.
+unknown_fields:
+- online A/B results
+- production deployment
+- internal dataset size and product surface
+sources:
+- title: "Wukong: Towards a Scaling Law for Large-Scale Recommendation, ICML 2024"
+  url: https://proceedings.mlr.press/v235/zhang24ao.html
+  type: paper
+- title: 'Wukong: Towards a Scaling Law for Large-Scale Recommendation, arXiv 2403.02545'
+  url: https://arxiv.org/abs/2403.02545
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2403.02545
+  local_pdf: /workspace/src/a_2403.02545.pdf
+  sections_read: Abstract, intro, Sec 3 design (embedding, interaction stack, FMB, LCB), Sec 4 implementation, Sec 6 public-dataset
+    setup and Table 2 text, Sec 7 internal-dataset results text
+  verified_on: '2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/clabrugere/wukong-recommendation
+    owner: clabrugere
+    official: false
+    note: Third-party implementation of the Wukong paper. I found no Meta repo for it.
+core_idea: Stack factorization machine blocks and linear compress blocks to capture higher-order interactions.
+deployed_in: Research system, evaluated on six public datasets and an internal dataset
+scale_short: Model complexity across two orders of magnitude, beyond 100 GFLOP per example
+key_result: 'Offline: beats the compared state-of-the-art models on AUC across all six public datasets per Table 2'
+results_table:
+  offline:
+  - setting: Six public datasets, Table 2
+    method: Wukong
+    metric: AUC
+    result: Best on all six, no figure
+    versus: Compared state-of-the-art models
+  - setting: Internal dataset
+    method: Wukong
+    metric: Quality beyond 100 GFLOP per example
+    result: Keeps improving
+    versus: AFN+, DLRM, FinalMLP plateau
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: an architecture and scaling study with no production launch or online A/B result in the sections read, and citations are below the 500 that exempt a card from the online evidence rule."

@@ -1,0 +1,126 @@
+id: related-pins-pinterest-2017
+name: Related Pins at Pinterest
+company: Pinterest
+surface: Related Pins item-to-item recommendations
+year: 2017
+era: classic
+era_reason: "Board co-occurrence item-CF plus GBDT/LTR ranking; borderline"
+first_public: "2017-02"
+venue: "WWW 2017"
+venue_year: 2017
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3041021.3054202"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Three-year story of Related Pins: candidate generation, a first learned ranker that brought over 30% more saves and clicks, and growth from about 10% to over 40% of saves."
+summary: 'WWW 2017 Companion paper from Pinterest, a three-year longitudinal study of Related Pins. The system has three components:
+  candidate generation from billions of pins to about 1,000, with board co-occurrence moving from a Hadoop heuristic to the online Pixie random walk, plus Pin2Vec session embeddings and search-based, visual and locale-segmented sources; Memboost, a position-bias-corrected memorization of past engagement per query-result pair; and a learned ranker that moved from a nine-feature linear RankSVM to a logistic GBDT. The paper
+  says Related Pins drives over 40% of saves and impressions on Pinterest and gives lessons on feedback loops, offline evaluation and
+  content activation.'
+paradigms:
+- item-cf
+- learning-to-rank
+stages:
+- stage: retrieval
+  model_family: 'Multiple candidate generators: board co-occurrence, first as a v1 Hadoop map-reduce of pin pairs on the same board plus a hand-tuned text and category relevance score built by two engineers in three weeks, and later as the Pixie online random walk of about 100,000 steps with restarts over the pruned pin-board graph; Pin2Vec, a word2vec-like N-way classification embedding of the N most popular pins from same-user session co-saves with nearest-neighbor lookup; search-based candidates from pin annotations, visually similar candidates
+    (near-duplicate lookup and a visual-embedding nearest neighbor), and locale-segmented variants of these'
+  details: Candidate set reduced from billions to roughly 1,000 pins. After Memboost and ranking were introduced the candidate generation
+    goal moved from precision to recall. Localizing candidate sets (filtering the board-pin graph by language before sampling) was part
+    of raising the share of local-language Related Pins impressions from 9% to 54% in major international countries.
+- stage: rank
+  model_family: 'Memboost scoring plus a learned ranker: V1 linear RankSVM on Memboost-derived pairs; V2 linear on individual session
+    pairs (save > long click > click > closeup > impression); V3 GBDT with RankNet pairwise loss; V4 logistic GBDT with binary ''pin
+    saved'' labels and reweighted positives'
+  details: 'Memboost: score MB(q,r) = log((actions + alpha) / (Eactions + alpha)), a clicks-over-expected-clicks measure over weighted
+    clicks, long clicks, closeups and saves with expected clicks from per-rank per-platform global click rates; initially added as gamma
+    * MB to the score, later fed as features to the ranker; Memboost insertion re-inserts the top-n memorized results absent from the
+    candidate set. Features per Table 1: pin text annotations, CNN fc6/fc8 image features, word embeddings, category and topic vectors,
+    Memboost counts and expected counts, demographics, long-term user activity, real-time context (traffic source, recent searches and
+    actions). Nine features in the first linear model.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Engagement logs
+training:
+  mode: Learning-to-rank on logged Related Pins sessions, taking each engaged pin plus the two pins immediately preceding it in rank; V1 trained
+    within minutes on a single machine from Memboost pairs. To avoid previous-model feedback loops, a small share of traffic gets randomized
+    unranked results for unbiased training data.
+  objectives:
+  - pairwise RankSVM (V1, V2)
+  - pairwise RankNet (V3)
+  - pointwise logistic loss on saved vs not saved (V4)
+  notes: 'Memboost pairs: authors could guess the higher-Memboost pin about 70% of the time, so the data was relatively clean; session
+    pairs were much noisier. Hyperparameter tuning was automated via a parallelized system and Memboost weights jointly retrained to
+    reduce hand-tuned coupling.'
+serving_infra: 'Ranking moved from offline Hadoop jobs served from Terrapin, an immutable key-value store with only about 50% query coverage, to online ranking: pin raw data in the sharded key-value store RealPin keyed by image signature, a root node replicates the candidate
+  request to leaves, each leaf computes features and scores locally (data locality), user raw data from Terrapin, recent activity from
+  UserContextService, Memboost data from Terrapin. Candidate generation by Pixie (random walk on a single large-memory machine. Peak
+  load is described as many tens of thousands of queries per second.'
+scale:
+- metric: Share of engagement
+  value: over 40% of all saves and impressions on Pinterest
+  note: paper (2017); about 10% of saves in 2014
+- metric: Candidates per query
+  value: roughly 1,000 after candidate generation
+  note: paper
+- metric: Peak QPS
+  value: many tens of thousands of queries per second
+  note: paper
+results_reported: First learned ranker increased user propensity to save and click Related Pins results by over 30%. Related Pins grew
+  from about 10% of pins saved in 2014 to over 40% of saves and impressions by 2017. Local-language share of impressions raised from
+  9% to 54% in major international countries. Memboost is described as significantly boosting engagement but no percentage is given.
+  PR AUC offline metrics were extremely predictive of closeups and click-throughs in A/B tests, but save behavior was hard to predict
+  offline.
+caveats:
+- 'The paper reports few absolute numbers: the 30% lift for the first ranker and the 9% to 54% local share are the main ones; Memboost
+  gain is not quantified.'
+- Training details such as GBDT size, feature counts after V1 and label weights, are not published.
+- It describes a 2013 to 2016 system evolution; later Pinterest systems changed substantially.
+- The paper cites Pixie as 1+ billion items to 150+ million users (preprint at the time); the RecArch Pixie card uses the later 3+ billion
+  and 200+ million figures.
+unknown_fields:
+- GBDT hyperparameters and feature count in V4
+- Pin2Vec embedding dimension and N
+- Memboost alpha, beta, gamma values
+- latency numbers
+sources:
+- title: "Related Pins at Pinterest: The Evolution of a Real-World Recommender System, WWW 2017"
+  url: https://doi.org/10.1145/3041021.3054202
+  type: paper
+- title: 'Related Pins at Pinterest: The Evolution of a Real-World Recommender System, arXiv 1702.07969'
+  url: https://arxiv.org/abs/1702.07969
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1702.07969
+  local_pdf: (read as text via https://arxiv.org/pdf/1702.07969; no local PDF)
+  sections_read: 'Entire paper: abstract, intro, Sec 2 overview, Sec 3 candidates, Sec 4 Memboost, Sec 5 ranking (V1 to V4, previous-model
+    bias, metrics, serving), Sec 6 (CACE, content activation), conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Candidate generation, Memboost memorization and a learned ranker, studied over three years.
+deployed_in: Pinterest Related Pins item-to-item recommendations
+scale_short: Over 40% of saves and impressions on Pinterest, about 1,000 candidates per query
+key_result: First learned ranker raised user propensity to save and click Related Pins results by over 30%
+results_table:
+  online:
+  - setting: Related Pins
+    method: First learned ranker
+    metric: Propensity to save and click
+    result: Over +30%
+    versus: Previous ranking
+  - setting: Major international countries
+    method: Locale-segmented sources
+    metric: Local-language share of impressions
+    result: 9% to 54%
+    versus: Before
+  note: Memboost is described as significantly boosting engagement, with no percentage given.

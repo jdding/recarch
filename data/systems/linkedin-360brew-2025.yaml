@@ -1,0 +1,103 @@
+id: linkedin-360brew-2025
+name: "360Brew"
+company: LinkedIn
+surface: Decoder-only foundation model for ranking and recommendation
+year: 2025
+era: generative
+era_reason: "150B decoder-only LLM replaces ranking models via text interface"
+first_public: "2025-01"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2501.16450"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Re-verified against arXiv v4 after arXiv removed v1-v3; see version note."
+version_note: "arXiv v1-v3 of this report were removed by arXiv administrators; v4 of 23 Aug 2025 is the only available version and the card was re-verified against it on 2026-10-30."
+system_type: research
+evidence_level: research_only
+tldr: "A 150B-parameter decoder-only model built on Mixtral 8x22 MoE that ranks from a text description of member profile and history instead of ID and engineered features."
+summary: 'LinkedIn technical report from its Foundation AI Technologies team: 360Brew V1.0, a 150B-parameter decoder-only model built on the open-source
+  Mixtral 8x22 MoE architecture and trained on LinkedIn first-party data, which replaces ID-based and feature-engineered ranking with
+  a text interface: member profile, past item interactions and a task instruction are verbalized into a prompt and the model answers
+  a binary question whose token logits give the score. The report presents it as a pre-production model that covers 30+ ranking tasks across 8+ surfaces without task-specific fine-tuning.'
+paradigms:
+- llm-based
+- foundation-model
+stages:
+- stage: rank
+  model_family: Decoder-only LLM (Mixtral 8x22 MoE base, 150B parameters) prompted with task instruction, member profile text and interaction
+    history, scored from the logits of answer tokens
+  details: Focus is ranking; the report says retrieval (through embeddings) is planned for later 360Brew releases. In-context learning
+    over the member's history replaces hand-crafted time-window features.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Verbalized member behavior and social connections
+training:
+  mode: Further training of a pre-trained open-source LLM on LinkedIn raw entity data such as member profiles, job descriptions and posts, and
+    interaction data across 5+ surfaces; first-party data from users outside the European Union
+  objectives:
+  - next-token prediction over verbalized interactions, evaluated as binary predictions on logits
+  notes: Trained and iterated by a small team over 9 months across five releases. Data volume went up more than 3x across those releases
+    and performance on in-domain T1 tasks improved; T1 benchmarks have at least a one-month gap from training data. Many specifics, such as token counts, hardware and training recipe, are marked 'more details to come soon'.
+serving_infra: null
+scale:
+- metric: Parameters
+  value: 150B (reported research model)
+  note: paper
+results_reported: 'Qualitative and chart-only: offline metrics comparable to or exceeding production models on 30+ tasks without task-specific
+  fine-tuning; improves with data size, model size and longer history (context length normalized to 8K); similar or better than production
+  on 4 out-of-domain (T2) tasks across 4 surfaces; larger margin for cold-start members with few interactions; less degradation as test
+  data moves further past the training period. No numeric deltas or online results are given in the text.'
+caveats:
+- The report calls 360Brew V1.0 a pre-production model; it describes no deployment or online experiments, so evidence stays research_only.
+- All quantitative results are in figures; no AUC or lift numbers are stated in the text.
+- The same-named later LinkedIn systems (for example LiGR or serving work) are separate sources; this card reflects only the January
+  2025 report.
+- No serving latency or cost is described for a 150B-parameter model.
+unknown_fields:
+- serving architecture and latency
+- training compute
+- exact AUC values
+- online A/B results
+sources:
+- title: 360Brew, arXiv 2501.16450
+  url: https://arxiv.org/abs/2501.16450
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2501.16450
+  local_pdf: (read as text via arxiv.org/pdf/2501.16450; no local PDF)
+  sections_read: 'Entire technical report: abstract, intro, overview, results, data/model/history scaling, out-of-domain, cold-start,
+    temporal (a short report; many details are marked ''more details to come soon'')'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Verbalize profile, interactions and a task instruction into a prompt, and score from the answer logits.
+deployed_in: Pre-production research model covering 30+ ranking tasks across 8+ surfaces
+scale_short: 150B parameters
+key_result: 'Offline: comparable to or better than production models on 30+ tasks, no numeric deltas or online results'
+results_table:
+  offline:
+  - setting: 30+ tasks, chart only
+    method: The proposed model
+    metric: Offline metrics
+    result: Comparable or better, no figure
+    versus: Production models
+  - setting: 4 out-of-domain tasks across 4 surfaces
+    method: The proposed model
+    metric: Offline metrics
+    result: Similar or better, no figure
+    versus: Production models
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: an arXiv-only report that calls the model pre-production and describes no deployment or online experiment, with no official code, under 50 citations and past the 12 month observation window."

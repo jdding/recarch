@@ -1,0 +1,68 @@
+id: google-ads-ftrl-2013
+name: "Google Ads CTR prediction"
+company: Google
+surface: Sponsored search ad click prediction
+year: 2013
+era: classic
+era_reason: "Logistic regression with FTRL-Proximal online learning"
+first_public: "2013-08"
+venue: "KDD 2013"
+venue_year: 2013
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2487575.2488200"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "Lessons from a deployed Google Ads CTR system: FTRL-Proximal online logistic regression with per-coordinate learning rates, L1 sparsity, calibration and memory savings."
+summary: 'Industrial lessons from a deployed CTR system: FTRL-Proximal online logistic regression with per-coordinate learning rates,
+  L1 sparsity, memory-saving tricks, calibration and confidence estimates.'
+paradigms:
+- online-training
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: Sparse logistic regression trained with FTRL-Proximal
+  details: ''
+id_tokenization:
+  approach: Billions of sparse (hashed/categorical) features
+  details: null
+features_signals:
+- Query, ad and context features
+training:
+  mode: Online
+  objectives:
+  - Log-loss
+  notes: Per-coordinate learning rates; techniques for memory savings and calibration.
+serving_infra: null
+scale: []
+results_reported: Paper reports offline/online improvements from each technique; no single headline number captured.
+caveats: []
+unknown_fields:
+- serving infra
+- absolute metrics
+sources:
+- title: "Ad Click Prediction: a View from the Trenches, KDD 2013"
+  url: https://doi.org/10.1145/2487575.2488200
+  type: paper
+- title: 'Ad Click Prediction: a View from the Trenches, KDD 2013'
+  url: https://research.google/pubs/ad-click-prediction-a-view-from-the-trenches/
+  type: paper
+- title: PDF
+  url: https://research.google.com/pubs/archive/41159.pdf
+  type: paper
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/keras-team/keras/blob/master/keras/src/optimizers/ftrl.py
+    owner: Keras team
+    official: false
+    note: Ftrl optimizer in Keras implementing FTRL-Proximal. Algorithm only; the paper's ad-click system
+      is not released.
+core_idea: Online logistic regression with FTRL-Proximal, per-coordinate learning rates and L1 sparsity.
+deployed_in: Google sponsored search ad click prediction
+scale_short: Not stated in the sources
+key_result: No single headline number captured, the paper reports offline and online gains per technique
+results_table:
+  note: The paper reports offline and online improvements from each technique. No single headline number is captured in the card sources.

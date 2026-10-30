@@ -1,0 +1,145 @@
+id: kuaishou-kuaiformer-2024
+name: KuaiFormer
+company: Kuaishou
+surface: Short-video retrieval stage
+year: 2024
+era: generative
+era_reason: "Transformer next-action prediction for retrieval; sequence-generative objective; borderline"
+first_public: "2024-11"
+venue: null
+venue_year: null
+deployed_year: 2024
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2411.10057"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Pure-Transformer real-time retrieval for short video: next-action prediction with multiple interest query tokens; offline HR@500 15.61% vs 11.31% for the best other method."
+summary: Kuaishou paper from arXiv in Nov 2024 on a pure-Transformer real-time retrieval model for short-video recommendation. It frames retrieval as
+  next-action prediction with a Llama-style causal Transformer over the user's watched videos plus k learnable query tokens for multiple interests,
+  an adaptive item compression that shrinks a 256-item history to 55 tokens, and an in-batch softmax with logQ correction and label smoothing.
+  The paper states it has been integrated into the Kuaishou App's short-video recommendation since May 2024, serving over 400 million daily active
+  users, as one extra retrieval pathway.
+paradigms:
+- sequential-transformer
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Causal Transformer in the Llama architecture, with RMSNorm, multi-head masked self-attention and point-wise FFN, over item tokens t_i = MLP([item-ID
+    embedding, side-feature embeddings]) with about 10+ attributes, namely watch time, interaction labels such as like and comment, video duration bucketed to 1000 buckets up to 300 s, multi-modal category tag ID and so on, plus k learnable query tokens appended after the sequence with causal
+    masking so later interest tokens attend to earlier ones. Score for an item is the max over the k interest vectors of the dot product.'
+  details: 'Adaptive item compression: for a 256-item history, earlier items are merged in groups of 64 and middle items in groups of 16 by a
+    single-layer bidirectional Transformer with mean pooling, the latest items stay uncompressed; the Transformer input is 55 tokens. Compression
+    windows in the ablation: 64, 64, 16, 16, 16, 16, 16 from oldest to newest, with the latest 48 items uncompressed. Raising the length from
+    64 to 256 by plain attention costs about 6 times the compute, with compression only about +10%. Loss: in-batch softmax with logQ correction
+    and label smoothing (alpha) rather than 0/1 labels.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- User action sequences
+training:
+  mode: Online learning on a distributed training framework; the model continuously consumes new logs and updates parameters to the online service
+    at minute-level frequency. Sparse embeddings sit on a dedicated embedding server and dense parameters are shipped periodically.
+  objectives:
+  - next-item prediction with smoothed logQ-corrected in-batch softmax
+  notes: Real-time user feedback in the logging system includes dense signals such as watch time and sparse ones such as likes, follows and shares.
+serving_infra: KuaiFormer is added as one pathway beside existing retrieval pathways such as Swing, GNN, ComiRec, DimeRec and GPRP; candidates
+  from all pathways are merged and deduplicated, then pass pre-rank, cascading rank and full rank. User embeddings are computed online; for top-K
+  the paper says it uses GPU brute-force search in practice, with Faiss or ScaNN named as alternatives. One retrieval per query token, then a
+  uniform rank and truncation to a fixed number.
+scale:
+- metric: Daily active users
+  value: over 400 million
+  note: paper
+- metric: Daily requests
+  value: more than 50 billion
+  note: paper
+- metric: Peak QPS
+  value: over 100,000 requests per second
+  note: paper
+- metric: Candidate pool
+  value: billions of short videos
+  note: paper
+results_reported: 'Offline hit rate against real viewed items on replayed online requests per Table 1, KuaiFormer vs best other method: HR@50 4.21%
+  vs GNN 3.97%; HR@100 6.58% vs GPRP 5.21%; HR@500 15.61% vs GPRP 11.31%; HR@1000 19.88% vs GPRP 15.70%. SASRec scores 1.17/2.51/5.37/7.22. Online
+  A/B, one week with 10% of users in three scenarios per Table 2: video watch time +0.360% (Kuaishou single page), +0.126% (Kuaishou Lite single
+  page), +0.411% (Kuaishou double page); also usage-time and engagement columns (likes, follows, comments, Novel Surprise views) positive in Table
+  2; the column headers are garbled in the extracted text so individual non-watch-time values are not quoted here. The paper calls it one of the
+  most significant retrieval experiments at Kuaishou in 2024. Ablations: accuracy rises from 0.325 (length 8) to 0.441 (256); layers 1 to 5 raise
+  accuracy from 0.391 to 0.435 with diminishing returns after 4 (0.433); query tokens saturate near 6; compressed 256 gives 0.445 vs 0.441 uncompressed
+  and 0.417 at length 64.'
+caveats:
+- The paper's abstract says the system serves over 400 million DAU; the online A/B was on 10% of users for one week.
+- The paper's Table 3 appears in the text as 'Table 3 (a)-(c)' for hyperparameter plots that are drawn in Figure 3; the numbers cited here come
+  from the text and the compression table.
+- The paper says an about 0.1% video watch time change is statistically significant given 400M daily active users, but it reports no confidence
+  intervals.
+- The paper says it is 'to our knowledge the first real-time retrieval model by the pure Transformer architecture in industrial-scale RecSys';
+  this is the authors' claim.
+unknown_fields:
+- parameter count
+- embedding dimension
+- traffic share of the KuaiFormer pathway among all retrieval pathways
+- training hardware
+sources:
+- title: KuaiFormer, arXiv 2411.10057
+  url: https://arxiv.org/abs/2411.10057
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2411.10057
+  local_pdf: /workspace/src/fulltext/2411.10057.txt (text of arXiv 2411.10057v1; PDF at /workspace/src/a_2411.10057.pdf)
+  sections_read: 'Entire paper: abstract, intro, Sec 2 (problem, backbone, longer sequence, multi-interests, stable training), Sec 3 deployment,
+    Sec 4 experiments (Tables 1-3, Figure 3), related work, conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A pure Transformer with learnable query tokens for multiple interests and adaptive item compression.
+deployed_in: Kuaishou short-video retrieval, one extra pathway since May 2024
+scale_short: Over 400 million daily active users, peak QPS over 100,000
+key_result: Video watch time +0.360% on Kuaishou single page in a one-week online A/B with 10% of users
+results_table:
+  online:
+  - setting: Kuaishou single page, one week, 10% of users, Table 2
+    method: KuaiFormer
+    metric: Video watch time
+    result: +0.360%
+    versus: Production retrieval
+  - setting: Kuaishou Lite single page, Table 2
+    method: KuaiFormer
+    metric: Video watch time
+    result: +0.126%
+    versus: Production retrieval
+  - setting: Kuaishou double page, Table 2
+    method: KuaiFormer
+    metric: Video watch time
+    result: +0.411%
+    versus: Production retrieval
+  offline:
+  - setting: Replayed online requests, Table 1
+    method: KuaiFormer
+    metric: HR@50
+    result: 4.21%
+    versus: GNN 3.97%
+  - setting: Replayed online requests, Table 1
+    method: KuaiFormer
+    metric: HR@100
+    result: 6.58%
+    versus: GPRP 5.21%
+  - setting: Replayed online requests, Table 1
+    method: KuaiFormer
+    metric: HR@500
+    result: 15.61%
+    versus: GPRP 11.31%
+  - setting: Replayed online requests, Table 1
+    method: KuaiFormer
+    metric: HR@1000
+    result: 19.88%
+    versus: GPRP 15.70%

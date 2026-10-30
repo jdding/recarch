@@ -1,0 +1,126 @@
+id: kuaishou-onesearch-2025
+name: OneSearch
+company: Kuaishou
+surface: E-commerce search on Kuaishou
+year: 2025
+era: generative
+era_reason: "Generative search with semantic IDs"
+first_public: "2025-09"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2509.03236"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: search
+evidence_level: production_described
+tldr: "One encoder-decoder generates item semantic IDs for Kuaishou mall search, replacing the recall/pre-rank/rank cascade; online orders +3.22% with reward-model selection."
+summary: End-to-end generative framework for Kuaishou e-commerce mall search that replaces the recall -> pre-rank -> rank cascade
+  with one encoder-decoder generating item semantic IDs, using keyword-enhanced hierarchical quantization, KHQE, multi-view user behavior
+  sequence injection, and a preference-aware reward system, PARS. The paper calls it the first industrial-deployed end-to-end generative
+  e-commerce search framework.
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: Encoder-decoder generative model over KHQE semantic IDs, conditioned on query + behavior-driven user ID + short and
+    long behavior sequences
+  details: Replaces the multi-stage cascade; candidate space shown in Fig 1 as ~10^9 -> ~10^4 -> ~10^2 for the cascade. Quantization
+    is argued to beat plain VQ-VAE / RQ-VAE / RQ-Kmeans for preserving distinctive item attributes.
+- stage: other
+  model_family: Preference-Aware Reward System (PARS)
+  details: Multi-stage SFT (semantic alignment, then personalization) plus an adaptive reward model with hybrid ranking that combines
+    reward-model guidance and direct user interaction feedback (list-wise preference optimization over a 6-level user behavior hierarchy).
+id_tokenization:
+  approach: KHQE hierarchical quantization with keywords
+  details: null
+features_signals:
+- Query
+- User short- and long-term sequences
+training:
+  mode: SFT + reward-weighted ranking
+  objectives: null
+  notes: null
+serving_infra: null
+scale:
+- metric: Deployment
+  value: full traffic on detail-page search, 50% on mall search, 20% on homepage search (paper's closing statement)
+  note: paper
+- metric: Efficiency
+  value: OPEX -75.40%; MFU 3.26% (cascade) -> 27.32%
+  note: paper
+results_reported: 'Online A/B on Kuaishou mall search (OneSearch with additional reward-model selection vs online cascade): search PVs
+  +1.10%, item CTR +1.67%, PV CTR +3.14%, PV CVR +1.78%, buyers +2.40%, orders +3.22%. Pure OneSearch (no reward-model selection) is
+  comparable to the online cascade. A cascade with only recall + pre-rank (no ranking) lost 9.97% item CTR and 39.14% orders.'
+caveats:
+- Title calls this a 'preliminary exploration'; deployment is partial (100% / 50% / 20% on three surfaces).
+- Best online gains require the added reward-model selection; the pure generative model only matches the cascade.
+- Cost savings (75.40% OPEX) and MFU numbers are the paper's own comparison with the cascade; hardware and baseline cost basis are not
+  itemised in the sections read.
+unknown_fields:
+- serving latency / QPS
+- model parameter count
+- catalog size beyond the ~10^9 candidate pool in Fig 1
+sources:
+- title: OneSearch, arXiv 2509.03236
+  url: https://arxiv.org/abs/2509.03236
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2509.03236
+  local_pdf: /workspace/src/a_2509.03236.pdf
+  sections_read: Abstract, intro, related work, framework overview (KHQE, multi-view behavior injection, PARS), online A/B and efficiency
+    results
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/benchen4395/onesearch-family
+    owner: Ben Chen (first/corresponding author, Kuaishou)
+    official: true
+    note: RQ-OPQ Semantic ID construction, self-distillation SFT, RLHF components and data examples. Not
+      linked from the paper PDF; the README names the paper and the same corresponding author. Production
+      serving is not included.
+  - url: https://github.com/benchen4395/KuaiSearch
+    owner: Ben Chen (same author)
+    official: true
+    note: KuaiSearch dataset repo referenced by the OneSearch README.
+core_idea: One encoder-decoder generates item semantic IDs and replaces the recall, pre-rank and rank cascade.
+deployed_in: Kuaishou e-commerce search, mall search and detail-page search
+scale_short: Full traffic on detail-page search, 50% on mall search, 20% on homepage search
+key_result: Orders +3.22% in an online A/B on Kuaishou mall search, with reward-model selection, against the online cascade
+results_table:
+  online:
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: Search PVs
+    result: +1.10%
+    versus: Online cascade
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: Item CTR
+    result: +1.67%
+    versus: Online cascade
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: PV CTR
+    result: +3.14%
+    versus: Online cascade
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: PV CVR
+    result: +1.78%
+    versus: Online cascade
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: Buyers
+    result: +2.40%
+    versus: Online cascade
+  - setting: Kuaishou mall search A/B
+    method: OneSearch with reward-model selection
+    metric: Orders
+    result: +3.22%
+    versus: Online cascade

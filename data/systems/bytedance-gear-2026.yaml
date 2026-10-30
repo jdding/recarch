@@ -1,0 +1,117 @@
+id: bytedance-gear-2026
+name: "GEAR"
+company: ByteDance
+surface: Douyin Ads retrieval, added as an extra generative retrieval channel
+year: 2026
+deployed_year: 2026
+era: generative
+era_reason: "Retrieval is autoregressive generation of semantic-ID token sequences, with the tokenizer, generator and reranker trained end to end."
+first_public: "2026-09"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2609.39327"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "ByteDance generative ad retrieval with BasisRQ tokenizer and a joint reranking head on Douyin Ads; global A/B on 5% traffic per group for 7 days: ADSS +0.563%, ADVV +0.658%."
+summary: 'GEAR trains an item tokenizer that quantizes two-tower item embeddings with prefix-aware BasisRQ, a residual quantizer whose codebook is re-parameterized by an orthogonal basis to avoid dead codes, a small encoder-decoder generator that decodes item token sequences by beam search, and a reranking head that spends one extra decoder step to order the items that share a token sequence. It runs as an additional retrieval channel next to the existing dense retrieval systems on Douyin Ads.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- learning-to-rank
+stages:
+- stage: retrieval
+  model_family: 'Encoder-decoder generator: encoder projects non-sequence user features (28 group tokens), a 200-step click sequence and a 100-step conversion sequence into shared keys/values; 2-layer decoder (6 heads, head dim 64, gated FFN 384) with cross-attention generates 3 tokens by beam search (widths 256, 256, 512).'
+  details: 'Each generated token sequence is expanded to its items through a nearline CSR-like index (refreshed at minute level); the reranking head scores items with INT4 dot products and truncates per sequence.'
+id_tokenization:
+  approach: Three-layer prefix-aware BasisRQ over two-tower item embeddings, trained jointly with the generator
+  details: 'Codebook sizes (2048, 512, 128), code dimension 128, item embedding dimension 96; orthogonal basis via 5 Newton-Schulz iterations; affine codebook transform conditioned on earlier codes; token sequences and item embeddings stored per item in the parameter server and updated by streaming training.'
+features_signals:
+- Non-sequence user features (categorical, statistical, context)
+- Click sequence of length 200 and conversion sequence of length 100
+- Item features including multimodal content and categorical ids
+training:
+  mode: Streaming training of tokenizer, generator and reranker together, with a progressive warm-up that starts with a two-tower model and LambdaLoss, then adds quantization, then generation and reranking
+  objectives:
+  - LambdaLoss for the two-tower tokenizer and for the reranker
+  - RQ codebook and commitment loss
+  - Weighted cross-entropy for token generation, weighted by log(1 + secpm) on impressed samples
+  notes: 'Loss weights 1, 1, 10, 1 (LTR, RQ, Gen, Rerank).'
+serving_infra: 'Streaming training with a parameter server holding each item token sequence and embedding; nearline index builder refreshes a CSR-like index at minute level and ships it with the model; KV-cached beam search, token generation, sequence-to-item expansion and item scoring in one computation graph; INT4 user and item embeddings for reranker scoring.'
+scale:
+- metric: Daily active users served
+  value: hundreds of millions
+  note: Stated for Douyin Ads
+- metric: Tokenizer codebook
+  value: 2048 x 512 x 128
+  note: Three-layer prefix-aware BasisRQ
+results_reported: 'Online A/B on Douyin Ads, 7 days, 5% of traffic per treatment group, GEAR as an extra retrieval path vs the production system without it: ADSS +0.563%, ADVV +0.658%; cold-start activation rate of new advertisers +1.46%. Subset ablation (ADSS/ADVV): GEAR +0.446/+0.498, w/o prefix-aware BasisRQ +0.288/+0.219, w/o rerank +0.358/+0.341, w/o secpm reweight +0.395/+0.354. Tokenizer analysis per Table 2: prefix-aware BasisRQ (2048, 512, 128) utilization 8.83%, collision rate 52.3%, MSE 1.82e-3; vanilla RQ with EMA 4.22%, 84.2%, 2.32e-3.'
+caveats:
+- 'arXiv preprint (v1); no peer-reviewed venue found, so published_version_checked is null.'
+- 'The paper reports revenue-style metrics (ADSS, ADVV) as relative gains only; no absolute values, confidence intervals or per-segment results.'
+- 'Ablations are online on a subset of ad candidates, not on global traffic.'
+- 'The generator is small (2 decoder layers); latency and QPS are not reported, and the conclusion lists decoding efficiency as future work.'
+unknown_fields:
+- serving latency and QPS
+- model parameter count
+- retrieval quota or share of final ad impressions
+- offline recall metrics
+sources:
+- title: Generative End-to-end Ad Retrieval at Douyin, arXiv 2609.39327
+  url: https://arxiv.org/abs/2609.39327
+  type: paper
+- title: daiwk/auto-research GEAR reproduction, third-party
+  url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/gear/
+  type: source_code
+version_note: 'arXiv v1 of 30 Sep 2026 is the latest version; arXiv page showed only v1 on 2026-10-30. The paper is marked Preprint and no venue was found.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2609.39327
+  local_pdf: /workspace/recarch/zotero/bytedance-gear-2026.pdf
+  sections_read: 'Abstract, introduction, preliminaries, GEAR method (tokenizer, generator, reranker, training and serving), related work, system deployment, experiments 6.1-6.2, conclusion, appendix C'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/gear/
+    owner: daiwk (third party)
+    official: false
+    note: 'Automated third-party reproduction of the method inside an auto-research repo; not the authors code and its fidelity is unverified.'
+  note: 'No official code link in the paper.'
+core_idea: Quantize item embeddings into token sequences and decode them as an extra retrieval channel.
+deployed_in: Douyin Ads retrieval, as an extra generative channel
+scale_short: Serves hundreds of millions of daily active users
+key_result: ADSS +0.563% and ADVV +0.658% in a 7 day online A/B on Douyin Ads, with GEAR as an extra retrieval path
+results_table:
+  online:
+  - setting: Douyin Ads, 7 days, 5% of traffic per group
+    method: GEAR as an extra retrieval path
+    metric: ADSS
+    result: +0.563%
+    versus: Production system without it
+  - setting: Douyin Ads, 7 days, 5% of traffic per group
+    method: GEAR as an extra retrieval path
+    metric: ADVV
+    result: +0.658%
+    versus: Production system without it
+  - setting: Douyin Ads
+    method: GEAR
+    metric: Cold-start activation of new advertisers
+    result: +1.46%
+    versus: Production system without it
+  offline:
+  - setting: Tokenizer analysis, Table 2
+    method: Prefix-aware BasisRQ
+    metric: Codebook utilization
+    result: 8.83%
+    versus: Vanilla RQ with EMA 4.22%
+  - setting: Tokenizer analysis, Table 2
+    method: Prefix-aware BasisRQ
+    metric: Collision rate
+    result: 52.3%
+    versus: Vanilla RQ with EMA 84.2%

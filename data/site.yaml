@@ -1,0 +1,22 @@
+# Site-level settings and events. No secrets here: this file is published into the build.
+newsletter:
+  provider: beehiiv
+  publication_id: "pub_26d33a6b-014f-4e0d-9645-896dcc81a08d"
+  form_id: "f5e9d3b3-b164-4cdb-b452-4995d34b4f4b"
+  public_url: "https://recarch.beehiiv.com"
+  embed_url: "https://subscribe-forms.beehiiv.com/v3/loader.js"   # loader script; the form is chosen by data-beehiiv-form=form_id
+carousel_size: 6          # home carousel slides
+carousel_window_days: 7   # 'recent' = added/updated within this many days of the build date; fewer than size -> backfill by latest activity
+events:
+  - date: "2026-10-29"
+    title: "RecArch started"
+    note: "First batch of system cards, each written from the full text of its public sources."
+  - date: "2026-10-30"
+    title: "Code availability checked for every card"
+    note: "Every card now says whether official or third-party code exists; each repo link was checked."
+  - date: "2026-10-30"
+    title: "Year and era audit"
+    note: "Each card has an explicit era and first-public month; two wrong years were fixed namely Pixie and Meta Lattice."
+  - date: "2026-10-30"
+    title: "Papers now link to the published version"
+    note: "Where a venue version exists the card's primary source is its DOI link; arXiv stays as a secondary source. Cards say whether the published PDF was read."

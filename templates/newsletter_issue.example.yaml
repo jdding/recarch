@@ -1,0 +1,15 @@
+# Copy to data/newsletter/<slug>.yaml, e.g. data/newsletter/2026-11-06-issue-1.yaml, then run `python3 build.py`.
+# The issue gets its own page at /newsletter/<slug>/, is listed in /newsletter/, and appears in /feed.xml and /changelog/.
+title: "Issue 1: example title"
+date: "2026-11-06"            # quoted YYYY-MM-DD
+summary: "One or two sentences, used in the archive list, the feed and the page description."
+body: |
+  First paragraph. Paragraphs are separated by a blank line; plain text only (HTML is escaped).
+
+  Second paragraph.
+cards:                          # optional: ids of cards covered (must exist in data/systems/)
+  - hstu-meta-2024
+papers:                         # optional: papers/posts worth reading that have no card yet
+  - title: "Paper title"
+    url: "https://arxiv.org/abs/0000.00000"
+    note: "One line on why it matters."

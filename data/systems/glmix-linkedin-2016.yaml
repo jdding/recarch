@@ -1,0 +1,74 @@
+id: glmix-linkedin-2016
+name: "GLMix"
+company: LinkedIn
+surface: Job recommendation as in 'Jobs you may be interested in', and others
+year: 2016
+era: classic
+era_reason: "Generalized linear mixed models with per-member and per-item linear coefficients; no deep net"
+first_public: "2016-08"
+venue: "KDD 2016"
+venue_year: 2016
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2939672.2939684"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Generalized linear mixed model adds per-member and per-job coefficients to a global model; the LinkedIn job recommender saw 20% to 40% more job applications."
+summary: Generalized linear mixed model adding per-member and per-job random-effect coefficients to a global model, fit with parallel
+  block coordinate descent on Spark; open-sourced in Photon ML.
+paradigms:
+- learning-to-rank
+- online-training
+stages:
+- stage: rank
+  model_family: Global + per-user + per-item logistic regression coefficients
+  details: ~2K member features and ~2K job features in the reported job-recommendation experiments.
+id_tokenization:
+  approach: Member/job ID-level random effects
+  details: null
+features_signals:
+- Member and job features
+- Application/click responses
+training:
+  mode: Offline distributed
+  objectives:
+  - Logistic response prediction
+  notes: Parallelized BCD under BSP on Apache Spark/YARN.
+serving_infra: Spark; code open-sourced as Photon ML
+scale: []
+results_reported: 'Paper: deployed in the LinkedIn job recommender, improving total job applications from active job seekers by 20%
+  to 40%.'
+caveats: []
+unknown_fields:
+- latency
+- member scale
+sources:
+- title: "GLMix: Generalized Linear Mixed Models For Large-Scale Response Prediction, KDD 2016"
+  url: https://doi.org/10.1145/2939672.2939684
+  type: paper
+- title: 'GLMix: Generalized Linear Mixed Models For Large-Scale Response Prediction, KDD 2016'
+  url: https://kdd.org/kdd2016/papers/files/adf0562-zhangA.pdf
+  type: paper
+- title: Photon ML
+  url: https://github.com/linkedin/photon-ml
+  type: source_code
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/linkedin/photon-ml
+    owner: LinkedIn
+    official: true
+    note: 'Spark library implementing GLMix/GAME. No recent activity. Successor: linkedin/gdmix.'
+core_idea: Add per-member and per-job random-effect coefficients to a global model.
+deployed_in: LinkedIn job recommender, Jobs you may be interested in
+scale_short: Not stated in the sources
+key_result: Total job applications from active job seekers up 20% to 40% in the LinkedIn job recommender
+results_table:
+  online:
+  - setting: LinkedIn job recommender
+    method: GLMix
+    metric: Total job applications from active job seekers
+    result: +20% to +40%
+    versus: Previous recommender

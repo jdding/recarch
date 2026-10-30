@@ -1,0 +1,66 @@
+id: pinnerformer-2022
+name: PinnerFormer user representation
+company: Pinterest
+surface: Homefeed and Ads ranking, as a user embedding feature, and retrieval
+year: 2022
+era: deep
+era_reason: "Transformer user embeddings, offline-trained; not generative"
+first_public: "2022-05"
+venue: "KDD 2022"
+venue_year: 2022
+deployed_year: 2021
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3534678.3539156"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Causal transformer over a user's last 256 actions yields a 256-d daily-batch user embedding; reported Homefeed Repins +7.5%, Time Spent +1%."
+summary: >-
+  Causal transformer over a user's last up to 256 actions producing a 256-d user embedding, trained with a dense all-action
+  loss to predict engagement over a future window and computed in daily batch.
+paradigms: [sequential-transformer, embedding-based-retrieval]
+stages:
+  - stage: retrieval
+    model_family: Transformer user embedding served via HNSW index
+    details: Daily incremental batch inference; embeddings stored in a KV store and an HNSW index.
+  - stage: rank
+    model_family: User embedding used as a feature in Homefeed and Ads ranking
+    details: Replaced PinnerSage in production since Fall 2021 (per paper).
+id_tokenization: {approach: Input actions represented by PinSage 256-d embeddings plus action type, surface, duration and time features, details: null}
+features_signals: [Sequence of up to 256 recent user actions, PinSage item embeddings, Action type / surface / duration / timestamp]
+training:
+  mode: Offline training, daily batch inference (not real-time)
+  objectives: ["Dense all-action loss over a 28-day window", Sampled softmax with logQ correction and mixed negatives]
+  notes: null
+serving_infra: KV store + HNSW index; daily incremental inference.
+scale: []
+results_reported: "Reported Homefeed Repins +7.5% and Time Spent +1% (per paper)."
+caveats: []
+unknown_fields: [model size, QPS]
+sources:
+  - {title: "PinnerFormer: Sequence Modeling for User Representation at Pinterest, KDD 2022", url: "https://doi.org/10.1145/3534678.3539156", type: paper}
+  - {title: "PinnerFormer: Sequence Modeling for User Representation at Pinterest, arXiv 2205.04507, KDD 2022", url: "https://arxiv.org/abs/2205.04507", type: paper}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A causal transformer over recent actions produces a user embedding in daily batch.
+deployed_in: Pinterest Homefeed and Ads ranking as a user embedding feature, and retrieval
+scale_short: Up to 256 actions per user, 256-d user embedding
+key_result: Homefeed Repins +7.5% and Time Spent +1%, as reported in the paper
+results_table:
+  online:
+  - setting: Pinterest Homefeed
+    method: PinnerFormer
+    metric: Repins
+    result: +7.5%
+    versus: Previous Homefeed
+  - setting: Pinterest Homefeed
+    method: PinnerFormer
+    metric: Time Spent
+    result: +1%
+    versus: Previous Homefeed

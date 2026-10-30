@@ -1,0 +1,72 @@
+id: youtube-dnn-2016
+name: Deep Neural Networks for YouTube Recommendations
+company: Google / YouTube
+surface: YouTube homepage recommendations
+year: 2016
+era: deep
+era_reason: "Two-stage deep candidate generation and ranking"
+first_public: "2016-09"
+venue: "RecSys 2016"
+venue_year: 2016
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2959100.2959190"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "The classic two-stage funnel: a deep candidate generator framed as extreme multiclass classification, then a deep ranker predicting expected watch time."
+summary: >-
+  Two-stage funnel: a deep candidate-generation network cast as extreme multiclass classification
+  over millions of videos, followed by a separate deep ranking network trained to predict expected watch time.
+paradigms: [two-tower, embedding-based-retrieval, multi-task]
+stages:
+  - stage: retrieval
+    model_family: Deep candidate generation network with averaged embedding bags, a ReLU MLP, sampled softmax and ANN lookup at serving
+    details: >-
+      Recommendation posed as extreme multiclass classification over millions of videos. Training uses candidate sampling
+      (several thousand negatives, correcting for the sampling). At serving time, scoring reduces to approximate
+      nearest-neighbor search in dot-product space and returns hundreds of candidates.
+  - stage: rank
+    model_family: Deep ranking network (similar architecture to candidate generation) with weighted logistic regression
+    details: >-
+      Scores each video impression independently using many more video/user features. Objective is generally a simple function
+      of expected watch time per impression (trained with weighted logistic regression), not click-through rate.
+id_tokenization:
+  approach: Learned embeddings for video IDs and search-query tokens (bag-of-IDs averaged); no semantic-ID tokenization.
+  details: Experiments use a 1M-video vocabulary and 1M search-token vocabulary.
+features_signals:
+  - Watch history as a bag of recent video IDs; experiments use 50 recent watches
+  - Search history as tokenized queries; experiments use 50 recent searches
+  - Demographic features including geography, device, gender, age and logged-in state
+  - '"Example age" feature to model freshness bias'
+  - Ranking uses hundreds of categorical and continuous features about the video, the user and their relationship
+training:
+  mode: Offline; the paper describes TensorFlow-based large-scale distributed training
+  objectives: [Cross-entropy with sampled softmax (retrieval), expected watch time via weighted logistic regression (ranking)]
+  notes: Models learn approximately one billion parameters on hundreds of billions of examples.
+serving_infra: Approximate nearest-neighbor lookup for candidate generation; ranking over hundreds of candidates.
+scale:
+  - {metric: Model size, value: "~1 billion parameters", note: "stated in paper"}
+  - {metric: Training data, value: "hundreds of billions of examples", note: "stated in paper"}
+results_reported: Paper reports offline MAP/watch-time-weighted metrics and notes live A/B results are not always correlated with offline ones.
+caveats: [2016 paper; the current YouTube system is not described by this source.]
+unknown_fields: [latency, current-day architecture]
+sources:
+  - {title: "Deep Neural Networks for YouTube Recommendations, RecSys 2016", url: "https://doi.org/10.1145/2959100.2959190", type: paper}
+  - {title: "Deep Neural Networks for YouTube Recommendations, RecSys 2016, Google Research", url: "https://research.google/pubs/deep-neural-networks-for-youtube-recommendations/", type: paper}
+  - {title: "Paper PDF by Covington, Adams and Sargin", url: "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45530.pdf", type: paper}
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/shenweichen/DeepMatch/blob/master/deepmatch/models/youtubednn.py
+    owner: Weichen Shen (DeepMatch)
+    official: false
+    note: Third-party YouTubeDNN implementation; Google released no code.
+core_idea: A deep candidate-generation network cast as extreme multiclass classification, then a deep ranker trained for expected watch time.
+deployed_in: YouTube homepage recommendations
+scale_short: About 1 billion parameters, hundreds of billions of training examples
+key_result: 'Offline: reports MAP and watch-time-weighted metrics, with no live A/B figures'
+results_table:
+  note: The paper reports offline MAP and watch-time-weighted metrics, and notes that live A/B results are not always correlated with offline
+    ones.

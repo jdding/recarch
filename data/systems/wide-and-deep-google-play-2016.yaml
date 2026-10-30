@@ -1,0 +1,113 @@
+id: wide-and-deep-google-play-2016
+name: "Wide & Deep Learning"
+company: Google
+surface: Google Play app recommendations
+year: 2016
+era: deep
+era_reason: "Joint wide linear and deep network"
+first_public: "2016-06"
+venue: "DLRS @ RecSys 2016 (workshop)"
+venue_year: 2016
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/2988450.2988454"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Jointly trains a wide linear model for memorization and a deep network for generalization on Google Play; online A/B: acquisitions +3.9% vs +2.9% for deep only."
+summary: 'Wide & Deep, from DLRS 2016, jointly trains a wide linear model on cross-product features for memorization with a feed-forward network on embeddings for generalization to rank apps on the Google Play store. Productionized; open-sourced in TensorFlow.'
+paradigms:
+- learning-to-rank
+- dlrm
+stages:
+- stage: rank
+  model_family: 'Wide & Deep: wide part = linear model with cross-product transformations (FTRL + L1); deep part = embeddings concatenated
+    to roughly 1200 dimensions, 3 ReLU layers, logistic output (AdaGrad); jointly trained, not ensembled'
+  details: Candidates come from a separate app retrieval system that narrows over a million apps to a short list; the ranker scores
+    each candidate and sorts by score.
+id_tokenization:
+  approach: Sparse categorical features embedded into dense vectors
+  details: null
+features_signals:
+- User, contextual and impression features (categorical and continuous)
+training:
+  mode: Offline training on over 500 billion examples, with a warm-start system that initializes a new model's embeddings and linear
+    weights from the previous model
+  objectives:
+  - App acquisition (logistic)
+  notes: Before loading into model servers, a dry run checks the model does not break live serving and quality is validated against
+    the previous model.
+serving_infra: Model servers receive app candidates from the retrieval system plus user features and run a forward pass. To serve a
+  request on the order of 10 ms, scoring is split into smaller batches run with multithreading. At peak traffic the servers score over
+  10 million apps per second; single-threaded scoring of all candidates in one batch took 31 ms, multithreading cut client-side latency
+  to 14 ms including overhead per Table 2.
+scale:
+- metric: Google Play users
+  value: over one billion active users
+  note: paper
+- metric: Apps
+  value: over one million apps
+  note: paper
+- metric: Training examples
+  value: over 500 billion
+  note: paper
+- metric: Peak scoring
+  value: over 10 million apps per second
+  note: paper
+results_reported: '3-week A/B test with 1% of users per group on the main landing page of the app store. Table 1: Wide (control) offline
+  AUC 0.726, online acquisition gain 0%; Deep 0.722, +2.9%; Wide & Deep 0.728, +3.9% (statistically significant vs control). Wide &
+  Deep had +1% on top of deep-only. Paper notes the offline AUC gain is small while the online impact is larger.'
+caveats:
+- Control was a highly optimized wide-only logistic regression model with rich cross-product features.
+- The paper offers a hypothesis (exploratory recommendations online) for why online gains exceed offline AUC gains; it is not tested
+  in the paper.
+unknown_fields:
+- absolute acquisition rates
+- exact feature list
+- hardware used for serving
+sources:
+- title: "Wide & Deep Learning for Recommender Systems, DLRS @ RecSys 2016, workshop"
+  url: https://doi.org/10.1145/2988450.2988454
+  type: paper
+- title: Wide & Deep Learning for Recommender Systems, arXiv 1606.07792
+  url: https://arxiv.org/abs/1606.07792
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1606.07792
+  local_pdf: /workspace/src/a_1606.07792.pdf
+  sections_read: 'Full 4-page paper: abstract, model (wide, deep, joint training), system implementation (data generation, training,
+    serving), experiments (online, serving performance)'
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/tensorflow/estimator
+    owner: Google (TensorFlow)
+    official: true
+    note: The paper says the implementation was open-sourced in TensorFlow; today it is DNNLinearCombinedClassifier
+      in tensorflow_estimator (repo archived 2024-01). Model code only, not the Google Play pipeline.
+core_idea: A wide linear model on cross-product features memorizes, while a deep network on embeddings generalizes.
+deployed_in: Google Play app recommendations, main landing page of the app store
+scale_short: Over 1 billion active users, over 1 million apps, over 10 million apps scored per second at peak
+key_result: Online app acquisition +3.9% for Wide and Deep over the wide-only control in a 3-week A/B on Google Play
+results_table:
+  online:
+  - setting: Google Play landing page, 3-week A/B, 1% of users per group
+    method: Wide and Deep
+    metric: App acquisition
+    result: +3.9%
+    versus: Wide-only control
+  - setting: Google Play landing page, 3-week A/B, 1% of users per group
+    method: Deep only
+    metric: App acquisition
+    result: +2.9%
+    versus: Wide-only control
+  offline:
+  - setting: Table 1
+    method: Wide and Deep
+    metric: AUC
+    result: '0.728'
+    versus: Wide 0.726, Deep 0.722
+  note: The paper notes that the offline AUC gain is small while the online impact is larger.

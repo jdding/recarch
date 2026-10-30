@@ -1,0 +1,117 @@
+id: kuaishou-quasid-2026
+name: "QuaSID"
+company: Kuaishou
+surface: Kuaishou e-commerce retrieval and ranking
+year: 2026
+era: generative
+era_reason: "A semantic-ID tokenizer built for generative recommendation, deployed in a generative retrieval channel and in discriminative retrieval and ranking."
+first_public: "2026-02"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3770855.3818486"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Kuaishou's QuaSID learns semantic IDs that repel only genuinely colliding items; 5% traffic, 5-day A/B on e-commerce: ranking GMV-S2 +2.38%, cold-start retrieval completed orders up to +6.42%."
+summary: 'QuaSID is a semantic-ID tokenizer trained end to end on top of a residual-quantization autoencoder. Hamming-guided Margin Repulsion turns low Hamming distances between the SIDs of different items into a cosine-distance margin in the encoder space, scaled by how severe the collision is. Conflict-Aware Valid Pair Masking removes pairs that overlap for benign reasons, such as the same item sampled twice or positives built for the contrastive loss. A dual-tower contrastive objective on trigger-target item pairs injects collaborative signals. Multimodal item embeddings from text, speech transcripts and key frames feed the encoder. The resulting SIDs serve a generative retrieval model, and also a conventional retrieval stage and a ranking stage.'
+paradigms:
+- semantic-id
+- generative-retrieval
+stages:
+- stage: retrieval
+  model_family: 'QuaSID tokenizer feeding a generative retrieval model and a conventional retrieval stage'
+  details: 'Generative retrieval generates the SID of the next item; cold-start items gain most.'
+- stage: rank
+  model_family: 'Discriminative ranking model using QuaSID semantic IDs as item identifiers'
+  details: 'Gains are smaller than in retrieval but positive across scenarios.'
+id_tokenization:
+  approach: 'Residual quantization with collision-qualified repulsion, 4 codebook layers of 1024 codes online and 3 layers of 256 offline'
+  details: 'The Hamming radius is 2 online and 1 offline, with full and partial collision margins of 0.8 and 0.5.'
+features_signals:
+- Item text descriptions
+- Speech transcripts
+- Key-frame images
+- Multimodal LLM item embeddings
+- Collaborative trigger-target item pairs
+training:
+  mode: 'Offline periodic training of the tokenizer, then application in retrieval and ranking'
+  objectives:
+  - 'Reconstruction and residual quantization'
+  - 'Hamming-guided margin repulsion'
+  - 'Dual-tower contrastive loss'
+  notes: 'Offline results use the TIGER generative backbone with five seeds on Amazon Beauty and Toys; online batch size is 1024.'
+serving_infra: 'A trained tokenizer is deployed as an inference service that maps item IDs to SIDs for the retrieval and ranking stacks.'
+scale:
+- metric: Online A/B
+  value: About 5% of traffic, over 20 million users, 5 days
+  note: Kuaishou e-commerce recommendation
+- metric: Public benchmarks
+  value: Amazon Beauty with 22,363 users and Amazon Toys with 19,412 users
+  note: About 1 million interactions each
+results_reported: 'In a 5-day A/B on about 5% of Kuaishou e-commerce traffic, over 20 million users, all results significant, replacing the tokenizer with QuaSID gives in generative retrieval completed orders +0.21%, GMV-S1 +1.03% and GMV-S2 +0.55%, and in ranking GMV-S2 +2.38%, GMV-S1 +1.44% and completed orders +0.20%. On cold-start retrieval, completed orders rise +6.42% for videos under 100 views and +4.69% under 600 views, and retrieval overall gains +1.09% completed orders and +1.69% GMV. Offline on Amazon Beauty with the TIGER backbone, HR@10 is 0.0392 against 0.0379 for RQ-Kmeans and 0.0300 for RQ-VAE, and NDCG@10 is 0.0230 against 0.0211; the paper reports 5.9% better top-K ranking quality than the best baseline. Adding the repulsion loss to other tokenizers lifts NDCG@10 by up to 15.3% on Beauty and 20.1% on Toys.'
+caveats:
+- 'The online control is the same stack with its previous tokenizer, which the paper does not name.'
+- 'The arXiv v1 PDF used here carries a template conference placeholder, so it is not confirmed as the camera-ready KDD text; the DOI is registered.'
+- 'Public offline tests use small Amazon datasets and a TIGER backbone, not the industrial setup.'
+- 'Gains in ranking are small in absolute terms, and the paper does not give absolute metric values.'
+- 'The system is a tokenizer, so the online lifts mix tokenizer quality with the downstream model that consumes it.'
+unknown_fields:
+- online control tokenizer
+- corpus size
+- model sizes online
+- code
+sources:
+- title: "Stop Treating Collisions Equally: Qualification-Aware Semantic ID Learning for Recommendation at Industrial Scale, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818486
+  type: paper
+- title: "QuaSID, arXiv 2603.00632"
+  url: https://arxiv.org/abs/2603.00632
+  type: paper
+version_note: 'Numbers checked against arXiv v1 of 28 February 2026, which still has a template conference line. The KDD 2026 DOI 10.1145/3770855.3818486 comes from the owner Zotero record and is registered per a doi.org redirect check; the camera-ready PDF was not retrievable, so published_version_checked is false.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2603.00632v1
+  local_pdf: /workspace/recarch/zotero/kuaishou-quasid-2026.pdf
+  sections_read: 'Abstract, introduction, method 4.1-4.3, experiments 5.1-5.5, appendix A.2, deployment figure'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 for QuaSID and the paper title found no repository.'
+core_idea: A semantic-ID tokenizer pushes apart only the item pairs whose code collisions are real conflicts, scaled by severity.
+deployed_in: Kuaishou e-commerce recommendation, in generative retrieval, discriminative retrieval and ranking
+scale_short: 5% of traffic, over 20 million users, 5-day A/B
+key_result: Ranking GMV-S2 +2.38% and cold-start retrieval completed orders up to +6.42% in a 5-day A/B on 5% of traffic
+results_table:
+  online:
+  - setting: Kuaishou e-commerce ranking, 5-day A/B
+    method: QuaSID semantic IDs
+    metric: GMV-S2
+    result: +2.38%
+    versus: Same stack with the previous tokenizer
+  - setting: Kuaishou e-commerce generative retrieval, 5-day A/B
+    method: QuaSID semantic IDs
+    metric: GMV-S1
+    result: +1.03%
+    versus: Same stack with the previous tokenizer
+  - setting: Cold-start retrieval, videos under 100 views
+    method: QuaSID semantic IDs
+    metric: Completed orders
+    result: +6.42%
+    versus: Same stack with the previous tokenizer
+  offline:
+  - setting: Amazon Beauty, TIGER backbone
+    method: QuaSID
+    metric: HR@10
+    result: '0.0392'
+    versus: RQ-Kmeans 0.0379
+  - setting: Amazon Beauty, TIGER backbone
+    method: QuaSID
+    metric: NDCG@10
+    result: '0.0230'
+    versus: RQ-Kmeans 0.0211

@@ -1,0 +1,1889 @@
+{
+ "airbnb-listing-embeddings-2018": {
+  "count": 339,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/2553596e3b24444d309ae461da50370d58f1b807",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Real-time Personalization using Embeddings for Search Ranking at Airbnb",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3219819.3219885"
+  ],
+  "papers": [
+   {
+    "name": "Airbnb Listing & User-Type Embeddings for Search Ranking",
+    "count": 339,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/2553596e3b24444d309ae461da50370d58f1b807",
+    "matched_title": "Real-time Personalization using Embeddings for Search Ranking at Airbnb",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3219819.3219885"
+    ]
+   }
+  ]
+ },
+ "airbnb-maps-ranking-2024": {
+  "count": 3,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/98d770cc1ad22c4e9b6a5b004c10d61ea2b06601",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Learning to Rank for Maps at Airbnb",
+  "matched_year": 2024,
+  "ids": [
+   "doi:10.1145/3637528.3671648"
+  ],
+  "papers": [
+   {
+    "name": "Learning to Rank for Maps",
+    "count": 3,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/98d770cc1ad22c4e9b6a5b004c10d61ea2b06601",
+    "matched_title": "Learning to Rank for Maps at Airbnb",
+    "matched_year": 2024,
+    "ids": [
+     "doi:10.1145/3637528.3671648"
+    ]
+   }
+  ]
+ },
+ "airbnb-search-dnn-2018": {
+  "count": 100,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/63cbfbf917bf219bf8c7efa97393ee7ad9960ab6",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Applying Deep Learning to Airbnb Search",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3292500.3330658"
+  ],
+  "papers": [
+   {
+    "name": "Applying Deep Learning to Airbnb Search",
+    "count": 100,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/63cbfbf917bf219bf8c7efa97393ee7ad9960ab6",
+    "matched_title": "Applying Deep Learning to Airbnb Search",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3292500.3330658"
+    ]
+   }
+  ]
+ },
+ "alibaba-degre-2026": {
+  "count": 3,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/036ee5426db658869c9037197489957048bd38bf",
+  "fetched_on": "2026-10-30",
+  "matched_title": "DeGRe: Dense-supervised Generative Reranking for Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818363"
+  ],
+  "papers": [
+   {
+    "name": "DeGRe",
+    "count": 3,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/036ee5426db658869c9037197489957048bd38bf",
+    "matched_title": "DeGRe: Dense-supervised Generative Reranking for Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818363"
+    ]
+   }
+  ]
+ },
+ "alibaba-lum-2025": {
+  "count": 29,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/42fea094a6d2f3d26168567dd1f8055b67295bbb",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Unlocking Scaling Law in Industrial Recommendation Systems with a Three-step Paradigm based Large User Model",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2502.08309"
+  ],
+  "papers": [
+   {
+    "name": "LUM",
+    "count": 29,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/42fea094a6d2f3d26168567dd1f8055b67295bbb",
+    "matched_title": "Unlocking Scaling Law in Industrial Recommendation Systems with a Three-step Paradigm based Large User Model",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2502.08309"
+    ]
+   }
+  ]
+ },
+ "alibaba-urm-2025": {
+  "count": 13,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/62dc2137eb859b54eb74c522340df6b9e240d401",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Large Language Model as Universal Retriever in Industrial-Scale Recommender System",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2502.03041"
+  ],
+  "papers": [
+   {
+    "name": "URM",
+    "count": 13,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/62dc2137eb859b54eb74c522340df6b9e240d401",
+    "matched_title": "Large Language Model as Universal Retriever in Industrial-Scale Recommender System",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2502.03041"
+    ]
+   }
+  ]
+ },
+ "amap-gwhere-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/d2cbd0fce17e15e1cb68642d302e29992a636a0d",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Guess Where You Go: Generative Next Point-of-Interest Recommendation in Amap",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831863"
+  ],
+  "papers": [
+   {
+    "name": "Gwhere",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/d2cbd0fce17e15e1cb68642d302e29992a636a0d",
+    "matched_title": "Guess Where You Go: Generative Next Point-of-Interest Recommendation in Amap",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831863"
+    ]
+   }
+  ]
+ },
+ "amazon-item-to-item-2003": {
+  "count": 1730,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/00a6388d164f742d99ab490baadb72b6857b3f12",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Amazon.com Recommendations: Item-to-Item Collaborative Filtering",
+  "matched_year": 2003,
+  "ids": [
+   "doi:10.1109/mic.2003.1167344"
+  ],
+  "papers": [
+   {
+    "name": "Amazon item-to-item collaborative filtering",
+    "count": 1730,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/00a6388d164f742d99ab490baadb72b6857b3f12",
+    "matched_title": "Amazon.com Recommendations: Item-to-Item Collaborative Filtering",
+    "matched_year": 2003,
+    "ids": [
+     "doi:10.1109/mic.2003.1167344"
+    ]
+   }
+  ]
+ },
+ "baidu-unique-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/fa6c59c6167acc2a6fa0d26eca58ac4708743525",
+  "fetched_on": "2026-10-30",
+  "matched_title": "UNIQUE: A Unified Retrieval and Ranking System for Large-Scale Feed Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831936"
+  ],
+  "papers": [
+   {
+    "name": "UNIQUE",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/fa6c59c6167acc2a6fa0d26eca58ac4708743525",
+    "matched_title": "UNIQUE: A Unified Retrieval and Ranking System for Large-Scale Feed Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831936"
+    ]
+   }
+  ]
+ },
+ "bytedance-gear-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/56cd0e5930d3f025a24b1f17183f63ef7f46e99b",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Generative End-to-end Ad Retrieval at Douyin",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2609.39327"
+  ],
+  "papers": [
+   {
+    "name": "GEAR",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/56cd0e5930d3f025a24b1f17183f63ef7f46e99b",
+    "matched_title": "Generative End-to-end Ad Retrieval at Douyin",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2609.39327"
+    ]
+   }
+  ]
+ },
+ "bytedance-hllm-2024": {
+  "count": 139,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b230b3c043b0671985bd56fcb0b23f3e9e29c762",
+  "fetched_on": "2026-10-30",
+  "matched_title": "HLLM: Enhancing Sequential Recommendations via Hierarchical Large Language Models for Item and User Modeling",
+  "matched_year": 2024,
+  "ids": [
+   "arxiv:2409.12740"
+  ],
+  "papers": [
+   {
+    "name": "HLLM",
+    "count": 139,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b230b3c043b0671985bd56fcb0b23f3e9e29c762",
+    "matched_title": "HLLM: Enhancing Sequential Recommendations via Hierarchical Large Language Models for Item and User Modeling",
+    "matched_year": 2024,
+    "ids": [
+     "arxiv:2409.12740"
+    ]
+   }
+  ]
+ },
+ "bytedance-longer-2025": {
+  "count": 125,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/6620f99ca8e6c4ef088f31f28ae3c74503c492ba",
+  "fetched_on": "2026-10-30",
+  "matched_title": "LONGER: Scaling Up Long Sequence Modeling in Industrial Recommenders",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3705328.3748065"
+  ],
+  "papers": [
+   {
+    "name": "LONGER",
+    "count": 125,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/6620f99ca8e6c4ef088f31f28ae3c74503c492ba",
+    "matched_title": "LONGER: Scaling Up Long Sequence Modeling in Industrial Recommenders",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3705328.3748065"
+    ]
+   }
+  ]
+ },
+ "bytedance-mixformer-2026": {
+  "count": 13,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/e5f520602ba5f3f156cb9a29eb7a5afe2cc1ff68",
+  "fetched_on": "2026-10-30",
+  "matched_title": "MixFormer: Co-Scaling Up Dense and Sequence in Industrial Recommenders",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818447"
+  ],
+  "papers": [
+   {
+    "name": "MixFormer",
+    "count": 13,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e5f520602ba5f3f156cb9a29eb7a5afe2cc1ff68",
+    "matched_title": "MixFormer: Co-Scaling Up Dense and Sequence in Industrial Recommenders",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818447"
+    ]
+   }
+  ]
+ },
+ "bytedance-rankmixer-2025": {
+  "count": 115,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/71366a2db41eca8dae10dc043bf013940e5e493c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "RankMixer: Scaling Up Ranking Models in Industrial Recommenders",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3746252.3761507"
+  ],
+  "papers": [
+   {
+    "name": "RankMixer",
+    "count": 115,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/71366a2db41eca8dae10dc043bf013940e5e493c",
+    "matched_title": "RankMixer: Scaling Up Ranking Models in Industrial Recommenders",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3746252.3761507"
+    ]
+   }
+  ]
+ },
+ "bytedance-sequenceo1-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/664c61b596c4c942084e23b9fdda669ce7d45fe1",
+  "fetched_on": "2026-10-30",
+  "matched_title": "SequenceO1: End-to-End Ultra-Long (100K) Sequence Modeling in Recommendation with Low-Rank Caching",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831864"
+  ],
+  "papers": [
+   {
+    "name": "SequenceO1",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/664c61b596c4c942084e23b9fdda669ce7d45fe1",
+    "matched_title": "SequenceO1: End-to-End Ultra-Long (100K) Sequence Modeling in Recommendation with Low-Rank Caching",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831864"
+    ]
+   }
+  ]
+ },
+ "dcn-google": {
+  "count": 2598,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/e7744bd79b314a59686344515fa471e5acdc5eb4",
+  "fetched_on": "2026-10-30",
+  "matched_title": "DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems",
+  "matched_year": 2020,
+  "ids": [
+   "doi:10.1145/3124749.3124754",
+   "doi:10.1145/3442381.3450078"
+  ],
+  "papers": [
+   {
+    "name": "DCN",
+    "count": 1617,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/ca870d3dbfdddaef4a92e60f53d2077dbe0fdd0a",
+    "matched_title": "Deep & Cross Network for Ad Click Predictions",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.1145/3124749.3124754"
+    ]
+   },
+   {
+    "name": "DCN V2",
+    "count": 981,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e7744bd79b314a59686344515fa471e5acdc5eb4",
+    "matched_title": "DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems",
+    "matched_year": 2020,
+    "ids": [
+     "doi:10.1145/3442381.3450078"
+    ]
+   }
+  ]
+ },
+ "dcn-google-2017": {
+  "count": 1617,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/ca870d3dbfdddaef4a92e60f53d2077dbe0fdd0a",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Deep & Cross Network for Ad Click Predictions",
+  "matched_year": 2017,
+  "ids": [
+   "doi:10.1145/3124749.3124754"
+  ],
+  "papers": [
+   {
+    "name": "DCN",
+    "count": 1617,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/ca870d3dbfdddaef4a92e60f53d2077dbe0fdd0a",
+    "matched_title": "Deep & Cross Network for Ad Click Predictions",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.1145/3124749.3124754"
+    ]
+   }
+  ]
+ },
+ "dcn-v2-google-2020": {
+  "count": 981,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/e7744bd79b314a59686344515fa471e5acdc5eb4",
+  "fetched_on": "2026-10-30",
+  "matched_title": "DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems",
+  "matched_year": 2020,
+  "ids": [
+   "doi:10.1145/3442381.3450078"
+  ],
+  "papers": [
+   {
+    "name": "DCN V2",
+    "count": 981,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e7744bd79b314a59686344515fa471e5acdc5eb4",
+    "matched_title": "DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems",
+    "matched_year": 2020,
+    "ids": [
+     "doi:10.1145/3442381.3450078"
+    ]
+   }
+  ]
+ },
+ "deepfm-huawei-2017": {
+  "count": 3290,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1d122a074c936fcfd95faf44608e377a9d1799c8",
+  "fetched_on": "2026-10-30",
+  "matched_title": "DeepFM: A Factorization-Machine based Neural Network for CTR Prediction",
+  "matched_year": 2017,
+  "ids": [
+   "doi:10.24963/ijcai.2017/239"
+  ],
+  "papers": [
+   {
+    "name": "DeepFM",
+    "count": 3290,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1d122a074c936fcfd95faf44608e377a9d1799c8",
+    "matched_title": "DeepFM: A Factorization-Machine based Neural Network for CTR Prediction",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.24963/ijcai.2017/239"
+    ]
+   }
+  ]
+ },
+ "dien-taobao-2018": {
+  "count": 1429,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/70d5ceb59118334e1a6eed33a149234413147b92",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Deep Interest Evolution Network for Click-Through Rate Prediction",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1609/aaai.v33i01.33015941"
+  ],
+  "papers": [
+   {
+    "name": "DIEN",
+    "count": 1429,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/70d5ceb59118334e1a6eed33a149234413147b92",
+    "matched_title": "Deep Interest Evolution Network for Click-Through Rate Prediction",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1609/aaai.v33i01.33015941"
+    ]
+   }
+  ]
+ },
+ "din-alibaba-2017": {
+  "count": 2457,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b8c6ccd5c1eb4f9837fc4877d27e55b7349781be",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Deep Interest Network for Click-Through Rate Prediction",
+  "matched_year": 2017,
+  "ids": [
+   "doi:10.1145/3219819.3219823"
+  ],
+  "papers": [
+   {
+    "name": "DIN",
+    "count": 2457,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b8c6ccd5c1eb4f9837fc4877d27e55b7349781be",
+    "matched_title": "Deep Interest Network for Click-Through Rate Prediction",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.1145/3219819.3219823"
+    ]
+   }
+  ]
+ },
+ "dlrm-meta-2019": {
+  "count": 1022,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/6e13e111e85d499d781386b182fd855fbb053771",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Deep Learning Recommendation Model for Personalization and Recommendation Systems",
+  "matched_year": 2019,
+  "ids": [
+   "arxiv:1906.00091"
+  ],
+  "papers": [
+   {
+    "name": "DLRM",
+    "count": 1022,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/6e13e111e85d499d781386b182fd855fbb053771",
+    "matched_title": "Deep Learning Recommendation Model for Personalization and Recommendation Systems",
+    "matched_year": 2019,
+    "ids": [
+     "arxiv:1906.00091"
+    ]
+   }
+  ]
+ },
+ "esmm-alibaba-2018": {
+  "count": 586,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/28e73fe5a3ca2891fa04dbf9fcc6ab4965a68182",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3209978.3210104"
+  ],
+  "papers": [
+   {
+    "name": "ESMM",
+    "count": 586,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/28e73fe5a3ca2891fa04dbf9fcc6ab4965a68182",
+    "matched_title": "Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3209978.3210104"
+    ]
+   }
+  ]
+ },
+ "etsy-unified-embedding-retrieval-2023": {
+  "count": 5,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/91a26cc27dbc94814379dc5d9ce0a400403135c2",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Unified Embedding Based Personalized Retrieval in Etsy Search",
+  "matched_year": 2023,
+  "ids": [
+   "doi:10.1109/fmlds63805.2024.00055"
+  ],
+  "papers": [
+   {
+    "name": "Etsy Unified Embedding Retrieval",
+    "count": 5,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/91a26cc27dbc94814379dc5d9ce0a400403135c2",
+    "matched_title": "Unified Embedding Based Personalized Retrieval in Etsy Search",
+    "matched_year": 2023,
+    "ids": [
+     "doi:10.1109/fmlds63805.2024.00055"
+    ]
+   }
+  ]
+ },
+ "facebook-search-ebr-2020": {
+  "count": 438,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/06bf758b7e7fd675ceb2d008520db51631716d42",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Embedding-based Retrieval in Facebook Search",
+  "matched_year": 2020,
+  "ids": [
+   "doi:10.1145/3394486.3403305"
+  ],
+  "papers": [
+   {
+    "name": "Embedding-based Retrieval in Facebook Search",
+    "count": 438,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/06bf758b7e7fd675ceb2d008520db51631716d42",
+    "matched_title": "Embedding-based Retrieval in Facebook Search",
+    "matched_year": 2020,
+    "ids": [
+     "doi:10.1145/3394486.3403305"
+    ]
+   }
+  ]
+ },
+ "glmix-linkedin-2016": {
+  "count": 83,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/2e14145c2d33ea244a68c2489214c76ca8ad28d8",
+  "fetched_on": "2026-10-30",
+  "matched_title": "GLMix: Generalized Linear Mixed Models For Large-Scale Response Prediction",
+  "matched_year": 2016,
+  "ids": [
+   "doi:10.1145/2939672.2939684"
+  ],
+  "papers": [
+   {
+    "name": "GLMix",
+    "count": 83,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/2e14145c2d33ea244a68c2489214c76ca8ad28d8",
+    "matched_title": "GLMix: Generalized Linear Mixed Models For Large-Scale Response Prediction",
+    "matched_year": 2016,
+    "ids": [
+     "doi:10.1145/2939672.2939684"
+    ]
+   }
+  ]
+ },
+ "google-ads-ftrl-2013": {
+  "count": 1070,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/79f2626046fdc56edfaca840874e355cac734b9a",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Ad click prediction: a view from the trenches",
+  "matched_year": 2013,
+  "ids": [
+   "doi:10.1145/2487575.2488200"
+  ],
+  "papers": [
+   {
+    "name": "Google Ads CTR prediction",
+    "count": 1070,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/79f2626046fdc56edfaca840874e355cac734b9a",
+    "matched_title": "Ad click prediction: a view from the trenches",
+    "matched_year": 2013,
+    "ids": [
+     "doi:10.1145/2487575.2488200"
+    ]
+   }
+  ]
+ },
+ "hstu-meta-2024": {
+  "count": 396,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/a1a05b4c7e8adfe15345885da40c73c12f189e39",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations",
+  "matched_year": 2024,
+  "ids": [
+   "arxiv:2402.17152"
+  ],
+  "papers": [
+   {
+    "name": "Generative Recommenders / HSTU",
+    "count": 396,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/a1a05b4c7e8adfe15345885da40c73c12f189e39",
+    "matched_title": "Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations",
+    "matched_year": 2024,
+    "ids": [
+     "arxiv:2402.17152"
+    ]
+   }
+  ]
+ },
+ "huawei-hpgr-2026": {
+  "count": 4,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/4a56008f377cbbbeff58a1b8445c9bd7eec460a7",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Beyond the Flat Sequence: Hierarchical and Preference-Aware Generative Recommendations",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3774904.3792790"
+  ],
+  "papers": [
+   {
+    "name": "HPGR",
+    "count": 4,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/4a56008f377cbbbeff58a1b8445c9bd7eec460a7",
+    "matched_title": "Beyond the Flat Sequence: Hierarchical and Preference-Aware Generative Recommendations",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3774904.3792790"
+    ]
+   }
+  ]
+ },
+ "jd-gcrank-2026": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/bc808f9292ba4790e4684f5f4b0a4e04dabf9d5c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "A Generative Contextual Comprehension Paradigm for Takeout Ranking Model",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3774904.3792818"
+  ],
+  "papers": [
+   {
+    "name": "GCRank",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/bc808f9292ba4790e4684f5f4b0a4e04dabf9d5c",
+    "matched_title": "A Generative Contextual Comprehension Paradigm for Takeout Ranking Model",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3774904.3792818"
+    ]
+   }
+  ]
+ },
+ "kuaishou-kuaiformer-2024": {
+  "count": 25,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/cb5c5a06ab2d13a2c6978d3eff9c91719e61a64b",
+  "fetched_on": "2026-10-30",
+  "matched_title": "KuaiFormer: Transformer-Based Retrieval at Kuaishou",
+  "matched_year": 2024,
+  "ids": [
+   "arxiv:2411.10057"
+  ],
+  "papers": [
+   {
+    "name": "KuaiFormer",
+    "count": 25,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/cb5c5a06ab2d13a2c6978d3eff9c91719e61a64b",
+    "matched_title": "KuaiFormer: Transformer-Based Retrieval at Kuaishou",
+    "matched_year": 2024,
+    "ids": [
+     "arxiv:2411.10057"
+    ]
+   }
+  ]
+ },
+ "kuaishou-onerec-think-2025": {
+  "count": 91,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/be38e4f5551caf5ce158dc15d1d08eff01e2fb75",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OneRec-Think: In-Text Reasoning for Generative Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2510.11639"
+  ],
+  "papers": [
+   {
+    "name": "OneRec-Think",
+    "count": 91,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/be38e4f5551caf5ce158dc15d1d08eff01e2fb75",
+    "matched_title": "OneRec-Think: In-Text Reasoning for Generative Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2510.11639"
+    ]
+   }
+  ]
+ },
+ "kuaishou-onerec-v2-2025": {
+  "count": 31,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/a17b161fadf577a28aad22752a15ccfb4d49bf16",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OneRec-V2 Technical Report",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2508.20900"
+  ],
+  "papers": [
+   {
+    "name": "OneRec-V2",
+    "count": 31,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/a17b161fadf577a28aad22752a15ccfb4d49bf16",
+    "matched_title": "OneRec-V2 Technical Report",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2508.20900"
+    ]
+   }
+  ]
+ },
+ "kuaishou-onesearch-2025": {
+  "count": 38,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/003cbd7a131a0d6ebbf8ba15db71678b0466d235",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OneSearch: A Preliminary Exploration of the Unified End-to-End Generative Framework for E-commerce Search",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2509.03236"
+  ],
+  "papers": [
+   {
+    "name": "OneSearch",
+    "count": 38,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/003cbd7a131a0d6ebbf8ba15db71678b0466d235",
+    "matched_title": "OneSearch: A Preliminary Exploration of the Unified End-to-End Generative Framework for E-commerce Search",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2509.03236"
+    ]
+   }
+  ]
+ },
+ "kuaishou-quasid-2026": {
+  "count": 16,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/cda9a46194ca54397934e4094a1a64a9173913c4",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Stop Treating Collisions Equally: Qualification-Aware Semantic ID Learning for Recommendation at Industrial Scale",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818486"
+  ],
+  "papers": [
+   {
+    "name": "QuaSID",
+    "count": 16,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/cda9a46194ca54397934e4094a1a64a9173913c4",
+    "matched_title": "Stop Treating Collisions Equally: Qualification-Aware Semantic ID Learning for Recommendation at Industrial Scale",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818486"
+    ]
+   }
+  ]
+ },
+ "linkedin-360brew-2025": {
+  "count": 15,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1703b86eaf5103e5688e59c86b8277d6e3ef404a",
+  "fetched_on": "2026-10-30",
+  "matched_title": "360Brew: A Decoder-only Foundation Model for Personalized Ranking and Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2501.16450"
+  ],
+  "papers": [
+   {
+    "name": "360Brew",
+    "count": 15,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1703b86eaf5103e5688e59c86b8277d6e3ef404a",
+    "matched_title": "360Brew: A Decoder-only Foundation Model for Personalized Ranking and Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2501.16450"
+    ]
+   }
+  ]
+ },
+ "linkedin-lignn-2024": {
+  "count": 46,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/9b68760868c2065a1e96394f26dc531a24b2794a",
+  "fetched_on": "2026-10-30",
+  "matched_title": "LiGNN: Graph Neural Networks at LinkedIn",
+  "matched_year": 2024,
+  "ids": [
+   "doi:10.1145/3637528.3671566"
+  ],
+  "papers": [
+   {
+    "name": "LiGNN",
+    "count": 46,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/9b68760868c2065a1e96394f26dc531a24b2794a",
+    "matched_title": "LiGNN: Graph Neural Networks at LinkedIn",
+    "matched_year": 2024,
+    "ids": [
+     "doi:10.1145/3637528.3671566"
+    ]
+   }
+  ]
+ },
+ "linkedin-lirank-2024": {
+  "count": 25,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/c3f1701a0fb3678712591cf012beb4714b1cd75c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "LiRank: Industrial Large Scale Ranking Models at LinkedIn",
+  "matched_year": 2024,
+  "ids": [
+   "doi:10.1145/3637528.3671561"
+  ],
+  "papers": [
+   {
+    "name": "LiRank",
+    "count": 25,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/c3f1701a0fb3678712591cf012beb4714b1cd75c",
+    "matched_title": "LiRank: Industrial Large Scale Ranking Models at LinkedIn",
+    "matched_year": 2024,
+    "ids": [
+     "doi:10.1145/3637528.3671561"
+    ]
+   }
+  ]
+ },
+ "meituan-dpgr-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/6f9ad497efb9b7ff52d92818fc9dcd51beda5ded",
+  "fetched_on": "2026-10-30",
+  "matched_title": "DPGR: Dual-Domain Spatiotemporal Generative Retrieval for Intent-Aware Local Life Service Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831742"
+  ],
+  "papers": [
+   {
+    "name": "DPGR",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/6f9ad497efb9b7ff52d92818fc9dcd51beda5ded",
+    "matched_title": "DPGR: Dual-Domain Spatiotemporal Generative Retrieval for Intent-Aware Local Life Service Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831742"
+    ]
+   }
+  ]
+ },
+ "meituan-mtgr-2025": {
+  "count": 132,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/af68798a6abb93e82ad4f85234d155c64f6c341f",
+  "fetched_on": "2026-10-30",
+  "matched_title": "MTGR: Industrial-Scale Generative Recommendation Framework in Meituan",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3746252.3761565"
+  ],
+  "papers": [
+   {
+    "name": "MTGR",
+    "count": 132,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/af68798a6abb93e82ad4f85234d155c64f6c341f",
+    "matched_title": "MTGR: Industrial-Scale Generative Recommendation Framework in Meituan",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3746252.3761565"
+    ]
+   }
+  ]
+ },
+ "meta-kunlun-2026": {
+  "count": 12,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/04f5f0ee3dda0914dae02aa271afde798688777c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Kunlun: Establishing Scaling Laws for Massive-Scale Recommendation Systems through Unified Architecture Design",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818438"
+  ],
+  "papers": [
+   {
+    "name": "Kunlun",
+    "count": 12,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/04f5f0ee3dda0914dae02aa271afde798688777c",
+    "matched_title": "Kunlun: Establishing Scaling Laws for Massive-Scale Recommendation Systems through Unified Architecture Design",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818438"
+    ]
+   }
+  ]
+ },
+ "meta-lattice-2025": {
+  "count": 7,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/eede4b091ac7c655f2be75186e6280e94c3bc0dd",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Meta Lattice: Model Space Redesign for Cost-Effective Industry-Scale Ads Recommendations",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3770854.3783952"
+  ],
+  "papers": [
+   {
+    "name": "Meta Lattice",
+    "count": 7,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/eede4b091ac7c655f2be75186e6280e94c3bc0dd",
+    "matched_title": "Meta Lattice: Model Space Redesign for Cost-Effective Industry-Scale Ads Recommendations",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3770854.3783952"
+    ]
+   }
+  ]
+ },
+ "meta-llatte-2026": {
+  "count": 15,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/4362e50bff60fade147713aabda16c10d98fdb78",
+  "fetched_on": "2026-10-30",
+  "matched_title": "LLaTTE: Scaling Laws for Multi-Stage Sequence Modeling in Large-Scale Ads Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818442"
+  ],
+  "papers": [
+   {
+    "name": "LLaTTE",
+    "count": 15,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/4362e50bff60fade147713aabda16c10d98fdb78",
+    "matched_title": "LLaTTE: Scaling Laws for Multi-Stage Sequence Modeling in Large-Scale Ads Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818442"
+    ]
+   }
+  ]
+ },
+ "meta-rankgraph2-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/7c4eb49b6a5261c593c85b03be68b93d31a197a6",
+  "fetched_on": "2026-10-30",
+  "matched_title": "RankGraph-2: Lifecycle Co-Design for Billion-Node Graph Learning in Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831843"
+  ],
+  "papers": [
+   {
+    "name": "RankGraph-2",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/7c4eb49b6a5261c593c85b03be68b93d31a197a6",
+    "matched_title": "RankGraph-2: Lifecycle Co-Design for Billion-Node Graph Learning in Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831843"
+    ]
+   }
+  ]
+ },
+ "meta-unity-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/fcc278a96e61801b78042357eb5f19827416e1a1",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Unity: Fully Self-Supervised Pretraining with Transformers for Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818505"
+  ],
+  "papers": [
+   {
+    "name": "Unity",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/fcc278a96e61801b78042357eb5f19827416e1a1",
+    "matched_title": "Unity: Fully Self-Supervised Pretraining with Transformers for Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818505"
+    ]
+   }
+  ]
+ },
+ "meta-wukong-2024": {
+  "count": 170,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b5948add54dc0e44cd40b9747523d2494453b8b4",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Wukong: Towards a Scaling Law for Large-Scale Recommendation",
+  "matched_year": 2024,
+  "ids": [
+   "arxiv:2403.02545"
+  ],
+  "papers": [
+   {
+    "name": "Wukong",
+    "count": 170,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b5948add54dc0e44cd40b9747523d2494453b8b4",
+    "matched_title": "Wukong: Towards a Scaling Law for Large-Scale Recommendation",
+    "matched_year": 2024,
+    "ids": [
+     "arxiv:2403.02545"
+    ]
+   }
+  ]
+ },
+ "mind-tmall-2019": {
+  "count": 565,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b56e5fb4f367a8d54614f1047bd4f9a2d58b9973",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Multi-Interest Network with Dynamic Routing for Recommendation at Tmall",
+  "matched_year": 2019,
+  "ids": [
+   "doi:10.1145/3357384.3357814"
+  ],
+  "papers": [
+   {
+    "name": "MIND",
+    "count": 565,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b56e5fb4f367a8d54614f1047bd4f9a2d58b9973",
+    "matched_title": "Multi-Interest Network with Dynamic Routing for Recommendation at Tmall",
+    "matched_year": 2019,
+    "ids": [
+     "doi:10.1145/3357384.3357814"
+    ]
+   }
+  ]
+ },
+ "mmoe-google-2018": {
+  "count": 1834,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/af8a8dcb74561d52d904f7bc4afcc747e079b702",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3219819.3220007"
+  ],
+  "papers": [
+   {
+    "name": "MMoE",
+    "count": 1834,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/af8a8dcb74561d52d904f7bc4afcc747e079b702",
+    "matched_title": "Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3219819.3220007"
+    ]
+   }
+  ]
+ },
+ "monolith-bytedance-2022": {
+  "count": 85,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/0a70079b3ebbe8aca8ef1351818352047abc1e9c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Monolith: Real Time Recommendation System with Collisionless Embedding Table",
+  "matched_year": 2022,
+  "ids": [
+   "arxiv:2209.07663"
+  ],
+  "papers": [
+   {
+    "name": "Monolith real-time recommendation system",
+    "count": 85,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/0a70079b3ebbe8aca8ef1351818352047abc1e9c",
+    "matched_title": "Monolith: Real Time Recommendation System with Collisionless Embedding Table",
+    "matched_year": 2022,
+    "ids": [
+     "arxiv:2209.07663"
+    ]
+   }
+  ]
+ },
+ "netflix-genpage-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/413ab561ee0b532296263b0f0ff93632f031dd16",
+  "fetched_on": "2026-10-30",
+  "matched_title": "GenPage: Towards End-to-End Generative Homepage Construction at Netflix",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831915"
+  ],
+  "papers": [
+   {
+    "name": "GenPage",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/413ab561ee0b532296263b0f0ff93632f031dd16",
+    "matched_title": "GenPage: Towards End-to-End Generative Homepage Construction at Netflix",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831915"
+    ]
+   }
+  ]
+ },
+ "netflix-recsys-2015": {
+  "count": 958,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/e9dd899f0e599eafb4fe47696c83d07d971c0088",
+  "fetched_on": "2026-10-30",
+  "matched_title": "The Netflix Recommender System",
+  "matched_year": 2015,
+  "ids": [
+   "doi:10.1145/2843948"
+  ],
+  "papers": [
+   {
+    "name": "Netflix Recommender System",
+    "count": 958,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e9dd899f0e599eafb4fe47696c83d07d971c0088",
+    "matched_title": "The Netflix Recommender System",
+    "matched_year": 2015,
+    "ids": [
+     "doi:10.1145/2843948"
+    ]
+   }
+  ]
+ },
+ "onerec-kuaishou": {
+  "count": 156,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/a17b161fadf577a28aad22752a15ccfb4d49bf16",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OneRec-V2 Technical Report",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2506.13695",
+   "arxiv:2508.20900",
+   "arxiv:2510.11639"
+  ],
+  "papers": [
+   {
+    "name": "OneRec",
+    "count": 34,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/911b068fe51ec1f7aa9f69cedf8e56e684a450ee",
+    "matched_title": "OneRec Technical Report",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2506.13695"
+    ]
+   },
+   {
+    "name": "OneRec-V2",
+    "count": 31,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/a17b161fadf577a28aad22752a15ccfb4d49bf16",
+    "matched_title": "OneRec-V2 Technical Report",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2508.20900"
+    ]
+   },
+   {
+    "name": "OneRec-Think",
+    "count": 91,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/be38e4f5551caf5ce158dc15d1d08eff01e2fb75",
+    "matched_title": "OneRec-Think: In-Text Reasoning for Generative Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2510.11639"
+    ]
+   }
+  ]
+ },
+ "onerec-kuaishou-2025": {
+  "count": 34,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/911b068fe51ec1f7aa9f69cedf8e56e684a450ee",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OneRec Technical Report",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2506.13695"
+  ],
+  "papers": [
+   {
+    "name": "OneRec end-to-end generative recommender",
+    "count": 34,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/911b068fe51ec1f7aa9f69cedf8e56e684a450ee",
+    "matched_title": "OneRec Technical Report",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2506.13695"
+    ]
+   }
+  ]
+ },
+ "pinnerformer-2022": {
+  "count": 98,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/a227a31dd69efd64e7840b08e325bb99bc05baa5",
+  "fetched_on": "2026-10-30",
+  "matched_title": "PinnerFormer: Sequence Modeling for User Representation at Pinterest",
+  "matched_year": 2022,
+  "ids": [
+   "doi:10.1145/3534678.3539156"
+  ],
+  "papers": [
+   {
+    "name": "PinnerFormer user representation",
+    "count": 98,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/a227a31dd69efd64e7840b08e325bb99bc05baa5",
+    "matched_title": "PinnerFormer: Sequence Modeling for User Representation at Pinterest",
+    "matched_year": 2022,
+    "ids": [
+     "doi:10.1145/3534678.3539156"
+    ]
+   }
+  ]
+ },
+ "pinsage-2018": {
+  "count": 4355,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/6c96c2d4a3fbd572fef2d59cb856521ee1746789",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Graph Convolutional Neural Networks for Web-Scale Recommender Systems",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3219819.3219890"
+  ],
+  "papers": [
+   {
+    "name": "PinSage graph convolutional network",
+    "count": 4355,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/6c96c2d4a3fbd572fef2d59cb856521ee1746789",
+    "matched_title": "Graph Convolutional Neural Networks for Web-Scale Recommender Systems",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3219819.3219890"
+    ]
+   }
+  ]
+ },
+ "pinterest-omnisage-2025": {
+  "count": 10,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/46a25592de3919f6799b45ffa8a30b6d9509b46b",
+  "fetched_on": "2026-10-30",
+  "matched_title": "OmniSage: Large Scale, Multi-Entity Heterogeneous Graph Representation Learning",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3711896.3737253"
+  ],
+  "papers": [
+   {
+    "name": "OmniSage",
+    "count": 10,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/46a25592de3919f6799b45ffa8a30b6d9509b46b",
+    "matched_title": "OmniSage: Large Scale, Multi-Entity Heterogeneous Graph Representation Learning",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3711896.3737253"
+    ]
+   }
+  ]
+ },
+ "pinterest-pinfm-2025": {
+  "count": 20,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/496e08fb5761b59c14e4c8b56f4379f9f23f5d07",
+  "fetched_on": "2026-10-30",
+  "matched_title": "PinFM: Foundation Model for User Activity Sequences at a Billion-scale Visual Discovery Platform",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3705328.3748050"
+  ],
+  "papers": [
+   {
+    "name": "PinFM",
+    "count": 20,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/496e08fb5761b59c14e4c8b56f4379f9f23f5d07",
+    "matched_title": "PinFM: Foundation Model for User Activity Sequences at a Billion-scale Visual Discovery Platform",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3705328.3748050"
+    ]
+   }
+  ]
+ },
+ "pinterest-transact-2023": {
+  "count": 76,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/e91642d3a6e448bff508b2a6ec3b7a2c94d88e1e",
+  "fetched_on": "2026-10-30",
+  "matched_title": "TransAct: Transformer-based Realtime User Action Model for Recommendation at Pinterest",
+  "matched_year": 2023,
+  "ids": [
+   "doi:10.1145/3580305.3599918"
+  ],
+  "papers": [
+   {
+    "name": "TransAct",
+    "count": 76,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e91642d3a6e448bff508b2a6ec3b7a2c94d88e1e",
+    "matched_title": "TransAct: Transformer-based Realtime User Action Model for Recommendation at Pinterest",
+    "matched_year": 2023,
+    "ids": [
+     "doi:10.1145/3580305.3599918"
+    ]
+   }
+  ],
+  "ignored_other_papers": [
+   "arxiv:2506.02267 (TransAct V2: Lifelong User Action Sequence Modelin)"
+  ]
+ },
+ "pixie-pinterest-2018": {
+  "count": 241,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b120a10310645df329c691b782dea9ceb7dfe786",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Pixie: A System for Recommending 3+ Billion Items to 200+ Million Users in Real-Time",
+  "matched_year": 2017,
+  "ids": [
+   "doi:10.1145/3178876.3186183"
+  ],
+  "papers": [
+   {
+    "name": "Pixie",
+    "count": 241,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b120a10310645df329c691b782dea9ceb7dfe786",
+    "matched_title": "Pixie: A System for Recommending 3+ Billion Items to 200+ Million Users in Real-Time",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.1145/3178876.3186183"
+    ]
+   }
+  ]
+ },
+ "related-pins-pinterest-2017": {
+  "count": 139,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/4cdf6250e8815ee2ad63814c1cf06cc51508e185",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Related Pins at Pinterest: The Evolution of a Real-World Recommender System",
+  "matched_year": 2017,
+  "ids": [
+   "doi:10.1145/3041021.3054202"
+  ],
+  "papers": [
+   {
+    "name": "Related Pins at Pinterest",
+    "count": 139,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/4cdf6250e8815ee2ad63814c1cf06cc51508e185",
+    "matched_title": "Related Pins at Pinterest: The Evolution of a Real-World Recommender System",
+    "matched_year": 2017,
+    "ids": [
+     "doi:10.1145/3041021.3054202"
+    ]
+   }
+  ]
+ },
+ "sim-alibaba-2020": {
+  "count": 508,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/75a618a86b67b8b32224b77eae8ed37c536826da",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Search-based User Interest Modeling with Lifelong Sequential Behavior Data for Click-Through Rate Prediction",
+  "matched_year": 2020,
+  "ids": [
+   "doi:10.1145/3340531.3412744"
+  ],
+  "papers": [
+   {
+    "name": "SIM",
+    "count": 508,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/75a618a86b67b8b32224b77eae8ed37c536826da",
+    "matched_title": "Search-based User Interest Modeling with Lifelong Sequential Behavior Data for Click-Through Rate Prediction",
+    "matched_year": 2020,
+    "ids": [
+     "doi:10.1145/3340531.3412744"
+    ]
+   }
+  ]
+ },
+ "snap-snaplgr-2026": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/0890b71fb4c4d29237577516ca85b497d8b1cd0c",
+  "fetched_on": "2026-10-30",
+  "matched_title": "LLM-Based Generative Retrieval for Snapchat Content Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2607.28895"
+  ],
+  "papers": [
+   {
+    "name": "SnapLGR",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/0890b71fb4c4d29237577516ca85b497d8b1cd0c",
+    "matched_title": "LLM-Based Generative Retrieval for Snapchat Content Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2607.28895"
+    ]
+   }
+  ]
+ },
+ "spotify-joint-semantic-ids-2025": {
+  "count": 42,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b1f32ef0aa321728d1f6e506943a27ddae5829c2",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Semantic IDs for Joint Generative Search and Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3705328.3759300"
+  ],
+  "papers": [
+   {
+    "name": "Semantic IDs for Joint Generative Search and Recommendation",
+    "count": 42,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b1f32ef0aa321728d1f6e506943a27ddae5829c2",
+    "matched_title": "Semantic IDs for Joint Generative Search and Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3705328.3759300"
+    ]
+   }
+  ]
+ },
+ "taobao-aigq-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/8f85539cd8aff1505248093221ca8f459f9090c4",
+  "fetched_on": "2026-10-30",
+  "matched_title": "AIGQ: An End-to-End Hybrid Generative Architecture for E-commerce Query Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818317"
+  ],
+  "papers": [
+   {
+    "name": "AIGQ",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/8f85539cd8aff1505248093221ca8f459f9090c4",
+    "matched_title": "AIGQ: An End-to-End Hybrid Generative Architecture for E-commerce Query Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818317"
+    ]
+   }
+  ]
+ },
+ "taobao-nextgen-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/9c77198ce83efd3091f2ac16123ee39aaa465182",
+  "fetched_on": "2026-10-30",
+  "matched_title": "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831881"
+  ],
+  "papers": [
+   {
+    "name": "NextGen",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/9c77198ce83efd3091f2ac16123ee39aaa465182",
+    "matched_title": "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831881"
+    ]
+   }
+  ]
+ },
+ "tencent-gpr-2025": {
+  "count": 42,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/d501f86ae284bb717a8d7057adeb8a8bbc12c289",
+  "fetched_on": "2026-10-30",
+  "matched_title": "GPR: Towards a Generative Pre-trained One-Model Paradigm for Large-Scale Advertising Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3770855.3818425"
+  ],
+  "papers": [
+   {
+    "name": "GPR",
+    "count": 42,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/d501f86ae284bb717a8d7057adeb8a8bbc12c289",
+    "matched_title": "GPR: Towards a Generative Pre-trained One-Model Paradigm for Large-Scale Advertising Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3770855.3818425"
+    ]
+   }
+  ]
+ },
+ "tencent-sgrec-2026": {
+  "count": 3,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/46b7516c6e80ce970df520404c58e20b26893901",
+  "fetched_on": "2026-10-30",
+  "matched_title": "S-GRec: Personalized Semantic-Aware Generative Recommendation with Asymmetric Advantage",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770855.3818473"
+  ],
+  "papers": [
+   {
+    "name": "S-GRec",
+    "count": 3,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/46b7516c6e80ce970df520404c58e20b26893901",
+    "matched_title": "S-GRec: Personalized Semantic-Aware Generative Recommendation with Asymmetric Advantage",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770855.3818473"
+    ]
+   }
+  ]
+ },
+ "tencent-tgr-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/282b4855577b4d1d18054872eaf37c43bb239474",
+  "fetched_on": "2026-10-30",
+  "matched_title": "TGR: Advancing Industrial Recommendation from Generative-Paradigm Ranking toward Unified Generation and Reasoning",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2609.00986"
+  ],
+  "papers": [
+   {
+    "name": "TGR",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/282b4855577b4d1d18054872eaf37c43bb239474",
+    "matched_title": "TGR: Advancing Industrial Recommendation from Generative-Paradigm Ranking toward Unified Generation and Reasoning",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2609.00986"
+    ]
+   }
+  ]
+ },
+ "tiger-google-2023": {
+  "count": 509,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/a289100678e7d94af836d91cd48d7821ebc5b83d",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Recommender Systems with Generative Retrieval",
+  "matched_year": 2023,
+  "ids": [
+   "arxiv:2305.05065"
+  ],
+  "papers": [
+   {
+    "name": "TIGER",
+    "count": 509,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/a289100678e7d94af836d91cd48d7821ebc5b83d",
+    "matched_title": "Recommender Systems with Generative Retrieval",
+    "matched_year": 2023,
+    "ids": [
+     "arxiv:2305.05065"
+    ]
+   }
+  ]
+ },
+ "twitter-wtf-2013": {
+  "count": 530,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/989d672d38de29c36bb968edfdb593038bba7b85",
+  "fetched_on": "2026-10-30",
+  "matched_title": "WTF: the who to follow service at Twitter",
+  "matched_year": 2013,
+  "ids": [
+   "doi:10.1145/2488388.2488433"
+  ],
+  "papers": [
+   {
+    "name": "WTF",
+    "count": 530,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/989d672d38de29c36bb968edfdb593038bba7b85",
+    "matched_title": "WTF: the who to follow service at Twitter",
+    "matched_year": 2013,
+    "ids": [
+     "doi:10.1145/2488388.2488433"
+    ]
+   }
+  ]
+ },
+ "uber-eats-two-tower-2023": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b84c72e89e9dde4dfa6f17eb47d96df231616637",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Handling Large-scale Cardinality in building recommendation systems",
+  "matched_year": 2024,
+  "ids": [
+   "arxiv:2401.09572"
+  ],
+  "papers": [
+   {
+    "name": "Uber Eats two-tower embeddings",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b84c72e89e9dde4dfa6f17eb47d96df231616637",
+    "matched_title": "Handling Large-scale Cardinality in building recommendation systems",
+    "matched_year": 2024,
+    "ids": [
+     "arxiv:2401.09572"
+    ]
+   }
+  ]
+ },
+ "wide-and-deep-google-play-2016": {
+  "count": 4376,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/657fbf29ea0b4904a3e98d1556f9acf38dddae5f",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Wide & Deep Learning for Recommender Systems",
+  "matched_year": 2016,
+  "ids": [
+   "doi:10.1145/2988450.2988454"
+  ],
+  "papers": [
+   {
+    "name": "Wide & Deep Learning",
+    "count": 4376,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/657fbf29ea0b4904a3e98d1556f9acf38dddae5f",
+    "matched_title": "Wide & Deep Learning for Recommender Systems",
+    "matched_year": 2016,
+    "ids": [
+     "doi:10.1145/2988450.2988454"
+    ]
+   }
+  ]
+ },
+ "xiaohongshu-notellm-2024": {
+  "count": 96,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/009f64d890d8402cae8739b63bc0c3d06d62ed06",
+  "fetched_on": "2026-10-30",
+  "matched_title": "NoteLLM: A Retrievable Large Language Model for Note Recommendation",
+  "matched_year": 2024,
+  "ids": [
+   "doi:10.1145/3589335.3648314"
+  ],
+  "papers": [
+   {
+    "name": "NoteLLM",
+    "count": 96,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/009f64d890d8402cae8739b63bc0c3d06d62ed06",
+    "matched_title": "NoteLLM: A Retrievable Large Language Model for Note Recommendation",
+    "matched_year": 2024,
+    "ids": [
+     "doi:10.1145/3589335.3648314"
+    ]
+   }
+  ]
+ },
+ "youtube-dnn-2016": {
+  "count": 4233,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/5e383584ccbc8b920eaf3cfce3869da646ff5550",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Deep Neural Networks for YouTube Recommendations",
+  "matched_year": 2016,
+  "ids": [
+   "doi:10.1145/2959100.2959190"
+  ],
+  "papers": [
+   {
+    "name": "Deep Neural Networks for YouTube Recommendations",
+    "count": 4233,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/5e383584ccbc8b920eaf3cfce3869da646ff5550",
+    "matched_title": "Deep Neural Networks for YouTube Recommendations",
+    "matched_year": 2016,
+    "ids": [
+     "doi:10.1145/2959100.2959190"
+    ]
+   }
+  ]
+ },
+ "youtube-plum-2025": {
+  "count": 64,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/2008cfd246276e22c43f4cf0b215f79c7c860b85",
+  "fetched_on": "2026-10-30",
+  "matched_title": "PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3774904.3792802"
+  ],
+  "papers": [
+   {
+    "name": "PLUM",
+    "count": 64,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/2008cfd246276e22c43f4cf0b215f79c7c860b85",
+    "matched_title": "PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3774904.3792802"
+    ]
+   }
+  ]
+ },
+ "youtube-reinforce-topk-2019": {
+  "count": 586,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/f76ac3753cd0b5d584ad5eb04819a4dddba82891",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Top-K Off-Policy Correction for a REINFORCE Recommender System",
+  "matched_year": 2018,
+  "ids": [
+   "doi:10.1145/3289600.3290999"
+  ],
+  "papers": [
+   {
+    "name": "YouTube REINFORCE Top-K recommender",
+    "count": 586,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/f76ac3753cd0b5d584ad5eb04819a4dddba82891",
+    "matched_title": "Top-K Off-Policy Correction for a REINFORCE Recommender System",
+    "matched_year": 2018,
+    "ids": [
+     "doi:10.1145/3289600.3290999"
+    ]
+   }
+  ]
+ },
+ "youtube-semantic-ids-ranking-2023": {
+  "count": 123,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/049b6e2c053d289c6e9f15cd9562836cdeece2c2",
+  "fetched_on": "2026-10-30",
+  "matched_title": "Better Generalization with Semantic IDs: A Case Study in Ranking for Recommendations",
+  "matched_year": 2023,
+  "ids": [
+   "doi:10.1145/3640457.3688190"
+  ],
+  "papers": [
+   {
+    "name": "YouTube Semantic IDs for ranking",
+    "count": 123,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/049b6e2c053d289c6e9f15cd9562836cdeece2c2",
+    "matched_title": "Better Generalization with Semantic IDs: A Case Study in Ranking for Recommendations",
+    "matched_year": 2023,
+    "ids": [
+     "doi:10.1145/3640457.3688190"
+    ]
+   }
+  ]
+ }
+}

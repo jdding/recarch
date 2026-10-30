@@ -1,0 +1,133 @@
+id: tencent-tgr-2026
+name: "TGR"
+company: Tencent
+surface: Tencent PCG content feeds, video, web novels and advertising
+year: 2026
+era: generative
+era_reason: "A stack that replaces cascade stages with generative models: a generative-paradigm ranker, semantic-ID next-token and next-slate generation, and LLM reasoning tokens injected into the generator."
+first_public: "2026-09"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2609.00986"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Tencent's TGR report covers generative ranking, SID retrieval and slate generation in production: CCFormer video CTR +3.57%, BARGE retrieval CTR +0.60%, HiGR watch time +1.22%. Preprint only."
+summary: 'TGR is the Tencent PCG generative recommendation stack, described in a technical report by the TGR Team. TGR-GenRank is CCFormer, a ranker with unified feature tokenization, feature-field separated cross attention, subspace token mixing and hierarchical sequence compression that still outputs per-item multi-task scores, so it drops into the existing cascade. TGR-GenRec has two generation paradigms. BARGE generates semantic-ID paths with beam search and uses them as an embedding query in a retrieval channel. HiGR generates a whole slate with a planner and an item generator over prefix-structured semantic IDs, aligned by listwise preference optimization. TGR-Reason runs an offline LLM Think model that writes reason tokens as semantic IDs, which prompt the online decoder without a request-time reasoning rollout.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- sequential-transformer
+- llm-based
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'CCFormer, a scalable Transformer ranker with feature-field separated cross attention and subspace token mixing'
+  details: 'Replaces a production DLRM ranker in one video scenario and a deployed HSTU ranker in four others, while keeping per-item multi-task scores.'
+- stage: retrieval
+  model_family: 'BARGE, hierarchical semantic-ID generation with dual-path decoding'
+  details: 'Beam search generates 50 semantic-ID sequences per request; each retrieves 10 items through approximate nearest neighbor search, up to 500 candidates, for the downstream cascade.'
+- stage: re-rank
+  model_family: 'HiGR, whole-slate generation with a slate planner and item generator'
+  details: 'Emits the result list as one structured object. P99 latency stays below 50 ms at about 60% lower GPU demand than full-sequence decoding.'
+id_tokenization:
+  approach: 'Hierarchical semantic IDs, with OSQ-VAE for BARGE and prefix-contrastive RQ-VAE for HiGR'
+  details: 'Two tokenizer families are used by the two generation models; the reasoning model writes complete semantic IDs as reason tokens.'
+features_signals:
+- User, item, context and sequence features tokenized into one stream for CCFormer
+- Long behavior sequences compressed hierarchically
+- Multimodal item content for semantic-ID tokenizers
+training:
+  mode: 'Offline training on Tencent production logs with the Numerous-Torch infrastructure'
+  objectives:
+  - 'Multi-task CTR and engagement scores for the ranker'
+  - 'Next-token prediction with symmetric InfoNCE for BARGE'
+  - 'Next-token prediction plus ORPO listwise alignment for HiGR'
+  - 'LatentRec latent multi-step supervision for the Think model'
+  notes: 'BARGE was trained on two NVIDIA H20 GPUs. The CCFormer production dataset has 4 billion samples.'
+serving_infra: 'Numerous-Torch training and serving stack. BARGE adds no parameters, beam width or latency to its channel. HiGR uses KV caching and keeps P99 latency below 50 ms.'
+scale:
+- metric: Users served
+  value: Hundreds of millions
+  note: Tencent surfaces including news, video and web novels
+- metric: CCFormer training data
+  value: 4 billion samples
+  note: Production dataset
+- metric: CCFormer A/B
+  value: Over one million exposed users per day per group, two weeks
+  note: Five scenarios
+- metric: BARGE A/B
+  value: 6% of live traffic, two weeks
+  note: Media platform retrieval channel
+- metric: HiGR A/B
+  value: 5% of live traffic in one scenario
+  note: Three scenarios in total
+results_reported: 'CCFormer was A/B-tested in five scenarios over two weeks, all lifts significant at p < 0.05. In the video scenario it replaced a long-standing DLRM and gained CTR +3.57%, page view +3.86%, watch time +1.29% and unique viewers +2.61%; in the advertising-ranking scenario it replaced HSTU and gained advertising revenue +1.71%. Both were then fully launched. It also trains 2.21x faster than HSTU at about half the GFLOPs. BARGE ran on 6% of traffic for two weeks against the multi-stage incumbent: CTR +0.60%, unique clicking users +1.34% and total reading time +1.70%, then was fully rolled out as a retrieval channel. Offline it beats OneRec by 10.2-16.9% in Hit@5. HiGR lifted average watch time +1.22% and average video views +1.73% in one scenario on 5% of traffic, and CTR +0.68% with advertising revenue +0.56% in another. TGR-Reason raised cold-start new-user Hit@1 from 0.0451 to 0.2606, +477.8%, and online gained Effective Consumption Rate +1.75% and new-user Exposure-to-Conversion Rate +13.09%.'
+caveats:
+- 'This is an arXiv technical report with no peer-reviewed venue; HiGR and the Think model are also reported as separate papers, with HiGR first posted in December 2025.'
+- 'The online control differs by component: a DLRM, a deployed HSTU, a multi-stage cascade or the incumbent production generator.'
+- 'Only CCFormer in two scenarios and BARGE are stated as fully launched; the rollout status of HiGR and TGR-Reason is not given in the same terms.'
+- 'The stack is a set of coupled models, not one model, and cold-start items remain limited by tokenizer quality.'
+- 'The report gives A/B traffic shares for BARGE and one HiGR scenario only.'
+unknown_fields:
+- model parameter counts
+- absolute metric values
+- production GPU fleet size
+- code
+sources:
+- title: "TGR: Advancing Industrial Recommendation from Generative-Paradigm Ranking toward Unified Generation and Reasoning, arXiv 2609.00986"
+  url: https://arxiv.org/abs/2609.00986
+  type: paper
+version_note: 'Preprint only. Numbers checked against arXiv v1, a technical report by the TGR Team, read in full on 2026-10-30. No peer-reviewed venue was found, so venue is empty.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2609.00986v1
+  local_pdf: /workspace/recarch/zotero/tencent-tgr-2026.pdf
+  sections_read: 'Abstract, introduction, sections 2-6 including the A/B tables for CCFormer, BARGE, HiGR and TGR-Reason, limitations'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the report; GitHub searches on 2026-10-30 for TGR, CCFormer, BARGE and HiGR found no repository.'
+core_idea: A generative stack replaces the cascade piece by piece, with a generative ranker, semantic-ID retrieval and slate generation, and offline LLM reasoning tokens.
+deployed_in: Tencent PCG news, video, web novel and advertising surfaces serving hundreds of millions of users
+scale_short: Hundreds of millions of users, 4 billion training samples, A/B tests of 6% of traffic and more
+key_result: CCFormer lifts video CTR +3.57% and advertising revenue +1.71%, and BARGE lifts retrieval CTR +0.60% on 6% of traffic
+results_table:
+  online:
+  - setting: Video recommendation, two-week A/B
+    method: CCFormer ranker
+    metric: CTR
+    result: +3.57%
+    versus: Production DLRM
+  - setting: Advertising ranking, two-week A/B
+    method: CCFormer ranker
+    metric: Advertising revenue
+    result: +1.71%
+    versus: Deployed HSTU
+  - setting: Media platform retrieval, 6% traffic, two weeks
+    method: BARGE
+    metric: Total reading time
+    result: +1.70%
+    versus: Multi-stage incumbent
+  - setting: Video scenario, 5% traffic
+    method: HiGR
+    metric: Average watch time
+    result: +1.22%
+    versus: Production incumbent
+  - setting: Content platform, new users
+    method: TGR Reason
+    metric: Exposure-to-Conversion Rate
+    result: +13.09%
+    versus: Incumbent production generator
+  offline:
+  - setting: Two industrial scenarios
+    method: BARGE
+    metric: Hit@5
+    result: +10.2% to +16.9%
+    versus: OneRec

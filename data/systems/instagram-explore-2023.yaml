@@ -1,0 +1,60 @@
+id: instagram-explore-2023
+name: Instagram Explore recommendations
+company: "Meta / Instagram"
+surface: Instagram Explore
+year: 2023
+era: deep
+era_reason: "Two-tower retrieval + multi-task ranking; not generative"
+first_public: "2023-08"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://engineering.fb.com/2023/08/09/ml-applications/scaling-instagram-explore-recommendations-system/"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Instagram Explore uses a four-stage funnel of retrieval, two ranking stages and final re-ranking, built on caching and pre-computation, with two-tower networks early on."
+summary: >-
+  Four-stage funnel of retrieval, first-stage ranking, second-stage ranking and final reranking that leans on caching and pre-computation,
+  with Two Tower networks for retrieval sourcing and first-stage ranking.
+paradigms: [two-tower, multi-task, embedding-based-retrieval]
+stages:
+  - stage: retrieval
+    model_family: Mix of heuristic and ML sources (item CF, personalized PageRank, two-tower sparse network), real-time and pre-generated
+    details: Sources mixed with tunable weights; Meta's transparency page says up to 1500 media are fetched at the end of retrieval.
+  - stage: pre-rank
+    model_family: Lightweight first-stage ranker (two-tower neural network using media and user features)
+    details: Transparency page says the top 100 media are passed to the next stage.
+  - stage: rank
+    model_family: Heavier second-stage model (multi-task multi-label neural network per Meta's transparency page)
+    details: Predicts engagement such as like and save; "see less" style negative signals also used.
+  - stage: re-rank
+    model_family: Final reranking (rules / diversity - see engineering post)
+    details: Listed as a distinct stage in the engineering post.
+id_tokenization: {approach: null, details: null}
+features_signals: [User engagement history, Media features, Real-time interactions]
+training: {mode: null, objectives: [Engagement prediction (like, save, etc.)], notes: null}
+serving_infra: Heavy use of caching and off-peak pre-computation; custom DSL for recommendation pipelines.
+scale:
+  - {metric: Features/predictions (2019 Meta AI post, earlier system), value: "65 billion features extracted and 90 million model predictions per second", note: "from the earlier Meta AI blog post, not the 2023 post"}
+results_reported: null
+caveats: [Counts come from different years of Meta posts; check source before quoting.]
+unknown_fields: [model sizes, training cadence, tokenization]
+sources:
+  - {title: "Scaling the Instagram Explore recommendations system - Engineering at Meta, 2023", url: "https://engineering.fb.com/2023/08/09/ml-applications/scaling-instagram-explore-recommendations-system/", type: engineering_blog}
+  - {title: "Instagram Explore - Meta Transparency Center", url: "https://transparency.meta.com/features/explaining-ranking/ig-explore/", type: documentation}
+  - {title: "Powered by AI: Instagram's Explore recommender system, Meta AI blog", url: "https://ai.meta.com/blog/powered-by-ai-instagrams-explore-recommender-system/", type: engineering_blog}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A four-stage funnel built on caching and pre-computation, with Two Tower networks for retrieval and first-stage ranking.
+deployed_in: Instagram Explore
+scale_short: 65 billion features and 90 million model predictions per second, per a 2019 Meta AI post
+key_result: No reported metrics in the sources
+results_table:
+  note: The sources describe the architecture and report no experiment results.

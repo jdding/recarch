@@ -1,0 +1,73 @@
+id: youtube-plum-2025
+name: "PLUM"
+company: Google / YouTube
+surface: Generative retrieval for YouTube video recommendations in LFV and Shorts
+year: 2025
+era: generative
+era_reason: "Adapting pretrained LMs with semantic IDs for generative retrieval"
+first_public: "2025-10"
+venue: "WWW 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3774904.3792802"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Adapts pretrained LLMs to recommendation with Semantic-ID tokenization and generative retrieval; launched to billions of users, beating the embedding-table production model."
+summary: 'Adapts pretrained LLMs to recommendation: Semantic-ID tokenization, continued pretraining on domain data, then fine-tuning
+  for generative retrieval that decodes Semantic IDs; launched to billions of users.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- llm-based
+stages:
+- stage: retrieval
+  model_family: Pretrained LLM (MoE; ~4.2B parameters total per PDF) generating Semantic IDs
+  details: Hallucination rate after SFT reported <5% (PDF).
+id_tokenization:
+  approach: Semantic IDs (SIDv2 improvements)
+  details: null
+features_signals:
+- User context and history
+- Video content
+training:
+  mode: Continued pretraining + SFT
+  objectives: null
+  notes: ~260B tokens CPT config mentioned in PDF.
+serving_infra: Paper describes training/inference methods for launch
+scale:
+- metric: Reach
+  value: billions of users
+  note: abstract
+results_reported: 'Abstract: substantial improvements for retrieval over a heavily optimised embedding-table production model.'
+caveats:
+- Specific online metric deltas are in the paper body but not captured.
+unknown_fields:
+- online metric deltas
+- latency
+sources:
+- title: "PLUM: Adapting Pre-trained Language Models for Industrial-scale Generative Recommendations, WWW 2026"
+  url: https://doi.org/10.1145/3774904.3792802
+  type: paper
+- title: PLUM, arXiv 2510.07784
+  url: https://arxiv.org/abs/2510.07784
+  type: paper
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Adapt pretrained LLMs with semantic-ID tokenization, continued pretraining and fine-tuning for generative retrieval.
+deployed_in: YouTube video recommendation retrieval in LFV and Shorts
+scale_short: Billions of users
+key_result: Substantial retrieval improvement over a heavily optimised embedding-table production model, no figures reported
+results_table:
+  online:
+  - setting: Production, abstract
+    method: PLUM
+    metric: Retrieval quality
+    result: Substantial improvement, no figure
+    versus: Heavily optimised embedding-table model

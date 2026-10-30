@@ -1,0 +1,148 @@
+id: bytedance-sequenceo1-2026
+name: "SequenceO1"
+company: ByteDance
+surface: Douyin and Douyin Lite short-video fine-ranking
+year: 2026
+era: deep
+era_reason: "A discriminative fine-ranker that scales target-conditioned sequence modeling, via STCA plus Sketch Attention, from 10K to 100K behaviors; no semantic-ID or LLM generation is involved."
+first_public: "2026-09"
+deployed_year: 2026
+venue: RecSys 2026
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831864"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Douyin's fine-ranker compresses 100K behaviors into a cacheable fixed-size sketch with Sketch Attention, plus STCA over a recent 10K; replaces TWIN V2; 1-month A/B: Finish +2.33%, Duration +1.5%."
+summary: 'SequenceO1 is the ultra-long-history branch of the Douyin fine-ranker. Sketch Attention, SA, compresses up to 100K history events into a fixed-size user-only sketch with k=1K prototypes, 2 stacked refinement steps and d=128, using learnable prototypes and prototype-wise softmax, so each token distributes mass over prototypes. The ranker then runs STCA, stacked single-query target-to-history cross attention, over a recent 10K suffix and over the sketch, and fuses them in the MixFormer backbone. The sketch is target-agnostic, so a training-side local KV cache, multi-request user-level batching, a serving-side cache with the same get/put interface, pipeline lift that computes the sketch upstream during recall, and a fused FlashSA kernel amortize the 100K cost. It replaces the lifelong TWIN V2 module.'
+paradigms:
+- sequential-transformer
+- attention-ctr
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Sketch Attention (prototype-wise softmax) + STCA over recent 10K and sketch + MixFormer fusion'
+  details: 'Fine-ranking; user-only sketch cached in training (3 h TTL within MRLB groups) and serving (1 h TTL); ranking scores multiple engagement objectives (finish, skip, like, follow, comment, share, favourite, dislike).'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- User interaction history up to 100K events, with item embeddings fused with action-type embeddings by a SwiGLU
+- Recent 10K suffix as a separate branch
+- Target and candidate item features, user/request and non-sequential dense features
+training:
+  mode: 'Offline training of the production ranker with training-side local KV cache of sketches (MRLB, hit rate about 0.5)'
+  objectives:
+  - 'Multi-task ranking objectives: finish, skip, like, follow, comment, share, favourite and dislike'
+  notes: 'Ablations use a lightweight STCA(512) setup focused on Finish AUC; production offline and online use the full ranker with STCA 10K plus TWIN V2 as baseline. Loss function and optimizer details are not given.'
+serving_infra: 'Shared sketch cache with the same get/put interface as training, with TTL and versioned keys and an observed hit rate of about 0.6 at a 1-hour TTL; pipeline lift computes the user-only sketch at request entry in parallel with recall; fused FlashSA kernel streams the prototype-token softmax without materializing the k x n matrix.'
+scale:
+- metric: History length
+  value: 100K events
+  note: Maximum truncation for training and serving; average 85K in the 100K ablation
+- metric: Sketch size
+  value: k=1K prototypes, width 128
+  note: 'Production ablation setting; k ranges from several hundred to thousands'
+- metric: Recent suffix
+  value: 10K events
+  note: STCA branch
+results_reported: 'Online one-month A/B on Douyin and Douyin Lite replacing TWIN V2 in the STCA 10K baseline (all significant). Douyin overall: 30-Day Activeness +0.1968%, Duration +1.4999%, Finish +2.3256%, Comment +3.5910%, Like +2.3617%, Dislike -6.9829%. Douyin Lite overall: Activeness +0.2335%, Duration +1.6655%, Finish +3.4872%, Comment +8.6132%, Like +2.9399%, Dislike -5.9972%. Offline production setting vs STCA 10K + TWIN V2: Finish AUC +0.29% (UAUC +0.40%), Skip AUC +0.23%, Share UAUC +0.94%, Favourite UAUC +1.47%. Ablation (Finish AUC over STCA(512)): SA +1.07% vs KMeans clustering +0.30%, chunk mean pooling +0.46%, position-bucket queries +0.72%, Lightning-Attention +0.83%, recent-behavior query init +0.78%; directly scaled STCA +1.29%, so SA retains 83%. FLOPs of the ultra-long branch at 100K are 49.9x (training, hit 0.5, R=40) and 63.9x (inference, hit 0.6, R=300) below direct STCA.'
+caveats:
+- 'The online baseline is ByteDance''s own STCA 10K + TWIN V2 production ranker, so gains are specific to that stack.'
+- 'Reported FLOP reductions are analytical under the observed cache-hit rates (0.5 training, 0.6 serving); no measured latency or throughput numbers are given.'
+- 'Table 4 column labels in the PDF text are partly garbled (Head, Clicmmt), so only unambiguous columns are cited.'
+- 'Sketch-to-behavior retrieval and localized refinement are discussed as future work and not deployed.'
+- 'The extension to million-scale histories is claimed but not evaluated.'
+unknown_fields:
+- loss function and optimizer details
+- model parameter count and training hardware
+- traffic share and exact A/B duration beyond one month
+- measured serving latency and QPS
+- absolute metric values
+sources:
+- title: 'SequenceO1: End-to-End Ultra-Long (100K) Sequence Modeling in Recommendation with Low-Rank Caching, RecSys 2026'
+  url: https://doi.org/10.1145/3773078.3831864
+  type: paper
+- title: SequenceO1, arXiv 2609.08443 v1
+  url: https://arxiv.org/abs/2609.08443
+  type: paper
+- title: daiwk/auto-research SequenceO1 reproduction, third-party
+  url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/sequenceo1
+  type: source_code
+version_note: 'Full text read from the arXiv v1 PDF (8 Sep 2026), which is already in the RecSys 2026 camera-ready format with the ACM DOI 10.1145/3773078.3831864; Crossref confirms publication on 27 Sep 2026. arXiv v1 is the only version at fetch time. The ACM DL page was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2609.08443
+  local_pdf: /workspace/recarch/zotero/bytedance-sequenceo1-2026.pdf
+  sections_read: 'Abstract, introduction, background, method (SA, stacked refinement, two-time-scale STCA), system (local KVCache, MRLB, pipeline lift, FlashSA), experiments 5.1-5.5, related work, conclusion, appendices A-G'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/sequenceo1
+    owner: daiwk (third party)
+    official: false
+    note: 'Automated third-party reproduction; its page states no official author code. Fidelity unverified.'
+  note: 'No official code from ByteDance.'
+core_idea: Compress up to 100K history events into a fixed-size sketch, then attend over the sketch.
+deployed_in: Douyin and Douyin Lite short-video fine-ranking
+scale_short: History of 100K events, sketch of 1K prototypes, recent suffix of 10K events
+key_result: Douyin overall Finish +2.3256% in a one-month online A/B replacing TWIN V2 in the STCA 10K baseline
+results_table:
+  online:
+  - setting: Douyin overall, one-month A/B
+    method: The proposed model
+    metric: 30-Day Activeness
+    result: +0.1968%
+    versus: STCA 10K with TWIN V2
+  - setting: Douyin overall, one-month A/B
+    method: The proposed model
+    metric: Duration
+    result: +1.4999%
+    versus: STCA 10K with TWIN V2
+  - setting: Douyin overall, one-month A/B
+    method: The proposed model
+    metric: Finish
+    result: +2.3256%
+    versus: STCA 10K with TWIN V2
+  - setting: Douyin overall, one-month A/B
+    method: The proposed model
+    metric: Dislike
+    result: -6.9829%
+    versus: STCA 10K with TWIN V2
+  - setting: Douyin Lite overall, one-month A/B
+    method: The proposed model
+    metric: Duration
+    result: +1.6655%
+    versus: STCA 10K with TWIN V2
+  - setting: Douyin Lite overall, one-month A/B
+    method: The proposed model
+    metric: Finish
+    result: +3.4872%
+    versus: STCA 10K with TWIN V2
+  offline:
+  - setting: Production setting
+    method: The proposed model
+    metric: Finish AUC
+    result: +0.29%
+    versus: STCA 10K with TWIN V2
+  - setting: Production setting
+    method: The proposed model
+    metric: Skip AUC
+    result: +0.23%
+    versus: STCA 10K with TWIN V2
+  - setting: Production setting
+    method: The proposed model
+    metric: Share UAUC
+    result: +0.94%
+    versus: STCA 10K with TWIN V2
+  - setting: Production setting
+    method: The proposed model
+    metric: Favourite UAUC
+    result: +1.47%
+    versus: STCA 10K with TWIN V2

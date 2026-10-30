@@ -1,0 +1,105 @@
+id: pinterest-pinfm-2025
+name: "PinFM"
+company: Pinterest
+surface: User-activity sequence foundation model across applications
+year: 2025
+era: generative
+era_reason: "Pretrained foundation model over user activity sequences"
+first_public: "2025-07"
+venue: "RecSys 2025"
+venue_year: 2025
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3705328.3748050"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "A 20B+ parameter pretrained user-sequence foundation model coupled into Home Feed and Related Items rankers; DCAT gives +600% throughput, +20% new-item engagement."
+summary: 'Pretrained user-activity-sequence foundation model with 20B+ parameters for Pinterest: trained on years of user actions with
+  an InfoNCE next-positive-item objective, then fine-tuned and coupled into downstream rankers such as Home Feed and Related Items Feed via a Deduplicated Cross-Attention Transformer, DCAT, and int4 embedding quantization to keep cost neutral.'
+paradigms:
+- foundation-model
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: PinFM pretrained transformer over user action sequences (item id, action type, surface, timestamp), fine-tuned inside
+    existing ranking models
+  details: 'Sequences capped at 16,000 actions, cut into non-overlapping segments of a few hundred tokens for training. Pretraining
+    uses InfoNCE with in-batch negatives and a learnable temperature; positive actions chosen per Table 4 ablation. Fine-tuning losses
+    ablated in Table 3 (L_ntl default; L_mtl not used by default due to memory/speed). Fresh-item handling: item features plus extra
+    dropout for unseen items.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- User activity sequences
+training:
+  mode: Pretrain on large-scale activity logs, then fine-tune per application; large ID embedding tables trained distributed across
+    GPUs with TorchRec
+  objectives:
+  - InfoNCE next-positive-item loss (pretraining)
+  - Fine-tuning sequence losses L_ntl (and optionally L_mtl)
+  notes: Downstream ablations evaluated on the Home Feed ranking model (HIT@3 changes for Save and Hide).
+serving_infra: 'Large ID embedding table is separated from the dense model and served on a CPU host/cluster, with an inference router
+  fetching embeddings for the user sequence, while the transformer runs on GPU inference hosts. DCAT processes the user sequence once
+  and reuses it across candidates for +600% throughput on Pinterest internal data. int4 post-training quantization of embeddings: two-week
+  online A/B was statistically neutral vs full precision.'
+scale:
+- metric: Model size
+  value: 20B+ parameters (abstract)
+  note: paper
+- metric: Max sequence
+  value: 16,000 actions
+  note: paper
+- metric: Reach
+  value: deployed for more than half a billion users across applications (abstract)
+  note: paper
+results_reported: Throughput +600% from DCAT (internal data); +20% engagement with new (fresh) items attributed to learning user-sequence/candidate
+  interactions; deployed to Home Feed and Related Items Feed with neutral cost and marginal latency increase. Per-surface online lifts
+  are in the paper's tables and are not reproduced here.
+caveats:
+- Per-surface online A/B percentages were not extracted, so only abstract-level claims are listed.
+- The 20% fresh-item engagement figure is from the paper's abstract; its experimental setup was not re-derived here.
+- Embedding table serving is on a single CPU host, which the authors note limits flexibility.
+unknown_fields:
+- per-surface online metric lifts
+- GPU type and count
+- absolute latency
+sources:
+- title: "PinFM: Foundation Model for User Activity Sequences at a Billion-scale Visual Discovery Platform, RecSys 2025"
+  url: https://doi.org/10.1145/3705328.3748050
+  type: paper
+- title: PinFM, arXiv 2507.12704
+  url: https://arxiv.org/abs/2507.12704
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2507.12704
+  local_pdf: /workspace/src/a_2507.12704.pdf
+  sections_read: Abstract, intro, modeling/pretraining objectives, Tables 3-4 text, efficiency (DCAT, int4), serving infrastructure
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A pretrained user-activity sequence model feeds downstream rankers through a deduplicated cross-attention transformer.
+deployed_in: Pinterest Home Feed and Related Items Feed
+scale_short: 20B+ parameters, sequences up to 16,000 actions, more than half a billion users
+key_result: +20% engagement with fresh items in the deployed Home Feed and Related Items Feed
+results_table:
+  online:
+  - setting: Deployed in Home Feed and Related Items Feed
+    method: PinFM
+    metric: Engagement with new items
+    result: +20%
+    versus: Without learning user-sequence and candidate interactions
+  offline:
+  - setting: Internal data
+    method: DCAT
+    metric: Throughput
+    result: +600%
+    versus: Without DCAT
+  note: Per-surface online lifts are in the paper's tables and are not reproduced here.

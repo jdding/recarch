@@ -1,0 +1,111 @@
+id: jd-gcrank-2026
+name: "GCRank"
+company: JD.com
+surface: JD takeout food delivery advertising ranking
+year: 2026
+era: generative
+era_reason: "Context is generated rather than looked up: LLM-reasoned dynamic context, flow-matching interest generation and LLM embeddings feed the ranker, which the authors present as a generative paradigm replacing feature-crossing DLRM ranking."
+first_public: "2026-04"
+venue: "WWW 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3774904.3792818"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "JD's GCRank feeds LLM and flow-matching generated context into takeout ad ranking; 7-day 20% A/B vs the production DLRM: CTR +5.07%, CVR +4.71%, RPM +6.42%, then full traffic."
+summary: 'GCRank splits the context of a takeout ad request into static, dynamic, personalized and collective parts. The Generative Contextual Encoder has three modules. The Dynamic Context Enhancer turns real-time time and location context into embeddings with an LLM, DeepSeek-R1 for reasoning, behind a similarity-keyed knowledge base so most requests hit a cache. The Collective Context Enhancer builds area-level and store-level embeddings with a Qwen1.5-0.5B backbone, refreshed by a pipeline. The Personalized Context Enhancer uses conditional flow matching with MeanFlow to shift a user average interest toward the instant context. The Generative Contextual Fusion module aligns the four context vectors with LoRA-style adapters and an MLP.'
+paradigms:
+- llm-based
+- foundation-model
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Context encoders with LLM backbones and flow matching, fused by LoRA-style adapters into a CTR and CVR ranker'
+  details: 'Outputs pCTR and pCVR used for eCPM and mixed ad and organic ranking. Two new generative pipelines update and serve the dynamic knowledge base and the collective embedding cache beside the existing real-time DLRM serving pipeline.'
+id_tokenization:
+  approach: 'No semantic IDs; text and context prompts are encoded by LLMs into embeddings'
+  details: 'The dynamic module returns a cached embedding when the query context is similar enough to a stored one, and otherwise calls the LLM and stores the result.'
+features_signals:
+- User behavior sequences of the past 60 days, up to 300 interactions
+- Time, location, POI and AOI context
+- Store and area text attributes, such as taste and price level
+- Ad features
+training:
+  mode: 'Offline training on A100 GPUs with streaming updates from the production pipeline'
+  objectives:
+  - 'CTR and CVR prediction with cross-entropy'
+  notes: 'About 2 billion samples of a real takeout advertising platform, Adam with learning rate 0.00002 and batch size 512, results averaged over five runs.'
+serving_infra: 'The existing real-time DLRM serving pipeline queries the dynamic knowledge base and collective embedding cache, so LLM calls are off the main path. TP99 latency rises about 2 ms.'
+scale:
+- metric: Training samples
+  value: About 2 billion
+  note: Industrial takeout advertising logs
+- metric: Online A/B
+  value: 7 days, 20% of traffic
+  note: Control is the production DLRM
+- metric: Rollout
+  value: All platform traffic
+  note: Stable for several months per the paper
+results_reported: 'Online 7-day A/B with a 20% traffic allocation against the production DLRM, all p < 0.0001: CTR +5.07%, CVR +4.71%, RPM +6.42%, with TP99 latency up about 2 ms; daily gains stay stable across the 7 days, and the model was then rolled out to all platform traffic. Offline AUC on the industrial set is 0.7679 for CTR and 0.7053 for CVR for GCRank against 0.7513 and 0.6619 for the production DLRM and 0.7545 and 0.6659 for HSTU.'
+caveats:
+- 'The paper states that reported results were transformed to protect proprietary business information, so absolute values may not match raw logs.'
+- 'The offline dataset is proprietary and no public dataset is used.'
+- 'The online control is the production DLRM, not a generative ranker, and the paper gives no breakdown between LLM context and flow matching online.'
+- 'Offline AUC gains are large against baselines that were adapted for the setting, such as OneLoc.'
+unknown_fields:
+- LLM serving hardware
+- knowledge base cache hit rate
+- model parameter count
+- user and request volume
+sources:
+- title: "A Generative Contextual Comprehension Paradigm for Takeout Ranking Model, WWW 2026"
+  url: https://doi.org/10.1145/3774904.3792818
+  type: paper
+version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792818, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3774904.3792818
+  local_pdf: /workspace/recarch/zotero/jd-gcrank-2026.pdf
+  sections_read: 'Abstract, introduction, preliminaries, method 4.1-4.5, experiments 5.1-5.5 including Tables 1-2, conclusion, appendix online A/B'
+  verified_on: '2026-10-30'
+  published_pdf: 'WWW 2026 camera-ready PDF read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no GCRank repository.'
+core_idea: LLMs and flow matching generate four kinds of context that a takeout ad ranker fuses through LoRA-style adapters.
+deployed_in: JD takeout food delivery ad ranking, tested on 20% of traffic then rolled out to all traffic
+scale_short: About 2 billion training samples, 7-day A/B on 20% of traffic, TP99 up about 2 ms
+key_result: CTR +5.07%, CVR +4.71% and RPM +6.42% in a 7-day 20% A/B against the production DLRM
+results_table:
+  online:
+  - setting: Takeout ads 7-day A/B, 20% traffic
+    method: GCRank
+    metric: RPM
+    result: +6.42%
+    versus: Production DLRM
+  - setting: Takeout ads 7-day A/B, 20% traffic
+    method: GCRank
+    metric: CTR
+    result: +5.07%
+    versus: Production DLRM
+  - setting: Takeout ads 7-day A/B, 20% traffic
+    method: GCRank
+    metric: CVR
+    result: +4.71%
+    versus: Production DLRM
+  offline:
+  - setting: Industrial takeout set
+    method: GCRank
+    metric: CTR AUC
+    result: '0.7679'
+    versus: Production DLRM 0.7513
+  - setting: Industrial takeout set
+    method: GCRank
+    metric: CVR AUC
+    result: '0.7053'
+    versus: Production DLRM 0.6619

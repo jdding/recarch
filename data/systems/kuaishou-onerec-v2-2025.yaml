@@ -1,0 +1,97 @@
+id: kuaishou-onerec-v2-2025
+name: OneRec-V2
+company: Kuaishou
+surface: Short-video recommendation in the Kuaishou app
+year: 2025
+era: generative
+era_reason: End-to-end generative recommender with semantic IDs
+first_public: 2025-08
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/abs/2508.20900
+added_on: '2026-10-29'
+last_verified: '2026-10-30'
+system_type: recommendation
+evidence_level: production_described
+tldr: OneRec-V2 uses a lazy decoder-only generator over 3-level semantic IDs with real-feedback RL post-training; A/B on Kuaishou App Stay Time +0.467%.
+summary: 'Technical report on OneRec-V2: replaces OneRec-V1''s encoder-decoder with a ''lazy'' decoder-only generator over 3-level semantic IDs, where context is processed once into shared KV and cross-attention skips KV projections and uses GQA, and post-trains with real user-feedback rewards, using duration-aware reward shaping and adaptive ratio clipping in GBPO. Evaluated by A/B tests on Kuaishou and Kuaishou Lite.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: Lazy decoder-only generative recommender (end-to-end generation of semantic IDs)
+  details: 'Paper''s motivation: in V1''s encoder-decoder, 97.66% of compute went to context encoding rather than target generation. Item = 3 semantic IDs from the OneRec-V1 tokenizer; training input is [BOS, s1, s2]; loss averages over 3 tokens (V1 summed). Context = static user features + short- and long-term behavior sequences; online model uses 1B parameters and a context length (N_s + T_short + T_long) of about 3000 (about 512 in the architecture ablations).'
+id_tokenization:
+  approach: Semantic IDs (from OneRec-V1)
+  details: null
+features_signals:
+- User behavior sequences
+- Real-world user interactions as reward
+training:
+  mode: Pretraining of the generator, then post-training with preference alignment on real user interaction signals
+  objectives:
+  - Next semantic-ID token prediction
+  - Duration-Aware Reward Shaping to reduce video-duration bias
+  - Adaptive Ratio Clipping / GBPO (Gradient-Bounded Policy Optimization) for stable policy updates
+  notes: Scaling curves from 0.1B to 8B parameters; lazy decoder-only reaches similar loss to classic architectures with about 10x fewer FLOPs per Fig 5 caption and the loss follows a scaling-law fit.
+serving_infra: null
+scale:
+- metric: Online model size
+  value: 1B parameters per Sec 2.3
+  note: paper
+- metric: Scaled-up experiment
+  value: up to 8B parameters
+  note: paper
+- metric: Online context length
+  value: about 3000 tokens (N_s+T_short+T_long)
+  note: paper
+results_reported: 'A/B on Kuaishou / Kuaishou Lite: App Stay Time +0.467% / +0.741% while balancing multiple objectives (abstract). Compared with OneRec-V1 at 1B parameters in Fig 1 right and Table 7.'
+caveats:
+- Gains are relative to the reported baselines (V1 / prior online system); traffic share and test duration for the V2 A/B are not restated in the sections read.
+- Production serving architecture, latency and QPS are not given in the sections read.
+- Scaling-law claims are on Kuaishou internal data.
+unknown_fields:
+- serving latency / QPS
+- A/B traffic share and duration for V2
+- item tokenizer details beyond reference to V1
+sources:
+- title: OneRec-V2 Technical Report, arXiv 2508.20900
+  url: https://arxiv.org/abs/2508.20900
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.20900
+  local_pdf: /workspace/src/a_2508.20900.pdf
+  sections_read: Abstract, intro, Sec 2 (lazy decoder-only architecture, scaling), Sec 3 (preference alignment, GBPO), online-experiment setup
+  verified_on: '2026-10-30'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/Kuaishou-OneRec/OpenOneRec
+    owner: Kuaishou (OneRec team org)
+    official: true
+    note: The OneRec team's open release with Qwen3-based models, a benchmark and a pipeline. I found no code for the V2 lazy decoder-only architecture itself; its README does not mention V2.
+core_idea: A lazy decoder-only generator over 3-level semantic IDs, post-trained with real user-feedback rewards.
+deployed_in: Kuaishou and Kuaishou Lite short-video recommendation
+scale_short: 1B parameter online model, scaled up to 8B in experiments
+key_result: App Stay Time +0.467% on Kuaishou and +0.741% on Kuaishou Lite in A/B tests
+results_table:
+  online:
+  - setting: Kuaishou A/B
+    method: The proposed model
+    metric: App Stay Time
+    result: +0.467%
+    versus: Production system
+  - setting: Kuaishou Lite A/B
+    method: The proposed model
+    metric: App Stay Time
+    result: +0.741%
+    versus: Production system
+status: superseded
+status_date: '2026-10-30'
+superseded_by: onerec-kuaishou
+status_reason: Merged into the OneRec card, one card per system, which presents OneRec-V2 as the main version.

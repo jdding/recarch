@@ -1,0 +1,135 @@
+id: din-alibaba-2017
+name: "DIN"
+company: Alibaba
+surface: Online display advertising CTR prediction
+year: 2017
+era: deep
+era_reason: "Target attention over user behaviour for CTR"
+first_public: "2017-06"
+venue: "KDD 2018"
+venue_year: 2018
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3219819.3219823"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the published KDD 2018 PDF; all numbers confirmed."
+system_type: ads
+evidence_level: production_described
+tldr: "DIN weights each past behavior by its relevance to the candidate ad through a local activation unit; deployed in Alibaba display ads with up to +10.0% CTR in an online A/B."
+summary: 'KDD 2018 paper from Alibaba: Deep Interest Network replaces fixed-length pooling of user behavior embeddings with a local
+  activation unit that weights each historical behavior by relevance to the candidate ad; adds mini-batch aware regularization and Dice,
+  a data-adaptive activation. Deployed on the main traffic of Alibaba''s online display advertising system.'
+core_idea: Weight each past behavior by its relevance to the candidate ad.
+deployed_in: Alibaba online display advertising, main traffic
+scale_short: More than 1 million users per second at serving
+key_result: Up to +10.0% CTR over BaseModel, the previous online model, in an online A/B from 2017-05 to 2017-06
+results_table:
+  online:
+  - setting: "Alibaba display advertising A/B, 2017-05 to 2017-06"
+    method: "DIN with the proposed regularizer and activation"
+    metric: "CTR"
+    result: "up to +10.0%"
+    versus: "BaseModel, the previous online model"
+  - setting: "Alibaba display advertising A/B, 2017-05 to 2017-06"
+    method: "DIN with the proposed regularizer and activation"
+    metric: "RPM"
+    result: "up to +3.8%"
+    versus: "BaseModel, the previous online model"
+  offline:
+  - setting: "Alibaba dataset per Table 5"
+    method: "DIN"
+    metric: "AUC"
+    result: "0.6029"
+    versus: "+6.08% RelaImpr over BaseModel"
+  - setting: "Alibaba dataset per Table 5"
+    method: "DIN with MBA regularization and Dice"
+    metric: "AUC"
+    result: "0.6083"
+    versus: "+11.65% RelaImpr over BaseModel, +0.0113 absolute AUC"
+  - setting: "Alibaba dataset"
+    method: "DIN"
+    metric: "Absolute AUC gain"
+    result: "about 0.009"
+    versus: "DeepFM"
+  - setting: "Amazon Electro per Table 3"
+    method: "DIN"
+    metric: "AUC"
+    result: "0.8818"
+    versus: "BaseModel 0.8624"
+  - setting: "Amazon Electro per Table 3"
+    method: "DIN with Dice"
+    metric: "AUC"
+    result: "0.8871"
+    versus: "BaseModel 0.8624"
+paradigms:
+- attention-ctr
+- multi-task
+stages:
+- stage: rank
+  model_family: 'DIN: Embedding & MLP with a local activation unit over the user behavior sequence (candidate-dependent attention weights),
+    mini-batch aware regularization, Dice activation'
+  details: Weights are not normalized with softmax in the paper's activation unit design; the paper stresses preserving intensity of
+    interest. Goods_ids feature dimensionality reaches 0.6 billion on the Alibaba dataset.
+id_tokenization:
+  approach: Sparse ID features mapped to low-dimensional embeddings
+  details: null
+features_signals:
+- User behavior history
+- Candidate ad features
+training:
+  mode: 'Offline: two weeks of display-advertising traffic logs for training and the following day for testing'
+  objectives:
+  - CTR prediction
+  notes: 'Alibaba dataset: about 2 billion training and 0.14 billion test samples; embedding dimension 12 across 16 feature groups.
+    Metric is user-weighted AUC with RelaImpr. Mini-batch aware regularization only updates parameters of features appearing in the
+    current mini-batch, which the paper says makes L2 regularization feasible at hundreds of millions of parameters.'
+serving_infra: 'CPU-GPU serving architecture: request batching, GPU memory access optimization, and concurrent kernel computation; together
+  they roughly double single-machine QPS. The system serves more than 1 million users per second and must predict hundreds of ads per
+  visitor in under 10 ms.'
+scale:
+- metric: Training samples
+  value: about 2.14 billion, Alibaba dataset per Table 2
+  note: paper
+- metric: Goods ids
+  value: about 0.6 billion
+  note: paper
+- metric: Serving throughput
+  value: more than 1 million users per second
+  note: paper
+results_reported: 'Online A/B in Alibaba display advertising from 2017-05 to 2017-06 (about a month): DIN with the proposed regularizer
+  and activation contributes up to +10.0% CTR and +3.8% RPM over BaseModel, the previous online model; DIN now serves the main traffic.
+  Offline on Alibaba dataset per Table 5: DIN 0.6029 AUC (+6.08% RelaImpr over BaseModel); with MBA regularization and Dice 0.6083 (+11.65%,
+  +0.0113 absolute AUC); about 0.009 absolute AUC over DeepFM. Amazon Electro per Table 3: DIN 0.8818, with Dice 0.8871 vs BaseModel 0.8624.'
+caveats:
+- '''Up to 10.0% CTR'' is the paper''s phrasing; the paper''s footnote says ads are ranked by CTR^alpha x bid price with alpha > 1.0.'
+- Absolute AUCs on the Alibaba dataset are low (about 0.60) because the metric is user-weighted over many near-identical impressions.
+- Offline tables were read from extracted text; row alignment was checked against the text of the analysis.
+unknown_fields:
+- A/B traffic share
+- number of GPUs
+sources:
+- title: "Deep Interest Network for Click-Through Rate Prediction, KDD 2018"
+  url: https://doi.org/10.1145/3219819.3219823
+  type: paper
+- title: Deep Interest Network for Click-Through Rate Prediction, arXiv 1706.06978
+  url: https://arxiv.org/abs/1706.06978
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1706.06978
+  local_pdf: /workspace/recarch/zotero/din-alibaba-2017.pdf
+  sections_read: Abstract, intro, model design (local activation unit), mini-batch aware regularization, Dice, datasets, Tables 2-5,
+    Sec 6.7 online A/B, Sec 6.7 serving optimizations
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/zhougr1993/DeepInterestNetwork
+    owner: Guorui Zhou (paper first author)
+    official: true
+    note: 'Linked from the paper: experiment code on two public datasets (Amazon, MovieLens). Not the
+      Alibaba ad-system code.'

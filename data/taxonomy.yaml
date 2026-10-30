@@ -1,0 +1,34 @@
+# Home-page filter taxonomy. build.py validates: every paradigm tag in PARADIGMS appears in exactly one family,
+# every tag listed here exists, and every pipeline stage appears in exactly one stage group.
+paradigm_families:
+  - id: sequence
+    label: "Sequence & user modeling"
+    tags: [sequential-transformer, attention-ctr]
+  - id: multitask
+    label: "Multi-task, ranking & training"
+    tags: [multi-task, learning-to-rank, online-training, rl-alignment]
+  - id: graph
+    label: "Graph & random-walk"
+    tags: [graph-neural-network, random-walk]
+  - id: generative
+    label: "Semantic ID, generative & LLM"
+    tags: [semantic-id, generative-retrieval, llm-based]
+  - id: retrieval
+    label: "Embedding retrieval & CF"
+    tags: [embedding-based-retrieval, two-tower, item-cf]
+  - id: scaling
+    label: "Feature interaction & scaling"
+    tags: [dlrm, gbdt, foundation-model]
+stage_groups:
+  - id: retrieval
+    label: "Retrieval"
+    stages: [retrieval]
+  - id: ranking
+    label: "Ranking"
+    stages: [rank]
+  - id: prepost
+    label: "Pre-/re-ranking"
+    stages: [pre-rank, re-rank]
+  - id: other
+    label: "Single-stage & other"
+    stages: [single-stage, other]

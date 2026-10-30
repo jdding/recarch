@@ -1,0 +1,144 @@
+id: etsy-unified-embedding-retrieval-2023
+name: Etsy Unified Embedding Retrieval
+company: Etsy
+surface: Search retrieval
+year: 2023
+era: deep
+era_reason: "Two-tower neural retrieval with unified embeddings; not generative"
+first_public: "2023-06"
+venue: "FMLDS 2024 (IEEE)"
+venue_year: 2024
+published_version_checked: false
+primary_source: "https://doi.org/10.1109/fmlds63805.2024.00055"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: search
+evidence_level: production_described
+tldr: "Etsy's two-tower search retrieval unifies text, T5, graph and location encoders; Recall@1000 reaches 0.82 vs 0.61 for the base model offline."
+summary: 'Etsy''s UEPPR, the Unified Embedding based Personalized Product Retrieval model: a two-tower retrieval model for Etsy search. The product
+  tower unifies token encoders for n-grams, categories and attributes with pre-trained T5-small, bipartite query-product graph and location encoders; the
+  query tower jointly encodes query, location and the user''s recent searches and clicked shops with a 1-layer transformer. Trained
+  with a multi-part hinge loss and three negative sources, served via Faiss ANN with query-independent quality boosting by hydrated
+  vectors. Aggregated A/B tests: +5.58% organic search purchase rate and +2.63% site-wide conversion rate.'
+paradigms:
+- two-tower
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Two-tower. Score y = cos(P(p), Q(q,u)). Product encoder P: token/ID average embeddings in field groups, location encoder
+    (K-means buckets with k = 50, 100, 500 and zip-code prefixes), transformer representation from a T5-small encoder pre-trained to
+    generate the most-purchased query from product text, and a bipartite-graph encoder that averages sampled neighbor query embeddings from over a year of logs, with shared parameter updates frozen. Query-user encoder Q: query tokens, user location, recent searches,
+    recent shop clicks, terms of recently clicked items and tags of purchased items, via a lightweight 1-layer transformer over [q,
+    recent queries, recently clicked shops].'
+  details: 'Fine-tuning distilBERT and the T5 encoder gave no offline gain; the T5 pre-training strategy (docT5query-inspired) did.
+    ANN-based product boosting: vectors are hydrated as p'' = [p; f(p)] and q'' = [q; w] so dot(p'',q'') = dot(p,q) + dot(f(p),w); query
+    weights w are static and tuned by black-box Bayesian optimization (skopt) to maximize purchase recall.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Query, user history, listings
+training:
+  mode: Offline. Positives mined from cart-adds and purchases in the past month of logs across platforms; up to 30 million users and
+    more than 150 million interactions. TensorFlow 2.6, MirroredStrategy on 4 A100 GPUs, about 72 hours to converge.
+  objectives:
+  - multi-part hinge loss with a threshold per interaction type, and a threshold for negatives, so that threshold pruning can be used
+    at retrieval
+  notes: 'Negatives: hard in-batch (most similar in-batch products), uniform corpus negatives, and dynamic hard negatives selected from
+    a large random batch with current parameters. Loss weights: warm up with uniform negatives, linearly decay uniform weight and raise
+    hard-negative weight. Evaluation: Recall@100 and @1000 of purchases on the next 5 days, 11k unique queries with purchases per day.'
+serving_infra: 'Retrieval service with ANN index built offline and online query encoding. Faiss: HNSW worked to K = 100 (recall loss
+  5%) but degraded at K = 1000 (loss above 10%); moved to the 4-bit product-quantizer FastScan index with re-ranking after fetching
+  5 times K, recall loss under 4% at P99 latency under 20 ms. ANN parameters tuned with black-box optimization on Google Vizier. Cache
+  keys hash query context features to keep a high TTL with in-session features. P99 inference latency for UEPPR boost is 18 ms; the
+  paper states tens of ms and thousands of queries per second.'
+scale:
+- metric: Catalog
+  value: more than 100 million vintage, handmade and craft items
+  note: paper
+- metric: Retrieval candidate set
+  value: several thousand items per query
+  note: paper
+- metric: Training data
+  value: up to 30M users, more than 150M interactions
+  note: paper
+results_reported: 'Offline per Table I, Recall@100 all / head / tail, Recall@1000: BM25 0.55/0.63/0.45, 0.62; Base 0.33/0.32/0.42, 0.61;
+  Large vocab 0.45/0.45/0.49, 0.72; Random-walk 0.6/0.74/0.52, 0.72; UEPPR 0.674/0.71/0.69, 0.82; UEPPR boost 0.708/0.72/0.71, 0.85.
+  Negative mining ablation per Table II: hard + uniform +3% R@100 and +1.2% R@1000; adding dynamic +9.3% and +5.1%; weighted +11% and
+  +6%. Without hard negatives purchase recall@100 drops 7%. Feature importance relative to the Large vocab model per Table III: T5 title+tags
+  1.0%, attributes 3.9%, description 6.3%, graph 15%. Location features: 8% relative gain in purchase recall for US users; 98th percentile
+  candidate distance 2600 vs 4200 miles. 1-layer transformer on user history: +2% offline recall. Online A/B tests on live traffic,
+  aggregated: +2.63% site-wide conversion rate, +5.58% organic search purchase rate, larger for signed-in and habitual buyers.'
+caveats:
+- The online numbers are aggregated across multiple A/B tests; the paper gives no per-test traffic, duration or confidence intervals.
+- The paper does not date the launch.
+- Table I reports Recall@100 and Recall@1000 only on purchases; no relevance metric is shown.
+- Boosting weights are static and not query dependent; the paper names query-dependent weights as future work.
+unknown_fields:
+- launch date
+- A/B traffic share and duration
+- downstream ranker details
+- index size
+sources:
+- title: "Unified Embedding Based Personalized Retrieval in Etsy Search, FMLDS 2024, IEEE"
+  url: https://doi.org/10.1109/fmlds63805.2024.00055
+  type: paper
+- title: Unified Embedding Based Personalized Retrieval in Etsy Search, arXiv 2306.04833
+  url: https://arxiv.org/abs/2306.04833
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2306.04833
+  local_pdf: /workspace/src/fulltext/2306.04833.txt (text of arXiv 2306.04833v2)
+  sections_read: 'Entire paper: abstract, intro, related work, Sec III (unified embedding model, encoders, negative mining, loss), Sec
+    IV (ANN-based product boosting), Sec V (online serving), Sec VI (offline and online results), conclusion; Tables I-III'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A two-tower retrieval model whose product tower unifies text, graph and location encoders.
+deployed_in: Etsy search retrieval
+scale_short: More than 100 million items, several thousand candidates per query
+key_result: Organic search purchase rate +5.58% in aggregated online A/B tests on live traffic
+results_table:
+  online:
+  - setting: Aggregated A/B tests on live traffic
+    method: UEPPR
+    metric: Organic search purchase rate
+    result: +5.58%
+    versus: Production search
+  - setting: Aggregated A/B tests on live traffic
+    method: UEPPR
+    metric: Site-wide conversion rate
+    result: +2.63%
+    versus: Production search
+  offline:
+  - setting: Table I
+    method: UEPPR
+    metric: Recall@100
+    result: '0.674'
+    versus: BM25 0.55
+  - setting: Table I
+    method: UEPPR
+    metric: Recall@1000
+    result: '0.82'
+    versus: BM25 0.62
+  - setting: Table I
+    method: UEPPR boost
+    metric: Recall@100
+    result: '0.708'
+    versus: BM25 0.55
+  - setting: Table I
+    method: UEPPR boost
+    metric: Recall@1000
+    result: '0.85'
+    versus: BM25 0.62
+  - setting: Table II, negative mining ablation
+    method: Weighted negatives
+    metric: R@100 / R@1000
+    result: +11% / +6%
+    versus: Uniform negatives only

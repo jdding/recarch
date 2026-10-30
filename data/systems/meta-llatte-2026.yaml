@@ -1,0 +1,112 @@
+id: meta-llatte-2026
+name: "LLaTTE"
+company: Meta
+surface: Meta Ads ranking on Facebook Feed and Reels
+year: 2026
+era: deep
+era_reason: "Scaling a discriminative transformer sequence module inside a DHEN/FM-style CTR/CVR ranker with an async upstream user model; not autoregressive generation or semantic IDs."
+first_public: "2026-01"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818442"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Two-stage ads sequence modeling at Meta: a huge async upstream user model caches embeddings for a light online ranker; about 0.25% NE gain and +4.3% conversions on Feed and Reels."
+summary: 'LLaTTE is a transformer sequence module with multi-head latent attention, adaptive pyramidal token trimming and target-aware query tokens that sits beside a DHEN-style non-sequence backbone in Meta ads ranking. The paper studies scaling over depth, width, sequence length and content-embedding richness, then deploys a two-stage design: a large asynchronous upstream user model writes cached user embeddings to a feature store, and a compact LLaTTE module in the online ranker consumes them.'
+paradigms:
+- sequential-transformer
+- dlrm
+- multi-task
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'Online ads ranker: compact LLaTTE sequence module with a per-source horizon of about 400 events, aggressive pyramidal trimming and ad and context query tokens, plus a DHEN-style non-sequence backbone and multi-task heads (CTR, CVR, ...). It also reads cached upstream LLaTTE user embeddings as dense features.'
+  details: 'Upstream user model: same LLaTTE architecture with user-side features only, deeper and longer with full self-attention, about 45x the sequence FLOPs of the online module, run asynchronously on an H100 cluster; embedding dimension 2048 for the transfer bottleneck.'
+- stage: other
+  model_family: 'Asynchronous embedding service (upstream user model)'
+  details: 'Triggered on high-value user events (primarily user clicks, per the KDD version); writes compressed user embeddings to a feature store read at request time.'
+id_tokenization:
+  approach: ID embeddings plus dense content embeddings
+  details: 'Sparse IDs embedded; actions tokenized from type, item, surface, time and metadata; semantic content embeddings from fine-tuned LLaMA and multimodal content-understanding models are added per event. Not semantic-ID tokenization.'
+features_signals:
+- User sequences of 500 to 5000 actions in experiments and about 400 per source online
+- Ad, user-ad and context features
+- Dense content embeddings from LLaMA-based and multimodal content-understanding models
+training:
+  mode: Offline training; scaling runs use 128 H100 GPUs and 229K steps on 30B examples sampled from production traffic
+  objectives:
+  - Weighted multi-task binary cross-entropy (CTR, CVR, ...)
+  notes: 'Primary metric is relative Normalized Entropy against a strong production baseline; 0.02% NE is stated as statistically significant and revenue-relevant on internal data.'
+serving_infra: 'Upstream encoders run on a dedicated H100 cluster, heavily batched at much lower QPS than the ranker; the online path adds one feature lookup. Paper reports no measurable P99 latency change.'
+scale:
+- metric: Upstream vs online sequence FLOPs
+  value: '>45x'
+  note: 'Upstream model consumes more than 45x the sequence FLOPs of the online module'
+- metric: Upstream compute per sample
+  value: 92 GFLOPs
+  note: Figure 1 label for the upstream model
+- metric: Online ranking volume
+  value: trillions of requests per day
+  note: Section 7.1 description of the production ranker
+results_reported: 'Scaling (offline, NE vs production baseline): Deep-Balanced L=8, d=256 gives -0.17% NE; with content embeddings a 4-layer model gains -0.118% vs +0.06% to -0.01% without. Slopes alpha vs log10 FLOPs: sequence length 0.265, depth 0.200, width 0.133, no-content 0.082. Upstream to downstream transfer ratio about 50% (upstream -0.14% gives downstream -0.07%; 53% for a model-heavy variant). Production: across multiple large-scale A/B tests the online LLaTTE plus upstream embeddings gave about 0.25% NE reduction on the flagship ads ranker, a 4.3% conversion uplift on Facebook Feed and Reels, with no measurable P99 change.'
+caveats:
+- 'Scaling-law studies are offline on the upstream model, on a proprietary platform; the paper reports slopes and NE deltas but no absolute NE.'
+- 'The deployed online sequence module is intentionally much smaller than the models in the scaling study.'
+- 'A/B details such as traffic share, duration and per-surface breakdown are not given; "4.3% conversion uplift" is stated alongside the "about 0.25% NE reduction".'
+- 'The arXiv v1 text says upstream updates are triggered "primarily by user conversions"; the KDD camera-ready says "primarily user clicks". The card follows the KDD version.'
+unknown_fields:
+- parameter counts of deployed models
+- A/B traffic share and duration
+- absolute NE values
+- embedding service QPS and cluster size
+sources:
+- title: "LLaTTE: Scaling Laws for Multi-Stage Sequence Modeling in Large-Scale Ads Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818442
+  type: paper
+- title: LLaTTE, arXiv 2601.20083
+  url: https://arxiv.org/abs/2601.20083
+  type: paper
+version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, from the owner Zotero copy. arXiv has only v1 of 27 Jan 2026, which differs in at least one detail: the trigger event is conversions in arXiv and clicks in KDD.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2601.20083
+  local_pdf: /workspace/recarch/zotero/meta-llatte-2026.pdf
+  sections_read: 'Abstract, introduction, related work, preliminaries, LLaTTE architecture (Section 4), scaling framework (5), results (6: depth/width, length, content, global compute), multi-stage model (7), production deployment (8), conclusion, appendix A (architecture, MLA, attention analysis)'
+  verified_on: '2026-10-30'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No repo linked in the paper; no Meta/facebookresearch repository for LLaTTE found by GitHub search on 2026-10-30.'
+core_idea: A compact transformer sequence module in the online ranker consumes cached embeddings from a large asynchronous upstream user model.
+deployed_in: Meta Ads ranking on Facebook Feed and Reels
+scale_short: 92 GFLOPs per sample upstream, trillions of requests per day
+key_result: Conversion uplift of 4.3% on Facebook Feed and Reels across multiple large-scale A/B tests, with no measurable P99 change
+results_table:
+  online:
+  - setting: Facebook Feed and Reels, multiple A/B tests
+    method: LLaTTE with upstream embeddings
+    metric: Conversion
+    result: +4.3%
+    versus: Production ranker
+  - setting: Flagship ads ranker, multiple A/B tests
+    method: LLaTTE with upstream embeddings
+    metric: NE
+    result: About -0.25%
+    versus: Production ranker
+  offline:
+  - setting: Scaling study, L=8, d=256
+    method: Deep-Balanced
+    metric: NE
+    result: -0.17%
+    versus: Production baseline
+  - setting: Upstream to downstream transfer
+    method: Upstream model
+    metric: NE
+    result: -0.14% upstream gives -0.07% downstream
+    versus: About 50% transfer ratio

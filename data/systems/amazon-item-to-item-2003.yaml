@@ -1,0 +1,94 @@
+id: amazon-item-to-item-2003
+name: Amazon item-to-item collaborative filtering
+company: Amazon
+surface: Amazon.com product recommendations
+year: 2003
+era: classic
+era_reason: "Item-to-item collaborative filtering, no learned neural model"
+first_public: "2003-01"
+venue: "IEEE Internet Computing 2003"
+venue_year: 2003
+published_version_checked: true
+primary_source: "https://doi.org/10.1109/MIC.2003.1167344"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Item-to-item collaborative filtering precomputes a similar-items table offline, so online recommendation is a lookup that scales independently of the number of customers."
+summary: IEEE Internet Computing industry report (Jan/Feb 2003) by Linden, Smith and York of Amazon. Item-to-item collaborative filtering
+  builds a similar-items table offline from the item-by-customer purchase matrix, so that online work is a lookup of items similar to
+  each of the user's purchased or rated items, independent of the number of customers and catalog size. Used across Amazon's site and
+  email campaigns.
+paradigms:
+- item-cf
+stages:
+- stage: retrieval
+  model_family: 'Item-to-item collaborative filtering: offline cosine similarity between item vectors (dimensions are customers who
+    bought the item), stored as a similar-items table; online aggregation of items similar to the user''s purchases and ratings, then
+    recommend the most popular or correlated'
+  details: 'Offline loop: for each item I1, for each customer who bought I1, for each other item I2 that customer bought, record the
+    pair; then compute similarity for each pair. Worst case O(N^2 M), close to O(NM) in practice; sampling customers of best-selling
+    titles reduces runtime with little quality loss.'
+id_tokenization:
+  approach: Item IDs; no learned embeddings in this formulation
+  details: null
+features_signals:
+- Co-purchase / co-rating patterns
+- User's purchased and rated items
+training:
+  mode: Offline batch computation of the similar-items table
+  objectives:
+  - item-item cosine similarity over co-purchase
+  notes: The online step depends only on how many items the user purchased or rated; the paper says it works with as few as two or three
+    items.
+serving_infra: Online component is a lookup into the precomputed table. The paper states that many applications need results in no more
+  than half a second.
+scale:
+- metric: Customers
+  value: more than 29 million
+  note: paper, 2003
+- metric: Catalog items
+  value: several million
+  note: paper, 2003
+results_reported: 'No experimental metrics. The paper states qualitatively that click-through and conversion rates of recommendations
+  vastly exceed untargeted content such as banner ads and top-seller lists, and that the algorithm scales independently of customer
+  and item counts. Surfaces named: homepage ''Your Recommendations'', shopping-cart recommendations, and many email campaigns.'
+caveats:
+- Industry report with no quantitative evaluation; the claim about CTR and conversion is qualitative.
+- Describes the 2003 system; the paper cites an Amazon patent (US 6,266,649) for the method.
+- The paper does not describe ranking, features or deep models.
+unknown_fields:
+- similarity table size
+- refresh cadence
+- A/B results
+sources:
+- title: "Amazon.com Recommendations: Item-to-Item Collaborative Filtering, IEEE Internet Computing 2003"
+  url: https://doi.org/10.1109/MIC.2003.1167344
+  type: paper
+- title: 'Amazon.com Recommendations: Item-to-Item Collaborative Filtering, IEEE Internet Computing 7(1), 2003'
+  url: https://doi.org/10.1109/mic.2003.1167344
+  type: paper
+- title: Paper copy by Linden, Smith and York
+  url: https://www.cs.umd.edu/~samir/498/Amazon-Recommendations.pdf
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://www.cs.umd.edu/~samir/498/Amazon-Recommendations.pdf
+  local_pdf: (read as text via https://www.cs.umd.edu/~samir/498/Amazon-Recommendations.pdf, a public course-site copy; no local PDF)
+  sections_read: 'Entire article (4 pages): comparison of traditional CF, cluster models, search-based methods; item-to-item algorithm;
+    scalability comparison; conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Precompute a similar-items table offline, so online work is a lookup.
+deployed_in: Amazon.com homepage, shopping cart and email campaigns
+scale_short: More than 29 million customers and several million catalog items
+key_result: No experimental metrics, the paper says click-through and conversion rates vastly exceed untargeted content
+results_table:
+  note: No experimental metrics. The paper states qualitatively that click-through and conversion rates of recommendations vastly exceed untargeted
+    content such as banner ads and top-seller lists.

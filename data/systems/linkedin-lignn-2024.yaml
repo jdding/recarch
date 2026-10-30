@@ -1,0 +1,150 @@
+id: linkedin-lignn-2024
+name: "LiGNN"
+company: LinkedIn
+surface: Graph embeddings for feed, jobs, ads, people recommendation
+year: 2024
+era: deep
+era_reason: "GraphSAGE-style GNN at scale; not generative"
+first_public: "2024-02"
+venue: "KDD 2024"
+venue_year: 2024
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3637528.3671566"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "LiGNN: a deployed GraphSAGE-style GNN over a graph with up to a hundred billion nodes; reports about +2% Ads CTR and +1% job-application hearing-back rate."
+summary: LinkedIn's KDD 2024 paper on LiGNN, a deployed large-scale GNN framework. A GraphSAGE-style encoder with cosine / in-batch
+  decoders is trained over a heterogeneous graph of up to a hundred billion nodes and several hundred billion edges, with ID embeddings,
+  temporal-sequence modeling with a SAGE encoder plus Transformer using a prefix causal mask and long-term loss, graph densification for cold
+  start, and 2-hop PPR sampling. Training is built on Microsoft DeepGNN's graph engine and sped up 7x; embeddings are produced near-line
+  with Beam and used as features in Feed EBR, OON Feed, Jobs, People recommendation and Ads CTR.
+paradigms:
+- graph-neural-network
+stages:
+- stage: retrieval
+  model_family: 'Encoder-decoder GNN: GraphSAGE-style encoder with mean or attention aggregation, node ID embeddings and dual encoders for source and destination, optional temporal Transformer over the last N (for example 100) activities plus H (for example 4) SAGE
+    output heads with prefix causal mask and a long-term loss; decoders: MLP, cosine, or in-batch negative sampling. Only the trained
+    encoder is kept to produce node embeddings used as features in downstream models.'
+  details: Used in Follow Feed EBR and out-of-network Feed EBR (as an extra candidate generator), People Recommendation retrieval, Top
+    Applicant Jobs ranking features and Job Recommendation ranking, and as features in Ads CTR models. The paper therefore spans retrieval
+    and ranking uses; the table stage lists the embedding-based retrieval use as primary.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- LinkedIn graphs
+training:
+  mode: Offline training on Kubernetes with a CPU Graph Engine (Microsoft DeepGNN) plus GPU trainers fetching sampled compute graphs
+    over gRPC; Horovod with NCCL ring allreduce. Distributed training uses 6 to 24 workers.
+  objectives:
+  - link prediction with binary cross entropy and in-batch negative objectives
+  - long-term loss predicting future events for the temporal model
+  notes: 'Graph has engagement, affinity and attribute edges. Densification: nodes with out-degree below the 30th percentile are linked
+    to their top k (about 50) similar nodes above the 90th percentile using external embeddings (profile LLM embeddings for members,
+    content embeddings for items) and HNSW. Training speed: 24 hours to 3.3 hours on a large Follow Feed dataset; per Table 3 the gains are MLPinit 16.25%, adaptive neighbor sampling 24.2%, grouping and slicing 69.9%, mixed precision 8%, local gradient aggregation 35.2%, shared-memory queue 68.04% and GPU co-location 0%. Training success rate raised from 30% to over 90% (gRPC retry +15%, Horovod +35%, GeneratorEnqueuer
+    +10%).'
+serving_infra: 'Near-line inference pipeline on Apache Beam: an item-creation or member-interaction event arrives via Kafka, features
+  are joined, the GNN encoder runs, and embeddings are written to Venice feature storage or a Kafka topic for other Beam pipelines.
+  2-hop PPR sampling was chosen as the sampling strategy because the near-line serving supports only 2-hop. The paper says 500M member
+  embeddings are generated for People Recommendation.'
+scale:
+- metric: Graph size
+  value: up to a hundred billion nodes and several hundred billion edges
+  note: paper
+- metric: Members
+  value: more than 1 billion in more than 200 countries and territories
+  note: paper
+- metric: People Recommendation graph
+  value: up to one billion member nodes, billions of connection edges; 500M member embeddings generated
+  note: paper
+results_reported: 'Abstract-level approximate relative production gains: 1% job application hearing-back rate, 2% Ads CTR, 0.5% Feed
+  engaged DAU, 0.2% sessions and 0.1% WAU from People Recommendation. Follow Feed (Table 4, incremental validation AUC): 200 vs 20 neighbors
+  +3.2%, attention aggregator +0.9%, dual encoder +2.5%, ID embeddings +15.3%, graph densification +0.5%, 2-hop PPR sampling +0.6%,
+  temporal graph +5.8%; offline recall +9.6% vs the rule-based candidate selection; online +0.5% Feed engaged DAU. Temporal ablation
+  (Table 1, Feed): baseline AUC 0.71978; all combined 0.76176 (+5.83%). OON Feed: about +0.2% DAU engaging with professional content.
+  Jobs per Table 5: offline AUC +1.1%, online renewal rate +0.3%, positive hearing-back rate +1.0%, company follows +1.8%; temporal model
+  +6.8% AUC in Job Recommendation Ranking with +0.4% job viewers and +0.4% qualified applicants. People Recommendation per Table 7: offline
+  recall +29.6%, sessions +0.2%, WAU +0.1%, new member connections +2.4%; PPR sampling beats weighted sampling by at least 2% (multi-hop
+  PPR +2.3%, 2-hop PPR +2.1%). Ads per Table 8: member embeddings +0.17% AUC, all embeddings +0.39% AUC, about +2% online CTR.'
+caveats:
+- The headline gains are described by the paper as approximate relative improvements and are not all from a single A/B; each product
+  has its own A/B with its own metrics.
+- The paper's ablation numbers are validation AUC lifts on Follow Feed and are incremental (each row on top of the previous).
+- 'The paper notes an online lesson: an impression-discount component sat after retrieval and discarded relevant updates, so offline
+  gains faded online until it was moved before retrieval.'
+- The ACM reference block in the arXiv text still has a placeholder DOI; the venue (KDD 2024, Barcelona) is taken from the page header.
+unknown_fields:
+- model dimensions and parameter counts
+- serving latency
+- A/B traffic shares and durations
+sources:
+- title: "LiGNN: Graph Neural Networks at LinkedIn, KDD 2024"
+  url: https://doi.org/10.1145/3637528.3671566
+  type: paper
+- title: LiGNN, arXiv 2402.11139
+  url: https://arxiv.org/abs/2402.11139
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2402.11139
+  local_pdf: /workspace/src/fulltext/2402.11139.txt (text of arXiv 2402.11139v1)
+  sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (graph, training infra, architecture, temporal graphs, densification,
+    multi-hop sampling), Sec 4 (training stability and speed, Tables 2-3), Sec 5 near-line inference, Sec 6 experiments per Tables 4-8,
+    Sec 7 deployment lessons, conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A GraphSAGE-style encoder over a hundred-billion-node graph, with temporal modeling and 2-hop PPR sampling.
+deployed_in: LinkedIn Feed, Jobs, People recommendation and Ads CTR
+scale_short: Graph of up to a hundred billion nodes and several hundred billion edges
+key_result: About +2% Ads CTR in production, as stated in the abstract
+results_table:
+  online:
+  - setting: Ads, Table 8
+    method: LiGNN embeddings
+    metric: Online CTR
+    result: About +2%
+    versus: Production ranking
+  - setting: Follow Feed
+    method: LiGNN
+    metric: Feed engaged DAU
+    result: +0.5%
+    versus: Production
+  - setting: Jobs, Table 5
+    method: LiGNN
+    metric: Positive hearing-back rate
+    result: +1.0%
+    versus: Production
+  - setting: People Recommendation, Table 7
+    method: LiGNN
+    metric: New member connections
+    result: +2.4%
+    versus: Production
+  offline:
+  - setting: Follow Feed
+    method: LiGNN
+    metric: Recall
+    result: +9.6%
+    versus: Rule-based candidate selection
+  - setting: Temporal ablation, Table 1, Feed
+    method: All combined
+    metric: AUC
+    result: 0.76176, +5.83%
+    versus: Baseline 0.71978
+  - setting: People Recommendation, Table 7
+    method: LiGNN
+    metric: Recall
+    result: +29.6%
+    versus: Production
+  - setting: Ads, Table 8
+    method: All embeddings
+    metric: AUC
+    result: +0.39%
+    versus: Production

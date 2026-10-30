@@ -1,0 +1,33 @@
+# Redrawn, simplified diagram (house style: inputs -> core -> outputs). Rendered to inline SVG by build.py.
+# Source: Covington, Adams, Sargin, "Deep Neural Networks for YouTube Recommendations" (RecSys 2016), candidate-generation model (paper Fig. 3, Sec. 3.2-3.3).
+alt: "Left to right: watch history, search history, geography and device, and age/gender features are embedded, concatenated, passed through fully connected ReLU layers into a user vector; training uses a softmax over videos, serving uses nearest-neighbour lookup."
+caption:
+  fig: "Fig. 3"
+  work: "Deep Neural Networks for YouTube Recommendations, RecSys 2016"
+  url: "https://doi.org/10.1145/2959100.2959190"
+  note: "Candidate-generation network only; the ranking network (paper Fig. 7) is not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: watch,  kind: input, text: ["Watch history", "video IDs -> embeddings, averaged"]}
+      - {id: search, kind: input, text: ["Search history", "query unigrams/bigrams -> embeddings, averaged"]}
+      - {id: geo,    kind: input, text: ["Geography, device", "embedded"]}
+      - {id: dense,  kind: input, text: ["Example age, gender, logged-in state, user age", "dense values normalized to 0-1"]}
+  - label: Core model
+    boxes:
+      - {id: tower, kind: module, text: ["Concatenate + fully connected ReLU layers", "embeddings learned jointly with the network"]}
+  - label: Representation
+    boxes:
+      - {id: user, kind: module, text: ["User vector", "output of the last hidden layer"]}
+  - label: Outputs
+    boxes:
+      - {id: train, kind: output, text: ["Training", "softmax over millions of video classes (sampled), cross-entropy loss"]}
+      - {id: serve, kind: output, text: ["Serving", "approximate nearest-neighbour lookup in video vectors -> hundreds of candidates"]}
+edges:
+  - [watch, tower]
+  - [search, tower]
+  - [geo, tower]
+  - [dense, tower]
+  - [tower, user]
+  - [user, train]
+  - [user, serve]

@@ -1,0 +1,121 @@
+id: taobao-nextgen-2026
+name: "NextGen"
+company: Alibaba Taobao & Tmall Group
+surface: Taobao Miaosha time-limited discount scenario, re-ranking stage
+year: 2026
+era: generative
+era_reason: "An encoder-decoder autoregressively builds the final page by selecting from the whole candidate set at each step; generation, not item scoring, is the core of the re-ranker."
+first_public: "2026-09"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831881"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Taobao's NextGen is a full-candidate autoregressive re-ranker; 14-day 5% A/B on Miaosha vs the prior generative re-ranker Sort-gen: GMV +18.85%, orders +12.35%."
+summary: 'NextGen re-ranks the 100 candidates from the ranking stage into a 10-item page. A global encoder attends over the user token, all candidates and the click history; a decoder then picks one item per step from all remaining candidates, with a shared candidate scoring layer so full-candidate scoring stays cheap. Upstream CTR and CVR scores are embedded and fed to both the item layer and the scoring layer, so the model learns only the gain over the ranker. Frozen embeddings from Taobao multimodal LLM TBStar are added offline, so no LLM runs at serving time. Training uses ordered regression over page-level click, order and GMV objectives; inference is greedy with an MMR diversity term.'
+paradigms:
+- learning-to-rank
+- multi-task
+- llm-based
+stages:
+- stage: re-rank
+  model_family: 'Encoder-decoder Transformer, 2 encoder and 2 decoder layers, hidden size 256, 4 heads'
+  details: 'Takes N=100 candidates from ranking and outputs K=10 items by greedy autoregressive selection over all remaining candidates; ordered regression predicts threshold-level probabilities for several objectives, which are rank-normalized and fused with an MMR diversity score.'
+id_tokenization:
+  approach: 'No semantic IDs; item ID embeddings plus frozen TBStar multimodal LLM embeddings'
+  details: 'Each item representation concatenates ID, item-side, LLM, position, CTR-score and CVR-score embeddings; the LLM vector is a 256-dimensional mean-pooled encoding of title and image computed offline.'
+features_signals:
+- User ID, device type and temporal features
+- Candidate item IDs, categories, brands and historical CTR and CVR
+- Upstream ranking CTR and CVR scores and position
+- Frozen LLM semantic embeddings of title and image
+- Historical click sequence and logged exposure sequence
+training:
+  mode: 'Offline training with teacher forcing on logged exposure sequences'
+  objectives:
+  - 'Ordered regression for page-level click, order and GMV objectives'
+  notes: 'Three months of Miaosha production traffic, Adam with learning rate 0.001 and batch size 1024.'
+serving_infra: 'Greedy decoding with shared candidate scoring to fit real-time latency; the paper reports operating within production latency budgets but gives no latency figures.'
+scale:
+- metric: Candidates in, items out
+  value: 100 in, 10 out
+  note: Per request
+- metric: Training data
+  value: 3 months of production traffic
+  note: Miaosha scenario
+- metric: Users served
+  value: Hundreds of millions daily
+  note: Reported for the deployed system
+results_reported: 'Online 14-day A/B on 5% of Miaosha traffic, all lifts significant at p < 0.01. Against the deployed generative re-ranker Sort-gen, NextGen gives GMV +18.85%, order volume +12.35%, CTR +18.77% and visit-to-purchase rate +11.78%. Against the RULE baseline, NextGen gives GMV +24.73%, order volume +15.61%, CTR +20.08% and visit-to-purchase rate +14.84%. A 14-day A/A test showed no significant difference. Offline, average CTR AUC is 0.8123 and CVR AUC 0.8433 for NextGen against 0.7705 and 0.7739 for Sort-gen.'
+caveats:
+- 'The headline gains are against Sort-gen, an earlier method from the same team, as redeployed under a new diversity constraint; the paper notes Sort-gen numbers differ from its original paper for that reason.'
+- 'NextGen scores the top 100 candidates while Sort-gen scored the top 30, and the authors state that this pool effect is not separated in an online test.'
+- 'Evidence is from the Miaosha discount scenario only.'
+- 'Training labels come from logged exposures and carry position bias from the upstream ranker.'
+unknown_fields:
+- serving latency figures
+- GPU or hardware setup
+- whether other Taobao scenarios use it
+sources:
+- title: "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831881
+  type: paper
+version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831881, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3773078.3831881
+  local_pdf: /workspace/recarch/zotero/taobao-nextgen-2026.pdf
+  sections_read: 'Abstract, introduction, related work, method 4.1-4.2, experimental setup, online A/B results, offline AUC and ablation, conclusion and limitations'
+  verified_on: '2026-10-30'
+  published_pdf: 'RecSys 2026 camera-ready PDF read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no NextGen repository.'
+core_idea: An encoder-decoder builds the page by choosing items one at a time from the full candidate set under several business objectives.
+deployed_in: Taobao Miaosha re-ranking, tested on 5% of traffic
+scale_short: 100 candidates in, 10 items out, hundreds of millions of users daily
+key_result: GMV +18.85% and order volume +12.35% in a 14-day 5% online A/B against the prior generative re-ranker Sort-gen
+results_table:
+  online:
+  - setting: Miaosha 14-day A/B, 5% traffic
+    method: NextGen
+    metric: GMV
+    result: +18.85%
+    versus: Sort-gen
+  - setting: Miaosha 14-day A/B, 5% traffic
+    method: NextGen
+    metric: Order volume
+    result: +12.35%
+    versus: Sort-gen
+  - setting: Miaosha 14-day A/B, 5% traffic
+    method: NextGen
+    metric: CTR
+    result: +18.77%
+    versus: Sort-gen
+  - setting: Miaosha 14-day A/B, 5% traffic
+    method: NextGen
+    metric: Visit-to-purchase rate
+    result: +11.78%
+    versus: Sort-gen
+  - setting: Miaosha 14-day A/B, 5% traffic
+    method: NextGen
+    metric: GMV
+    result: +24.73%
+    versus: RULE baseline
+  offline:
+  - setting: Miaosha offline
+    method: NextGen
+    metric: CTR AUC
+    result: '0.8123'
+    versus: Sort-gen 0.7705
+  - setting: Miaosha offline
+    method: NextGen
+    metric: CVR AUC
+    result: '0.8433'
+    versus: Sort-gen 0.7739

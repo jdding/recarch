@@ -1,0 +1,126 @@
+id: sim-alibaba-2020
+name: "SIM"
+company: Alibaba
+surface: Display advertising CTR with lifelong user behavior
+year: 2020
+era: deep
+era_reason: "Search-based lifelong user interest attention for CTR"
+first_public: "2020-06"
+venue: "CIKM 2020"
+venue_year: 2020
+deployed_year: 2019
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3340531.3412744"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "SIM handles lifelong behavior sequences with a two-stage search-then-model cascade; in Alibaba display ads since 2019 it gives CTR +7.1%, RPM +4.4%."
+summary: 'CIKM 2020 paper from Alibaba: Search-based Interest Model handles lifelong user behavior sequences with a two-stage cascade.
+  A General Search Unit, GSU, retrieves the top-K behaviors relevant to the candidate item from the raw sequence through hard-search by category match or soft-search by embedding inner product, then an Exact Search Unit, ESU, runs multi-head attention over the retrieved sub-sequence.
+  Deployed in Alibaba''s display advertising system since 2019.'
+paradigms:
+- attention-ctr
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: 'SIM: GSU (hard-search or soft-search, trained with an auxiliary CTR loss) + ESU (multi-head attention with time-interval
+    embeddings) feeding an MLP; loss = alpha*Loss_GSU + beta*Loss_ESU'
+  details: Hard-search is non-parametric (select behaviors in the candidate's category; alpha = 0); soft-search uses shared embeddings
+    and maximum-inner-product search (alpha = beta = 1). Deployed variant is hard-search.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Long user behavior sequences (up to 54,000 items)
+training:
+  mode: 'Offline. Industrial dataset from Alibaba display advertising impression logs: training on the past 49 days, test on the following
+    day; long-term behavior from the preceding 180 days, short-term from the preceding 14 days'
+  objectives:
+  - CTR (ESU) with auxiliary CTR loss for GSU in soft-search
+  notes: 'Table 1: industrial dataset 0.29 billion users, 0.6 billion ads, 12.2 billion instances. Public: Amazon Books with a max sequence of 100 and a Taobao user-behavior dataset with a max length of 500, made of 100 short-term and 400 long-term behaviors.'
+serving_infra: Real-time Prediction system, RTP, handles more than 1 million users per second at peak and scores hundreds of candidates
+  per user. A two-level offline index (user id, then category) called the user behavior tree is rebuilt daily and reaches about 22 TB;
+  sub-sequence per category truncated to 200, fewer than 20 categories per request; multi-head attention optimized by deep kernel fusion.
+  Serving over ten thousand behaviors adds about 5 ms versus MIMN on truncated behavior.
+scale:
+- metric: Max behavior sequence length
+  value: 54,000 (paper says 54x MIMN's 1000)
+  note: paper
+- metric: User behavior tree index size
+  value: 22 TB
+  note: paper
+- metric: Peak traffic
+  value: more than 1 million users per second
+  note: paper
+results_reported: 'Online (Table 5, since 2019 in Alibaba display advertising): CTR +7.1%, RPM +4.4% lift; SIM serves the main traffic.
+  Industrial AUC per Table 4: DIEN 0.6452, MIMN 0.6541, SIM (hard) 0.6604, SIM (soft) 0.6625, SIM (hard) with time info 0.6624; hard-search
+  chosen for deployment because soft-search''s gain is slight and it needs nearest-neighbor search online. Public AUC (Table 2, Taobao
+  / Amazon): DIN 0.9214 / 0.7276, MIMN 0.9278 / 0.7396, SIM (soft) 0.9416 / 0.7510; SIM (soft) with time info 0.9501 on Taobao.'
+caveats:
+- Abstract-level online lift (7.1% CTR, 4.4% RPM) comes without baseline traffic share or duration.
+- The 22 TB figure is for the user behavior tree index; storage of other features is not given.
+- Table values were read from extracted text and cross-checked against the text discussion.
+unknown_fields:
+- A/B traffic share and duration
+- number of machines
+- GPU count
+sources:
+- title: "Search-based User Interest Modeling with Lifelong Sequential Behavior Data for Click-Through Rate Prediction, CIKM 2020"
+  url: https://doi.org/10.1145/3340531.3412744
+  type: paper
+- title: Search-based User Interest Modeling with Lifelong Sequential Behavior Data for CTR Prediction, arXiv 2006.05639
+  url: https://arxiv.org/abs/2006.05639
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2006.05639
+  local_pdf: /workspace/src/fulltext/2006.05639.pdf
+  sections_read: Abstract, intro, SIM design (GSU hard/soft search, ESU), Sec 4 online serving implementation, Sec 5 experiments (Tables
+    1-6, Fig 5), deployment text
+  verified_on: '2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/NVIDIA/DeepLearningExamples/tree/master/TensorFlow2/Recommendation/SIM
+    owner: NVIDIA
+    official: false
+    note: NVIDIA's TensorFlow 2 reimplementation of SIM; not from Alibaba.
+core_idea: A General Search Unit retrieves relevant behaviors from the lifelong sequence, then an Exact Search Unit attends over them.
+deployed_in: Alibaba display advertising CTR prediction since 2019, serving the main traffic
+scale_short: Sequences up to 54,000 behaviors, 22 TB behavior index, over 1 million users per second at peak
+key_result: CTR +7.1% and RPM +4.4% online in Alibaba display advertising, with SIM serving the main traffic
+results_table:
+  online:
+  - setting: Alibaba display advertising, Table 5
+    method: SIM
+    metric: CTR
+    result: +7.1%
+    versus: Previous production model
+  - setting: Alibaba display advertising, Table 5
+    method: SIM
+    metric: RPM
+    result: +4.4%
+    versus: Previous production model
+  offline:
+  - setting: Industrial dataset, Table 4
+    method: SIM hard-search
+    metric: AUC
+    result: '0.6604'
+    versus: DIEN 0.6452, MIMN 0.6541
+  - setting: Industrial dataset, Table 4
+    method: SIM soft-search
+    metric: AUC
+    result: '0.6625'
+    versus: DIEN 0.6452, MIMN 0.6541
+  - setting: Taobao public dataset, Table 2
+    method: SIM soft-search
+    metric: AUC
+    result: '0.9416'
+    versus: DIN 0.9214, MIMN 0.9278
+  - setting: Amazon public dataset, Table 2
+    method: SIM soft-search
+    metric: AUC
+    result: '0.7510'
+    versus: DIN 0.7276, MIMN 0.7396

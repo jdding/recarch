@@ -1,0 +1,93 @@
+id: meta-gem-2025
+name: "GEM"
+company: Meta
+surface: Ads recommendation foundation model for Facebook and Instagram
+year: 2025
+era: generative
+era_reason: "Foundation-model-scale ads model trained at LLM-like scale"
+first_public: "2025-11"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://engineering.fb.com/2025/11/10/ml-applications/metas-generative-ads-model-gem-the-central-brain-accelerating-ads-recommendation-ai-innovation/"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "Meta's large foundation model for ads ranking acts as a central brain that transfers knowledge to surface-specific models; 2025 post: +5% conversions on Instagram."
+summary: GEM, the Generative Ads Recommendation Model, is a large foundation model trained on thousands of GPUs that acts as a 'central brain' for ads ranking, transferring knowledge
+  to downstream surface-specific models; later posts describe LLM-scale training and a single central model across surfaces.
+paradigms:
+- foundation-model
+stages:
+- stage: rank
+  model_family: Foundation model with knowledge transfer to downstream models
+  details: Described at blog level only.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Not enumerated in the posts read
+training:
+  mode: Large-scale offline pretraining, transfer to downstream models
+  objectives: null
+  notes: 'Later post: 20-25% MFU and 4x training FLOPs in 12 months.'
+serving_infra: Thousands of GPUs for training
+scale:
+- metric: MFU (2026 post)
+  value: 20-25%
+  note: blog
+- metric: Training FLOPs growth
+  value: 4x in 12 months
+  note: blog
+results_reported: '2025 post: +5% ad conversions on Instagram and +3% on Facebook Feed (Q2). Oct 2026 post: 18.9% conversion and 12%
+  CTR improvement reported for the new generation.'
+caveats:
+- Blog posts only; metric definitions and baselines are not given.
+unknown_fields:
+- architecture details
+- parameter count
+- serving
+sources:
+- title: Meta's Generative Ads Model, GEM
+  url: https://engineering.fb.com/2025/11/10/ml-applications/metas-generative-ads-model-gem-the-central-brain-accelerating-ads-recommendation-ai-innovation/
+  type: engineering_blog
+- title: Training GEM at LLM scale
+  url: https://engineering.fb.com/2026/08/03/ml-applications/training-gem-at-llm-scale-meta-ads-recommendation-foundation-model/
+  type: engineering_blog
+- title: 'GEM: scaling frontier ads AI, 2026'
+  url: https://engineering.fb.com/2026/10/13/ml-applications/generative-ads-model-gem-scaling-frontier-ads-ai/
+  type: engineering_blog
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A central foundation model for ads ranking that transfers knowledge to surface-specific models.
+deployed_in: Ads on Facebook and Instagram
+scale_short: MFU 20-25% in a 2026 post, training FLOPs up 4x in 12 months
+key_result: Ad conversions +5% on Instagram and +3% on Facebook Feed in Q2
+results_table:
+  online:
+  - setting: Instagram, Q2, 2025 post
+    method: GEM
+    metric: Ad conversions
+    result: +5%
+    versus: Previous ads models
+  - setting: Facebook Feed, Q2, 2025 post
+    method: GEM
+    metric: Ad conversions
+    result: +3%
+    versus: Previous ads models
+  - setting: Oct 2026 post, new generation
+    method: GEM
+    metric: Conversion
+    result: +18.9%
+    versus: Previous generation not stated
+  - setting: Oct 2026 post, new generation
+    method: GEM
+    metric: CTR
+    result: +12%
+    versus: Previous generation not stated

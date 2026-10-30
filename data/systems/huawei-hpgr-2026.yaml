@@ -1,0 +1,102 @@
+id: huawei-hpgr-2026
+name: "HPGR"
+company: Huawei
+surface: AppGallery app recommendation ranking
+year: 2026
+era: generative
+era_reason: "An HSTU-based generative recommender with session-level pre-training and preference-guided sparse attention replaces the production DLRM ranker."
+first_public: "2026-04"
+venue: "WWW 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3774904.3792790"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Huawei's HPGR adds session pre-training and preference-guided sparse attention to an HSTU ranker; 7-day 50% A/B on AppGallery vs the production DLRM: eCPM +1.99%."
+summary: 'HPGR keeps the HSTU generative recommender as its ranking backbone and removes its flat-sequence assumption. Stage one pre-trains a Session Enhancement Module with masked item modeling: user history is split into sessions by inactivity, an intra-session and an inter-session Transformer summarize it, and the item embeddings learned here are inherited later. Stage two fine-tunes on pCTR with time-aware positional encoding and Preference-Guided Sparse Attention, which picks the top 50 history items by embedding similarity to the candidate and applies a Gaussian soft mask in the HSTU encoder. It was tested online in the AppGallery recommendation platform.'
+paradigms:
+- sequential-transformer
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'HSTU encoder with session encoders and sparse attention mask'
+  details: 'Predicts CTR for each user-candidate pair. A two-level Transformer produces a session context vector added to every history token; a Gaussian mask built from the top 50 history items by candidate similarity is applied to the HSTU attention scores; an MLP outputs the score.'
+id_tokenization:
+  approach: 'No semantic IDs; item ID embeddings initialized from masked item pre-training'
+  details: 'Pre-trained item embeddings are updated with a smaller learning rate during fine-tuning.'
+features_signals:
+- Long user interaction history with timestamps, split into sessions by inactivity
+- Candidate item with a time-aware position among the history items
+training:
+  mode: 'Offline two-stage training, unlabeled pre-training then supervised fine-tuning'
+  objectives:
+  - 'Masked item modeling for pre-training'
+  - 'Binary cross-entropy on click labels for fine-tuning'
+  notes: 'Main ablations use a random 2.5% user sample of one month of AppGallery logs; the final check uses the full test set.'
+serving_infra: 'Not described. The paper reports a manageable increase in training and inference time over MTGR but gives no figures.'
+scale:
+- metric: Offline dataset users
+  value: About 45.8 million
+  note: One month of AppGallery logs
+- metric: Offline dataset items
+  value: About 200,000
+  note: Apps
+- metric: Interactions
+  value: About 285 million train and 7.38 million test
+  note: Full unsampled dataset
+- metric: Online A/B
+  value: 7 days, traffic split evenly
+  note: Control is the production DLRM
+results_reported: 'Online 7-day A/B on AppGallery with traffic split evenly against the production DLRM: eCPM +1.99%, reported as statistically significant. Offline AUC on a 2.5% user sample is 0.8377 for HPGR against 0.8253 for MTGR, 0.8220 for HSTU and 0.8194 for SASRec, a gain of 0.0124 absolute and 1.50% relative over MTGR. On the full test set, HPGR reaches AUC 0.89288, 0.01139 above MTGR, and the production DLRM scores 0.8880 against 0.8929 for HPGR. Pre-training alone gives 0.8327, adding the session module gives 0.8374 and the sparse attention module gives 0.8348.'
+caveats:
+- 'The online evidence is a single eCPM figure with no confidence interval or per-metric breakdown.'
+- 'Main offline results use a 2.5% user sample of a proprietary dataset, with a full-set check for the top models only.'
+- 'Training and inference time rise over MTGR and no latency figures are given.'
+- 'The paper does not state the model size used online.'
+unknown_fields:
+- online model size
+- serving latency
+- traffic scale of AppGallery
+- code
+sources:
+- title: "Beyond the Flat Sequence: Hierarchical and Preference-Aware Generative Recommendations, WWW 2026"
+  url: https://doi.org/10.1145/3774904.3792790
+  type: paper
+version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792790, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3774904.3792790
+  local_pdf: /workspace/recarch/zotero/huawei-hpgr-2026.pdf
+  sections_read: 'Abstract, introduction, related work, method 3.1-3.3, experiments 4.1-4.8 including Tables 1-3, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'WWW 2026 camera-ready PDF read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no HPGR repository.'
+core_idea: An HSTU ranker is pre-trained on user sessions and then restricted by a sparse attention mask to the most relevant history.
+deployed_in: AppGallery app recommendation ranking, tested on half of traffic
+scale_short: 45.8M users, 285M training interactions, 7-day A/B on half of traffic
+key_result: eCPM +1.99% in a 7-day A/B with traffic split evenly against the production DLRM
+results_table:
+  online:
+  - setting: AppGallery 7-day A/B, even split
+    method: HPGR
+    metric: eCPM
+    result: +1.99%
+    versus: Production DLRM
+  offline:
+  - setting: Industrial sample, 2.5% of users
+    method: HPGR
+    metric: AUC
+    result: '0.8377'
+    versus: MTGR 0.8253
+  - setting: Full test set
+    method: HPGR
+    metric: AUC
+    result: '0.8929'
+    versus: Production DLRM 0.8880

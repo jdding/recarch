@@ -1,0 +1,120 @@
+id: taobao-aigq-2026
+name: "AIGQ"
+company: Alibaba Taobao & Tmall Group
+surface: Taobao homepage HintQ pre-search query recommendation
+year: 2026
+era: generative
+era_reason: "A fine-tuned Qwen3-30B-A3B LLM generates personalized query lists, trained with list-level SFT and reinforcement learning, and replaces ID matching and co-click heuristics as a recall source."
+first_public: "2026-03"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3770855.3818317"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: search
+evidence_level: production_described
+tldr: "Taobao's AIGQ fine-tunes a 30B MoE LLM with list-level SFT and GRPO to generate homepage HintQ queries, served nearline; 30-day A/B: attributed GMV +10.68%, orders +10.31%."
+summary: 'AIGQ generates personalized pre-search queries for the HintQ box on the Taobao homepage from the user behavior sequence and profile. A Qwen3-30B-A3B model is trained first with Interest-Aware List SFT on session-aggregated, interest-reranked query lists, then with Interest-aware List GRPO, whose dual reward scores individual query relevance and list-level properties and adds a model-based reward from the online CTR ranker. Two variants are deployed. AIGQ-Direct runs nearline and caches user-to-query lists. AIGQ-Think produces chain-of-thought trigger-to-query mappings that are distilled daily into a compact index for real-time retrieval. Both plug into the existing multi-source recall and ranking stack.'
+paradigms:
+- llm-based
+- rl-alignment
+- generative-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Qwen3-30B-A3B sparse MoE LLM, direct and think variants'
+  details: 'AIGQ-Direct generates query lists asynchronously when meaningful behavior is seen and writes them to a per-user key-value cache that holds the most recent runs; AIGQ-Think outputs are turned into a daily trigger-to-query index for real-time recall. Existing ranking then orders the recalled queries.'
+id_tokenization:
+  approach: 'No semantic IDs; the LLM generates query text directly'
+  details: 'Output is a list of natural-language queries; prompts are compressed to cut redundant tokens.'
+features_signals:
+- User historical behavior sequence
+- User profile attributes such as age, gender and city
+- Context such as weather and season
+- Online CTR ranking model score as a reward signal
+training:
+  mode: 'Offline SFT and RL, with daily policy updates from online feedback'
+  objectives:
+  - 'IL-SFT: list-level supervised fine-tuning on interest-reranked query lists'
+  - 'IL-GRPO: group relative policy optimization with query-level and list-level rewards plus a CTR-model reward'
+  notes: 'Training logs span October to November 2025, about 1 million page views, trained with Megatron and the ROLL reinforcement learning framework; a 10-day A/B showed daily RL updates improve PVR and CTR.'
+serving_infra: 'Deployed on the PPU 810E platform. A request takes several seconds of LLM inference with a few hundred input tokens and dozens of output tokens, so serving is nearline caching plus a daily trigger-to-query index instead of per-request generation.'
+scale:
+- metric: Backbone
+  value: Qwen3-30B-A3B
+  note: Sparse MoE LLM
+- metric: Training set
+  value: About 1 million page views
+  note: October to November 2025 Taobao logs
+- metric: Online A/B duration
+  value: 30 days
+  note: HintQ on the Taobao homepage
+results_reported: 'Online 30-day A/B in the HintQ scenario: attributed GMV +10.68%, attributed orders +10.31%, HintQ UCTR +7.42%, 7-day retention +3.73%, search UV +0.20%; 79.3% of queries and 37.3% of leaf categories from AIGQ are not covered by other channels. Offline on a Taobao test set, Cate HR@30 is 0.4704 for the think variant after IL-GRPO against 0.1998 for the production two-tower EBR, and Query HR@30 is 0.0745 against 0.0100.'
+caveats:
+- 'The paper does not name the A/B control group or traffic share; the gains are described as relative gains in the online HintQ system.'
+- 'Real-time generation is not used; personalization from the nearline cache lags behind the latest behavior until the next visit.'
+- 'The Zotero PDF read is arXiv v1 with ACM template placeholders, not the KDD camera-ready.'
+- 'Query HR@30 values are low in absolute terms for all methods.'
+unknown_fields:
+- A/B control and traffic share
+- production QPS
+- PPU hardware count
+- number of cache runs kept per user
+sources:
+- title: "AIGQ: An End-to-End Hybrid Generative Architecture for E-commerce Query Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818317
+  type: paper
+- title: AIGQ, arXiv 2603.19710
+  url: https://arxiv.org/abs/2603.19710
+  type: paper
+version_note: 'Numbers checked against arXiv v1 of 20 Mar 2026, from the owner Zotero PDF with ACM template placeholders, so not the KDD camera-ready; the ACM page was not opened. KDD 2026 and the DOI come from the Zotero record.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2603.19710
+  local_pdf: /workspace/recarch/zotero/taobao-aigq-2026.pdf
+  sections_read: 'Abstract, introduction, method including IL-SFT, IL-GRPO and AIGQ-Think, deployment, experimental settings, offline evaluation, ablation, online A/B, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no AIGQ repository.'
+core_idea: A fine-tuned LLM generates personalized query lists, run nearline and distilled into a real-time trigger index.
+deployed_in: Taobao homepage HintQ pre-search query box, as a recall source
+scale_short: 30B MoE LLM, 30-day A/B, about 1 million page views of training data
+key_result: Attributed GMV +10.68% and attributed orders +10.31% in a 30-day online A/B on Taobao HintQ
+results_table:
+  online:
+  - setting: Taobao HintQ 30-day A/B
+    method: AIGQ
+    metric: Attributed GMV
+    result: +10.68%
+    versus: Existing HintQ stack, control not detailed
+  - setting: Taobao HintQ 30-day A/B
+    method: AIGQ
+    metric: Attributed orders
+    result: +10.31%
+    versus: Existing HintQ stack, control not detailed
+  - setting: Taobao HintQ 30-day A/B
+    method: AIGQ
+    metric: HintQ UCTR
+    result: +7.42%
+    versus: Existing HintQ stack, control not detailed
+  - setting: Taobao HintQ 30-day A/B
+    method: AIGQ
+    metric: 7-day retention
+    result: +3.73%
+    versus: Existing HintQ stack, control not detailed
+  offline:
+  - setting: Taobao test set
+    method: AIGQ-Think after IL-GRPO
+    metric: Cate HR@30
+    result: '0.4704'
+    versus: EBR 0.1998
+  - setting: Taobao test set
+    method: AIGQ-Think after IL-GRPO
+    metric: Query HR@30
+    result: '0.0745'
+    versus: EBR 0.0100

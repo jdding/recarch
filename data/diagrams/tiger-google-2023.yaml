@@ -1,0 +1,30 @@
+# Redrawn, simplified diagram. Source: Rajput et al., "Recommender Systems with Generative Retrieval" (NeurIPS 2023), paper Fig. 2a (Semantic IDs) and 2b (seq2seq retrieval).
+alt: "Left to right: item text is encoded and quantized by RQ-VAE into Semantic IDs; a user's item history is mapped to Semantic ID sequences and fed to a Transformer encoder-decoder, which generates the next item's Semantic ID token by token; a lookup table maps it back to an item."
+caption:
+  fig: "Fig. 2"
+  work: "Recommender Systems with Generative Retrieval, NeurIPS 2023"
+  url: "https://arxiv.org/abs/2305.05065"
+  note: "Combines parts (a) and (b); RQ-VAE internals (paper Fig. 3) are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: text,    kind: input, text: ["Item content text", "title, price, brand, category"]}
+      - {id: history, kind: input, text: ["User's item history", "in chronological order, plus a hashed user-ID token"]}
+  - label: Semantic IDs
+    boxes:
+      - {id: sid,    kind: module, text: ["Semantic ID generation", "text encoder (Sentence-T5) -> RQ-VAE -> tuple of codewords per item (+ collision token)"]}
+      - {id: seq,    kind: module, text: ["History as token sequence", "each item replaced by its Semantic ID tuple"]}
+  - label: Core model
+    boxes:
+      - {id: tf, kind: module, text: ["Transformer encoder-decoder", "trained to predict the next item's Semantic ID"]}
+  - label: Output
+    boxes:
+      - {id: out,  kind: output, text: ["Next Semantic ID", "generated token by token (beam search)"]}
+      - {id: item, kind: output, text: ["Recommended items", "Semantic ID -> item lookup table"]}
+edges:
+  - [text, sid]
+  - [history, seq]
+  - [sid, seq]
+  - [seq, tf]
+  - [tf, out]
+  - [out, item]

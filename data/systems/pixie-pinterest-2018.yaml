@@ -1,0 +1,160 @@
+id: pixie-pinterest-2018
+name: Pixie
+company: Pinterest
+surface: Real-time graph-based candidate generation
+year: 2017
+era: classic
+era_reason: "Random walks on a graph, no learned model, so graph random-walk CF"
+first_public: "2017-11"
+venue: "WWW 2018"
+venue_year: 2018
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3178876.3186183"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Paradigm tags corrected: random-walk replaces graph-neural-network, since Pixie is a random-walk system, not a GNN; embedding-based-retrieval is replaced by item-cf, as graph random-walk CF with no learned embeddings."
+- date: "2026-10-30"
+  note: "First-public year corrected from 2018 to 2017 based on the arXiv preprint of 2017-11."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Pixie runs biased random walks on an in-memory pin-board graph with 2B pins and 17B edges for real-time candidates; offline top-1000 hit rate 52.2% vs 10.5% for content-based."
+summary: 'WWW 2018 paper from Pinterest. Pixie is a real-time graph-based recommender that runs biased random walks with restarts on
+  an in-memory bipartite pin-board graph, pruned to 1B boards, 2B pins and 17B edges at about 120 GB, to return candidates for a weighted
+  set of query pins. Key tricks: user-feature-biased edge choice, degree-scaled step allocation across multiple query pins, a multi-hit
+  booster, early stopping, and entropy and similarity graph pruning. One server handles about 1,200 requests per second at under 60 ms p99
+  latency; the paper says Pixie-backed systems account for over half of daily pin saves.'
+paradigms:
+- random-walk
+- item-cf
+stages:
+- stage: retrieval
+  model_family: 'Graph random walk, no learned model: Pixie Random Walk on a pin-board bipartite graph. Per query pin q, steps N_q =
+    w_q * N * s_q / sum(s_r) with s_q = |E(q)| (C - log|E(q)|), C the maximum pin degree. Per-pin visit counts V_q are combined as V[p]
+    = (sum_q sqrt(V_q[p]))^2 to boost pins reached from multiple query pins. Walks stop early when at least n_p pins have reached n_v
+    visits.'
+  details: 'Edge selection is biased by user features (language and topic) via a discrete weight set and consecutive edge storage so
+    PersonalizedNeighbor is a subrange operator. Query set is user-specific and updated after each user action; weights depend on action
+    type and decay with a half life. Because the walk visits both boards and pins, both can be recommended; fresh pins are served by
+    recommending boards first. Surfaces named: Homefeed, Related Pins (Pixie is the primary candidate source, with additional layers),
+    board recommendations (''Picked For You''), Explore, email, personalized articles.'
+id_tokenization:
+  approach: Pin/board node IDs
+  details: null
+features_signals:
+- Pin-board graph
+- User features (for walk bias)
+training:
+  mode: 'No model training. The graph is rebuilt once per day: a Hadoop pipeline outputs board-pin edges, then a graph compiler on a
+    single terabyte-scale RAM machine prunes it and writes a binary that servers load; servers restart once a day to load the latest
+    graph.'
+  objectives:
+  - none; ranking by random-walk visit counts
+  notes: 'Pruning: board entropy from LDA topic vectors of the latest pins; the most diverse 10% of boards are removed; high-degree
+    pin edges are cut by keeping the boards with the highest cosine similarity of topic vectors, with pruning factor delta (degree becomes
+    |E(p)|^delta).'
+serving_infra: C++ on Stanford Network Analysis Platform, SNAP; AWS r3.8xlarge machines with 244 GB RAM hold the entire pruned graph of about 120 GB so walks never cross machines. Custom adjacency array (edgeVec with offsets) and open-addressing hash-table visit counter
+  with linear probing and a multiplicative hash; Linux HugePages of 2 MB let virtual machines serve twice as many requests at half the
+  runtime; graph load takes about 10 minutes. Each server has IO threads and worker threads with one counter per worker, and each query
+  is served by a single worker. p99 latency under 60 ms; about 1,200 requests per second per server; cluster close to 100,000 requests
+  per second.
+scale:
+- metric: Catalog
+  value: 3+ billion pins
+  note: paper
+- metric: Users
+  value: 200+ million monthly active
+  note: paper
+- metric: Original graph
+  value: 7 billion nodes, over 100 billion edges
+  note: paper
+- metric: Pruned serving graph
+  value: 3 billion nodes (1B boards, 2B pins), 17 billion edges, about 120 GB RAM
+  note: paper
+- metric: Cluster throughput
+  value: nearly 100,000 requests per second
+  note: paper
+results_reported: 'Offline hit rate for predicting the re-pinned pin per Table 1, top 10 / 100 / 1000: content-based textual 1.0% / 2.2%
+  / 4.8%, visual 1.1% / 2.4% / 4.5%, combined 2.1% / 4.6% / 10.5%, Pixie 6.3% / 23.1% / 52.2%. Online A/B vs old systems per Table 2,
+  engagement per pin: Homefeed +48%, Related Pins +13%, board recommendations +26%, Explore tab +20%, localization +48% to 75% pins
+  in the user''s language; text also gives +50% for switching one Homefeed source from Hadoop to Pixie and +3% Related Pins saves per
+  day from shorter walks. Reacting in real time gives 30% to 50% higher engagement than waiting days or hours. Early stopping with n_p
+  = 2000 and n_v = 4 gives 84% overlap with the gold-standard set at about 3 times faster. Graph pruning: the F1 score peaks at 58%
+  above the unpruned graph at delta = 0.91 with only 20% of the edges (the graph is about a sixth of its size). Language bias (Table
+  3): for English query pins, target-language share Basic vs Pixie walk is Japanese 16.35% vs 80.33%, Spanish 41.94% vs 94.51%, Slovak
+  2.13% vs 42.55%.'
+caveats:
+- The paper reports both 'more than 80% of all user engagement' in the abstract and intro, and 'over half of all pins saved each day' in Sec 5 and the conclusion for Pixie-backed systems; these are different measures.
+- The 2017 paper's A/B lifts compare against previous production systems which were largely offline, Hadoop-based and precomputed rather than a modern
+  ranking stack.
+- Offline hit-rate baselines are only content-based embedding methods (VGG-16 visual, Word2Vec text); the paper states it did not compare
+  with CF or matrix factorization because no ready-to-use methods exist at that scale.
+- Hardware and numbers are from 2017; the paper's year on arXiv is 2017 while the venue year is WWW 2018.
+unknown_fields:
+- exact query weight half-life lambda
+- how Pixie candidates are ranked downstream
+- current (post-2017) status
+sources:
+- title: "Pixie: A System for Recommending 3+ Billion Items to 200+ Million Users in Real-Time, WWW 2018"
+  url: https://doi.org/10.1145/3178876.3186183
+  type: paper
+- title: 'Pixie: A System for Recommending 3+ Billion Items to 200+ Million Users in Real-Time, arXiv 1711.07601'
+  url: https://arxiv.org/abs/1711.07601
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1711.07601
+  local_pdf: /workspace/src/fulltext/1711.07601.txt (text of arXiv 1711.07601v1)
+  sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (Pixie Random Walk, graph pruning, implementation), Sec 4 (experiments,
+    Tables 1-3, Figures 1-5), Sec 5 (use cases), conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Biased random walks with restarts on an in-memory pin-board graph return candidates in real time.
+deployed_in: Pinterest real-time candidate generation for Homefeed, Related Pins, boards and Explore
+scale_short: Pruned graph of 3 billion nodes, nearly 100,000 requests per second per cluster
+key_result: Homefeed engagement per pin +48% in an online A/B against the old systems
+results_table:
+  online:
+  - setting: Homefeed, Table 2
+    method: Pixie
+    metric: Engagement per pin
+    result: +48%
+    versus: Old systems
+  - setting: Related Pins, Table 2
+    method: Pixie
+    metric: Engagement per pin
+    result: +13%
+    versus: Old systems
+  - setting: Board recommendations, Table 2
+    method: Pixie
+    metric: Engagement per pin
+    result: +26%
+    versus: Old systems
+  - setting: Explore tab, Table 2
+    method: Pixie
+    metric: Engagement per pin
+    result: +20%
+    versus: Old systems
+  offline:
+  - setting: Predicting the re-pinned pin, Table 1
+    method: Pixie
+    metric: Hit rate top 10
+    result: 6.3%
+    versus: Content-based combined 2.1%
+  - setting: Predicting the re-pinned pin, Table 1
+    method: Pixie
+    metric: Hit rate top 100
+    result: 23.1%
+    versus: Content-based combined 4.6%
+  - setting: Predicting the re-pinned pin, Table 1
+    method: Pixie
+    metric: Hit rate top 1000
+    result: 52.2%
+    versus: Content-based combined 10.5%

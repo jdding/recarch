@@ -1,0 +1,76 @@
+id: twitter-wtf-2013
+name: "WTF"
+company: Twitter
+surface: User recommendation, 'Who to follow'
+year: 2013
+era: classic
+era_reason: "Graph recommendation with SALSA and random walks on a single machine, no neural model"
+first_public: "2013-05"
+venue: "WWW 2013"
+venue_year: 2013
+deployed_year: 2010
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2488388.2488433"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Paradigm tag corrected: random-walk replaces graph-neural-network, since WTF uses personalized PageRank and SALSA random walks, not a GNN."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Twitter's Who-To-Follow runs on one in-memory server, Cassovary, with personalized PageRank and SALSA random walks; in production since 2010."
+summary: Whole-graph in-memory recommender on a single server, Cassovary, using personalized-PageRank circle of trust and SALSA random
+  walks for 'interested in' and 'similar to' recommendations.
+paradigms:
+- random-walk
+- item-cf
+stages:
+- stage: retrieval
+  model_family: Cassovary in-memory graph engine; personalized PageRank + SALSA
+  details: Not a learned neural model; a second-generation system was under development at publication.
+id_tokenization:
+  approach: User IDs
+  details: null
+features_signals:
+- Follow graph
+training:
+  mode: Offline graph loading; real-time walks
+  objectives: null
+  notes: null
+serving_infra: Single large-memory server per replica holding the whole graph (72-144 GB RAM mentioned)
+scale:
+- metric: Active-user follow graph
+  value: over 20 billion edges
+  note: PDF
+results_reported: 'Paper: service in production since summer 2010, creating millions of connections daily.'
+caveats:
+- Paper explicitly aims to share design, not novel research; no A/B numbers captured.
+unknown_fields:
+- CTR/follow metrics
+sources:
+- title: "WTF: The Who to Follow Service at Twitter, WWW 2013"
+  url: https://doi.org/10.1145/2488388.2488433
+  type: paper
+- title: 'WTF: The Who to Follow Service at Twitter, WWW 2013'
+  url: https://stanford.edu/~rezab/papers/wtf_overview.pdf
+  type: paper
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/twitter/cassovary
+    owner: Twitter
+    official: true
+    note: Cassovary, the in-memory graph engine the paper calls the core of WTF and says was open-sourced
+      in March 2012. The WTF service and its recommendation pipeline are not released.
+core_idea: A whole-graph in-memory recommender on a single server, Cassovary, with personalized PageRank and SALSA random walks.
+deployed_in: Twitter Who to follow user recommendation
+scale_short: Active-user follow graph with over 20 billion edges
+key_result: In production since summer 2010, creating millions of connections daily
+results_table:
+  online:
+  - setting: Production since summer 2010
+    method: Who to follow
+    metric: Connections created
+    result: Millions per day
+    versus: Not stated

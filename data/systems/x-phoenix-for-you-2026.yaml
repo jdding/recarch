@@ -1,0 +1,71 @@
+id: x-phoenix-for-you-2026
+name: "X For You Phoenix"
+company: "X / xAI"
+surface: For You feed
+year: 2026
+era: generative
+era_reason: "Grok-based transformer ranking, hand-engineered features removed; borderline"
+first_public: "2026-01"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://github.com/xai-org/x-algorithm"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: open_source_reference
+tldr: "Open reference for X's For You feed: two-tower Phoenix retrieval and a transformer ranker with candidate isolation, combining multi-action probabilities in a weighted scorer."
+summary: 'Open repository for the For You feed: two-tower Phoenix retrieval, transformer Phoenix ranker with candidate isolation, written in JAX with Rust serving, multi-action probabilities combined in a weighted scorer, with in-network sources from Thunder and other sources.'
+paradigms:
+- two-tower
+- sequential-transformer
+- multi-task
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: Phoenix two-tower; Thunder in-network; SimClusters; popular posts
+  details: ''
+- stage: rank
+  model_family: Phoenix transformer with candidate isolation
+  details: Weighted sum with author decay, out-of-network discount, new-author boost
+- stage: re-rank
+  model_family: VMRanker DPP rerank
+  details: ''
+id_tokenization:
+  approach: Hash-based embeddings
+  details: null
+features_signals:
+- User actions
+training:
+  mode: Offline
+  objectives: null
+  notes: null
+serving_infra: JAX models; Rust serving; Thunder in-memory
+scale: []
+results_reported: README lists dated updates through Oct 26, 2026; no metrics.
+caveats:
+- README warns that repo defaults may differ from production and some files are unpublished.
+- README does not say Grok powers ranking; the Phoenix transformer is described as a transformer. Grok-named components are content-understanding
+  classifiers.
+unknown_fields:
+- metrics
+- training data
+sources:
+- title: xai-org/x-algorithm README
+  url: https://github.com/xai-org/x-algorithm
+  type: source_code
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/xai-org/x-algorithm
+    owner: X / xAI
+    official: true
+    note: Core code of the For You feed, covering retrieval, filtering and the transformer ranker. The README lists a
+      small set of unpublished files, e.g. Grox LLM prompts and some botmaker rules.
+core_idea: Two-tower Phoenix retrieval and a transformer ranker with candidate isolation, written in JAX with Rust serving.
+deployed_in: X For You feed, open repository
+scale_short: Not stated in the sources
+key_result: Open-source reference, no reported metrics
+results_table:
+  note: The README lists dated updates through Oct 26, 2026 and reports no metrics.
