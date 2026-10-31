@@ -41,9 +41,9 @@ See `era_audit.md` (rules, per-card table, borderline cases). `year` = first pub
 ## Round 10: admission standard adopted, status lifecycle, one system = one card (nothing deployed)
 
 - `docs/admission.md` is the adopted admission and scheduling standard (Chinese). Lane rule by venue year, 5 new + 1 upgrade a week with a trigger to 4 + 2, thresholds, cap 120.
-- `status` active / superseded / retired (`schema/schema.md`, "Status"). Six cards retired, listed in `docs/admission.md`. Their files and URLs stay.
+- `status` active / superseded / retired (`schema/schema.md`, "Status"). Six cards retired, listed in `docs/admission.md`. Their files stay in `data/systems/`; since 2026-10-31 they are not published on the site at all.
 - `version` / `versions` fields and the merge procedure (`schema/schema.md`, "Versions"). Merged: DCN + DCN V2 into `dcn-google` (presents DCN V2), OneRec + OneRec-V2 + OneRec-Think into `onerec-kuaishou` (presents OneRec-V2 by owner decision; the latest version is OneRec-Think). Old URLs are static redirect pages, old YAMLs are `superseded`. DCNv3 is a third-party paper, not merged.
-- Tests: `tests/retired.test.js` (non-active cards, redirects, merged cards). `tests/v2_order.test.js` skips redirect pages and checks their count.
+- Tests: `tests/retired.test.js` (non-active cards: no pages, no archive, no status events, no links). `tests/v2_order.test.js` checks that no redirect stubs exist.
 
 ## Deploy
 

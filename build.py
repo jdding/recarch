@@ -333,7 +333,7 @@ ERA_KEYS = ["classic", "deep", "generative"]
 STAGE_KEYS = ["retrieval", "pre-rank", "rank", "re-rank", "single-stage", "other"]
 ERAS, STAGE_LABEL, DEP_EVID, KIND_LABEL, GLABEL = {}, {}, {}, {}, {}
 DEP_EVID_KEYS = ["online_numbers", "online_qualitative", "deployed_only", "no_online_claim"]
-KIND_KEYS = ["added", "updated", "site", "issue", "retired"]
+KIND_KEYS = ["added", "updated", "site", "issue"]
 SUB_COPY = ""
 def set_lang(lang):
     """Switch the language being rendered and refill the label tables."""
@@ -673,22 +673,18 @@ def subscribe_box(source, heading=None, compact=False):
 <details class="nl-inline" hidden data-loader="{E(loader)}" data-attr="{E(attr)}" data-form="{E(form_id)}" data-title="{E(T("sub.frame_title"))}"><summary>{E(T("sub.inline"))}</summary><div class="nl-embed"></div></details>
 <p class="sub-fine">{E(T("sub.fine"))}</p></div>"""
 
-def events(cards, site, issues, off=()):
+def events(cards, site, issues):
     """Every dated change on the site, newest first. kind: added | updated | site | issue."""
     ev = []
     for c in cards:
         ev.append({"date": c["added_on"], "kind": "added", "title": c["name"], "note": f"{c['company']} \u00b7 {c['surface']}", "path": f"systems/{c['id']}/", "key": f"added:{c['id']}", "summary": c["summary"].strip()})
         for n, u in enumerate(c.get("updates") or []):
             ev.append({"date": u["date"], "kind": "updated", "title": c["name"], "note": u["note"], "path": f"systems/{c['id']}/", "key": f"update:{c['id']}:{n}", "summary": u["note"]})
-    for c in off:   # retired or superseded cards: their added/updated events are dropped, one status event stays
-        word = T("kind.retired") if card_status(c) == "retired" else T("status.superseded")
-        line = T("status.line", word=word, reason=c["status_reason"].strip())
-        ev.append({"date": c["status_date"], "kind": "retired", "title": c["name"], "note": line, "path": f"systems/{c.get('superseded_by') or c['id']}/", "key": f"status:{c['id']}", "summary": line})
     for n, e in enumerate(site.get("events") or []):
         ev.append({"date": e["date"], "kind": "site", "title": e["title"], "note": e.get("note", ""), "path": "changelog/", "key": f"site:{n}", "summary": e.get("note", "")})
     for i in issues:
         ev.append({"date": i["date"], "kind": "issue", "title": i["title"], "note": i["summary"], "path": f"newsletter/{i['slug']}/", "key": f"issue:{i['slug']}", "summary": i["summary"]})
-    order = {"issue": 0, "site": 1, "retired": 2, "updated": 3, "added": 4}
+    order = {"issue": 0, "site": 1, "updated": 2, "added": 3}
     return sorted(ev, key=lambda e: (e["date"], -order[e["kind"]], e["title"]), reverse=True)
 
 def rel_date(d, today):
@@ -779,13 +775,7 @@ def issue_page(i, by_id):
 {subscribe_box("issue:" + i["slug"], T("sub.heading_issue")).replace("{ROOT}", root)}</article></div>"""
     return page(T("nl.issue_title", title=i["title"]), clip(i["summary"], 158), body, root, f"newsletter/{i['slug']}/")
 
-def archive_html(off, root):
-    """Small archive of retired and superseded cards: kept at their URL, not counted, not in the sitemap."""
-    if not off: return ""
-    lis = "".join(f'<li><a href="{root}systems/{E(c["id"])}/">{E(c["name"])}</a> <span class="unk">{E(short_company(c))}, {c["year"]}, {E(T("status.word_" + card_status(c)))} {E(c["status_date"])}</span><div class="stage-d">{E(c["status_reason"].strip())}</div></li>' for c in sorted(off, key=lambda c: (c["status_date"], c["name"]), reverse=True))
-    return f'<details class="archive" id="archive"><summary>{E(T("archive.summary", n=len(off)))}</summary><ul class="clean">{lis}</ul></details>'
-
-def home(cards, ev=(), today="", off=()):
+def home(cards, ev=(), today=""):
     root = ""
     cards = [c for c in cards if is_active(c)]
     n = len(cards)
@@ -806,7 +796,7 @@ def home(cards, ev=(), today="", off=()):
 <div class="grid" id="grid">{"".join(card_html(c, root) for c in cards)}</div>
 {timeline_html(cards, root)}
 <div id="empty" class="panel" hidden>{T('home.empty', btn=f'<button class="linkbtn" type="button" id="reset2">{E(T("home.empty_btn"))}</button>')}</div>
-{archive_html(off, root)}</div>
+</div>
 <div class="cmpbar" id="cmpbar"><span id="cmpn"></span><a id="cmplink" href="compare/">{E(T('card.compare'))}</a><span id="cmpmsg" class="cmpmsg" role="status" aria-live="polite" hidden></span></div>"""
     sr = sroot(root)
     return page(T("home.title"), T("home.desc"), body, root, "", scripts=f'{js_l10n()}<script src="{sr}static/carousel.js"></script><script src="{sr}static/app.js"></script>')
@@ -1242,7 +1232,7 @@ def topics_index(topics, by_id):
 
 def card_page(c):
     """Card detail page. Section order is fixed, the architecture block only when a diagram exists; tests/v2_order.test.js checks it."""
-    root = "../../"; cd = c["code"]; st = card_status(c)
+    root = "../../"; cd = c["code"]
     unk = f'<span class="unk">{E(T("card.unk"))}</span>'
     ps = next(x for x in c["sources"] if x["url"] == c["primary_source"])
     paper_btn = f'<a class="btn" href="{E(ps["url"])}" rel="noopener nofollow" target="_blank">{E(T("card.paper") if ps["type"] == "paper" else T("card.primary"))}' + (f' <small>{E(c["venue"])}</small>' if c.get("venue") else "") + '</a>'
@@ -1291,24 +1281,21 @@ def card_page(c):
     srcs = "<ul class='clean'>" + "".join(f'<li><a href="{E(s_["url"])}" rel="noopener nofollow" target="_blank">{E(s_["title"])}</a> <span class="tag stage">{E(T("srctype." + s_["type"]))}</span>' + (f' <span class="tag stage">{E(T("card.other_version", v=earlier[s_["url"]]))}</span>' if s_["url"] in earlier else "") + '</li>' for s_ in c["sources"]) + "</ul>"
     repos = "".join(f'<li><a href="{E(r["url"])}" rel="noopener nofollow" target="_blank">{E(r["url"][len("https://github.com/"):])}</a> <span class="tag stage">{E(T("card.official") if r["official"] else T("card.unofficial"))}</span><div class="stage-d">{E(r["owner"])}{". " if LANG == "en" else "\u3002"}{E(r["note"])}</div></li>' for r in cd["repos"])
     codeblk = f'<h3>{E(T("card.code"))}</h3><ul class="clean">{repos}</ul>' if repos else f'<h3>{E(T("card.code"))}</h3><p class="unk">{E(cd.get("note") or T("card.no_code_found"))}</p>'
-    h_items = [(c["added_on"], "added", T("hist.published"))] + [(u["date"], "updated", u["note"]) for u in c.get("updates") or []] + ([(c["status_date"], st, c["status_reason"].strip())] if st != "active" else [])
+    h_items = [(c["added_on"], "added", T("hist.published"))] + [(u["date"], "updated", u["note"]) for u in c.get("updates") or []]
     vers = (f'<h3>{E(T("ver.h3"))}</h3><ul class="clean versions">' + "".join(f'<li><time datetime="{E(v_["first_public"])}">{E(v_["first_public"])}</time> <b>{E(v_["name"])}</b>' + (f' <span class="k k-added">{E(T("ver.here"))}</span>' if v_["name"] == c["version"] else "") + f' <a href="{E(v_["source"])}" rel="noopener nofollow" target="_blank">{E(T("ver.source"))}</a>' + vcount(c["id"], v_["name"]) + f'<div class="stage-d">{E(v_["note"])}</div></li>' for v_ in reversed(c["versions"])) + '</ul>') if c.get("versions") else ""
-    cmp_btn = f'<p><a class="btn" href="{root}compare/?ids={E(c["id"])}">{E(T("hist.compare"))}</a></p>' if st == "active" else ""
-    hist = (f'<section class="blk" id="history"><h2>{E(T("sec.history"))}</h2>' + vers + '<ul class="clean changelog">' + "".join(f'<li><time datetime="{d}">{d}</time> <span class="k k-{k}">{E(T("kind." + k) if k in KIND_LABEL else T("status.superseded"))}</span> {E(n)}</li>' for d, k, n in sorted(h_items, reverse=True))
+    cmp_btn = f'<p><a class="btn" href="{root}compare/?ids={E(c["id"])}">{E(T("hist.compare"))}</a></p>'
+    hist = (f'<section class="blk" id="history"><h2>{E(T("sec.history"))}</h2>' + vers + '<ul class="clean changelog">' + "".join(f'<li><time datetime="{d}">{d}</time> <span class="k k-{k}">{E(T("kind." + k))}</span> {E(n)}</li>' for d, k, n in sorted(h_items, reverse=True))
             + f'</ul><p class="unk fb-line">{E(T("hist.verified", date=c["last_verified"]))} {feedback_links(c["id"], "systems/" + c["id"] + "/")}</p>'
             + f'{cmp_btn}</section>')
     if not limits: keyfacts = keyfacts.replace(f'<a href="#limitations">{E(T("sec.limits"))}</a>', "")
     if not c.get("deployment"): keyfacts = keyfacts.replace(f'<a href="#deployment">{E(T("dep.h2"))}</a>', "")
     keyfacts = keyfacts.replace("KFSPAN", str(6 + bool(arch) + bool(limits) + bool(c.get("deployment"))))
-    sup = " " + T("status.replaced", href=f'{root}systems/{E(c["superseded_by"])}/', name=E(c["superseded_by"])) if c.get("superseded_by") else ""
-    notice = (f'<aside class="status-note status-{st}" id="status-note" role="note"><b>{E(T("status.on_" + st, date=c["status_date"]))}</b> {E(c["status_reason"].strip())}{sup} '
-              f'{E(T("status.stays"))}</aside>') if st != "active" else ""
     if c.get("versions"):
         latest_here = c["versions"][-1]["name"] == c["version"]
         vb = T("ver.badge_latest", v=E(c["version"]), n=len(c["versions"])) if latest_here else T("ver.badge_older", v=E(c["version"]), n=len(c["versions"]), latest=E(c["versions"][-1]["name"]))
         vbadge = f'<span class="badge b-version">{vb}</span>'
     else: vbadge = ""
-    body = f"""<div class="wrap"><article class="sys v2"><div class="crumbs"><a href="{root}">{E(T('nav.systems'))}</a> / {E(short_company(c))}</div>{notice}
+    body = f"""<div class="wrap"><article class="sys v2"><div class="crumbs"><a href="{root}">{E(T('nav.systems'))}</a> / {E(short_company(c))}</div>
 <header class="v2head" id="top"><h1>{E(c['name'])}</h1><p class="byline">{byline}</p>
 <div class="tags" style="margin:0 0 14px"><span class="badge b-era b-era-{E(c['era'])}">{E(ERAS[c['era']])}</span>{stage_badges}<span class="badge b-{E(c['evidence_level'])}">{E(EVID[c['evidence_level']])}</span>{vbadge}</div>
 <div class="tldr"><span class="tldr-l">TL;DR</span><p>{E(c['tldr'].strip())}</p></div>
@@ -1327,16 +1314,8 @@ def card_page(c):
     desc = clip(T("card.desc", name=c["name"], company=c["company"], summary=c["summary"].strip()), 158)
     ld = {"@context":"https://schema.org","@type":"TechArticle","headline":c["name"],"inLanguage":LANG_TAG[LANG],"about":c["surface"],"datePublished":c["added_on"],"dateModified":c["last_verified"],
           "citation":[s_["url"] for s_ in c["sources"]],"publisher":{"@type":"Organization","name":"RecArch"}}
-    head = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' + ('' if st == "active" else '<meta name="robots" content="noindex">')
-    if st != "active": title = T("status.title_" + st, title=title)
+    head = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' 
     return page(title, desc, body, root, f"systems/{c['id']}/", extra_head=head)
-
-def redirect_page(c):
-    """Old URL of a card merged into another (status superseded): static redirect, canonical points at the merged card, in the same language."""
-    to = c["superseded_by"]; canon = abs_url(LANG, f"systems/{to}/")
-    return f"""<!doctype html><html lang="{LANG_TAG[LANG]}"><head><meta charset="utf-8"><title>{E(T("redirect.title", name=by_id_name(to)))}</title>
-<link rel="canonical" href="{E(canon)}"><meta http-equiv="refresh" content="0; url=../{E(to)}/"><meta name="robots" content="noindex"></head>
-<body><p>{T("redirect.text", old=E(c["name"]), href=f"../{E(to)}/", new=E(by_id_name(to)))}</p></body></html>"""
 
 NAMES = {}
 def by_id_name(i): return NAMES.get(i, i)
@@ -1433,12 +1412,13 @@ def main():
         cl = zcards if lang == "zh" else allc
         DIAGRAMS.clear(); DIAGRAMS.update(diag_zh if lang == "zh" else diag_en)
         by_idl = {c["id"]: c for c in cl}; NAMES.clear(); NAMES.update({c["id"]: c["name"] for c in cl})
-        cards = [c for c in cl if is_active(c)]; off = [c for c in cl if not is_active(c)]   # retired and superseded: page built, but no list, count, carousel, feed card event or sitemap entry
-        issues_l = [loc_issue(i, lang) for i in issues]; ev = events(cards, loc_site(SITE, lang), issues_l, off)
+        cl = [c for c in cl if is_active(c)]   # retired and superseded cards are never published: no page, list, count, carousel, feed, changelog, data JSON, search or sitemap entry; their YAML stays in data/systems/
+        cards = cl
+        issues_l = [loc_issue(i, lang) for i in issues]; ev = events(cards, loc_site(SITE, lang), issues_l)
         topics_l = topics_zh if lang == "zh" else topics
         w = lambda path, content: write(pre + path, content)
-        w("index.html", home(cards, ev, today, off))
-        for c in cl: w(f"systems/{c['id']}/index.html", redirect_page(c) if card_status(c) == "superseded" else card_page(c))
+        w("index.html", home(cards, ev, today))
+        for c in cl: w(f"systems/{c['id']}/index.html", card_page(c))
         w("topics/index.html", topics_index(topics_l, by_idl))
         for t in topics_l: w(f"topics/{t['slug']}/index.html", topic_page(t, by_idl, topics_l))
         w("compare/index.html", compare_page()); w("newsletter/index.html", newsletter_page(issues_l, cards))
@@ -1457,7 +1437,8 @@ def main():
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
           + "".join(f"<url><loc>{abs_url(l, u)}</loc><lastmod>{d}</lastmod>{xh(u)}</url>\n" for u, d in urls for l in LANGS) + "</urlset>\n")
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
-    print(f"built {len(allc)} card pages, {len(allc) - len([c for c in allc if not is_active(c)])} active, {len([c for c in allc if not is_active(c)])} retired or superseded, in zh and en -> {OUT}")
+    n_act = len([c for c in allc if is_active(c)])
+    print(f"built {n_act} card pages per language ({len(allc) - n_act} retired or superseded cards not published), in zh and en -> {OUT}")
 
 set_lang("en")
 if __name__ == "__main__": main()

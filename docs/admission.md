@@ -66,8 +66,8 @@
 
 `status`：`active`、`superseded`、`retired`。字段与行为见 `schema/schema.md`。
 
-- retired：不再满足本标准。页面保留在原 URL，页首有 retired 提示和理由，默认不进首页列表、计数、轮播和站点地图，首页末尾有折叠的归档列表。文件永不删除。
-- superseded：已合并进另一张卡，旧 URL 跳转到新卡。
+- retired：不再满足本标准。网站上不再发布，无页面、无归档列表、无更新记录。YAML 文件永不删除。
+- superseded：已合并进另一张卡。旧卡同样不在网站上发布，旧 URL 不再存在。
 - 季度复审：与季度补课同期，清点边缘卡和观察期卡，处理到期项。
 
 首批 retired，2026-10-30：

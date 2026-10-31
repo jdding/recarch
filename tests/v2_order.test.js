@@ -1,15 +1,15 @@
 // Run after `python3 build.py`: NODE_PATH=/tmp/jt/node_modules node tests/v2_order.test.js [dist]
 // Cited by is optional, blog-only cards have none. Every card page uses the v2 layout with a fixed section order. The architecture block exists only for cards with a diagram.
 const { JSDOM } = require("jsdom"); const fs = require("fs"); const path = require("path");
-const _F = require("fs"), _D = __dirname + "/../data/systems", _Y = _F.readdirSync(_D).filter((f) => f.endsWith(".yaml")), N_SUP = _Y.filter((f) => /^status: superseded\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length, N_CARDS = _Y.length, N_GEN = _Y.filter((f) => /^era: generative\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length;
+const _F = require("fs"), _D = __dirname + "/../data/systems", _Y = _F.readdirSync(_D).filter((f) => f.endsWith(".yaml")), N_OFF = _Y.filter((f) => /^status: (superseded|retired)\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length, N_CARDS = _Y.length - N_OFF, N_GEN = _Y.filter((f) => /^era: generative\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length;
 const dist = process.argv[2] || path.join(__dirname, "../dist/en");
 let fails = 0, checks = 0; const ok = (c, m) => { checks++; if (!c) { fails++; console.log("FAIL", m); } };
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const ids = fs.readdirSync(`${dist}/systems`).filter((d) => fs.existsSync(`${dist}/systems/${d}/index.html`)).sort();
-ok(ids.length === N_CARDS, `${N_CARDS} card pages, found ${ids.length}`);
-// merged-away (superseded) cards are static redirect pages, not v2 layouts; retired.test.js checks them
+ok(ids.length === N_CARDS, `${N_CARDS} active card pages, found ${ids.length}`);
+// non-active cards (retired, superseded) are not published at all, so no redirect stubs exist; retired.test.js checks that
 const redirects = ids.filter((id) => /http-equiv="refresh"/.test(fs.readFileSync(`${dist}/systems/${id}/index.html`, "utf8")));
-ok(redirects.length === N_SUP, `${N_SUP} superseded cards are redirect pages, found ${redirects.length}`);
+ok(redirects.length === 0, `no redirect stub pages, found ${redirects.length}`);
 const base = ["top", "key-facts", "how-it-works", "results", "deployment", "subscribe", "details", "limitations", "sources", "history"];
 const cellNames = ["Stage", "Core idea", "Deployed in", "Scale", "Headline result", "Code status"];
 let withDiagram = [];

@@ -65,22 +65,10 @@ kind.added || Added || 新增
 kind.updated || Updated || 更新
 kind.site || Site || 站点
 kind.issue || Newsletter || 周报
-kind.retired || Retired || 已退役
 feedkind.added || New system || 新系统
 feedkind.updated || Updated || 更新
 feedkind.site || Site || 站点
 feedkind.issue || Newsletter || 周报
-feedkind.retired || Retired || 已退役
-status.superseded || Superseded || 已被取代
-status.word_retired || retired || 已退役
-status.word_superseded || superseded || 已被取代
-status.line || {word}: {reason} || {word}：{reason}
-status.on_retired || Retired on {date}. || 已于 {date} 退役。
-status.on_superseded || Superseded on {date}. || 已于 {date} 被取代。
-status.replaced || Replaced by <a href="{href}">{name}</a>. || 替代它的是 <a href="{href}">{name}</a>。
-status.stays || This card stays online at its URL for reference. It is not counted on the home page and is no longer updated. || 本卡片仍保留在原地址供参考，不计入首页数量，也不再更新。
-status.title_retired || Retired: {title} || 已退役：{title}
-status.title_superseded || Superseded: {title} || 已被取代：{title}
 
 # --- subscribe box
 sub.heading_default || Get the weekly RecArch digest || 订阅 RecArch 每周精选
@@ -135,7 +123,6 @@ card.sources_one || {n} source || {n} 个来源
 card.sources_many || {n} sources || {n} 个来源
 card.compare || Compare || 对比
 timeline.note || Ordered by first public disclosure; the year is the arXiv v1, blog or venue date. Columns are eras by dominant paradigm, so a year can hold systems from different eras. || 按首次公开时间排序，年份取 arXiv v1、博客或会议发表的日期。各列按主导范式划分时代，因此同一年可能包含不同时代的系统。
-archive.summary || Archive: {n} retired or superseded cards, not counted above || 归档：{n} 张已退役或已被取代的卡片，不计入上方数量
 
 # --- changelog
 changelog.title || Changelog | RecArch || 更新日志 | RecArch
@@ -229,8 +216,6 @@ dep.hardware || Hardware || 硬件
 dep.how_full || against the full text of the sources || 对照来源全文
 dep.how_card || against the figures already on this card, the full text was not rechecked for this block || 对照本卡片已有的数字，本部分未重新核对全文
 dep.foot || Checked on {date} {how}. Fields the sources do not state are marked not reported. || 核对于 {date}，{how}。来源未说明的字段标记为未报告。
-redirect.title || Moved to {name} | RecArch || 已移至 {name} | RecArch
-redirect.text || {old} was merged into <a href="{href}">{new}</a>, which presents the latest version. || {old} 已合并到 <a href="{href}">{new}</a>，后者展示最新版本。
 nf.title || Not found | RecArch || 页面未找到 | RecArch
 nf.h1 || Not found || 页面未找到
 nf.back || Back to all systems || 返回全部系统

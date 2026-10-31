@@ -147,12 +147,9 @@ Number checks run in `build.py`. Every number in `key_result` and in `results_ta
 
 Meaning. `retired`: the card no longer meets the admission standard (`docs/admission.md`). `superseded`: the card was merged into another card, one card per system lineage; `superseded_by` is that card.
 
-Behaviour of a `retired` card, and of a `superseded` card where noted:
+Behaviour (owner decision 2026-10-31: non-active cards are not published at all). A `retired` or `superseded` card keeps its YAML file forever, and the status checks and admission rules still run on it, but `build.py` publishes nothing about it, in either language:
 
-- A `superseded` card's page is a static redirect page: `meta refresh` to `../<superseded_by>/`, `canonical` to the merged card, `noindex`, and a link. It has no card layout. The card file is never deleted.
-- A `retired` card keeps its file forever and its page is still built at `/systems/<id>/`, with a notice that carries the date and the reason, a `noindex` meta tag, the title prefix "Retired:" or "Superseded:", and no "Compare this system" button.
-- It is left out of the home list, the timeline, the "N systems" count, the carousel, `data/systems.json` (compare picker), the sitemap, and the feed and changelog events for "Added" and "Updated". The changelog and feed carry one "Retired" or "Superseded" event on `status_date`.
-- The home page ends with a collapsed "Archive" list of these cards with their reasons.
+- No page is built at `/systems/<id>/` (no redirect stub either), no archive list on the home page, no status event in the changelog, feed, home "Latest updates" or carousel, and no entry in `data/systems.json`, compare, topics, newsletter issue pages or the sitemap. Nothing links to its old URL. `tests/retired.test.js` asserts all of this.
 - `status_reason`, `status_date` and `superseded_by` are rejected on an active card. `superseded_by` may not point at the card itself.
 
 Lane note. Scheduling lanes use the venue year, and `year` stays the year of first public disclosure. A paper first posted in 2025 and published at a 2026 venue is scheduled in the 2026 lane and its card still shows 2025. See `docs/admission.md`.
