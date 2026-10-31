@@ -3,6 +3,24 @@ summary: How production recommenders read very long user histories under a laten
 framing:
   - A user's history can run to tens of thousands of events, but a ranker has a few tens of milliseconds per request. Every system on this page answers the same two questions. How much of the history do you read, and when do you pay for reading it?
   - The answers differ a lot. Some systems read only the latest few hundred actions in real time. Some search or compress the full history. Some move the heavy model out of the request path and serve a cached result. The table lists what each card reports. The sections after it explain the differences that matter when you pick an approach.
+problem: A user history can run to tens of thousands of events, and the ranker has a few tens of milliseconds. How much do you read, and when do you pay for it?
+question: Do you read the history at request time, or pay for it before the request arrives?
+decisions:
+  - when: Your request budget is tight.
+    then: Move the heavy model out of the request path. PinnerFormer runs in a daily batch, LLaTTE runs a large model asynchronously so the online ranker only does one feature lookup, and SequenceO1 builds a sketch that can be cached.
+    cards: [pinnerformer-2022, meta-llatte-2026, bytedance-sequenceo1-2026]
+  - when: You need to cover a very long history.
+    then: Search it or compress it first. SIM searches the full history for behaviors close to the candidate, KuaiFormer compresses items into fewer tokens, and SequenceO1 turns a long history into a sketch while still reading the latest events directly.
+    cards: [sim-alibaba-2020, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026]
+  - when: You can pay for attention at request time.
+    then: Read the sequence inside the ranker and rely on GPU serving or a KV cache, as TransAct and LONGER do.
+    cards: [pinterest-transact-2023, bytedance-longer-2025]
+  - when: You want the smallest migration.
+    then: Produce outputs that plug into the ranker you already run. LUM and PinFM do this, and LLaTTE splits the work between an upstream model and a compact online module.
+    cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026]
+  - when: You can afford to rewrite the ranker.
+    then: HSTU treats retrieval and ranking as sequence prediction over the user's actions and replaces the feature interaction layers of the ranker itself.
+    cards: [hstu-meta-2024]
 members:
   - id: pinterest-transact-2023
     approach: Reads the last 100 actions in real time inside the Homefeed ranker.

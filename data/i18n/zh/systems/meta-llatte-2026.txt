@@ -7,7 +7,7 @@ deployed_in|Meta 在 Facebook Feed 和 Reels 上的广告排序
 scale_short|上游每条样本 92 GFLOPs，每天数万亿次请求
 key_result|在多个大规模 A/B 测试中，Facebook Feed 和 Reels 的转化提升 4.3%，P99 无可测量的变化
 results_reported|扩展实验，离线，NE 相对线上基线：Deep-Balanced L=8、d=256 时 NE 为 -0.17%；加入内容 embedding 后，4 层模型 NE 为 -0.118%，不加则为 +0.06% 到 -0.01%。斜率 alpha 对 log10 FLOPs：序列长度 0.265，深度 0.200，宽度 0.133，不含内容 0.082。上游到下游的传递比约为 50%，上游 -0.14% 对应下游 -0.07%；偏模型的变体为 53%。线上：在多个大规模 A/B 测试中，在线 LLaTTE 加上游 embedding 让旗舰广告排序模型的 NE 约降低 0.25%，Facebook Feed 和 Reels 的转化提升 4.3%，P99 无可测量的变化。
-version_note|数字已对照 KDD 2026 定稿版 PDF 核对，来自站长的 Zotero 副本。arXiv 只有 27 Jan 2026 的 v1，至少有一处细节不同：触发事件在 arXiv 版是转化，在 KDD 版是点击。
+version_note|数字已对照 KDD 2026 定稿版 PDF 全文核对。arXiv 只有 27 Jan 2026 的 v1，至少有一处细节不同：触发事件在 arXiv 版是转化，在 KDD 版是点击。
 serving_infra|上游编码器运行在专用的 H100 集群上，大量合批，QPS 远低于排序模型；在线路径只多一次特征查询。论文称 P99 延迟无可测量的变化。
 stages.0.model_family|在线广告排序模型：紧凑的 LLaTTE 序列模块，每个来源的时间窗约 400 个事件，采用激进的金字塔式裁剪和广告、上下文 query token，再加 DHEN 风格的非序列骨干和多任务头，包括 CTR、CVR 等。它还把缓存的上游 LLaTTE 用户 embedding 作为稠密特征读入。
 stages.0.details|上游用户模型：与 LLaTTE 架构相同，只使用用户侧特征，更深更长，使用完整自注意力，序列 FLOPs 约为在线模块的 45x，在 H100 集群上异步运行；传递瓶颈的 embedding 维度为 2048。

@@ -32,7 +32,7 @@ caveats.2|在所读章节中没有重述绝对延迟、QPS 和 GPU 数量。
 unknown_fields.0|绝对延迟和 QPS
 unknown_fields.1|GPU 型号和数量
 unknown_fields.2|基线的确切参数量
-updates.0.note|按站长的决定，时代从生成式改为深度模型：主导范式是扩展判别式的排序和序列模型，不是生成式或 Semantic ID 建模。
+updates.0.note|按编辑决定，时代从生成式改为深度模型：主导范式是扩展判别式的排序和序列模型，不是生成式或 Semantic ID 建模。
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|抖音信息流排序，全量流量
 deployment.baseline|此前的排序模型

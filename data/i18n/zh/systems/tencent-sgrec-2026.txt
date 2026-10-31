@@ -7,7 +7,7 @@ deployed_in|微信视频号广告，在 5% 广告流量上做过线上测试
 scale_short|离线用 Qwen3-4B 评审模型，公开基准用 Qwen2.5-1.5B 生成器，A/B 流量 5%
 key_result|对比线上基线，在微信视频号 5% 广告流量上做线上 A/B：GMV +1.19%
 results_reported|在微信视频号 5% 广告流量上做线上 A/B，对比线上基线：GMV +1.19%，GMV-Normal +1.55%，CTR +1.16%，不喜欢率 -2.02%；此前在仿真环境中 eCPM +5.5%。在 Amazon Industrial 和 Office 上对比 MiniOneRec 基础模型的离线结果：Industrial 的 HR@10 +2.9%，NDCG@10 +3.0%；Office 的 HR@10 +3.4%，NDCG@10 +5.3%。在 1,000 个留出样本上，GRPO 之后评审模型的维度打分达到 PairAUC 0.8116 和 PointAcc 0.8687。
-version_note|数字已对照 25 Feb 2026 的 arXiv v3 核对，来自站长 Zotero 中的 PDF；其 ACM 模板仍显示 Conference 17，因此不是 KDD 定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自 Zotero 记录。
+version_note|数字已对照 25 Feb 2026 的 arXiv v3 核对，对照的是全文 PDF；其 ACM 模板仍显示 Conference 17，因此不是 KDD 定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自论文记录。
 serving_infra|在线服务时没有大模型推理；论文只说在线生成器是轻量的，没有给出延迟或硬件数字。
 stages.0.model_family|基于定长 RQ-VAE Semantic ID 的 Qwen2.5-1.5B 生成器，由公开数据上的 MiniOneRec SFT checkpoint 初始化
 stages.0.details|生成器输入用户画像、行为历史和时空上下文，以 Semantic ID 序列的形式生成广告。论文把线上使用的模型描述为轻量生成器，没有说明线上模型的规模。
@@ -42,7 +42,7 @@ results_table.other.0.versus|仿真器中的基线
 caveats.0|离线对比使用公开的 Amazon Industrial 和 Office 数据集，不是线上数据；线上 A/B 没有对应的离线结果。
 caveats.1|论文没有说明模型在 A/B 之后是否已全量上线。
 caveats.2|A/B 中的生成器被称为轻量；它的规模、tokenizer 和延迟均未给出。
-caveats.3|读取的 Zotero PDF 是带有 ACM 模板占位符的 arXiv v3，不是 KDD 定稿版。
+caveats.3|读取的 PDF 是带有 ACM 模板占位符的 arXiv v3，不是 KDD 定稿版。
 unknown_fields.0|线上生成器规模
 unknown_fields.1|线上 Semantic ID 码本大小
 unknown_fields.2|在线延迟

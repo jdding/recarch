@@ -7,7 +7,7 @@ deployed_in|在 MovieLens 衍生数据集上的研究实验，不是 Spotify 的
 scale_short|来源中未说明
 key_result|离线：在两个任务上微调的 bi-encoder 取得最好的权衡，没有报告具体数字
 results_reported|只有离线指标。
-version_note|对照站长的 Zotero 副本核对过，它是 14 Aug 2025 的 arXiv v1，用 RecSys '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3705328.3759300，6 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+version_note|对照全文核对过，它是 14 Aug 2025 的 arXiv v1，用 RecSys '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3705328.3759300，6 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
 status_reason|按入选标准已退役：实验用的是公开的电影数据，不是 Spotify 的线上数据，所以没有线上证据，且引用数低于可免除线上证据规则的 500。
 stages.0.model_family|flan-t5-base 联合生成式模型，用于搜索和推荐
 stages.0.details|Semantic ID 来自 2 个大小为 256 的码本，用 RQ-KMeans 构建，使用 FAISS；在这些实验中 RQ-KMeans 优于 RQ-VAE。

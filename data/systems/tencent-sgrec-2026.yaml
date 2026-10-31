@@ -60,7 +60,7 @@ caveats:
 - 'The offline comparison uses the public Amazon Industrial and Office sets, not production data; the production A/B has no offline counterpart.'
 - 'The paper does not say the model was fully launched after the A/B.'
 - 'The generator in the A/B is called lightweight; its size, tokenizer and latency are not given.'
-- 'The Zotero PDF read is the arXiv v3 with the ACM template placeholder, not the KDD camera-ready.'
+- 'The PDF read is the arXiv v3 with the ACM template placeholder, not the KDD camera-ready.'
 unknown_fields:
 - production generator size
 - production semantic-ID codebook sizes
@@ -74,11 +74,11 @@ sources:
 - title: S-GRec, arXiv 2602.10606
   url: https://arxiv.org/abs/2602.10606
   type: paper
-version_note: 'Numbers checked against arXiv v3 of 25 Feb 2026, from the owner Zotero PDF; its ACM template still reads Conference 17, so it is not the KDD camera-ready, and the ACM page was not opened. KDD 2026 and the DOI come from the Zotero record.'
+version_note: 'Numbers checked against arXiv v3 of 25 Feb 2026, from the full-text PDF; its ACM template still reads Conference 17, so it is not the KDD camera-ready, and the ACM page was not opened. KDD 2026 and the DOI come from the paper record.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2602.10606
-  local_pdf: /workspace/recarch/zotero/tencent-sgrec-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, methodology 3.1-3.3, experimental setup, RQ1-RQ6 including the online A/B, conclusion'
   verified_on: '2026-10-30'
   published_pdf: null

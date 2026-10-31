@@ -1,0 +1,94 @@
+# Glossary for descriptive labels on Chinese pages: metric names, scale labels and table settings.
+# One per line: English phrase || Chinese. Matched as whole words, longest phrase first, case sensitive.
+# Standard acronyms such as AUC, NE, CTR, GMV, QPS, HR, NDCG and names of methods or datasets stay in English, so they are not listed.
+# The Chinese side may not add numbers or parentheses. Entries are applied by build.py:zh_label.
+Online A/B || 线上 A/B
+Live A/B || 线上 A/B
+Online || 线上
+Attributed GMV || 归因 GMV
+Exposure-to-Conversion Rate || 曝光到转化率
+Conversion || 转化
+Active Day || 活跃天数
+Activeness || 活跃度
+Duration || 时长
+Finish || 完播
+Comment || 评论
+Dislike || 不喜欢
+Favourite || 收藏
+Share || 分享
+Skip || 跳过
+Loss || 损失
+Orders || 订单
+Time Spent || 使用时长
+View Time || 观看时长
+WatchTime || 观看时长
+Deep Sessions Unique User || 深度会话用户
+Deep Sessions || 深度会话
+App Stay Time || 应用停留时长
+Search PVs || 搜索 PV
+Item CTR || 物品 CTR
+Click NE || 点击 NE
+Satisfaction || 满意度
+Engagement || 互动
+Homefeed Repins || 首页信息流转存
+Homefeed Time Spent || 首页信息流使用时长
+Homefeed || 首页信息流
+Ads || 广告
+Live Streaming || 直播
+Short Video || 短视频
+Mall || 商城
+Kuaishou Lite || 快手极速版
+Kuaishou || 快手
+Douyin || 抖音
+Ranking || 排序
+Jobs || 职位
+People Recommendation || 人物推荐
+Follow Feed || 关注流
+Feed || 信息流
+Search || 搜索
+Email || 邮件
+Notifications || 通知
+Events || 活动
+Groups || 群组
+Similar Listings || 相似房源
+Public Dataset || 公开数据集
+Serving GPUs || 服务 GPU
+Training GPUs || 训练 GPU
+Backbone LLM || 骨干大模型
+Backbone || 骨干网络
+Rollout || 上线范围
+Interactions || 交互数
+Deployment || 部署
+Serving || 服务
+Users || 用户
+Members || 会员
+Customers || 客户
+Platform || 平台
+Efficiency || 效率
+Reach || 覆盖
+Largest GR || 最大的 GR 模型
+Compute || 算力
+Peak QPS || 峰值 QPS
+Catalog || 目录
+Candidates || 候选
+Items || 物品
+Goods ids || 商品 ID
+Apps || 应用
+Parameters || 参数
+Same Qwen3-VL SIDs || 相同的 Qwen3-VL 语义 ID
+Baselines || 基线
+Baseline || 基线
+Control || 对照组
+Production || 线上
+Without || 不含
+About || 约
+Over || 超过
+Comments || 评论
+Capacity || 容量
+Buyers || 买家
+Before || 此前
+Throughput || 吞吐
+Bookings || 预订量
+Recall || 召回率
+Roughly || 约
+Up to || 最高

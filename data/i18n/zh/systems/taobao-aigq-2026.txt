@@ -7,7 +7,7 @@ deployed_in|淘宝首页 HintQ 搜索前 query 框，作为召回源
 scale_short|30B MoE 大模型，30 天 A/B，约一百万次页面浏览的训练数据
 key_result|淘宝 HintQ 上 30 天线上 A/B：归因 GMV +10.68%，归因订单 +10.31%
 results_reported|HintQ 场景 30 天线上 A/B：归因 GMV +10.68%，归因订单 +10.31%，HintQ UCTR +7.42%，7 日留存 +3.73%，搜索 UV +0.20%；AIGQ 产出的 query 中，79.3% 以及叶子类目中的 37.3% 没有被其他渠道覆盖。淘宝测试集上的离线结果：think 变体经 IL-GRPO 后 Cate HR@30 为 0.4704，线上双塔 EBR 为 0.1998；Query HR@30 为 0.0745，对比 0.0100。
-version_note|数字已对照 arXiv v1 核对，版本日期 20 Mar 2026，来源是站长 Zotero 中带有 ACM 模板占位符的 PDF，因此不是 KDD 的最终定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自 Zotero 记录。
+version_note|数字已对照 arXiv v1 核对，版本日期 20 Mar 2026，来源是带有 ACM 模板占位符的全文 PDF，因此不是 KDD 的最终定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自论文记录。
 serving_infra|部署在 PPU 810E 平台上。一次请求需要数秒的大模型推理，输入约几百个 token，输出数十个 token，因此在线服务采用准实时缓存加每日更新的触发词到 query 索引，而不是逐请求生成。
 stages.0.model_family|Qwen3-30B-A3B 稀疏 MoE 大模型，direct 和 think 两个变体
 stages.0.details|AIGQ-Direct 在观察到有意义的行为时异步生成 query 列表，写入按用户划分的 key-value 缓存，缓存保留最近几次结果；AIGQ-Think 的输出被转成每日更新的触发词到 query 索引，用于实时召回。召回出的 query 再由现有排序模块排序。
@@ -41,7 +41,7 @@ results_table.offline.0.method|经 IL-GRPO 的 AIGQ-Think
 results_table.offline.1.method|经 IL-GRPO 的 AIGQ-Think
 caveats.0|论文没有说明 A/B 的对照组和流量占比；这些收益被描述为线上 HintQ 系统中的相对提升。
 caveats.1|没有使用实时生成；准实时缓存带来的个性化会滞后于最新行为，要到用户下次访问才会更新。
-caveats.2|读取的 Zotero PDF 是带有 ACM 模板占位符的 arXiv v1，不是 KDD 最终定稿版。
+caveats.2|读取的 PDF 是带有 ACM 模板占位符的 arXiv v1，不是 KDD 最终定稿版。
 caveats.3|所有方法的 Query HR@30 绝对值都偏低。
 unknown_fields.0|A/B 对照组和流量占比
 unknown_fields.1|线上 QPS

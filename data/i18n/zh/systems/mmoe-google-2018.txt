@@ -33,7 +33,7 @@ results_table.online.3.setting|Google 内容推荐线上实验，表 4
 results_table.offline.0.setting|Google 内容推荐，表 3，6M 步
 results_table.offline.1.setting|人口普查收入 Group 1
 results_table.offline.2.setting|人口普查收入 Group 2
-caveats.0|没有说明是否上线：论文称线上已经在用 shared-bottom 模型，并报告了 MMoE 的线上实验，但从未说 MMoE 已部署，所以 evidence_level 为 research_only。另一篇在排序系统中使用 MMoE 的论文见 youtube-multitask-ranking-2019，尚未对照全文验证。
+caveats.0|没有说明是否上线：论文称线上已经在用 shared-bottom 模型，并报告了 MMoE 的线上实验，但从未说 MMoE 已部署，所以证据等级为仅研究。另一篇在排序系统中使用 MMoE 的论文见 youtube-multitask-ranking-2019，尚未对照全文验证。
 caveats.1|没有给出 Google 的产品、流量占比、实验时长和指标定义；线上指标只有相对变化和置信水平。
 caveats.2|离线 AUC 的提升很小，约 0.0009 到 0.0015 AUC；论文自己说满意度子任务的离线结果噪声太大，没有展示。
 caveats.3|用户和 item 的规模前后不一致，第 6.4 节说数十亿用户，引言说数亿用户和 item。

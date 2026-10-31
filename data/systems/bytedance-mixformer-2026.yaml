@@ -65,11 +65,11 @@ sources:
 - title: yyHaker/MixFormer, community PyTorch implementation
   url: https://github.com/yyHaker/MixFormer
   type: source_code
-version_note: 'Numbers checked against the owner Zotero copy, which is arXiv v2 of 2 Jul 2026 typeset in the KDD 2026 camera-ready format with the ACM DOI 10.1145/3770855.3818447; the ACM Digital Library page itself was not opened. arXiv v1 was 15 Feb 2026 (not compared).'
+version_note: 'Numbers checked against the full text, which is arXiv v2 of 2 Jul 2026 typeset in the KDD 2026 camera-ready format with the ACM DOI 10.1145/3770855.3818447; the ACM Digital Library page itself was not opened. arXiv v1 was 15 Feb 2026 (not compared).'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2602.14110
-  local_pdf: /workspace/recarch/zotero/bytedance-mixformer-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, methodology (3.1-3.4), experiments (4.1-4.6: Table 1, Table 2, ablation, scaling, latency, online A/B), conclusion'
   verified_on: '2026-10-30'
   published_pdf: 'KDD 2026-format PDF (arXiv v2 with ACM DOI) read 2026-10-30'

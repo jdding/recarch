@@ -75,11 +75,11 @@ sources:
 - title: UNIQUE, arXiv 2609.23718
   url: https://arxiv.org/abs/2609.23718
   type: paper
-version_note: 'Numbers checked against the owner Zotero PDF, which is arXiv v1 of 20 Sep 2026 typeset in the RecSys 2026 camera-ready format with the ACM DOI 10.1145/3773078.3831936; arXiv has only v1. The ACM Digital Library page itself was not opened.'
+version_note: 'Numbers checked against the full-text PDF, which is arXiv v1 of 20 Sep 2026 typeset in the RecSys 2026 camera-ready format with the ACM DOI 10.1145/3773078.3831936; arXiv has only v1. The ACM Digital Library page itself was not opened.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2609.23718
-  local_pdf: /workspace/recarch/zotero/baidu-unique-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, methodology 3.1-3.7, training objective, experiments (setup, RQ1-RQ3, online serving), conclusion'
   verified_on: '2026-10-30'
   published_pdf: 'RecSys 2026-format PDF (arXiv v1 with ACM DOI) read 2026-10-30'

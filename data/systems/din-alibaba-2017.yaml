@@ -119,11 +119,11 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1706.06978
-  local_pdf: /workspace/recarch/zotero/din-alibaba-2017.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, model design (local activation unit), mini-batch aware regularization, Dice, datasets, Tables 2-5,
     Sec 6.7 online A/B, Sec 6.7 serving optimizations
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the published PDF"
 code:
   status: official_full
   checked_on: '2026-10-30'

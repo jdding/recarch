@@ -44,4 +44,23 @@ def main(out):
     open(os.path.join(out, "meta.json"), "w").write(json.dumps(meta))
     print("python selection tests: ALL PASS", {k: v["ids"] for k, v in meta.items()})
 
-if __name__ == "__main__": main(sys.argv[1] if len(sys.argv) > 1 else "/tmp/car-fixtures")
+def pill_tests():
+    """The launch batch is a baseline: the "this week" pill counts only events after launch_batch_until, and is absent when there are none."""
+    build.load_ui() if hasattr(build, "load_ui") else None
+    cards = [card(i, i) for i in range(3)]
+    ev = lambda kind, n: {"date": day(n), "kind": kind, "id": "x", "title": "t"}
+    for lang in ("zh", "en"):
+        build.set_lang(lang)
+        build.SITE = {"carousel_size": 6, "carousel_window_days": 7, "launch_batch_until": day(2)}
+        pill = lambda events: build.strip(events, "", TODAY, cards).count('class="pill"')
+        assert pill([ev("added", 3), ev("updated", 2)]) == 0, "events on or before the baseline are not counted"
+        assert pill([ev("added", 1)]) == 1 and pill([ev("added", 3), ev("updated", 0)]) == 1, "events after the baseline are counted"
+        h = build.strip([ev("added", 3), ev("added", 1), ev("added", 0), ev("updated", 0)], "", TODAY, cards)
+        txt = h.split('class="pill">')[1].split("</span>")[0]
+        assert "2" in txt and "1" in txt and "4" not in txt, (lang, txt)   # 2 added and 1 updated: the baseline add is left out
+        build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
+        assert pill([ev("added", 3)]) == 1, "no baseline configured: everything counts"
+    build.set_lang("zh"); build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
+    print("pill baseline tests: ALL PASS")
+
+if __name__ == "__main__": main(sys.argv[1] if len(sys.argv) > 1 else "/tmp/car-fixtures"); pill_tests()

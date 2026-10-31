@@ -85,7 +85,7 @@ version_note: 'Preprint only. Numbers checked against arXiv v1, a technical repo
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2609.00986v1
-  local_pdf: /workspace/recarch/zotero/tencent-tgr-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, sections 2-6 including the A/B tables for CCFormer, BARGE, HiGR and TGR-Reason, limitations'
   verified_on: '2026-10-30'
   published_pdf: null

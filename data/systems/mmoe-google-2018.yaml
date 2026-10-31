@@ -77,7 +77,7 @@ results_reported: 'Synthetic data, with 200 runs per setting, input dim 100, 8 e
   +19.72% (95%); MMoE vs Shared-Bottom: engagement +0.25% (95%), satisfaction +2.65% (95%).'
 caveats:
 - 'No launch is stated: the paper says a shared-bottom model is already used in production and reports live experiments for MMoE, but
-  never says MMoE was deployed, so evidence_level is research_only. See youtube-multitask-ranking-2019 for a separate paper that uses
+  never says MMoE was deployed, so the evidence level is Research only. See youtube-multitask-ranking-2019 for a separate paper that uses
   MMoE in a ranking system (not yet verified against full text).'
 - The Google product, traffic share, experiment length and metric definitions are not given; the live metrics are relative changes with
   confidence levels only.
@@ -102,7 +102,7 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3219819.3220007
-  local_pdf: /workspace/recarch/zotero/mmoe-2018.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Entire paper (10 pages, pdftotext): abstract, intro, related work, Sec 3 (shared-bottom, synthetic data, task relatedness),
     Sec 4 (MoE, MMoE, OMoE), Sec 5 (synthetic experiments, trainability), Sec 6 (baselines, tuning, census-income Tables 1-2, large-scale
     content recommendation Tables 3-4 and Figure 6 caption), conclusion'

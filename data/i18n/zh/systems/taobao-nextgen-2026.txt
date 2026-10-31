@@ -7,7 +7,7 @@ deployed_in|淘宝秒杀重排，在 5% 流量上测试
 scale_short|输入 100 个候选，输出 10 个 item，每天服务数亿用户
 key_result|对比此前的生成式重排模型 Sort-gen，14 天 5% 线上 A/B：GMV +18.85%，订单量 +12.35%
 results_reported|在 5% 秒杀流量上做 14 天线上 A/B，所有提升在 p < 0.01 下显著。对比线上的生成式重排模型 Sort-gen，NextGen 的 GMV +18.85%，订单量 +12.35%，CTR +18.77%，访问购买率 +11.78%。对比 RULE 基线，NextGen 的 GMV +24.73%，订单量 +15.61%，CTR +20.08%，访问购买率 +14.84%。14 天的 A/A 测试没有显著差异。离线结果：NextGen 的平均 CTR AUC 为 0.8123，CVR AUC 为 0.8433；Sort-gen 分别为 0.7705 和 0.7739。
-version_note|数字已对照 RecSys 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3773078.3831881，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+version_note|数字已对照 RecSys 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3773078.3831881，全文已核对。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
 serving_infra|用贪心解码和共享的候选打分来满足实时延迟；论文报告总平均延迟为 26 ms，Sort-gen 为 24 ms。
 stages.0.model_family|Encoder-decoder Transformer，2 层编码器和 2 层解码器，隐层大小 256，4 个头
 stages.0.details|从排序阶段取 N=100 个候选，通过对所有剩余候选的贪心自回归选择，输出 K=10 个 item；ordered regression 为多个目标预测各阈值档位的概率，经排名归一化后，与 MMR 多样性分数融合。

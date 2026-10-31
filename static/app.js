@@ -78,12 +78,12 @@
   if(p.get('sort')==='cites')sortSel.value='cites';applySort();
   setView(p.get('view')==='timeline'?'timeline':'list');
   apply();
-  var bar=document.getElementById('cmpbar');
+  var bar=document.getElementById('cmpbar'),msgT=0;
   document.addEventListener('change',function(e){
     if(!e.target.classList.contains('cmp'))return;
     var id=e.target.closest('.card').dataset.id;
-    if(e.target.checked){if(cmp.size>=3){e.target.checked=false;alert(L('cmp_max','Compare up to 3 systems.'));return}cmp.add(id)}else cmp.delete(id);
-    bar.style.display=cmp.size?'flex':'none';
+    if(e.target.checked){if(cmp.size>=3){e.target.checked=false;var m=document.getElementById('cmpmsg');m.textContent=L('cmp_full','You can compare up to 3 systems. Remove one before adding another.');m.hidden=false;clearTimeout(msgT);msgT=setTimeout(function(){m.hidden=true},6000);return}cmp.add(id)}else cmp.delete(id);
+    document.getElementById('cmpmsg').hidden=true;bar.style.display=cmp.size?'flex':'none';
     document.getElementById('cmpn').textContent=L('selected','{n} selected',{n:cmp.size});
     document.getElementById('cmplink').href='compare/?ids='+Array.from(cmp).join(',');
   });

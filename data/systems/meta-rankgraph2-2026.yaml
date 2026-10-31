@@ -65,11 +65,11 @@ sources:
 - title: RankGraph-2, arXiv 2606.18379
   url: https://arxiv.org/abs/2606.18379
   type: paper
-version_note: 'RecSys 2026 DOI confirmed via Crossref but the ACM version was not read. Numbers are from the owner Zotero PDF (arXiv v2, 26 Jun 2026, Meta format) and were compared against the latest arXiv versions v3 of 11 Jul and v4 of 24 Jul 2026: all headline numbers and Tables 2, 3 and 8 are identical. v3 and v4 only change affiliation footnotes naming Meta MRS, Meta Training Data Infra and FB Monetization.'
+version_note: 'RecSys 2026 DOI confirmed via Crossref but the ACM version was not read. Numbers are from the full-text PDF (arXiv v2, 26 Jun 2026, Meta format) and were compared against the latest arXiv versions v3 of 11 Jul and v4 of 24 Jul 2026: all headline numbers and Tables 2, 3 and 8 are identical. v3 and v4 only change affiliation footnotes naming Meta MRS, Meta Training Data Infra and FB Monetization.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2606.18379
-  local_pdf: /workspace/recarch/zotero/meta-rankgraph2-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, problem setup, method (construction, training, learned index), experiments 5.1-5.4 with Tables 2-8, discussion, limitations, conclusion'
   verified_on: '2026-10-30'
   published_pdf: null

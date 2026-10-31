@@ -67,15 +67,15 @@ sources:
 - title: TransAct V2, arXiv 2506.02267
   url: https://arxiv.org/abs/2506.02267
   type: paper
-version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 31 May 2023 typeset in the KDD '23 ACM template with the final DOI and ACM reference format, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared."
+version_note: "Checked against the full text, which is arXiv v1 of 31 May 2023 typeset in the KDD '23 ACM template with the final DOI and ACM reference format, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2306.00248
-  local_pdf: /workspace/recarch/zotero/pinterest-transact-2023.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, methodology (Pinnability, TransAct, early fusion, aggregation), offline Tables 1/4, online Tables
     5/6, discussion (retraining, diversity)
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the published PDF"
 code:
   status: official_partial
   checked_on: '2026-10-30'

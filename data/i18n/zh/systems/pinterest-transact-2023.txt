@@ -7,7 +7,7 @@ deployed_in|Pinterest 的 Homefeed、Related Pins、通知和搜索
 scale_short|每个用户最近 100 个行为，A/B 每组为 1.5% 的 Homefeed 用户
 key_result|在线上 A/B 中，相对不带实时序列特征的 Pinnability，所有用户的 Homefeed repin 量 +11.0%
 results_reported|线上 A/B，以不带实时序列特征的 Pinnability 作对照，每组 1.5% 的 Homefeed 用户：Homefeed repin 量 +11.0%，所有用户，/ +17.0%，非核心用户；Homefeed hide 量 -10.0% / -10.5%；总停留时长 +2.0% / +1.5%。其他场景：Related Pins repin +2.8%，搜索 repin +2.3%，邮件 CTR +1.4%，通知推送打开率 +1.9%。离线表 1：HIT@3 的 repin 和 hide 相对 WDL+seq 和 BST 基线的提升。
-version_note|对照站长的 Zotero 副本核对过，它是 31 May 2023 的 arXiv v1，用 KDD '23 的 ACM 模板排版，带最终 DOI 和 ACM 引用格式，即已接收的定稿文本。没有单独对比 ACM-DL 的副本。
+version_note|对照全文核对过，它是 31 May 2023 的 arXiv v1，用 KDD '23 的 ACM 模板排版，带最终 DOI 和 ACM 引用格式，即已接收的定稿文本。没有单独对比 ACM-DL 的副本。
 serving_infra|出于基础设施成本和延迟，序列长度上限为 100 个近期行为；论文描述了一些优化，使原来基于 CPU 的排序模型可以用 GPU 提供服务。
 stages.0.model_family|带 TransAct 的 Pinnability 排序器：point-wise 多任务，实时行为序列，最近 100 个行为，PinSage pin embedding + 行为类型 embedding，把候选 pin 的 embedding 拼接到序列的每一步上做早期融合，transformer 输出用前 K=10 列 + max pooling 压缩
 stages.0.details|基线：Wide&Deep + 序列池化，BST，全部行为和正向行为两种。表 4 对输出压缩做了消融：选择前 K 列 + max-pool，是为了在性能和延迟之间取得平衡。

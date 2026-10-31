@@ -5,7 +5,7 @@
   if (!root) return;
   var track = root.querySelector(".car-track"), slides = [].slice.call(root.querySelectorAll(".slide")), dots = [].slice.call(root.querySelectorAll(".dot"));
   var n = slides.length; if (n < 2) { [].forEach.call(root.querySelectorAll(".car-btn,.car-foot"), function (e) { e.hidden = true; }); }
-  var delay = parseInt(root.getAttribute("data-autoplay"), 10) || 5000, cur = 0, timer = null, hold = { hover: false, focus: false, touch: false, user: false };
+  var delay = parseInt(root.getAttribute("data-autoplay"), 10) || 5000, cur = 0, timer = null, hold = { hover: false, focus: false, touch: false, user: false }, pointerFocus = false;
   var reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   var pauseBtn = root.querySelector(".car-pause");
 
@@ -36,14 +36,18 @@
   dots.forEach(function (d) { d.addEventListener("click", function () { show(parseInt(d.getAttribute("data-go"), 10), true); }); });
   root.addEventListener("mouseenter", function () { hold.hover = true; });
   root.addEventListener("mouseleave", function () { hold.hover = false; });
-  root.addEventListener("focusin", function () { hold.focus = true; });
-  root.addEventListener("focusout", function () { hold.focus = false; });
+  // Focus pauses autoplay only when it came from the keyboard. A click on an arrow or dot leaves focus on that button, which must not hold the
+  // carousel for ever: after a pointer interaction it resumes once the pointer leaves. A keyboard user stays paused until focus leaves the carousel.
+  root.addEventListener("mousedown", function () { pointerFocus = true; });
+  root.addEventListener("focusin", function () { hold.focus = !pointerFocus; });
+  root.addEventListener("focusout", function () { hold.focus = false; pointerFocus = false; });
   root.addEventListener("keydown", function (e) {
+    pointerFocus = false; hold.focus = true;
     if (e.key === "ArrowLeft") { show(cur - 1, true); e.preventDefault(); }
     else if (e.key === "ArrowRight") { show(cur + 1, true); e.preventDefault(); }
   });
   var x0 = null, y0 = null;
-  root.addEventListener("touchstart", function (e) { hold.touch = true; var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+  root.addEventListener("touchstart", function (e) { hold.touch = true; pointerFocus = true; var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
   root.addEventListener("touchend", function (e) {
     hold.touch = false; var t = e.changedTouches[0];
     if (x0 !== null) { var dx = t.clientX - x0, dy = t.clientY - y0; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1), true); }

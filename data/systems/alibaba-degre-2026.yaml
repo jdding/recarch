@@ -69,7 +69,7 @@ version_note: 'Numbers checked against arXiv v1 of 25 May 2026, which is typeset
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2605.25749
-  local_pdf: /workspace/recarch/zotero/alibaba-degre-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, method, experimental setup, offline generator and evaluator results, ablation, hyperparameters, online A/B including robustness, conclusion'
   verified_on: '2026-10-30'
   published_pdf: 'arXiv v1 in final ACM KDD 2026 format, read 2026-10-30'

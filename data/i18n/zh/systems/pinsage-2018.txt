@@ -7,7 +7,7 @@ deployed_in|Pinterest 的 Related Pins 和 Homefeed 候选生成
 scale_short|3B 个节点和 18B 条边，7.5B 条训练样本
 key_result|线上 A/B 中 repin 率提升 10-30%，来自论文
 results_reported|A/B 测试报告 repin 率提升 10-30%，来自论文。
-version_note|对照站长的 Zotero 副本核对过，它是 6 Jun 2018 的 arXiv v1，用 KDD '18 的 ACM 模板排版，带引用格式和 DOI 10.1145/3219819.3219890，10 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+version_note|对照全文核对过，它是 6 Jun 2018 的 arXiv v1，用 KDD '18 的 ACM 模板排版，带引用格式和 DOI 10.1145/3219819.3219890，10 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
 serving_infra|在 378 个 d2.8xlarge AWS 节点上做 MapReduce 推理；用最近邻查找候选。
 stages.0.model_family|图卷积网络，即带重要性池化的随机游走邻域，加最近邻查找
 stages.0.details|Embedding 用于 Related Pins 和 Homefeed 中的最近邻查找，论文用 LSH + Weak AND。用 max-margin 损失和困难负样本课程来训练。

@@ -40,7 +40,7 @@ results_table.offline.0.versus|带 EMA 的普通 RQ 4.22%
 results_table.offline.1.method|前缀感知 BasisRQ
 results_table.offline.1.metric|碰撞率
 results_table.offline.1.versus|带 EMA 的普通 RQ 84.2%
-caveats.0|arXiv 预印本 v1；没有找到经同行评审的发表会议，因此 published_version_checked 为空。
+caveats.0|arXiv 预印本 v1；没有找到经同行评审的发表会议，因此没有可核对的正式发表版。
 caveats.1|论文只以相对提升报告收入类指标 ADSS 和 ADVV；没有绝对值、置信区间或分人群结果。
 caveats.2|消融实验是在一部分广告候选上线上做的，不是在全局流量上。
 caveats.3|生成器很小，只有 2 层解码器；延迟和 QPS 未报告，论文结论把解码效率列为未来工作。

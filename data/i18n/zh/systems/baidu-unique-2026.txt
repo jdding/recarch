@@ -7,7 +7,7 @@ deployed_in|手机百度首页信息流、发现页和短视频推荐，召回�
 scale_short|峰值召回 QPS 约 10,000，使用约 400 张 NVIDIA L20 GPU
 key_result|对比此前线上的召回链路，一周全量 A/B：总观看时长 +0.96%
 results_reported|线上结果为一周全量 A/B，对比此前线上的召回链路，p < 0.05：总观看时长 +0.96%，总分发量 +1.08%，用户留存 +0.70%；新用户观看时长 +1.44%，高活跃用户 +1.11%；UNIQUE 占召回候选池的 22.5%。在线服务：P80 35 ms，P99 89 ms，线上推理 MFU 44.23%，峰值约 10,000 QPS，每 1,000 个请求约 $0.0013。码本分析：资源计数方差从 1510.85 降到 389.57，即从层级码本到扁平码本。在 KuaiRand-Pure 上的离线结果：HR@10 0.0575，HR@50 0.1510，NDCG@10 0.0310，NDCG@50 0.0473，CTR-AUC 0.7252，对比 UniGRF-HSTU 的 0.0511、0.1453、0.0298、0.0430、0.7168。消融实验的指标为 HR@50：去掉生成目标为 0.1374，即 -9.01%；去掉早期融合为 0.1398，即 -7.42%；去掉扁平量化为 0.1421，即 -5.89%。
-version_note|数字已对照站长 Zotero 中的 PDF 核对，它是 20 Sep 2026 的 arXiv v1，排版采用 RecSys 2026 定稿格式，ACM DOI 为 10.1145/3773078.3831936；arXiv 上只有 v1。没有打开 ACM Digital Library 页面本身。
+version_note|数字已对照全文 PDF 核对，它是 20 Sep 2026 的 arXiv v1，排版采用 RecSys 2026 定稿格式，ACM DOI 为 10.1145/3773078.3831936；arXiv 上只有 v1。没有打开 ACM Digital Library 页面本身。
 serving_infra|约 400 张 NVIDIA L20 GPU，每张 GPU 一个服务实例；TensorRT FP16；item embedding 每小时预计算；参数服务器保证各模型版本一致；请求缓存窗口在中午为 15 s，晚上为 30 s。峰值约 10,000 QPS。
 stages.0.model_family|早期融合 Transformer，输入是 UIGN 用户前缀，包含 1 个画像 token 加 100 个短期、200 个中期和 200 个长期兴趣 token，预测语义码的分布；取 top N=100 个码，通过码到 item 的索引映射到 item，该索引覆盖数十万个 item，每个码保留 M=30 个 item。
 stages.0.details|粗排使用用户与 item embedding 的内积；top 10k 的 item 按码分组后交给精细排序。

@@ -3,6 +3,24 @@ summary: 由模型直接写出答案、而不是用 embedding 检索去查找的
 framing:
 - 经典的召回栈通过对 embedding 做最近邻搜索来找到 item。生成式召回则让模型直接写出答案：它为每个 item 生成一段简短的编码，称为 Semantic ID，或者生成文本，再把输出映射回 item。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
 - 这个词涵盖了差别很大的设计。有的取代整个召回、预排序和排序的级联。有的只是多加一路召回通道。有的生成的不是 item ID。表格之后的各节解释了会改变成本和风险的那些差别。
+problem: 让模型直接写出推荐结果，而不是去检索。这会怎样改变你的技术栈、服务成本和风险？
+question: 你应该取代整个召回级联，还是在旁边新增一路生成式通道？
+decisions:
+- when: 你想把上线风险降到最低。
+  then: 在现有召回旁边新增一路通道，GEAR、BARGE、DPGR、URM 和 AIGQ 都是这样做的。新增通道更容易回滚和衡量。
+  cards: [bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026]
+- when: 你想减少阶段，并且能把全部结果压在一个模型上。
+  then: 取代级联，GPR 和 OneSearch 就是这样做的。这样去掉了阶段，但把全部结果压在一个模型上。
+  cards: [tencent-gpr-2025, kuaishou-onesearch-2025]
+- when: 你的请求预算负担不起每次请求都做生成。
+  then: 把生成移出请求路径。SnapLGR 每天离线批量做 beam search，AIGQ 通过缓存列表和每日索引做近线服务，URM 异步运行，S-GRec 让 LLM 留在离线。
+  cards: [snap-snaplgr-2026, taobao-aigq-2026, alibaba-urm-2025, tencent-sgrec-2026]
+- when: 你的 item 在 Semantic ID 空间里发生冲突。
+  then: 先规划 tokenizer 的工作。TIGER 加上第四个 token 来区分冲突的 item，QuaSID 把冲突的 item 推开，SnapLGR 加入共同互动损失，提高码本利用率并减少冲突。
+  cards: [tiger-google-2023, kuaishou-quasid-2026, snap-snaplgr-2026]
+- when: 你还没想清楚模型应该写出什么。
+  then: 先定这一点，因为它决定了除模型之外你还必须构建什么。DPGR 写出少量意图编码，AIGQ 写出 query 文本，GenPage 写出整个页面。
+  cards: [meituan-dpgr-2026, taobao-aigq-2026, netflix-genpage-2026]
 members:
 - id: tiger-google-2023
   approach: 用 RQ-VAE 把 item 的内容 embedding 量化为 Semantic ID，由 Transformer 解码下一个 item 的 ID。

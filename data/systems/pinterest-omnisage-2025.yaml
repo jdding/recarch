@@ -9,7 +9,7 @@ first_public: "2025-04"
 venue: "KDD 2025"
 venue_year: 2025
 published_version_checked: true
-version_note: "Checked against the owner's Zotero copy, which is arXiv v3 of 12 Jun 2025 typeset in the KDD '25 ACM template with the reference format and DOI 10.1145/3711896.3737253, 12 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+version_note: "Checked against the full text, which is arXiv v3 of 12 Jun 2025 typeset in the KDD '25 ACM template with the reference format and DOI 10.1145/3711896.3737253, 12 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
 primary_source: "https://doi.org/10.1145/3711896.3737253"
 added_on: "2026-10-29"
 last_verified: "2026-10-30"
@@ -71,11 +71,11 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2504.17811
-  local_pdf: /workspace/recarch/zotero/pinterest-omnisage-2025.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, Sec 3 (tasks, neighbor sampling, embedders), Sec 4 setup/offline comparison with PinSage/PinnerFormer,
     online claims
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF"
 code:
   status: official_partial
   checked_on: '2026-10-30'

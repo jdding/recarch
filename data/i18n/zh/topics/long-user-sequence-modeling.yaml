@@ -3,6 +3,24 @@ summary: 生产级推荐系统如何在延迟预算内读取很长的用户历�
 framing:
 - 用户的历史可以多达数万个事件，而排序器每个请求只有数十毫秒。本页的每个系统都在回答同样的两个问题。历史读多少，以及什么时候为读取付出代价？
 - 答案差别很大。有的系统实时只读最近的数百个行为。有的对完整历史做搜索或压缩。有的把重模型移出请求路径，只提供缓存的结果。表格列出了每张卡片的报告。之后的各节解释了在选择方案时重要的那些差别。
+problem: 用户历史可能长达数万个事件，而排序模型每次请求只有几十毫秒。你读多少历史，又在什么时候付出这个代价？
+question: 你是在请求时读取历史，还是在请求到达之前就把代价付掉？
+decisions:
+- when: 你的请求预算很紧。
+  then: 把重模型移出请求路径。PinnerFormer 每天批量运行，LLaTTE 异步运行大模型，线上排序模型只需做一次特征查询，SequenceO1 则构建可以缓存的摘要。
+  cards: [pinnerformer-2022, meta-llatte-2026, bytedance-sequenceo1-2026]
+- when: 你需要覆盖很长的历史。
+  then: 先检索或压缩。SIM 在完整历史中搜索与候选接近的行为，KuaiFormer 把 item 压缩成更少的 token，SequenceO1 把长历史变成摘要，同时仍直接读取最新的事件。
+  cards: [sim-alibaba-2020, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026]
+- when: 你付得起请求时做注意力计算的代价。
+  then: 在排序模型内部读取序列，并依靠 GPU 服务或 KV cache，TransAct 和 LONGER 就是这样做的。
+  cards: [pinterest-transact-2023, bytedance-longer-2025]
+- when: 你想要最小的迁移成本。
+  then: 产出能接入现有排序模型的输出。LUM 和 PinFM 就是这样做的，LLaTTE 则把工作拆给上游模型和一个紧凑的线上模块。
+  cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026]
+- when: 你有能力重写排序模型。
+  then: HSTU 把召回和排序都视为对用户行为的序列预测，并替换了排序模型自身的特征交互层。
+  cards: [hstu-meta-2024]
 members:
 - id: pinterest-transact-2023
   approach: 在 Homefeed 排序器内部实时读取最近 100 个行为。

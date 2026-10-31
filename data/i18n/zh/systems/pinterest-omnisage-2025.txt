@@ -7,7 +7,7 @@ deployed_in|Pinterest，五个应用
 scale_short|550M+ 月活用户，每周 1.5B+ 个 Pin 被互动
 key_result|线上，OmniSage 表示在五个应用上带来全站 repin 约 +2.5%
 results_reported|摘要：线上，OmniSage 表示在五个应用上带来全站 repin，即 save，约 +2.5%。相对 PinSage 和 PinnerFormer 的离线收益见第 4.2 节，表 5 等，这里未复现。
-version_note|对照站长的 Zotero 副本核对过，它是 12 Jun 2025 的 arXiv v3，用 KDD '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3711896.3737253，12 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+version_note|对照全文核对过，它是 12 Jun 2025 的 arXiv v3，用 KDD '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3711896.3737253，12 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
 serving_infra|为十亿节点级的图定制的基础设施
 stages.0.model_family|面向召回和排序特征的表示学习：每种实体类型一个 transformer embedder，作用于节点的内容，加上按重要性采样、按邻近度排序的邻居；多任务对比训练，用 count-min sketch 做采样偏差校正
 stages.0.details|论文中的实体类型：Pin 和 board。离线对比的是 PinSage，以及在 PinSage embedding 上训练的 PinnerFormer，编码器和序列配置相匹配；board-Pin 的 recall 用 Board More Ideas 场景的未来互动来衡量。

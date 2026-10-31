@@ -50,7 +50,7 @@ scale:
   note: Three-layer prefix-aware BasisRQ
 results_reported: 'Online A/B on Douyin Ads, 7 days, 5% of traffic per treatment group, GEAR as an extra retrieval path vs the production system without it: ADSS +0.563%, ADVV +0.658%; cold-start activation rate of new advertisers +1.46%. Subset ablation (ADSS/ADVV): GEAR +0.446/+0.498, w/o prefix-aware BasisRQ +0.288/+0.219, w/o rerank +0.358/+0.341, w/o secpm reweight +0.395/+0.354. Tokenizer analysis per Table 2: prefix-aware BasisRQ (2048, 512, 128) utilization 8.83%, collision rate 52.3%, MSE 1.82e-3; vanilla RQ with EMA 4.22%, 84.2%, 2.32e-3.'
 caveats:
-- 'arXiv preprint (v1); no peer-reviewed venue found, so published_version_checked is null.'
+- 'arXiv preprint (v1); no peer-reviewed venue found, so there is no published version to check.'
 - 'The paper reports revenue-style metrics (ADSS, ADVV) as relative gains only; no absolute values, confidence intervals or per-segment results.'
 - 'Ablations are online on a subset of ad candidates, not on global traffic.'
 - 'The generator is small (2 decoder layers); latency and QPS are not reported, and the conclusion lists decoding efficiency as future work.'
@@ -70,7 +70,7 @@ version_note: 'arXiv v1 of 30 Sep 2026 is the latest version; arXiv page showed 
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2609.39327
-  local_pdf: /workspace/recarch/zotero/bytedance-gear-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, preliminaries, GEAR method (tokenizer, generator, reranker, training and serving), related work, system deployment, experiments 6.1-6.2, conclusion, appendix C'
   verified_on: '2026-10-30'
   published_pdf: null

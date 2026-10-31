@@ -63,11 +63,11 @@ sources:
 - title: "DPGR: Dual-Domain Spatiotemporal Generative Retrieval for Intent-Aware Local Life Service Recommendation, RecSys 2026"
   url: https://doi.org/10.1145/3773078.3831742
   type: paper
-version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831742, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831742, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3773078.3831742
-  local_pdf: /workspace/recarch/zotero/meituan-dpgr-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, methodology, experiments 4.1-4.5 including Tables 1-4 and the online A/B, conclusion'
   verified_on: '2026-10-30'
   published_pdf: 'RecSys 2026 camera-ready PDF read 2026-10-30'

@@ -7,7 +7,7 @@ deployed_in|京东外卖广告排序，先在 20% 流量上测试，再推到全
 scale_short|约二十亿条训练样本，在 20% 流量上做 7 天 A/B，TP99 增加约 2 ms
 key_result|对比线上 DLRM，7 天 20% A/B：CTR +5.07%，CVR +4.71%，RPM +6.42%
 results_reported|线上 7 天 A/B，分配 20% 流量，对比线上 DLRM，全部 p < 0.0001：CTR +5.07%，CVR +4.71%，RPM +6.42%，TP99 延迟增加约 2 ms；7 天内每日收益保持稳定，随后模型推到平台全量流量。工业数据集上的离线 AUC：GCRank 的 CTR 为 0.7679，CVR 为 0.7053；线上 DLRM 分别为 0.7513 和 0.6619；HSTU 分别为 0.7545 和 0.6659。
-version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792818，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792818，全文已核对。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
 serving_infra|现有的实时 DLRM 在线服务链路会查询动态知识库和群体 embedding 缓存，因此大模型调用不在主链路上。TP99 延迟增加约 2 ms。
 stages.0.model_family|以大模型和 flow matching 为骨干的上下文编码器，通过 LoRA 风格的 adapter 融合进 CTR 和 CVR 排序模型
 stages.0.details|输出 pCTR 和 pCVR，用于 eCPM 以及广告与自然内容的混合排序。除现有的实时 DLRM 在线服务链路外，还新增两条生成式流水线，分别负责更新和提供动态知识库与群体 embedding 缓存。

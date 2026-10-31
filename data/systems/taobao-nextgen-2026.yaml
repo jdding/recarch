@@ -63,11 +63,11 @@ sources:
 - title: "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation, RecSys 2026"
   url: https://doi.org/10.1145/3773078.3831881
   type: paper
-version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831881, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831881, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3773078.3831881
-  local_pdf: /workspace/recarch/zotero/taobao-nextgen-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, method 4.1-4.2, experimental setup, online A/B results, offline AUC and ablation, conclusion and limitations'
   verified_on: '2026-10-30'
   published_pdf: 'RecSys 2026 camera-ready PDF read 2026-10-30'

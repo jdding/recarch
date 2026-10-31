@@ -74,11 +74,11 @@ sources:
 - title: "alibaba/SimCIT, official repository"
   url: https://github.com/alibaba/SimCIT
   type: source_code
-version_note: 'Numbers checked against arXiv v1 of 13 July 2026, which carries RecSys 2026 formatting with placeholder DOI text. ACM lists the published version under DOI 10.1145/3773078.3831863, registered per a doi.org redirect check. The camera-ready PDF itself was not retrievable, so published_version_checked is false.'
+version_note: 'Numbers checked against arXiv v1 of 13 July 2026, which carries RecSys 2026 formatting with placeholder DOI text. ACM lists the published version under DOI 10.1145/3773078.3831863, registered per a doi.org redirect check. The camera-ready PDF itself was not retrievable, so the published version was not checked.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2607.26073v1
-  local_pdf: /workspace/recarch/zotero/amap-gwhere-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, method, experiments 4.1-4.5, online deployment, conclusion'
   verified_on: '2026-10-30'
   published_pdf: null

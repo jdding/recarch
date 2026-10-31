@@ -60,14 +60,14 @@ sources:
 - title: facebookresearch/unity
   url: https://github.com/facebookresearch/unity
   type: source_code
-version_note: 'No arXiv version found. Numbers checked against the KDD 2026 camera-ready PDF from the owner Zotero copy, ACM DOI 10.1145/3770855.3818505. First public date taken as KDD 2026 (August 2026), the earliest public version I found.'
+version_note: 'No arXiv version found. Numbers checked against the KDD 2026 camera-ready PDF with the full text read, ACM DOI 10.1145/3770855.3818505. First public date taken as KDD 2026 (August 2026), the earliest public version I found.'
 needs_fulltext: false
 fulltext:
   pdf_url: null
-  local_pdf: /workspace/recarch/zotero/meta-unity-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, approach (tokenization, Pollen, SSL), related work, experiments 4.1.1-4.1.5, public datasets 4.2, summary'
   verified_on: '2026-10-30'
-  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF'
 code:
   status: official_partial
   checked_on: '2026-10-30'

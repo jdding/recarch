@@ -9,13 +9,13 @@ first_public: "2025-05"
 venue: "RecSys 2025"
 venue_year: 2025
 published_version_checked: true
-version_note: "Checked against the owner's Zotero copy, which is arXiv v2 of 18 Jul 2025 typeset in the RecSys '25 ACM template with the header and DOI 10.1145/3705328.3748065, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+version_note: "Checked against the full text, which is arXiv v2 of 18 Jul 2025 typeset in the RecSys '25 ACM template with the header and DOI 10.1145/3705328.3748065, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
 primary_source: "https://doi.org/10.1145/3705328.3748065"
 added_on: "2026-10-29"
 last_verified: "2026-10-30"
 updates:
 - date: "2026-10-30"
-  note: "Era moved from generative to deep by owner decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
+  note: "Era moved from generative to deep by editorial decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
 - date: "2026-10-30"
   note: "Checked against the RecSys '25 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
 system_type: ads
@@ -73,10 +73,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2505.04421
-  local_pdf: /workspace/recarch/zotero/bytedance-longer-2025.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, related work, experimental setting, Tables 1-3, online A/B text
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF"
 code:
   status: none
   checked_on: '2026-10-30'

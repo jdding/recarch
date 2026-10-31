@@ -54,7 +54,7 @@ results_reported: 'Online 30-day A/B in the HintQ scenario: attributed GMV +10.6
 caveats:
 - 'The paper does not name the A/B control group or traffic share; the gains are described as relative gains in the online HintQ system.'
 - 'Real-time generation is not used; personalization from the nearline cache lags behind the latest behavior until the next visit.'
-- 'The Zotero PDF read is arXiv v1 with ACM template placeholders, not the KDD camera-ready.'
+- 'The PDF read is arXiv v1 with ACM template placeholders, not the KDD camera-ready.'
 - 'Query HR@30 values are low in absolute terms for all methods.'
 unknown_fields:
 - A/B control and traffic share
@@ -68,11 +68,11 @@ sources:
 - title: AIGQ, arXiv 2603.19710
   url: https://arxiv.org/abs/2603.19710
   type: paper
-version_note: 'Numbers checked against arXiv v1 of 20 Mar 2026, from the owner Zotero PDF with ACM template placeholders, so not the KDD camera-ready; the ACM page was not opened. KDD 2026 and the DOI come from the Zotero record.'
+version_note: 'Numbers checked against arXiv v1 of 20 Mar 2026, from the full-text PDF with ACM template placeholders, so not the KDD camera-ready; the ACM page was not opened. KDD 2026 and the DOI come from the paper record.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2603.19710
-  local_pdf: /workspace/recarch/zotero/taobao-aigq-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, method including IL-SFT, IL-GRPO and AIGQ-Think, deployment, experimental settings, offline evaluation, ablation, online A/B, conclusion'
   verified_on: '2026-10-30'
   published_pdf: null

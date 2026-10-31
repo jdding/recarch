@@ -29,6 +29,6 @@ caveats.2|表 2 中每个数据集的数值这里未复现。
 unknown_fields.0|线上 A/B 结果
 unknown_fields.1|线上部署
 unknown_fields.2|内部数据集规模和产品场景
-updates.0.note|按站长的决定，时代从生成式改为深度：主流范式是扩展判别式的排序和序列模型，而不是生成式或 Semantic ID 建模。
+updates.0.note|按编辑决定，时代从生成式改为深度：主流范式是扩展判别式的排序和序列模型，而不是生成式或 Semantic ID 建模。
 code.repos.0.owner|=
 code.repos.0.note|Wukong 论文的第三方实现。我没有找到 Meta 的对应仓库。

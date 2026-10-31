@@ -69,10 +69,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2502.08309
-  local_pdf: /workspace/recarch/zotero/alibaba-lum-2025.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, three-step paradigm, Sec 4.4 industrial deployment, Tables 1-2 text, Sec 5.6 online results
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the published PDF"
 code:
   status: none
   checked_on: '2026-10-30'

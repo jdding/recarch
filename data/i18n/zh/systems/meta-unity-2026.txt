@@ -7,7 +7,7 @@ deployed_in|Meta 的五个核心广告模型的广告排序，以及 IFR 和 VDD
 scale_short|每天 10B+ 条线上训练样本
 key_result|Pollen，即 Unity 中的 Transformer 部分，在线上 A/B 中 VDD 的 WatchTime +2.76%，IFR +3.68%
 results_reported|Meta 线上：Pollen 于 April 2023 首次在短视频上线；A/B 中 VDD 的 WatchTime +2.76%，IFR 的 WatchTime +3.68%，均统计显著；按表 2，离线 VDD 的 NE 提升为 -0.34% 到 -0.49%，按表 3，IFR 点击 NE -0.66%，点赞 -0.97%。Pollen 在一个核心广告模型上：NE -0.15%。Unity tokenization：按表 4，相对 mid-2025 基线，广告 NE -0.15%，用 RQ；按表 5，VDD NE -0.38% 到 -0.58%。Unity Encoder 在五个核心广告模型上，相对 July 2025 基线：NE -0.06% 到 -0.14%，表 6；模型 A-E 为 -0.08、-0.1、-0.06、-0.14、-0.08。加入 SSL 平均再多带来约 -0.05% NE。按表 7 的扩展：Unity Tiny/XS/S/M 在 FLOPs +4/+14/+72/+260% 时达到 NE -0.05/-0.08/-0.10/-0.13%，声称相对现有扩展曲线的扩展效率为 2.3x-4.9x。按表 8 的公开数据集：在 KuaiVideo、AmazonElectronics、TaobaoAds 上，相对 DCNv2 和 Wukong 有小幅 AUC 提升。
-version_note|没有找到 arXiv 版本。数字对照站长 Zotero 副本中的 KDD 2026 定稿 PDF 核对，ACM DOI 10.1145/3770855.3818505。首次公开日期取 KDD 2026，即 August 2026，是我找到的最早公开版本。
+version_note|没有找到 arXiv 版本。数字对照 KDD 2026 定稿 PDF 全文核对，ACM DOI 10.1145/3770855.3818505。首次公开日期取 KDD 2026，即 August 2026，是我找到的最早公开版本。
 serving_infra|未描述；论文称 Pollen 在 IFR 上被剪枝并做了延迟优化，以适应更紧的服务预算。
 stages.0.model_family|特征编码器，即 DLRM 底部，例如 DCN、DHEN、Wukong，输出隐向量，切分成 16-64 个 patch，隐向量维度 1024-4096，再经 Pollen Transformer 编码器，然后接线上的任务头，目标包括点击、转化、点赞和观看时长。SSL 解码器，深度 1-4，只在训练时使用。
 stages.0.details|SSL 设置：mask 比例 0.3-0.5，编码器深度 4-12，在有监督损失之上的损失权重 lambda 为 0.1-1.0。

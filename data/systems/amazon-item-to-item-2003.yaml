@@ -65,9 +65,6 @@ sources:
 - title: "Amazon.com Recommendations: Item-to-Item Collaborative Filtering, IEEE Internet Computing 2003"
   url: https://doi.org/10.1109/MIC.2003.1167344
   type: paper
-- title: 'Amazon.com Recommendations: Item-to-Item Collaborative Filtering, IEEE Internet Computing 7(1), 2003'
-  url: https://doi.org/10.1109/mic.2003.1167344
-  type: paper
 - title: Paper copy by Linden, Smith and York
   url: https://www.cs.umd.edu/~samir/498/Amazon-Recommendations.pdf
   type: paper

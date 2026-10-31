@@ -9,7 +9,7 @@ first_public: "2024-02"
 venue: "KDD 2024"
 venue_year: 2024
 published_version_checked: true
-version_note: "Checked against the owner's Zotero copy, which is arXiv v2 of 7 Aug 2024 typeset in the KDD '24 ACM template with the reference format and DOI 10.1145/3637528.3671561, 13 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+version_note: "Checked against the full text, which is arXiv v2 of 7 Aug 2024 typeset in the KDD '24 ACM template with the reference format and DOI 10.1145/3637528.3671561, 13 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
 primary_source: "https://doi.org/10.1145/3637528.3671561"
 added_on: "2026-10-29"
 last_verified: "2026-10-30"
@@ -67,11 +67,11 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2402.06859
-  local_pdf: /workspace/recarch/zotero/linkedin-lirank-2024.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Abstract, intro, Sec 3 (Feed/Ads models, Residual DCN, isotonic calibration, dense gating, incremental training, MTL,
     dwell), Tables 1 and 3, deployment text
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF"
 code:
   status: none
   checked_on: '2026-10-30'

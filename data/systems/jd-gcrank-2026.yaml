@@ -64,11 +64,11 @@ sources:
 - title: "A Generative Contextual Comprehension Paradigm for Takeout Ranking Model, WWW 2026"
   url: https://doi.org/10.1145/3774904.3792818
   type: paper
-version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792818, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792818, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3774904.3792818
-  local_pdf: /workspace/recarch/zotero/jd-gcrank-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, preliminaries, method 4.1-4.5, experiments 5.1-5.5 including Tables 1-2, conclusion, appendix online A/B'
   verified_on: '2026-10-30'
   published_pdf: 'WWW 2026 camera-ready PDF read 2026-10-30'

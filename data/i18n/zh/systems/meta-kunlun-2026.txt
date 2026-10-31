@@ -7,7 +7,7 @@ deployed_in|Meta 主要的广告模型，用于 CTR 和转化预估
 scale_short|70B+ 条离线训练样本，每条样本 6 到 180 GFLOPs
 key_result|topline 指标提升 1.2%，已部署在 Meta 主要的广告模型中
 results_reported|论文声称：NVIDIA B200 上 MFU 为 17% 到 37%；扩展效率是当前最优方法的 2x，扩展系数约为 InterFormer 的 2x。相对 Wukong 的 NE 提升，在 6、60、180 GFLOPs 下：Kunlun 为 0.31%、0.66%、0.79%，InterFormer 为 0.31%、0.36%、0.50%，见图 3；在 180 这一档，Kunlun 用 154.9 GFLOPs，InterFormer 用 172.3。消融见表 1：去掉 GDPA 后 MFU 为 34.0%，QPS -8%，NE +0.04%；Computation Skip 在 NE 不变时 FLOPs -43.1%，QPS +35%；滑动窗口 QPS +31.1%，FLOPs -29.5%；事件个性化 QPS +13%，FLOPs -11%。线上：已部署在 Meta 主要的广告模型中，topline 指标提升 1.2%。
-version_note|数字已对照 KDD 2026 定稿版 PDF 核对，来自站长的 Zotero 副本，ACM DOI 为 10.1145/3770855.3818438。arXiv v1 为 10 Feb 2026；最新的 arXiv 是 5 Jun 2026 的 v3，未逐行比对。
+version_note|数字已对照 KDD 2026 定稿版 PDF 全文核对，ACM DOI 为 10.1145/3770855.3818438。arXiv v1 为 10 Feb 2026；最新的 arXiv 是 5 Jun 2026 的 v3，未逐行比对。
 serving_infra|除训练侧的 kernel 之外未作说明。论文报告的是训练 MFU 和 QPS，不是在线服务延迟。
 stages.0.model_family|多层堆叠的 Kunlun 层，作用于两部分：一是按事件类型划分的序列流，二是非序列 token 库。Transformer Block：基于 GDPA 的 Personalized FFN，权重由非序列上下文生成，加上带滑动窗口和 Rotary Temporal Embeddings 的多头自注意力。Interaction Block：权重生成，带 SumKronLinear 压缩的 Hierarchical Seed Pooling，简称 HSP，以及由多个 Wukong expert 混合而成的 Global Interaction 模块。最后用 sigmoid 头给出点击概率。
 stages.0.details|建立在 InterFormer 之上。Computation Skip 交替使用不同的层：偶数层跳过自注意力，重新计算 HSP 摘要；奇数层复用摘要，跳过 PFFN，计算自注意力。每种事件各有自己的配置，包括 d_model、头数、token 数、层数和窗口，转化这类高价值事件的配置比曝光的更大。

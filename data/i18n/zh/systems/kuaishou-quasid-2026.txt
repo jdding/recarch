@@ -7,7 +7,7 @@ deployed_in|快手电商推荐，用于生成式召回、判别式召回和排�
 scale_short|5% 流量，超过两千万用户，5 天 A/B
 key_result|在 5% 流量上做 5 天 A/B：排序 GMV-S2 +2.38%，冷启动召回成交订单最高 +6.42%
 results_reported|在快手电商约 5% 流量、超过两千万用户上做 5 天 A/B，所有结果显著；把分词器换成 QuaSID 后，生成式召回的成交订单 +0.21%，GMV-S1 +1.03%，GMV-S2 +0.55%；排序的 GMV-S2 +2.38%，GMV-S1 +1.44%，成交订单 +0.20%。冷启动召回上，观看次数不足 100 的视频成交订单 +6.42%，不足 600 的 +4.69%；召回整体成交订单 +1.09%，GMV +1.69%。在 Amazon Beauty 上用 TIGER 骨干做离线实验，HR@10 为 0.0392，RQ-Kmeans 为 0.0379，RQ-VAE 为 0.0300；NDCG@10 为 0.0230，对比 0.0211；论文称 top-K 排序质量比最佳基线高 5.9%。把排斥损失加到其他分词器上，NDCG@10 在 Beauty 上最多提升 15.3%，在 Toys 上最多提升 20.1%。
-version_note|数字已对照 28 February 2026 的 arXiv v1 核对，该版本仍带有模板会议行。KDD 2026 的 DOI 10.1145/3770855.3818486 来自站长的 Zotero 记录，经 doi.org 跳转检查确认已注册；定稿版 PDF 无法获取，因此 published_version_checked 为 false。
+version_note|数字已对照 28 February 2026 的 arXiv v1 核对，该版本仍带有模板会议行。KDD 2026 的 DOI 10.1145/3770855.3818486 来自论文记录，经 doi.org 跳转检查确认已注册；定稿版 PDF 无法获取，因此未核对正式发表版。
 serving_infra|训练好的分词器作为推理服务部署，为召回和排序链路把 item ID 映射成 SID。
 stages.0.model_family|QuaSID 分词器，为生成式召回模型和常规召回阶段提供输入
 stages.0.details|生成式召回生成下一个 item 的 SID；冷启动 item 获益最大。

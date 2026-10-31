@@ -7,7 +7,7 @@ deployed_in|抖音和抖音极速版信息流排序，已做 A/B 测试
 scale_short|数万亿条训练记录，medium 模型有 1,226M 稠密参数
 key_result|对比线上的 STCA to RankMixer 基线，两周线上 A/B：抖音整体时长 +0.2799%
 results_reported|离线见表 1，相对 TA to DLRM 基线，基线的 AUC 为 Finish 0.8554、Skip 0.8124：MixFormer-medium 的 Finish AUC +1.28%，Finish UAUC +1.60%，Skip AUC +1.60%，Skip UAUC +2.46%，稠密参数 1,226M，每个 batch 3,503 GFLOPs；STCA to RankMixer 为 +1.12%、+1.40%、+1.43%、+2.14%，参数 1,255M，6,736 GFLOPs；UI-MixFormer-medium 精度相同，只需 2,242 GFLOPs，FLOPs 约减少 36%。两周线上 A/B，对比线上的 STCA to RankMixer 基线，见表 2：抖音整体活跃天数 +0.0415%，时长 +0.2799%，点赞 +0.1766%，完播 +0.3897%，评论 +0.7035%；抖音极速版整体活跃天数 +0.0252%，时长 +0.4105%，点赞 +0.2125%，完播 +0.2924%，评论 +1.9097%。论文称所有指标都显著，且尚未收敛。
-version_note|数字已对照站长 Zotero 副本核对，该副本是 2 Jul 2026 的 arXiv v2，采用 KDD 2026 定稿版格式，ACM DOI 为 10.1145/3770855.3818447；没有打开 ACM Digital Library 页面本身。arXiv v1 为 15 Feb 2026，未比对。
+version_note|数字已对照全文核对，该副本是 2 Jul 2026 的 arXiv v2，采用 KDD 2026 定稿版格式，ACM DOI 为 10.1145/3770855.3818447；没有打开 ACM Digital Library 页面本身。arXiv v1 为 15 Feb 2026，未比对。
 serving_infra|用户与 item 解耦的变体采用请求级合批；图 6 报告了在线服务延迟随候选数量的变化，并称在线服务提速超过 30%。未说明硬件。
 stages.0.model_family|L 层堆叠的 MixFormer block，包括 Query Mixer、对用户序列的 Cross Attention 和 Output Fusion，后接多任务 TaskNet。配置：N=16 个 head，L=4，D=386 对应 small，D=768 对应 medium。
 stages.0.details|UI-MixFormer 把 head 分成用户侧和 item 侧，比例约 1:1，并屏蔽 HeadMixing，使用户 head 看不到 item 信号；用户侧 head 和序列 cross-attention 每个请求只算一次，由各候选共享。

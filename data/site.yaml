@@ -5,6 +5,9 @@ newsletter:
   form_id: "f5e9d3b3-b164-4cdb-b452-4995d34b4f4b"
   public_url: "https://recarch.beehiiv.com"
   embed_url: "https://subscribe-forms.beehiiv.com/v3/loader.js"   # loader script; the form is chosen by data-beehiiv-form=form_id
+launch_batch_until: "2026-10-30"   # cards and events dated on or before this are the launch baseline: never counted as "this week" additions
+feedback:
+  repo: "https://github.com/jdding/recarch"   # corrections and system requests go to this repo's issues; no email address is published
 carousel_size: 6          # home carousel slides
 carousel_window_days: 7   # 'recent' = added/updated within this many days of the build date; fewer than size -> backfill by latest activity
 events:

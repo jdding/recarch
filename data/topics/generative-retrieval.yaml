@@ -3,6 +3,24 @@ summary: Systems where a model writes the answer instead of looking it up by emb
 framing:
   - A classic retrieval stack finds items by nearest-neighbor search over embeddings. Generative retrieval has a model write the answer. It produces a short code for each item, called a semantic ID, or it produces text, and the output is mapped back to items. All systems below report production use except TIGER, which reports public datasets only.
   - The word covers very different designs. Some replace the whole retrieval, pre-rank and rank cascade. Some add one more retrieval channel. Some generate things other than item IDs. The sections after the table explain the differences that change cost and risk.
+problem: A model writes the recommendation instead of searching for it. What does that change in your stack, your serving cost and your risk?
+question: Should you replace the retrieval cascade, or add one generative channel next to it?
+decisions:
+  - when: You want the smallest rollout risk.
+    then: Add a channel next to your existing retrieval, as GEAR, BARGE, DPGR, URM and AIGQ do. An added channel is easier to roll back and to measure.
+    cards: [bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026]
+  - when: You want fewer stages and can put the whole result on one model.
+    then: Replace the cascade, as GPR and OneSearch do. This removes stages but puts the whole result on one model.
+    cards: [tencent-gpr-2025, kuaishou-onesearch-2025]
+  - when: Your request budget cannot pay for generation on every request.
+    then: Move generation out of the request path. SnapLGR runs beam search as a daily offline batch, AIGQ serves nearline through a cached list and a daily index, URM runs asynchronously and S-GRec keeps the LLM offline.
+    cards: [snap-snaplgr-2026, taobao-aigq-2026, alibaba-urm-2025, tencent-sgrec-2026]
+  - when: Your items collide in the semantic ID space.
+    then: Plan the tokenizer work first. TIGER adds a fourth token to separate items that collide, QuaSID pushes colliding items apart and SnapLGR adds a co-engagement loss that raises codebook utilization and reduces collisions.
+    cards: [tiger-google-2023, kuaishou-quasid-2026, snap-snaplgr-2026]
+  - when: You are not sure what the model should write.
+    then: Decide that first, because it sets what you must build besides the model. DPGR writes a few intent codes, AIGQ writes query text and GenPage writes a whole page.
+    cards: [meituan-dpgr-2026, taobao-aigq-2026, netflix-genpage-2026]
 members:
   - id: tiger-google-2023
     approach: Quantizes item content embeddings into semantic IDs with RQ-VAE, and a Transformer decodes the next item's ID.

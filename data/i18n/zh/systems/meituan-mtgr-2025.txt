@@ -7,7 +7,7 @@ deployed_in|美团外卖的外卖推荐，主流量
 scale_short|数亿用户，每个样本 65x FLOPs，对比 DLRM 基线
 key_result|线上转化量 +1.22%，CTR +1.31%，对比优化多年的 DLRM 基线
 results_reported|MTGR-large 对比优化多年的 DLRM 基线：线上转化量 +1.22%，CTR +1.31%；训练成本不变，推理成本 -12%；被描述为近两年最大的收益，承接主流量。
-version_note|对照站长的 Zotero 副本核对过，它是 22 Aug 2025 的 arXiv v4，用 CIKM '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3746252.3761565，8 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+version_note|对照全文核对过，它是 22 Aug 2025 的 arXiv v4，用 CIKM '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3746252.3761565，8 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
 serving_infra|用户级压缩，加快训练和推理
 stages.0.model_family|MTGR：HSTU 风格的堆叠，token 来自用户特征、实时和历史行为序列，以及候选 item，带它们的交叉特征；通过 MLP 从候选 token 读出 logit
 stages.0.details|Group-Layer Normalization 对来自不同语义空间的 token 组分别归一化；动态 mask 混合了全量 attention、自回归和仅自身可见三种可见性，使候选不会泄漏。用户级聚合把同一用户的多个曝光样本合并。

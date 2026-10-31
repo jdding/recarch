@@ -2,7 +2,7 @@
 """RecArch static site generator. Usage: python3 build.py   (env SITE_URL=https://example.com for canonical/sitemap URLs)"""
 import glob, html, json, os, posixpath, re, shutil, sys, datetime
 import yaml
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode, quote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "dist")
@@ -94,6 +94,11 @@ def load_cards():
         for s in c.get("sources", []):
             if not str(s.get("url","")).startswith("https://") or not s.get("title"): errs.append(f"{n}: bad source {s}")
             if s.get("type") not in SRC_TYPES: errs.append(f"{n}: bad source type {s.get('type')}")
+        seen_src = {}
+        for s in c.get("sources", []):   # DOIs are case-insensitive: the same DOI spelled with different case is one source, not two
+            key = str(s.get("url", "")).strip().lower().rstrip("/")
+            if key in seen_src: errs.append(f"{n}: duplicate source URL (compared case-insensitively): {s.get('url')}")
+            seen_src[key] = 1
         cd = c.get("code") or {}
         st = cd.get("status")
         if st not in CODE_STATUS: errs.append(f"{n}: bad code.status {st}")
@@ -211,6 +216,7 @@ def lint_parens(cards):
 # ====================================================================================================
 LANGS = ("zh", "en"); DEFAULT_LANG = "zh"; LANG = "en"
 LANG_TAG = {"zh": "zh-CN", "en": "en"}
+OG_LOCALE = {"zh": "zh_CN", "en": "en_US"}   # Open Graph wants language_TERRITORY
 I18N = os.path.join(ROOT, "data", "i18n")
 ALLOW_MISSING = os.environ.get("RECARCH_ALLOW_MISSING_ZH") == "1"
 UI = {}
@@ -438,7 +444,50 @@ def zh_card(c, errs, warns):
             if ov[p] != "=": _tset(z, p, ov[p])
         elif req and needs_zh(en) and not ALLOW_MISSING: errs.append(f"{label}: missing Chinese for {p}")
         elif not req and _EN_MAG_WORD.search(str(en)) and not ALLOW_MISSING: errs.append(f"{label}: {p} keeps an English magnitude word, add a Chinese text with 万 or 亿")
+    zh_labels(z)   # glossary for the label fields that have no overlay line
     return z
+
+ZH_TERMS = []
+_ZH_RULES = [(re.compile(r"(?<=\d%) to (?=\d)"), " 至 "), (re.compile(r"(?<![A-Za-z0-9])Table (\w+)"), r"表 \1"), (re.compile(r"(?<![A-Za-z0-9])Figure (\d+)"), r"图 \1"),
+             (re.compile(r"(?<![A-Za-z0-9])Surface (\d+)"), r"场景 \1"), (re.compile(r"(?<![A-Za-z0-9])(\d+)-d(?![A-Za-z0-9])"), r"\1 维"),
+             (re.compile(r"(?<![A-Za-z0-9])(\d+)-Day(?![A-Za-z0-9])"), r"\1 天")]
+def load_terms():
+    """data/i18n/zh/terms.txt: descriptive metric and scale labels shown on Chinese pages. Acronyms and names are not listed and stay as they are."""
+    if ZH_TERMS: return
+    for n, line in enumerate(open(os.path.join(I18N, "zh", "terms.txt"), encoding="utf-8"), 1):
+        if not line.strip() or line.lstrip().startswith("#"): continue
+        p = [x.strip() for x in line.rstrip("\n").split(" || ")]
+        if len(p) != 2 or not all(p) or PARENS.search(p[1]) or re.findall(r"\d+", p[1]) != re.findall(r"\d+", p[0]): sys.exit(f"terms.txt:{n}: need 'English || Chinese', no parentheses, and the same numbers on both sides")
+        ZH_TERMS.append((re.compile(r"(?<![A-Za-z0-9])" + re.escape(p[0]) + r"(?![A-Za-z0-9])"), p[1]))
+    ZH_TERMS.sort(key=lambda t: -len(t[0].pattern))
+def zh_label(s):
+    """Translate the descriptive words of a metric, scale or setting label. Numbers, acronyms and names are untouched."""
+    if not isinstance(s, str): return s
+    load_terms(); out = s
+    for rx, rep in _ZH_RULES: out = rx.sub(rep, out)
+    marks = []
+    for rx, zh in ZH_TERMS:
+        out = rx.sub(lambda m: marks.append(zh) or f"\x00{len(marks) - 1}\x00", out)
+    out = re.sub(r"\x00(\d+)\x00", lambda m: marks[int(m.group(1))], out)
+    return re.sub(r"(?<=[\u4e00-\u9fff]) (?=[\u4e00-\u9fff])", "", out)
+
+def zh_labels(z):
+    """Apply the glossary to the label fields of an already translated card."""
+    for k in ("online", "offline", "other"):
+        rows = (z.get("results_table") or {}).get(k)
+        if isinstance(rows, list):
+            for r in rows:
+                for f in ("setting", "metric", "versus", "result"):
+                    if f in r: r[f] = zh_label(r[f])
+    for s in z.get("scale") or []:
+        s["metric"] = zh_label(s["metric"])
+        if isinstance(s.get("value"), str): s["value"] = zh_label(s["value"])
+    d = z.get("deployment")
+    if d and isinstance(d.get("baseline"), str): d["baseline"] = zh_label(d["baseline"])
+    if d and isinstance(d.get("online_lifts"), list):
+        for x in d["online_lifts"]:
+            x["metric"] = zh_label(x["metric"])
+            if isinstance(x.get("value"), str): x["value"] = zh_label(x["value"])
 
 def zh_diagram(i, g, errs, warns):
     import copy
@@ -479,30 +528,73 @@ def lang_switch(root, path):
     there = f'<a lang="{LANG_TAG[other]}" hreflang="{LANG_TAG[other]}" href="{E(twin_href(root, path, other))}" title="{E(T("lang.switch_title"))}">{cur[other]}</a>'
     return f'<span class="langsw" role="group" aria-label="{E(T("lang.label"))}">' + (here + there if LANG == "zh" else there + here) + '</span>'
 
+# The other-language link keeps the live filter state: its href is rebuilt from location whenever the link is hovered, focused or used,
+# so a search or filter applied after load (app.js rewrites the URL with history.replaceState) is carried over, even to a new tab.
+LANG_SWITCH_JS = ('document.querySelectorAll(".langsw a").forEach(function(a){var h=a.getAttribute("href");'
+                  'function f(){a.setAttribute("href",h+location.search+location.hash)}'
+                  '["mouseenter","focus","touchstart","click","auxclick","contextmenu"].forEach(function(e){a.addEventListener(e,f)});f()})')
+
+FB_REPO_DEFAULT = "https://github.com/jdding/recarch"
+FB_TITLE = {"error": "[Error 纠错] ", "request": "[Request 收录] "}
+FB_BODY = {
+    "error": "**Card 卡片**: {card}\n**Page 页面**: {url}\n\n### What is wrong 哪里不对\nQuote the text on the card. 请引用卡片上的文字。\n\n### What the source says 来源怎么说\nLink, and the page, section or figure. 请给出链接，以及页码、章节或图表。\n\n### Suggested fix 建议的修改\n",
+    "request": "### System name 系统名称\n\n### Company 公司\n\n### Source links 来源链接\nPaper, engineering blog or documentation. 论文、工程博客或文档。\n\n### Why it fits 为什么适合收录\nWhat the source says about a deployed system. 来源中关于已上线系统的说明。\n",
+}
+def feedback_url(kind, card=None, path=""):
+    """Prefilled GitHub new-issue link, nothing is created until the reader submits it. Title carries the card id, body is the bilingual template."""
+    repo = str((SITE.get("feedback") or {}).get("repo") or FB_REPO_DEFAULT).rstrip("/")
+    body = FB_BODY[kind].replace("{card}", card or "").replace("{url}", abs_url(LANG, path) if card else "")
+    q = {"title": FB_TITLE[kind] + (card or ""), "body": body, "labels": "error-report" if kind == "error" else "system-request"}
+    return f"{repo}/issues/new?" + urlencode(q, quote_via=quote)
+
+def feedback_links(card=None, path=""):
+    a = lambda k: f'<a href="{E(feedback_url(k, card, path))}" target="_blank" rel="noopener nofollow">{E(T("fb." + k))}</a>'
+    return f'{a("error")} &middot; {a("request")}'
+
+def clip(text, n):
+    """Meta descriptions: cut at a sentence, clause or word boundary instead of mid-word."""
+    text = " ".join(text.split())
+    if len(text) <= n:
+        return text
+    cut = text[:n - 1]
+    best = max(cut.rfind(x) for x in "。；，,;. ")
+    if best > n // 2:
+        cut = cut[:best]
+    return cut.rstrip(" ,;，；、") + "…"
+
+
 def page(title, desc, body, root, path, extra_head="", scripts="", noalt=False):
     canon = abs_url(LANG, path)
     alts = "" if noalt else "".join(f'<link rel="alternate" hreflang="{LANG_TAG[l]}" href="{E(abs_url(l, path))}">' for l in LANGS) + f'<link rel="alternate" hreflang="x-default" href="{E(abs_url(DEFAULT_LANG, path))}">'
     sr = sroot(root)
+    og_img = f"{SITE_URL}/static/og-default{'-zh' if LANG == 'zh' else ''}.png"
     return f"""<!doctype html><html lang="{LANG_TAG[LANG]}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
 <link rel="canonical" href="{E(canon)}">{alts}
-<meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="website"><meta property="og:url" content="{E(canon)}"><meta property="og:locale" content="{LANG_TAG[LANG].replace('-', '_')}">
-<meta name="twitter:card" content="summary">
+<meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="website"><meta property="og:url" content="{E(canon)}"><meta property="og:locale" content="{OG_LOCALE[LANG]}">
+<meta property="og:site_name" content="RecArch"><meta property="og:locale:alternate" content="{OG_LOCALE['en' if LANG == 'zh' else 'zh']}">
+<meta property="og:image" content="{E(og_img)}"><meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="{E(T('og.alt'))}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{E(title)}"><meta name="twitter:description" content="{E(desc)}"><meta name="twitter:image" content="{E(og_img)}"><meta name="twitter:image:alt" content="{E(T('og.alt'))}">
+<link rel="icon" href="{sr}static/favicon.svg" type="image/svg+xml"><link rel="icon" href="{sr}static/favicon.png" type="image/png" sizes="32x32"><link rel="shortcut icon" href="{sr}static/favicon.ico"><link rel="apple-touch-icon" href="{sr}static/apple-touch-icon.png">
 <link rel="alternate" type="application/atom+xml" title="{E(T('feed.link_title'))}" href="{root}feed.xml">
 <link rel="stylesheet" href="{sr}static/style.css">{extra_head}</head><body>
+<a class="skip" href="#main">{E(T('nav.skip'))}</a>
 <header class="site"><div class="wrap"><a class="logo" href="{root}">Rec<span>Arch</span></a>
 <nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a></nav>{lang_switch(root, path)}</div></header>
-{body}
-<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a></div></footer>
-<script>document.querySelectorAll(".langsw a").forEach(function(a){{a.href+=location.search+location.hash}})</script>
-{scripts}<script type="text/javascript" async src="https://subscribe-forms.beehiiv.com/attribution.js"></script></body></html>"""
+<main id="main">{body}</main>
+<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a> &middot; {feedback_links()}</div></footer>
+<script>{LANG_SWITCH_JS}</script>
+<script src="{sr}static/nl.js" defer></script>
+{scripts}</body></html>"""
 
 def js_l10n():
     """Strings for the client scripts, injected as window.RECARCH_L10N. The scripts fall back to English when it is absent."""
     d = {k[3:]: v[LANG] for k, v in UI.items() if k.startswith("js.")}
-    d.update({"era": ERAS, "evid": EVID, "code": CODE_STATUS, "depev": DEP_EVID, "stage": STAGE_LABEL, "lang": LANG})
+    d.update({"tag": {p: tag_label(p) for p in PARADIGMS}, "era": ERAS, "evid": EVID, "code": CODE_STATUS, "depev": DEP_EVID, "stage": STAGE_LABEL, "lang": LANG})
     return '<script>window.RECARCH_L10N=' + json.dumps(d, ensure_ascii=False).replace("</", "<\\/") + '</script>'
+
+def tag_label(p): return T("tag." + p)
 
 def chips(group, values, labels=None):
     out = f'<div class="group" data-group="{group}"><b>{GLABEL.get(group, group)}</b>'
@@ -528,7 +620,7 @@ EN_CARDS = {}   # id -> English card, for search across both languages
 def stage_tag(s): return s if LANG == "en" else STAGE_LABEL[s]
 
 def card_html(c, root):
-    tags = "".join(f'<span class="tag">{E(p)}</span>' for p in c["paradigms"])
+    tags = "".join(f'<span class="tag">{E(tag_label(p))}</span>' for p in c["paradigms"])
     stages = sorted({s["stage"] for s in c["stages"]})
     st = "".join(f'<span class="tag stage">{E(stage_tag(s))}</span>' for s in stages)
     ns = len(c["sources"])
@@ -557,19 +649,29 @@ def timeline_html(cards, root):
 
 SITE = {}
 
+def subscribe_url():
+    return str((SITE.get("newsletter") or {}).get("public_url") or "https://recarch.beehiiv.com").rstrip("/") + "/subscribe"
+
+def subscribe_link():
+    """Plain link to the hosted subscribe page, for pages that do not carry the form."""
+    link = f'<a href="{E(subscribe_url())}" target="_blank" rel="noopener">{E(T("sub.link_short"))}</a>'
+    return f'<p class="sub-fine sub-link">{T("sub.link_note", link=link)}</p>'
+
 def subscribe_box(source, heading=None, compact=False):
-    """Real Beehiiv embed (form id in data/site.yaml). The loader script renders the form in place; attribution.js (in page())
-    forwards UTM params. noscript / no-JS fallback is the hosted subscribe page. `source` is not sent (the embed has no hidden fields);
-    attribution comes from Beehiiv's own referrer/UTM capture. The Beehiiv form itself is rendered by Beehiiv, in its own language."""
+    """Compact newsletter section in the page language: heading, one line of copy, a button to the hosted Beehiiv subscribe page and RSS.
+    The Beehiiv form itself is rendered by Beehiiv in English and cannot be localized from here, so it is not part of the page load: it sits in a
+    closed <details> and static/nl.js injects the loader (and Beehiiv's attribution script) only when the reader opens it. That keeps the section
+    short on phones, avoids a layout shift from the late iframe and sends nothing to Beehiiv until asked. The iframe gets a title from nl.js.
+    `source` is not sent to Beehiiv (the embed has no hidden fields)."""
     nl = SITE.get("newsletter") or {}
     form_id = str(nl.get("form_id") or "")
-    pub = str(nl.get("public_url") or "https://recarch.beehiiv.com").rstrip("/")
     loader = str(nl.get("embed_url") or "https://subscribe-forms.beehiiv.com/v3/loader.js")
+    attr = loader.rsplit("/", 2)[0].rstrip("/") + "/attribution.js"
     heading = heading or T("sub.heading_default")
-    return f"""<div class="nlband{' compact' if compact else ''}" data-source="{E(source)}"><h2>{E(heading)}</h2><p>{E(SUB_COPY)}</p>
-<div class="nl-embed"><script async src="{E(loader)}" data-beehiiv-form="{E(form_id)}"></script>
-<noscript><p><a class="btn" href="{E(pub)}/subscribe">{E(T("sub.noscript"))}</a></p></noscript></div>
-<p class="sub-fine">{E(T("sub.fine"))} <a href="{E(pub)}/subscribe">{E(T("sub.noscript"))}</a> &middot; <a href="{{ROOT}}feed.xml">{E(T("sub.rss"))}</a></p></div>"""
+    return f"""<div class="nlband compact" data-source="{E(source)}"><h2>{E(heading)}</h2><p>{E(SUB_COPY)}</p>
+<p class="nl-actions"><a class="btn" href="{E(subscribe_url())}" target="_blank" rel="noopener">{E(T("sub.noscript"))}</a> <a href="{{ROOT}}feed.xml">{E(T("sub.rss"))}</a></p>
+<details class="nl-inline" hidden data-loader="{E(loader)}" data-attr="{E(attr)}" data-form="{E(form_id)}" data-title="{E(T("sub.frame_title"))}"><summary>{E(T("sub.inline"))}</summary><div class="nl-embed"></div></details>
+<p class="sub-fine">{E(T("sub.fine"))}</p></div>"""
 
 def events(cards, site, issues, off=()):
     """Every dated change on the site, newest first. kind: added | updated | site | issue."""
@@ -611,9 +713,12 @@ def carousel_select(cards, today, size=6, window=7):
 def strip(ev, root, today, cards=None):
     """Home carousel of recently added/updated cards (replaces the old text list). Pure HTML; static/carousel.js adds the behaviour."""
     size = int((SITE or {}).get("carousel_size", 6)); window = int((SITE or {}).get("carousel_window_days", 7))
-    week = [e for e in ev if (datetime.date.fromisoformat(today) - datetime.date.fromisoformat(e["date"])).days < window and e["kind"] in ("added", "updated")]
+    # The launch batch (every card added on or before launch_batch_until) is the baseline, not "this week's additions": events up to that date are ignored.
+    base = str((SITE or {}).get("launch_batch_until") or "")
+    week = [e for e in ev if (datetime.date.fromisoformat(today) - datetime.date.fromisoformat(e["date"])).days < window and e["kind"] in ("added", "updated") and e["date"] > base]
     na = sum(1 for e in week if e["kind"] == "added"); nu = sum(1 for e in week if e["kind"] == "updated")
-    pill = f'<span class="pill">{E(T("car.week", na=na, nu=nu))}</span>' if week else f'<span class="pill quiet">{E(T("car.quiet"))}</span>'
+    key = "car.week" if na and nu else "car.week_added" if na else "car.week_updated"
+    pill = f'<span class="pill">{E(T(key, na=na, nu=nu))}</span>' if week else ""   # nothing new beyond the baseline: no pill at all
     sel = carousel_select(cards or [], today, size, window); n = len(sel)
     slides = ""
     for i, it in enumerate(sel):
@@ -672,7 +777,7 @@ def issue_page(i, by_id):
 <section class="blk">{md_paras(i['body'])}</section>
 {f'<section class="blk"><h2>{E(T("nl.covered"))}</h2><ul class="clean">{cs}</ul></section>' if cs else ''}{f'<section class="blk"><h2>{E(T("nl.papers"))}</h2><ul class="clean">{ps}</ul></section>' if ps else ''}
 {subscribe_box("issue:" + i["slug"], T("sub.heading_issue")).replace("{ROOT}", root)}</article></div>"""
-    return page(T("nl.issue_title", title=i["title"]), i["summary"][:158], body, root, f"newsletter/{i['slug']}/")
+    return page(T("nl.issue_title", title=i["title"]), clip(i["summary"], 158), body, root, f"newsletter/{i['slug']}/")
 
 def archive_html(off, root):
     """Small archive of retired and superseded cards: kept at their URL, not counted, not in the sitemap."""
@@ -694,7 +799,7 @@ def home(cards, ev=(), today="", off=()):
 <section class="filters" aria-label="{E(T('home.filters'))}"><input id="q" class="search" type="search" placeholder="{E(T('home.search_ph'))}" aria-label="{E(T('home.search_aria'))}">
 {chips("era", list(ERAS), ERAS)}{chips("stage", [g["id"] for g in sg], sg_labels)}{chips("family", [f["id"] for f in fam], fam_labels)}
 <div class="toggles"><label class="tog"><input type="checkbox" id="f-prod"> {E(T('home.prod_only'))}</label><label class="tog"><input type="checkbox" id="f-official"> {E(T('home.has_code'))}</label></div>
-<details id="more"><summary>{E(T('home.more'))}</summary>{chips("paradigm", used_p)}{chips("evidence", list(EVID), EVID)}</details></section>
+<details id="more"><summary>{E(T('home.more'))}</summary>{chips("paradigm", used_p, {p: tag_label(p) for p in used_p})}{chips("evidence", list(EVID), EVID)}</details></section>
 <div class="meta-row"><span id="count" role="status" aria-live="polite">{E(T('home.count', n=n))}</span><button id="reset" class="linkbtn" type="button">{E(T('home.clear'))}</button>
 <label class="sortl" id="sortwrap">{E(T('home.sort'))} <select id="sort" aria-label="{E(T('home.sort_aria'))}"><option value="default">{E(T('home.sort_default'))}</option><option value="cites">{E(T('home.sort_cites'))}</option></select></label>
 <div class="seg" role="group" aria-label="{E(T('home.view'))}"><button type="button" data-view="list" aria-pressed="true">{E(T('home.view_list'))}</button><button type="button" data-view="timeline" aria-pressed="false">{E(T('home.view_timeline'))}</button></div></div>
@@ -702,7 +807,7 @@ def home(cards, ev=(), today="", off=()):
 {timeline_html(cards, root)}
 <div id="empty" class="panel" hidden>{T('home.empty', btn=f'<button class="linkbtn" type="button" id="reset2">{E(T("home.empty_btn"))}</button>')}</div>
 {archive_html(off, root)}</div>
-<div class="cmpbar" id="cmpbar"><span id="cmpn"></span><a id="cmplink" href="compare/">{E(T('card.compare'))}</a></div>"""
+<div class="cmpbar" id="cmpbar"><span id="cmpn"></span><a id="cmplink" href="compare/">{E(T('card.compare'))}</a><span id="cmpmsg" class="cmpmsg" role="status" aria-live="polite" hidden></span></div>"""
     sr = sroot(root)
     return page(T("home.title"), T("home.desc"), body, root, "", scripts=f'{js_l10n()}<script src="{sr}static/carousel.js"></script><script src="{sr}static/app.js"></script>')
 
@@ -949,7 +1054,7 @@ def load_topics(by_id):
     errs, topics = [], []
     for f in sorted(glob.glob(os.path.join(ROOT, "data/topics/*.yaml"))):
         t = yaml.safe_load(open(f)); n = os.path.basename(f); t["slug"] = n[:-5]
-        for k in ("title", "summary", "framing", "members", "differences"):
+        for k in ("title", "summary", "framing", "members", "differences", "problem", "question", "decisions"):
             if not t.get(k): errs.append(f"{n}: missing {k}")
         if errs and errs[-1].startswith(n): continue
         if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", t["slug"]): errs.append(f"{n}: slug must be lowercase words joined by hyphens")
@@ -972,9 +1077,17 @@ def load_topics(by_id):
             if bad: errs.append(f"{n}: difference {sec['heading']!r} cites non-members {bad}"); continue
             extra = _NUM(sec["text"]) - set().union(*(pools[i] for i in sec["cards"]))
             if extra: errs.append(f"{n}: difference {sec['heading']!r} has numbers not on the cited cards: {sorted(extra)}")
+        for k, sec in enumerate(t["decisions"]):
+            if not (isinstance(sec, dict) and str(sec.get("when", "")).strip() and str(sec.get("then", "")).strip() and isinstance(sec.get("cards"), list) and sec["cards"]): errs.append(f"{n}: decisions.{k} needs when, then and cards"); continue
+            bad = [i for i in sec["cards"] if i not in pools]
+            if bad: errs.append(f"{n}: decisions.{k} cites non-members {bad}"); continue
+            extra = _NUM(sec["when"] + " " + sec["then"]) - set().union(*(pools[i] for i in sec["cards"]))
+            if extra: errs.append(f"{n}: decisions.{k} has numbers not on the cited cards: {sorted(extra)}")
+        extra = _NUM(t["problem"] + " " + t["question"]) - set().union(*pools.values()) if pools else set()
+        if extra: errs.append(f"{n}: problem or question has numbers not on any member card: {sorted(extra)}")
         extra = _NUM(" ".join(t["framing"])) - set().union(*pools.values()) if pools else set()
         if extra: errs.append(f"{n}: framing has numbers not on any member card: {sorted(extra)}")
-        alltext = " ".join([t["title"], t["summary"]] + t["framing"] + [m.get("approach", "") for m in mem] + [x for s_ in t["differences"] if isinstance(s_, dict) for x in (s_.get("heading", ""), s_.get("text", ""))])
+        alltext = " ".join([t["title"], t["summary"], t["problem"], t["question"]] + t["framing"] + [x for d_ in t["decisions"] if isinstance(d_, dict) for x in (d_.get("when", ""), d_.get("then", ""))] + [m.get("approach", "") for m in mem] + [x for s_ in t["differences"] if isinstance(s_, dict) for x in (s_.get("heading", ""), s_.get("text", ""))])
         if re.search(r"[()]", alltext): errs.append(f"{n}: no parentheses in topic text")
         topics.append(t)
     if errs: raise SystemExit("TOPIC ERRORS:\n  " + "\n  ".join(errs))
@@ -990,9 +1103,10 @@ def zh_topics(topics, by_id, errs, warns):
             if not ALLOW_MISSING: errs.append(f"{n}: missing file")
             out.append(t); continue
         z = yaml.safe_load(open(p)); e0 = len(errs)
-        for k in ("title", "summary", "framing", "members", "differences"):
+        for k in ("title", "summary", "framing", "members", "differences", "problem", "question", "decisions"):
             if not z.get(k): errs.append(f"{n}: missing {k}")
         if len(errs) > e0: out.append(t); continue
+        if len(z["decisions"]) != len(t["decisions"]) or any(a_["cards"] != b_.get("cards") for a_, b_ in zip(t["decisions"], z["decisions"])): errs.append(f"{n}: decisions must mirror the English ones, same cards in the same order")
         if len(z["summary"]) > 100: errs.append(f"{n}: summary is {len(z['summary'])} chars, max 100")
         if len(z["framing"]) != len(t["framing"]): errs.append(f"{n}: framing needs {len(t['framing'])} paragraphs")
         if [m.get("id") for m in z["members"]] != [m["id"] for m in t["members"]]: errs.append(f"{n}: members must list the same ids in the same order")
@@ -1010,7 +1124,13 @@ def zh_topics(topics, by_id, errs, warns):
         chk("title", z["title"], allpool); chk("summary", z["summary"], allpool)
         for k, x in enumerate(z["framing"]): chk(f"framing.{k}", x, allpool)
         for m in z["members"]: chk(f"member {m['id']}", m["approach"], pools[m["id"]], [m["id"]])
-        zt = dict(t); zt.update({"title": z["title"], "summary": z["summary"], "framing": z["framing"]})
+        chk("problem", z["problem"], allpool); chk("question", z["question"], allpool)
+        zt = dict(t); zt.update({"title": z["title"], "summary": z["summary"], "framing": z["framing"], "problem": z["problem"], "question": z["question"]})
+        zt["decisions"] = []
+        for k, (sec, zs) in enumerate(zip(t["decisions"], z["decisions"])):
+            pool = set().union(*(pools[i] for i in sec["cards"]))
+            chk(f"decisions.{k}.when", zs["when"], pool, sec["cards"]); chk(f"decisions.{k}.then", zs["then"], pool, sec["cards"])
+            zt["decisions"].append({"when": zs["when"], "then": zs["then"], "cards": sec["cards"]})
         zt["members"] = [{"id": m["id"], "approach": zm["approach"]} for m, zm in zip(t["members"], z["members"])]
         zt["differences"] = []
         for k, (sec, zs) in enumerate(zip(t["differences"], z["differences"])):
@@ -1020,32 +1140,104 @@ def zh_topics(topics, by_id, errs, warns):
         out.append(zt)
     return out
 
-def topic_page(t, by_id):
+MONO_N = 8
+def mono(c):
+    """Company mark: first letter of the company in a fixed muted palette. The colour follows the English brand word, so one company keeps one colour in both languages."""
+    import zlib
+    en = short_company(EN_CARDS.get(c["id"], c)); key = re.split(r"[\s/,.\-]+", en.strip())[0].lower()
+    return f'<span class="mono m{zlib.crc32(key.encode()) % MONO_N}" aria-hidden="true" title="{E(short_company(c))}">{E(short_company(c)[:1].upper())}</span>'
+
+def topic_facts(t, by_id):
+    cs = [by_id[m["id"]] for m in t["members"]]; ys = [c["year"] for c in cs]
+    return {"n": len(cs), "y0": min(ys), "y1": max(ys), "prod": sum(c["evidence_level"] == "production_described" for c in cs),
+            "online": sum(c["deployment"]["online_evidence"] == "online_numbers" for c in cs), "eras": {k: sum(c["era"] == k for c in cs) for k in ERAS}}
+
+def year_span(f): return str(f["y0"]) if f["y0"] == f["y1"] else T("topic.span", a=f["y0"], b=f["y1"])
+
+def topic_page(t, by_id, topics=()):
     root = "../../"
     nr = f'<span class="unk">{E(T("nr"))}</span>'
     link = lambda i: f'<a href="{root}systems/{E(i)}/">{E(by_id[i]["name"])}</a>'
+    pill = lambda i: f'<a class="plink" href="{root}systems/{E(i)}/">{mono(by_id[i])}{E(by_id[i]["name"])}</a>'
+    f = topic_facts(t, by_id); cs = [(m, by_id[m["id"]]) for m in t["members"]]
+    # hero
+    stats = "".join(f'<div class="stat"><b>{E(str(v))}</b><span>{E(l)}</span></div>' for v, l in (
+        (f["n"], T("topic.stat_systems")), (year_span(f), T("topic.stat_years")), (f["prod"], EVID["production_described"]), (f["online"], DEP_EVID["online_numbers"])))
+    hero = (f'<header class="thero"><div class="crumbs"><a href="{root}topics/">{E(T("nav.topics"))}</a> / {E(t["title"])}</div>'
+            f'<span class="eyebrow">{E(T("topic.eyebrow"))}</span><h1>{E(t["title"])}</h1><p class="problem">{E(t["problem"])}</p>'
+            f'<div class="stats">{stats}</div>'
+            f'<div class="keyq"><span class="keyq-l">{E(T("topic.question"))}</span><p>{E(t["question"])}</p></div></header>')
+    jump = (f'<nav class="jump" aria-label="{E(T("topic.jump"))}">' + "".join(f'<a href="#{a}">{E(T(k))}</a>' for a, k in (
+        ("overview", "topic.overview"), ("decide", "topic.decide"), ("lineage", "topic.lineage"), ("systems", "topic.tiles"), ("table", "topic.compared"), ("differ", "topic.differ"))) + '</nav>')
+    overview = f'<section class="blk" id="overview"><h2>{E(T("topic.overview"))}</h2>' + "".join(f'<p class="lead">{E(p_)}</p>' for p_ in t["framing"]) + '</section>'
+    # decision guide
+    dec = "".join(f'<li class="dec"><div class="dec-if"><span>{E(T("topic.decide_if"))}</span>{E(d_["when"])}</div><div class="dec-then"><span>{E(T("topic.decide_then"))}</span>{E(d_["then"])}</div>'
+                  f'<div class="plinks">' + "".join(pill(i) for i in d_["cards"]) + '</div></li>' for d_ in t["decisions"])
+    decide = f'<section class="blk" id="decide"><h2>{E(T("topic.decide"))}</h2><ul class="decs">{dec}</ul></section>'
+    # lineage by year
+    cols = ""
+    for y in sorted({c["year"] for _, c in cs}):
+        its = sorted([c for _, c in cs if c["year"] == y], key=lambda c: (c["first_public"], c["name"]))
+        cols += (f'<li class="ly" style="flex-grow:{len(its)}"><div class="ly-y"><i></i>{y}</div><div class="ly-g">' + "".join(
+            f'<a class="ly-i era-{c["era"]}" href="{root}systems/{E(c["id"])}/">{mono(c)}<span><b>{E(c["name"])}</b><small>{E(short_company(c))}</small></span></a>' for c in its) + '</div></li>')
+    legend = "".join(f'<span class="lg era-{k}"><i></i>{E(v)}</span>' for k, v in ERAS.items() if f["eras"][k])
+    lineage = (f'<section class="blk" id="lineage"><h2>{E(T("topic.lineage"))}</h2><div class="lineage" tabindex="0" role="region" aria-label="{E(T("topic.lineage"))}"><ol>{cols}</ol></div>'
+               f'<p class="swipe">{E(T("topic.swipe"))}</p><div class="legend">{legend}</div></section>')
+    # tiles
+    tiles = ""
+    for m, c in cs:
+        d = c["deployment"]; stg = "".join(f'<span class="tag stage">{E(stage_tag(s))}</span>' for s in sorted({x["stage"] for x in c["stages"]}))
+        tiles += (f'<li class="card tile era-{c["era"]}"><div class="tile-top">{mono(c)}<div class="co">{E(short_company(c))} &middot; {c["year"]}' + (f' &middot; {E(c["venue"])}' if c.get("venue") else "") + '</div></div>'
+                  f'<h3><a href="{root}systems/{E(c["id"])}/">{E(c["name"])}</a></h3>'
+                  f'<div class="tile-b"><span class="era-badge era-{c["era"]}">{E(ERAS[c["era"]])}</span><span class="badge b-{E(c["evidence_level"])}">{E(EVID[c["evidence_level"]])}</span></div>'
+                  f'<p>{E(m["approach"])}</p><div class="tags">{stg}</div>'
+                  f'<div class="foot"><span>{E(DEP_EVID[d["online_evidence"]])}</span><a href="{root}systems/{E(c["id"])}/">{E(T("topic.read_card"))} &rarr;</a></div></li>')
+    systems = f'<section class="blk" id="systems"><h2>{E(T("topic.tiles"))}</h2><ul class="tiles">{tiles}</ul></section>'
+    # table
+    def cell(v): return f'<td class="nrc">{nr}</td>' if v == NR else f'<td class="rep">{E(v)}</td>'
     trs = ""
-    for m in t["members"]:
-        c = by_id[m["id"]]; d = c["deployment"]
-        res = (('<ul class="clean">' + "".join(f'<li>{E(x["metric"])}: <b>{E(x["value"])}</b></li>' for x in d["online_lifts"][:2]) + '</ul>') if d["online_lifts"] != NR else E(DEP_EVID[d["online_evidence"]])) \
+    for m, c in cs:
+        d = c["deployment"]
+        res = (('<ul class="clean lifts">' + "".join(f'<li>{E(x["metric"])}: <b>{E(x["value"])}</b></li>' for x in d["online_lifts"][:2]) + '</ul>') if d["online_lifts"] != NR else f'<span class="evid">{E(DEP_EVID[d["online_evidence"]])}</span>') \
               + (f'<div class="stage-d">{E(T("topic.vs", b=d["baseline"]))}</div>' if d["baseline"] != NR and d["online_lifts"] != NR else "")
-        trs += (f'<tr><td><b>{link(c["id"])}</b><div class="stage-d">{E(short_company(c))}, {c["year"]}</div></td><td>{E(m["approach"])}</td><td>{res}</td>'
-                f'<td>{nr if d["serving_latency"] == NR else E(d["serving_latency"])}</td><td>{nr if d["hardware"] == NR else E(d["hardware"])}</td></tr>')
-    table = (f'<div class="tbl-scroll"><table class="cmp restab topic"><thead><tr><th>{E(T("topic.th_system"))}</th><th>{E(T("topic.th_approach"))}</th><th>{E(T("topic.th_online"))}</th><th>{E(T("topic.th_latency"))}</th><th>{E(T("topic.th_hardware"))}</th></tr></thead><tbody>' + trs + '</tbody></table></div>'
-             f'<p class="stage-d">{E(T("topic.foot"))}</p>')
-    diffs = "".join(f'<section class="blk"><h2>{E(s_["heading"])}</h2><p>{E(s_["text"])}</p><p class="stage-d">{E(T("topic.cards"))} ' + sep().join(link(i) for i in s_["cards"]) + '</p></section>' for s_ in t["differences"])
-    body = (f'<div class="wrap"><article class="sys"><div class="crumbs"><a href="{root}topics/">{E(T("nav.topics"))}</a> / {E(t["title"])}</div><h1>{E(t["title"])}</h1>'
-            + "".join(f'<p class="lead">{E(p_)}</p>' for p_ in t["framing"]) + f'<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>'
-            + f'<h2 class="topic-h">{E(T("topic.differ"))}</h2>{diffs}'
-            + f'<p><a class="btn" href="{root}compare/?ids=' + ",".join(m["id"] for m in t["members"][:3]) + f'">{E(T("topic.compare_btn"))}</a></p>'
-            + subscribe_box("topic:" + t["slug"]).replace("{ROOT}", root) + '</article></div>')
+        trs += (f'<tr><th scope="row"><b>{link(c["id"])}</b><div class="stage-d">{E(short_company(c))}, {c["year"]}</div></th><td>{E(m["approach"])}</td><td>{res}</td>'
+                f'{cell(d["serving_latency"])}{cell(d["hardware"])}</tr>')
+    table = (f'<p class="caveat" id="note"><b>{E(T("topic.caveat_h"))}</b> {E(T("topic.foot"))}</p>'
+             f'<div class="tbl-scroll tbl-topic" tabindex="0" role="region" aria-label="{E(T("topic.compared"))}"><table class="cmp restab topic"><thead><tr><th scope="col">{E(T("topic.th_system"))}</th><th scope="col">{E(T("topic.th_approach"))}</th><th scope="col">{E(T("topic.th_online"))}</th><th scope="col">{E(T("topic.th_latency"))}</th><th scope="col">{E(T("topic.th_hardware"))}</th></tr></thead><tbody>' + trs + '</tbody></table></div>'
+             f'<p class="swipe">{E(T("topic.swipe"))}</p>')
+    # differences
+    diffs = "".join(f'<section class="diff"><span class="diff-n">{k}</span><div><h3>{E(s_["heading"])}</h3><p>{E(s_["text"])}</p><div class="plinks"><span class="stage-d">{E(T("topic.cards"))}</span>' + "".join(pill(i) for i in s_["cards"]) + '</div></div></section>' for k, s_ in enumerate(t["differences"], 1))
+    differ = f'<section class="blk" id="differ"><h2 class="topic-h">{E(T("topic.differ"))}</h2>{diffs}</section>'
+    cta = f'<p><a class="btn" href="{root}compare/?ids=' + ",".join(m["id"] for m in t["members"][:3]) + f'">{E(T("topic.compare_btn"))}</a></p>'
+    # related topics
+    mine = {m["id"] for m in t["members"]}; rel = ""
+    for o in topics:
+        if o["slug"] == t["slug"]: continue
+        shared = len(mine & {m["id"] for m in o["members"]})
+        rel += (f'<a class="rtile" href="{root}topics/{E(o["slug"])}/"><b>{E(o["title"])}</b><span>{E(o["problem"])}</span>'
+                + (f'<small>{E(T("topic.shared_one" if shared == 1 else "topic.shared_many", n=shared))}</small>' if shared else "") + '</a>')
+    related = f'<section class="blk" id="related"><h2>{E(T("topic.related"))}</h2><div class="rtiles">{rel}</div></section>' if rel else ""
+    body = (f'<div class="wrap"><article class="sys topicpage">{hero}{jump}{overview}{decide}{lineage}{systems}<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>{differ}{cta}{related}'
+            + subscribe_box("topic:" + t["slug"], T("sub.heading_topic")).replace("{ROOT}", root) + '</article></div>')
     return page(T("topic.title", t=t["title"]), t["summary"], body, root, f'topics/{t["slug"]}/')
 
-def topics_index(topics):
-    root = "../"
-    items = "".join(f'<li><a href="{root}topics/{E(t["slug"])}/"><b>{E(t["title"])}</b></a> <span class="stage-d">{E(T("home.count", n=len(t["members"])))}</span><div>{E(t["summary"])}</div></li>' for t in topics)
-    body = (f'<div class="wrap"><article class="sys"><h1>{E(T("nav.topics"))}</h1><p class="lead">{E(T("topics.lead"))}</p>'
-            f'<ul class="clean topics">{items}</ul></article></div>')
+def topics_index(topics, by_id):
+    root = "../"; items = ""
+    for t in topics:
+        f = topic_facts(t, by_id); seen, marks = set(), []
+        for m in t["members"]:
+            c = by_id[m["id"]]; k = re.split(r"[\s/,.\-]+", short_company(EN_CARDS.get(c["id"], c)).strip())[0].lower()
+            if k not in seen: seen.add(k); marks.append(mono(c))
+        extra = f'<span class="more-m">+{len(marks) - 6}</span>' if len(marks) > 6 else ""
+        mix = "".join(f'<i class="era-{k}" style="flex:{n}" title="{E(ERAS[k])}: {n}"></i>' for k, n in f["eras"].items() if n)
+        mixl = "; ".join(f'{ERAS[k]}: {n}' for k, n in f["eras"].items() if n)
+        items += (f'<li class="ttile"><a class="ttile-a" href="{root}topics/{E(t["slug"])}/"><span class="eyebrow">{E(T("topic.eyebrow"))}</span><h2>{E(t["title"])}</h2><p class="ttile-p">{E(t["problem"])}</p>'
+                  f'<p class="ttile-s">{E(t["summary"])}</p>'
+                  f'<div class="stats sm"><div class="stat"><b>{f["n"]}</b><span>{E(T("topic.stat_systems"))}</span></div><div class="stat"><b>{E(year_span(f))}</b><span>{E(T("topic.stat_years"))}</span></div><div class="stat"><b>{f["prod"]}</b><span>{E(EVID["production_described"])}</span></div></div>'
+                  f'<div class="mixbar" role="img" aria-label="{E(mixl)}">{mix}</div><div class="marks">{"".join(marks[:6])}{extra}</div>'
+                  f'<span class="open">{E(T("topic.open"))} &rarr;</span></a></li>')
+    body = (f'<div class="wrap"><article class="sys topicpage"><header class="thero"><span class="eyebrow">{E(T("topic.eyebrow"))}</span><h1>{E(T("nav.topics"))}</h1><p class="problem">{E(T("topics.lead"))}</p></header>'
+            f'<ul class="ttiles">{items}</ul>{subscribe_link()}</article></div>')
     return page(T("topics.title"), T("topics.desc"), body, root, "topics/")
 
 def card_page(c):
@@ -1103,7 +1295,7 @@ def card_page(c):
     vers = (f'<h3>{E(T("ver.h3"))}</h3><ul class="clean versions">' + "".join(f'<li><time datetime="{E(v_["first_public"])}">{E(v_["first_public"])}</time> <b>{E(v_["name"])}</b>' + (f' <span class="k k-added">{E(T("ver.here"))}</span>' if v_["name"] == c["version"] else "") + f' <a href="{E(v_["source"])}" rel="noopener nofollow" target="_blank">{E(T("ver.source"))}</a>' + vcount(c["id"], v_["name"]) + f'<div class="stage-d">{E(v_["note"])}</div></li>' for v_ in reversed(c["versions"])) + '</ul>') if c.get("versions") else ""
     cmp_btn = f'<p><a class="btn" href="{root}compare/?ids={E(c["id"])}">{E(T("hist.compare"))}</a></p>' if st == "active" else ""
     hist = (f'<section class="blk" id="history"><h2>{E(T("sec.history"))}</h2>' + vers + '<ul class="clean changelog">' + "".join(f'<li><time datetime="{d}">{d}</time> <span class="k k-{k}">{E(T("kind." + k) if k in KIND_LABEL else T("status.superseded"))}</span> {E(n)}</li>' for d, k, n in sorted(h_items, reverse=True))
-            + f'</ul><p class="unk">{E(T("hist.verified", date=c["last_verified"]))}</p>'
+            + f'</ul><p class="unk fb-line">{E(T("hist.verified", date=c["last_verified"]))} {feedback_links(c["id"], "systems/" + c["id"] + "/")}</p>'
             + f'{cmp_btn}</section>')
     if not limits: keyfacts = keyfacts.replace(f'<a href="#limitations">{E(T("sec.limits"))}</a>', "")
     if not c.get("deployment"): keyfacts = keyfacts.replace(f'<a href="#deployment">{E(T("dep.h2"))}</a>', "")
@@ -1132,7 +1324,7 @@ def card_page(c):
 <section class="blk" id="sources"><h2>{E(T('sec.sources'))}</h2>{srcs}{codeblk}</section>
 {hist}</div></article></div>"""
     title = T("card.title", name=c["name"], company=c["company"], year=c["year"])
-    desc = T("card.desc", name=c["name"], company=c["company"], summary=c["summary"].strip())[:158]
+    desc = clip(T("card.desc", name=c["name"], company=c["company"], summary=c["summary"].strip()), 158)
     ld = {"@context":"https://schema.org","@type":"TechArticle","headline":c["name"],"inLanguage":LANG_TAG[LANG],"about":c["surface"],"datePublished":c["added_on"],"dateModified":c["last_verified"],
           "citation":[s_["url"] for s_ in c["sources"]],"publisher":{"@type":"Organization","name":"RecArch"}}
     head = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' + ('' if st == "active" else '<meta name="robots" content="noindex">')
@@ -1152,7 +1344,7 @@ def by_id_name(i): return NAMES.get(i, i)
 def compare_page():
     root = "../"
     body = f"""<div class="wrap"><article class="sys"><h1>{E(T('compare.h1'))}</h1><p class="lead">{E(T('compare.lead'))}</p>
-<div id="picker" class="controls"></div><div id="out"></div>{subscribe_box("compare").replace("{ROOT}", root)}</article></div>"""
+<div id="picker" class="controls"></div><p id="cmpmsg" class="cmp-note" role="status" aria-live="polite" hidden></p><div id="out"></div>{subscribe_box("compare").replace("{ROOT}", root)}</article></div>"""
     return page(T("compare.title"), T("compare.desc"), body, root, "compare/", scripts=f'{js_l10n()}<script>window.RECARCH_ROOT="{root}"</script><script src="{sroot(root)}static/compare.js"></script>')
 
 def sponsor_page():
@@ -1168,19 +1360,24 @@ def about_page(n):
     body = f"""<div class="wrap"><article class="sys"><h1>{E(T('about.h1'))}</h1><p class="lead">{E(T('about.lead'))}</p>
 <ul class="clean"><li>{E(T('about.l1'))}</li>
 <li>{E(T('about.l2'))}</li>
-<li>{E(T('about.l3'))}</li><li>{E(T('about.l4'))}</li></ul></article></div>"""
+<li>{E(T('about.l3'))}</li><li>{E(T('about.l4'))}</li></ul>
+<section class="blk" id="feedback"><h2>{E(T('about.fb_h'))}</h2><p>{T('about.fb_p', error=f'<a href="{E(feedback_url("error"))}" target="_blank" rel="noopener nofollow">{E(T("fb.error"))}</a>', request=f'<a href="{E(feedback_url("request"))}" target="_blank" rel="noopener nofollow">{E(T("fb.request"))}</a>')}</p></section>
+{subscribe_link()}</article></div>"""
     return page(T("about.title"), T("about.desc"), body, root, "about/")
 
 def write(path, content):
     p = os.path.join(OUT, path); os.makedirs(os.path.dirname(p), exist_ok=True)
     open(p, "w", encoding="utf-8").write(content)
 
-def not_found_page(root, bilingual):
+def not_found_page(root, bilingual, en_html=""):
     """404. GitHub Pages serves the root 404.html at any depth, so links use the site's absolute base path: zh first, English below."""
     base = (urlparse(SITE_URL).path.rstrip("/") + "/")
     if bilingual:
         body = (f'<div class="wrap"><article class="sys"><h1>{E(T("nf.h1"))}</h1><p><a href="{base}">{E(T("nf.back"))}</a></p>'
                 f'<h2 lang="en" style="margin-top:28px">Not found</h2><p lang="en">That page does not exist. <a href="{base}en/">Back to all systems</a></p></article></div>')
+        if en_html:   # GitHub Pages serves this one file for every missing URL, so an /en/ path swaps in the English 404 (zh and English stay as the no-JS fallback; document.open is ignored while the parser is still running, so it waits for DOMContentLoaded)
+            body += ("<script>(function(){var b=%s,p=location.pathname;if(p===b+\"en\"||p.indexOf(b+\"en/\")===0){var h=%s;addEventListener(\"DOMContentLoaded\",function(){document.open();document.write(h);document.close()})}})()</script>"
+                     % (json.dumps(base), json.dumps(en_html, ensure_ascii=False).replace("</", "<\\/")))
     else:
         body = f'<div class="wrap"><article class="sys"><h1>{E(T("nf.h1"))}</h1><p><a href="{root}">{E(T("nf.back"))}</a></p></article></div>'
     return page(T("nf.title"), T("nf.h1"), body, root, "404.html", extra_head='<meta name="robots" content="noindex">')
@@ -1242,8 +1439,8 @@ def main():
         w = lambda path, content: write(pre + path, content)
         w("index.html", home(cards, ev, today, off))
         for c in cl: w(f"systems/{c['id']}/index.html", redirect_page(c) if card_status(c) == "superseded" else card_page(c))
-        w("topics/index.html", topics_index(topics_l))
-        for t in topics_l: w(f"topics/{t['slug']}/index.html", topic_page(t, by_idl))
+        w("topics/index.html", topics_index(topics_l, by_idl))
+        for t in topics_l: w(f"topics/{t['slug']}/index.html", topic_page(t, by_idl, topics_l))
         w("compare/index.html", compare_page()); w("newsletter/index.html", newsletter_page(issues_l, cards))
         for i in issues_l: w(f"newsletter/{i['slug']}/index.html", issue_page(i, by_idl))
         w("changelog/index.html", changelog_page(ev)); w("feed.xml", feed_xml(ev))
@@ -1254,8 +1451,8 @@ def main():
             urls = [("", lastmod["home"])] + [(f"systems/{c['id']}/", c["last_verified"]) for c in cards] + [("changelog/", lastmod["ev"]), ("newsletter/", lastmod["issue"])] + [(f"newsletter/{i['slug']}/", i["date"]) for i in issues] + [("topics/", lastmod["ev"])] + [(f"topics/{t['slug']}/", lastmod["ev"]) for t in topics] + [("compare/", lastmod["ev"]), ("about/", lastmod["ev"])]
     # 404: GitHub Pages only serves the root file, so it is bilingual. en/404.html mirrors it for other hosts.
     base = (urlparse(SITE_URL).path.rstrip("/") + "/")
-    set_lang("zh"); write("404.html", not_found_page(base, True))
-    set_lang("en"); write("en/404.html", not_found_page(base + "en/", False))
+    set_lang("en"); en_404 = not_found_page(base + "en/", False); write("en/404.html", en_404)
+    set_lang("zh"); write("404.html", not_found_page(base, True, en_404))
     xh = lambda u: "".join(f'<xhtml:link rel="alternate" hreflang="{h}" href="{abs_url(l, u)}"/>' for h, l in (("zh-CN", "zh"), ("en", "en"))) + f'<xhtml:link rel="alternate" hreflang="x-default" href="{abs_url("zh", u)}"/>'
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
           + "".join(f"<url><loc>{abs_url(l, u)}</loc><lastmod>{d}</lastmod>{xh(u)}</url>\n" for u, d in urls for l in LANGS) + "</urlset>\n")

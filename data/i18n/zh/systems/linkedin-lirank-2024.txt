@@ -7,7 +7,7 @@ deployed_in|LinkedIn Feed、职位和广告 CTR 排序
 scale_short|来源中未说明
 key_result|广告 CTR +4.3%，是摘要中给出的相对 A/B 提升
 results_reported|摘要中给出的相对 A/B 提升：Feed 成员会话数 +0.5%，职位的合格职位申请 +1.76%，广告 CTR +4.3%。
-version_note|对照站长的 Zotero 副本核对过，它是 7 Aug 2024 的 arXiv v2，用 KDD '24 的 ACM 模板排版，带引用格式和 DOI 10.1145/3637528.3671561，13 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+version_note|对照全文核对过，它是 7 Aug 2024 的 arXiv v2，用 KDD '24 的 ACM 模板排版，带引用格式和 DOI 10.1145/3637528.3671561，13 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
 serving_infra|用于服务的量化和词表压缩
 stages.0.model_family|Feed 排序器：对每个成员与帖子的组合，做 point-wise 多任务预测，包括点赞、评论、分享、投票、长停留和点击；广告 CTR 模型；职位推荐排序器
 stages.0.details|两层 DCNv2 就够了，更多层收益递减，训练和服务时间更高；低秩混合，以及把稀疏 one-hot 输入换成 embedding 查表，使输入维度降低近 30%，所以模型可以在 CPU 上服务。表 1：MTL 参数共享对比，基线 / MMoE +0.75% / PLE +1.19% / 分组 +1.34%，按表格文本读取。

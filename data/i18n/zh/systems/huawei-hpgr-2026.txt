@@ -7,7 +7,7 @@ deployed_in|AppGallery 应用推荐排序，在一半流量上测试
 scale_short|45.8M 用户，285M 条训练交互，在一半流量上做 7 天 A/B
 key_result|对比线上 DLRM，流量平均分配，7 天 A/B：eCPM +1.99%
 results_reported|AppGallery 上做 7 天线上 A/B，流量平均分配，对比线上 DLRM：eCPM +1.99%，论文称统计显著。2.5% 用户样本上的离线 AUC：HPGR 为 0.8377，MTGR 为 0.8253，HSTU 为 0.8220，SASRec 为 0.8194，相比 MTGR 绝对提升 0.0124，相对提升 1.50%。在完整测试集上，HPGR 的 AUC 为 0.89288，比 MTGR 高 0.01139，线上 DLRM 为 0.8880，HPGR 为 0.8929。仅预训练为 0.8327，加入会话模块为 0.8374，加入稀疏注意力模块为 0.8348。
-version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792790，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792790，全文已核对。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
 serving_infra|未说明。论文称相比 MTGR，训练和推理时间的增加在可接受范围内，但没有给出数字。
 stages.0.model_family|带会话编码器和稀疏注意力掩码的 HSTU 编码器
 stages.0.details|为每个用户和候选对预测 CTR。两层 Transformer 生成会话上下文向量，加到每个历史 token 上；按与候选的相似度取 top 50 个历史 item，据此构造高斯掩码，施加在 HSTU 的注意力分数上；最后由 MLP 输出分数。

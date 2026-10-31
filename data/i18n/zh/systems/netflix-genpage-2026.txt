@@ -7,7 +7,7 @@ deployed_in|Netflix 首页，WBC 变体已做线上测试，未说明是否全�
 scale_short|线上约 200M 参数
 key_result|对比成熟的多阶段线上首页推荐系统，14 天线上 A/B：核心互动指标 +0.24%
 results_reported|线上 A/B，对比成熟的多阶段线上首页推荐系统，14 天，五个 WBC 变体，全部显著，p < 0.001：最佳变体在用于上线决策的核心互动指标上 +0.24%，95% 置信区间 [0.17%, 0.30%]；端到端在线服务延迟 -20%。离线结果见表 1，WBC 有预训练对比无预训练：loss 为 0.321 对 0.333，Row AUC 为 0.884 对 0.879，Entity AUC 为 0.920 对 0.910。模型规模从 120M 扩到 900M，WBC loss 约降低 1.3%，而累积加入上下文信息可降低约 6.9%。RL 后训练在离线提升了页面奖励和首页多样性。
-version_note|数字已对照站长 Zotero 中的 PDF 核对，为 1 Aug 2026 的 arXiv v2，采用 RecSys 2026 定稿版格式，ACM DOI 为 10.1145/3773078.3831915。16 Oct 2026 的 arXiv v3 对核心数字做了比对，即 +0.24%、置信区间、20% 延迟、表 1、6.9% 和 1.3%，均未变化；v3 新增了阿尔伯塔大学的作者 Fengdi Che。没有打开 ACM DL 页面。
+version_note|数字已对照全文 PDF 核对，为 1 Aug 2026 的 arXiv v2，采用 RecSys 2026 定稿版格式，ACM DOI 为 10.1145/3773078.3831915。16 Oct 2026 的 arXiv v3 对核心数字做了比对，即 +0.24%、置信区间、20% 延迟、表 1、6.9% 和 1.3%，均未变化；v3 新增了阿尔伯塔大学的作者 Fengdi Che。没有打开 ACM DL 页面。
 serving_infra|用单个 Transformer 实时生成页面；自定义 tokenization 和混合 row 解码减少了解码步数；推理引擎针对每个请求动态的 token 掩码做了定制；分页请求会把之前的 row 和会话内最新的互动追加到 prompt 中。
 stages.0.model_family|输入和输出 embedding 不共享的 decoder-only Transformer；线上测试约 200M 参数；离线在约 120M 到 900M 之间扫描。
 stages.0.details|解码按 token 值做贪心；混合 row 解码只自回归地生成一个 row 的前几个 entity，其余通过一次前向计算补齐；约束解码按每个请求的业务规则屏蔽 token。A/B 测试中，模型在现有线上的 row 和 entity 候选集上解码。

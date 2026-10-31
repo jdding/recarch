@@ -10,6 +10,8 @@ function load(name, reduced) {
   if (reduced !== undefined) w.matchMedia = (q) => ({ matches: reduced && /reduce/.test(q) });
   w.eval(js); return { w, d: w.document, timers, live: () => timers.filter((t) => t.on) };
 }
+const cssText = fs.readFileSync(st + "/style.css", "utf8");
+const getComputedStyle0 = () => { const m = /\.car-dots\.dot\{[^}]*width:(\d+)px;height:(\d+)px/.exec(cssText.replace(/\s+/g, "")); return !!m && +m[1] >= 24 && +m[2] >= 24; };
 const cur = (d) => [...d.querySelectorAll(".dot")].findIndex((x) => x.getAttribute("aria-current") === "true");
 const ev = (w, el, type, props) => { const e = new w.Event(type, { bubbles: true }); Object.assign(e, props || {}); el.dispatchEvent(e); };
 for (const name of ["recent0", "recent3", "recent10", "few4"]) {
@@ -22,7 +24,7 @@ for (const name of ["recent0", "recent3", "recent10", "few4"]) {
   ok(slides.every((s) => s.querySelector(".era-badge") && s.querySelector(".k") && s.querySelector("time") && s.querySelector("a[href$='/']") && s.querySelector(".slide-tldr")), `${name}: slide has era/kind/date/tldr/link`);
   ok(JSON.stringify([...d.querySelectorAll(".slide .k")].map((k) => k.textContent.toLowerCase())) === JSON.stringify(m.kinds), `${name}: Added/Updated badges`);
   ok([...d.querySelectorAll(".slide")].every((s, i) => (s.querySelector(".slide-note") != null) === (m.kinds[i] === "updated")), `${name}: update note only on Updated slides`);
-  ok(d.querySelector(".pill") && d.querySelector("a[href='changelog/']"), `${name}: week badge + changelog link`);
+  ok(!d.querySelector(".pill") && d.querySelector("a[href='changelog/']"), `${name}: no pill without recent events, changelog link kept`);
 }
 { // behaviour on 6 slides
   const { w, d, live } = load("recent3", false), car = d.querySelector(".carousel"), t = live()[0];
@@ -39,6 +41,18 @@ for (const name of ["recent0", "recent3", "recent10", "few4"]) {
   ev(w, car, "keydown", { key: "ArrowRight" }); ok(cur(d) === 5, "ArrowRight"); ev(w, car, "keydown", { key: "ArrowLeft" }); ok(cur(d) === 4, "ArrowLeft");
   ok(d.querySelector(".car-track").style.transform === "translateX(-400%)", "track translated");
   ok(d.querySelectorAll(".slide")[4].getAttribute("aria-hidden") === "false" && d.querySelectorAll(".slide")[0].getAttribute("aria-hidden") === "true", "aria-hidden on inactive slides");
+  { // item 7: autoplay resumes after an arrow or dot click once the pointer leaves, even though focus stays on the clicked button
+    const next = d.querySelector(".car-next"), dot = d.querySelectorAll(".dot")[1], tick = live()[0];
+    for (const btn of [next, dot]) {
+      ev(w, car, "mouseenter"); ev(w, btn, "mousedown"); ev(w, btn, "focusin"); btn.click(); const at = cur(d);
+      tick.f(); ok(cur(d) === at, "hovering after a click: paused");
+      ev(w, car, "mouseleave"); const before = cur(d); live().forEach((x) => x.f()); ok(cur(d) === (before + 1) % 6, "pointer left, focus still on the button: autoplay resumes");
+      ev(w, car, "focusout");
+    }
+    ev(w, car, "keydown", { key: "ArrowRight" }); ev(w, car, "focusin"); const kb = cur(d); live().forEach((x) => x.f()); ok(cur(d) === kb, "keyboard focus keeps it paused");
+    ev(w, car, "focusout"); live().forEach((x) => x.f()); ok(cur(d) === (kb + 1) % 6, "focus left: resumes");
+    ok(getComputedStyle0(d), "dots have a tap target of at least 24px");
+  }
   const pb = d.querySelector(".car-pause"); pb.click(); const c1 = cur(d); live().forEach((x) => x.f()); ok(cur(d) === c1, "Pause button stops autoplay"); pb.click(); live().forEach((x) => x.f()); ok(cur(d) !== c1, "Play button resumes");
 }
 { const { d, live } = load("recent3", true); ok(live().length === 0, "prefers-reduced-motion: no autoplay timer"); ok(d.querySelector(".carousel").dataset.autoplaying === "false", "reduced: flagged not autoplaying"); }

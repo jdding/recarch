@@ -76,7 +76,7 @@ version_note: 'Full text read from the arXiv v1 PDF (8 Sep 2026), which is alrea
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2609.08443
-  local_pdf: /workspace/recarch/zotero/bytedance-sequenceo1-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, background, method (SA, stacked refinement, two-time-scale STCA), system (local KVCache, MRLB, pipeline lift, FlashSA), experiments 5.1-5.5, related work, conclusion, appendices A-G'
   verified_on: '2026-10-30'
   published_pdf: null

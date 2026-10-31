@@ -99,7 +99,6 @@ date.days_ago || {n} days ago || {n} 天前
 # --- carousel
 car.title || Recently added & updated || 最近新增与更新
 car.week || This week: {na} added, {nu} updated || 本周新增 {na} 个，更新 {nu} 个
-car.quiet || Nothing new this week || 本周暂无更新
 car.update || Update: || 更新：
 car.read || Read the card || 阅读卡片
 car.slide_of || {i} of {n} || 第 {i} 张，共 {n} 张
@@ -205,7 +204,7 @@ det.serving || Serving & infra || 服务与基础设施
 det.idtok || ID / tokenization || ID 与 tokenization
 lim.unknown || Not stated in the sources: {fields}. || 来源未说明：{fields}。
 hist.published || Card published. || 卡片发布。
-hist.verified || Last verified {date}. Spotted an error? Check the sources above and tell us once a contact address is set. || 最后核对于 {date}。发现错误？请先对照上方来源核实，联系方式设置好之后欢迎反馈。
+hist.verified || Last verified {date}. Spotted an error? || 最后核对于 {date}。发现错误？
 hist.compare || Compare this system || 对比此系统
 ver.h3 || Versions || 版本
 ver.here || presented here || 本卡展示
@@ -282,7 +281,6 @@ about.l4 || New systems are added as they are read in full. Candidate sources ar
 # --- client script strings
 js.count_all || {n} systems || {n} 个系统
 js.count_some || {n} of {t} systems || {n} / {t} 个系统
-js.cmp_max || Compare up to 3 systems. || 最多同时对比 3 个系统。
 js.selected || {n} selected || 已选 {n} 个
 js.pause || Pause || 暂停
 js.play || Play || 播放
@@ -324,3 +322,66 @@ js.row_results || Results || 结果
 js.row_code || Code || 代码
 js.row_caveats || Caveats || 局限
 js.row_sources || Sources || 来源
+topic.eyebrow || Topic || 专题
+topic.stat_systems || Systems || 系统
+topic.stat_years || Years covered || 覆盖年份
+topic.span || {a} to {b} || {a} 至 {b}
+topic.question || The key question || 核心问题
+topic.jump || On this page || 本页内容
+topic.overview || Overview || 概述
+topic.decide || What to choose when || 什么情况下选什么
+topic.decide_if || If || 如果
+topic.decide_then || Then || 那么
+topic.lineage || Lineage by year || 按年份的演进
+topic.swipe || Swipe sideways to see more. || 左右滑动查看更多。
+topic.tiles || Systems at a glance || 系统一览
+topic.read_card || Read the card || 阅读卡片
+topic.caveat_h || Read this first. || 先看这一点。
+topic.related || Related topics || 相关专题
+topic.shared_one || {n} system in common || 共有 {n} 个相同系统
+topic.shared_many || {n} systems in common || 共有 {n} 个相同系统
+topic.open || Open the topic || 查看专题
+sub.heading_topic || Want more systems like these? Get one digest a week. || 想看更多这样的系统？每周收到一期精选。
+
+# --- feedback links (GitHub issues, no email address) and newsletter section
+fb.error || Report an error || 纠错
+fb.request || Request a system || 申请收录
+fb.footer_label || Feedback || 反馈
+about.fb_h || Corrections and requests || 纠错与收录申请
+about.fb_p || Corrections and requests for new systems go through GitHub issues, each with a short bilingual template. {error}, or {request}. || 纠错和新系统的收录申请都通过 GitHub issue 提交，各有一份简短的中英双语模板。{error}，或{request}。
+sub.inline || Or subscribe without leaving this page || 或者不离开本页直接订阅
+sub.frame_title || Beehiiv subscribe form || Beehiiv 订阅表单
+sub.link_short || Subscribe to the weekly digest || 订阅每周精选
+sub.link_note || {link}. Free, and you can unsubscribe at any time. || {link}。免费，可随时退订。
+car.week_added || This week: {na} added || 本周新增 {na} 个
+car.week_updated || This week: {nu} updated || 本周更新 {nu} 个
+js.cmp_full || You can compare up to 3 systems. Remove one before adding another. || 最多同时对比 3 个系统。要添加新的，请先移除一个。
+js.row_scenario || Scenario || 场景
+js.row_baseline || Compared with || 对比基线
+js.row_compute || Training compute || 训练算力
+js.row_qps || Serving throughput || 服务吞吐
+js.cmp_remove || Remove {name} || 移除 {name}
+
+# --- paradigm tags: the English side is the tag id itself, the Chinese side is what zh pages show
+tag.llm-based || llm-based || 基于大模型
+tag.rl-alignment || rl-alignment || 强化学习对齐
+tag.generative-retrieval || generative-retrieval || 生成式检索
+tag.sequential-transformer || sequential-transformer || 序列 Transformer
+tag.semantic-id || semantic-id || 语义 ID
+tag.learning-to-rank || learning-to-rank || 学习排序
+tag.foundation-model || foundation-model || 基础模型
+tag.multi-task || multi-task || 多任务
+tag.dlrm || dlrm || DLRM 类
+tag.attention-ctr || attention-ctr || 注意力 CTR
+tag.graph-neural-network || graph-neural-network || 图神经网络
+tag.random-walk || random-walk || 随机游走
+tag.embedding-based-retrieval || embedding-based-retrieval || 向量检索
+tag.two-tower || two-tower || 双塔
+tag.online-training || online-training || 在线训练
+tag.gbdt || gbdt || GBDT 树模型
+tag.item-cf || item-cf || 物品协同过滤
+
+# --- social card and skip link
+og.tagline || Industrial recommender, search and ranking architectures, read in full || 工业级推荐、搜索与排序系统架构，通读全文后整理
+og.alt || RecArch: structured notes on how real companies build recommender, search and ranking systems || RecArch：结构化整理真实公司如何构建推荐、搜索和排序系统
+nav.skip || Skip to content || 跳到正文

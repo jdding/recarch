@@ -71,7 +71,7 @@ version_note: 'Preprint with no venue found. Numbers checked against the latest 
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2607.28895
-  local_pdf: /workspace/recarch/zotero/snap-snaplgr-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, system design (SIDs, CPT, SFT, inference, throughput), SID quality and grounding, retrieval evaluation RQ1-RQ4, online A/B, related work, conclusion, appendices A and B'
   verified_on: '2026-10-30'
   published_pdf: null

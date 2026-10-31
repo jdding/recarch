@@ -9,17 +9,17 @@ Structured, sourced database of industrial recsys/search/ranking architectures. 
 
 
 ## Round 2
-Card counts are computed, never typed here: run `python3 scripts/stats.py`. See `coverage_plan.md` for what is in and what was dropped. Home page has an Era filter (classic / deep-learning / generative-LLM-scaling); since round 7 it uses the explicit `era` field, not the year.
+Card counts are computed, never typed here: run `python3 scripts/stats.py`. Home page has an Era filter (classic / deep-learning / generative-LLM-scaling); since round 7 it uses the explicit `era` field, not the year.
 Admission audit: `python3 scripts/admission_audit.py`. Judged per system; merged cards use the summed citations of all versions (docs/admission.md section 4).
 
-## Publication rule (owner, round 2b)
-A card is published only if it is based on the full text of its sources. Cards whose sources were read only at abstract / search-snippet level live in `data/drafts/` (not built) with `needs_fulltext: true` and a `fulltext_note`. See `drafts_needing_pdf.md`. Counts: `python3 scripts/stats.py`. Full-text status of drafted cards: `needs_zotero.md`.
+## Publication rule (round 2b)
+A card is published only if it is based on the full text of its sources. Cards whose sources were read only at abstract / search-snippet level live in `data/drafts/` (not built) with `needs_fulltext: true` and a `fulltext_note`. Counts: `python3 scripts/stats.py`.
 
 ## Code coverage (round 6, checked 2026-10-30)
 Every card has a `code` block (schema/schema.md). Per-status counts: `python3 scripts/stats.py`. Home page chip "Has official code" = full + partial. Every listed repo URL returned HTTP 200 on 2026-10-30. "none" records a search result, not proof that no code exists.
 
 ## Round 7: year and era audit
-See `era_audit.md` (rules, per-card table, borderline cases) and `needs_published_pdf.md` (published versions not yet read). `year` = first public disclosure; `era` = dominant paradigm (explicit, validated). 2 wrong years fixed (Pixie 2017, Lattice 2023). `linkedin-ligr-2025` moved to `data/withdrawn/` (authors withdrew the paper). Published (venue) version is `primary_source` where one exists.
+See `era_audit.md` (rules, per-card table, borderline cases). `year` = first public disclosure; `era` = dominant paradigm (explicit, validated). 2 wrong years fixed (Pixie 2017, Lattice 2023). `linkedin-ligr-2025` moved to `data/withdrawn/` (authors withdrew the paper). Published (venue) version is `primary_source` where one exists.
 
 ## Round 8: update signals and subscribing (no external accounts)
 
@@ -29,7 +29,6 @@ See `era_audit.md` (rules, per-card table, borderline cases) and `needs_publishe
 - Home: hero sentence + Beehiiv embed, search box, Era / Stage / Paradigm-family chips, two toggles (production-deployed, official code), collapsed "More filters", List | Timeline view, filter state in the URL query (`?era=deep&prod=1&view=timeline`). Families/stage groups: `data/taxonomy.yaml` (validated by `build.py`). Card pages open with the `tldr` line plus Paper / Code buttons.
 - Subscribe boxes (home hero, every card, compare, changelog, newsletter, each issue) are the real Beehiiv embed: `newsletter.form_id`, `public_url`, `publication_id` and the loader `embed_url` come from `data/site.yaml`; every page also loads Beehiiv's `attribution.js` so UTM params are forwarded. Without JS the box falls back to a link to `https://recarch.beehiiv.com/subscribe`. The old stub `static/subscribe.js` was removed. Never test by submitting an address: it creates a real subscriber.
 - Workflow per release: add card or edit -> add `updates` entry + bump `last_verified` -> `python3 build.py` -> the strip, changelog, feed and sitemap update automatically.
-- `needs_published_pdf.md` has three sections: A (in Zotero but cloud-only in Google Drive), B (Zotero has only an arXiv copy), C (not in Zotero).
 
 ## Round 9: citation counts, redrawn diagrams, home carousel (nothing deployed)
 

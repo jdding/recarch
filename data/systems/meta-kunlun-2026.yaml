@@ -66,14 +66,14 @@ sources:
 - title: Meta ads_model_kernel_library, GDPA kernels
   url: https://github.com/facebookresearch/ads_model_kernel_library
   type: source_code
-version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, from the owner Zotero copy, ACM DOI 10.1145/3770855.3818438. arXiv v1 was 10 Feb 2026; latest arXiv is v3 of 5 Jun 2026, which was not compared line by line.'
+version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, with the full text read, ACM DOI 10.1145/3770855.3818438. arXiv v1 was 10 Feb 2026; latest arXiv is v3 of 5 Jun 2026, which was not compared line by line.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2602.10016
-  local_pdf: /workspace/recarch/zotero/meta-kunlun-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, problem/scaling-efficiency definition, method (architecture, GDPA, HSP, sliding window, CompSkip, event personalization, mixture of Wukong experts), experiments (setup, Fig 3, Table 1, Fig 4), production deployment, conclusion, appendices A-D'
   verified_on: '2026-10-30'
-  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF'
 code:
   status: official_partial
   checked_on: '2026-10-30'

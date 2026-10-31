@@ -9,7 +9,7 @@ first_public: "2018-06"
 venue: "KDD 2018"
 venue_year: 2018
 published_version_checked: true
-version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 6 Jun 2018 typeset in the KDD '18 ACM template with the reference format and DOI 10.1145/3219819.3219890, 10 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+version_note: "Checked against the full text, which is arXiv v1 of 6 Jun 2018 typeset in the KDD '18 ACM template with the reference format and DOI 10.1145/3219819.3219890, 10 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
 primary_source: "https://doi.org/10.1145/3219819.3219890"
 added_on: "2026-10-30"
 last_verified: "2026-10-30"
@@ -48,10 +48,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1806.01973
-  local_pdf: /workspace/recarch/zotero/pinsage-2018.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Title page / ACM reference format; every number on the card diffed against the full text
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF"
 code:
   status: third_party_only
   checked_on: '2026-10-30'

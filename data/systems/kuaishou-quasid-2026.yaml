@@ -70,11 +70,11 @@ sources:
 - title: "QuaSID, arXiv 2603.00632"
   url: https://arxiv.org/abs/2603.00632
   type: paper
-version_note: 'Numbers checked against arXiv v1 of 28 February 2026, which still has a template conference line. The KDD 2026 DOI 10.1145/3770855.3818486 comes from the owner Zotero record and is registered per a doi.org redirect check; the camera-ready PDF was not retrievable, so published_version_checked is false.'
+version_note: 'Numbers checked against arXiv v1 of 28 February 2026, which still has a template conference line. The KDD 2026 DOI 10.1145/3770855.3818486 comes from the paper record and is registered per a doi.org redirect check; the camera-ready PDF was not retrievable, so the published version was not checked.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2603.00632v1
-  local_pdf: /workspace/recarch/zotero/kuaishou-quasid-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, method 4.1-4.3, experiments 5.1-5.5, appendix A.2, deployment figure'
   verified_on: '2026-10-30'
   published_pdf: null

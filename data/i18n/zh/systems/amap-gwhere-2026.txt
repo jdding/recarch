@@ -7,7 +7,7 @@ deployed_in|高德 App 首页「猜你想去」卡片，取代四阶段级联
 scale_short|离线一千万用户和 3.8 亿条交互，线上 0.5B 模型，一个月 A/B
 key_result|对比线上级联做一个月 A/B：P-CTR +5.83%，U-CTR +6.20%
 results_reported|高德数据集上的离线 Acc@1：已部署的 0.5B 变体为 0.2820，7B 变体为 0.3071，线上级联为 0.2675，7B 模型相对提升 14.8%。在公开的 Foursquare 和 Gowalla 数据上，7B 模型相比 GNPR-SID 分别提升 11.3%、8.1% 和 13.2%。去掉 Semantic ID 的消融使 Acc@1 下降 16.01%；SFT 加新的对齐方法达到 0.2820，SFT 加 GRPO 为 0.2759，SFT 加 DPO 为 0.2634。在高德首页卡片上对比线上级联做一个月 A/B，P-CTR 提升 5.83%，U-CTR 提升 6.20%，活跃率提升 9.67%，负反馈率下降 11.11%。没有对齐目标时，负反馈率只下降 5.85%。
-version_note|数字已对照 13 July 2026 的 arXiv v1 核对，该版本采用 RecSys 2026 格式，DOI 文本仍是占位符。ACM 把正式发表版登记在 DOI 10.1145/3773078.3831863 下，经 doi.org 跳转检查确认已注册。定稿版 PDF 本身无法获取，因此 published_version_checked 为 false。
+version_note|数字已对照 13 July 2026 的 arXiv v1 核对，该版本采用 RecSys 2026 格式，DOI 文本仍是占位符。ACM 把正式发表版登记在 DOI 10.1145/3773078.3831863 下，经 doi.org 跳转检查确认已注册。定稿版 PDF 本身无法获取，因此未核对正式发表版。
 serving_infra|模型引擎位于数据服务引擎之后，采用 continuous batching、PagedAttention、prefill 与 decoding 解耦以及 multi-token prediction。在 2 张 H20 GPU 上做 50 QPS 压测，已部署变体的 P99 约 30 ms，级联约 20 ms。
 stages.0.model_family|Qwen2.5 大模型生成 POI 的 Semantic ID，取代召回、粗排、精排和认知重排的级联
 stages.0.details|根据由画像、最近打卡、时间、位置和天气组成的指令 prompt，以 Semantic ID 的形式预测下一个 POI，再映射回可读的地点。

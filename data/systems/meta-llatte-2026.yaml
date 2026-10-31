@@ -70,14 +70,14 @@ sources:
 - title: LLaTTE, arXiv 2601.20083
   url: https://arxiv.org/abs/2601.20083
   type: paper
-version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, from the owner Zotero copy. arXiv has only v1 of 27 Jan 2026, which differs in at least one detail: the trigger event is conversions in arXiv and clicks in KDD.'
+version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, with the full text read. arXiv has only v1 of 27 Jan 2026, which differs in at least one detail: the trigger event is conversions in arXiv and clicks in KDD.'
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2601.20083
-  local_pdf: /workspace/recarch/zotero/meta-llatte-2026.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, preliminaries, LLaTTE architecture (Section 4), scaling framework (5), results (6: depth/width, length, content, global compute), multi-stage model (7), production deployment (8), conclusion, appendix A (architecture, MLA, attention analysis)'
   verified_on: '2026-10-30'
-  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF'
 code:
   status: none
   checked_on: '2026-10-30'

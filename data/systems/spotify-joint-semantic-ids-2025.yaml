@@ -9,7 +9,7 @@ first_public: "2025-08"
 venue: "RecSys 2025 (late-breaking)"
 venue_year: 2025
 published_version_checked: true
-version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 14 Aug 2025 typeset in the RecSys '25 ACM template with the reference format and DOI 10.1145/3705328.3759300, 6 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+version_note: "Checked against the full text, which is arXiv v1 of 14 Aug 2025 typeset in the RecSys '25 ACM template with the reference format and DOI 10.1145/3705328.3759300, 6 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
 primary_source: "https://doi.org/10.1145/3705328.3759300"
 added_on: "2026-10-30"
 last_verified: "2026-10-30"
@@ -42,10 +42,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2508.10478
-  local_pdf: /workspace/recarch/zotero/spotify-joint-semantic-ids-2025.pdf
+  local_pdf: full text read, file not redistributed
   sections_read: Title page / ACM reference format; every number on the card diffed against the full text
   verified_on: '2026-10-30'
-  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF"
 code:
   status: none
   checked_on: '2026-10-30'

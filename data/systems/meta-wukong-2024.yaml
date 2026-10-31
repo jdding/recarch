@@ -14,7 +14,7 @@ added_on: "2026-10-29"
 last_verified: "2026-10-30"
 updates:
 - date: "2026-10-30"
-  note: "Era moved from generative to deep by owner decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
+  note: "Era moved from generative to deep by editorial decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
 system_type: research
 evidence_level: research_only
 tldr: "Wukong stacks factorization-machine blocks to scale ranking quality across about two orders of magnitude of compute, beating prior models on all six public datasets."

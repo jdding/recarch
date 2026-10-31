@@ -207,11 +207,16 @@ Rules. Values come only from verified card content or the full text, never from 
 |---|---|---|
 | `title` | string | page title |
 | `summary` | string | at most 160 characters, used on the index and as meta description |
-| `framing` | string | one paragraph that states the problem |
+| `framing` | string or list of strings | paragraphs that state the problem |
+| `problem` | string | one sentence for the page hero and the index tile, phrased as the engineer's problem |
+| `question` | string | the key question, one sentence ending in a question mark |
+| `decisions` | list, at least 3 | items `{when, then, cards}` for the "what to choose when" block; `cards` are member ids that illustrate the advice |
 | `members` | list, at least 3 | items `{id, approach}`; `id` is an active card, `approach` is one plain line |
 | `differences` | list | items `{heading, text, cards}`; `cards` are member ids |
 
-Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. Each page links its member cards and offers a Compare button for the first three.
+Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. `problem`, `question` and `decisions` follow the same rules, and every card in `decisions` must be a member. The Chinese file mirrors them, with the same card ids in each decision. Each page links its member cards and offers a Compare button for the first three.
+
+Page layout, all generated from card data: hero with the problem, four stats (systems, years covered, production described, online numbers), the key question, jump links, overview, decision guide, lineage by year with company marks and era colors, one tile per member (company, year, venue, era badge, deployment evidence), the comparison table with a sticky header and first column and the not-comparable note above it, the differences, a related topics strip and the subscribe box. Stats, years, era mix and company marks on `/topics/` are computed from the cards, so nothing on a topic page carries a number that is not on a card. Company marks are letters, not logos, so no third-party artwork is shipped.
 
 
 ## Bilingual site (added 2026-10-31, owner decision: Chinese by default, English switchable)
