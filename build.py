@@ -492,7 +492,7 @@ def page(title, desc, body, root, path, extra_head="", scripts="", noalt=False):
 <link rel="alternate" type="application/atom+xml" title="{E(T('feed.link_title'))}" href="{root}feed.xml">
 <link rel="stylesheet" href="{sr}static/style.css">{extra_head}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="{root}">Rec<span>Arch</span></a>
-<nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a><a href="{root}sponsor/">{E(T('nav.sponsor'))}</a></nav>{lang_switch(root, path)}</div></header>
+<nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a></nav>{lang_switch(root, path)}</div></header>
 {body}
 <footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a></div></footer>
 <script>document.querySelectorAll(".langsw a").forEach(function(a){{a.href+=location.search+location.hash}})</script>
@@ -1247,11 +1247,11 @@ def main():
         w("compare/index.html", compare_page()); w("newsletter/index.html", newsletter_page(issues_l, cards))
         for i in issues_l: w(f"newsletter/{i['slug']}/index.html", issue_page(i, by_idl))
         w("changelog/index.html", changelog_page(ev)); w("feed.xml", feed_xml(ev))
-        w("sponsor/index.html", sponsor_page()); w("about/index.html", about_page(len(cards)))
+        w("about/index.html", about_page(len(cards)))
         w("data/systems.json", json.dumps(cards, ensure_ascii=False))   # active only: compare picker
         if lang == "zh":
             lastmod = {"home": ev[0]["date"] if ev else today, "ev": ev[0]["date"], "issue": issues[0]["date"] if issues else ev[0]["date"], "cards": {c["id"]: c["last_verified"] for c in cards}}
-            urls = [("", lastmod["home"])] + [(f"systems/{c['id']}/", c["last_verified"]) for c in cards] + [("changelog/", lastmod["ev"]), ("newsletter/", lastmod["issue"])] + [(f"newsletter/{i['slug']}/", i["date"]) for i in issues] + [("topics/", lastmod["ev"])] + [(f"topics/{t['slug']}/", lastmod["ev"]) for t in topics] + [("compare/", lastmod["ev"]), ("sponsor/", lastmod["ev"]), ("about/", lastmod["ev"])]
+            urls = [("", lastmod["home"])] + [(f"systems/{c['id']}/", c["last_verified"]) for c in cards] + [("changelog/", lastmod["ev"]), ("newsletter/", lastmod["issue"])] + [(f"newsletter/{i['slug']}/", i["date"]) for i in issues] + [("topics/", lastmod["ev"])] + [(f"topics/{t['slug']}/", lastmod["ev"]) for t in topics] + [("compare/", lastmod["ev"]), ("about/", lastmod["ev"])]
     # 404: GitHub Pages only serves the root file, so it is bilingual. en/404.html mirrors it for other hosts.
     base = (urlparse(SITE_URL).path.rstrip("/") + "/")
     set_lang("zh"); write("404.html", not_found_page(base, True))
