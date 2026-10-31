@@ -92,3 +92,19 @@ key_result: No experimental metrics, the paper says click-through and conversion
 results_table:
   note: No experimental metrics. The paper states qualitatively that click-through and conversion rates of recommendations vastly exceed untargeted
     content such as banner ads and top-seller lists.
+deployment:
+  online_evidence: deployed_only
+  scenario: Amazon.com homepage, shopping cart and email campaigns
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: Online step is a table lookup; many applications need results in no more than half a second
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper gives no experimental metrics, only qualitative statements about click-through and conversion.
+  basis: card_content
+  checked_on: '2026-10-31'

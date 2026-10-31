@@ -1,4 +1,5 @@
 (function(){
+  var _L=window.RECARCH_L10N||{};function L(k,d,o){var s=_L[k]!=null?_L[k]:d;return o?s.replace(/\{(\w+)\}/g,function(m,x){return o[x]}):s}
   var cards=[].slice.call(document.querySelectorAll('.card')),
       tl=[].slice.call(document.querySelectorAll('.tl-item')),
       q=document.getElementById('q'),count=document.getElementById('count'),empty=document.getElementById('empty'),
@@ -26,7 +27,7 @@
     [].forEach.call(document.querySelectorAll('.tl-row'),function(r){
       r.hidden=!r.querySelector('.tl-item:not([hidden])');
       [].forEach.call(r.querySelectorAll('.tl-cell'),function(cell){cell.classList.toggle('empty',!cell.querySelector('.tl-item:not([hidden])'))})});
-    count.textContent=(n===total?total+' systems':n+' of '+total+' systems');
+    count.textContent=(n===total?L('count_all','{n} systems',{n:total}):L('count_some','{n} of {t} systems',{n:n,t:total}));
     empty.hidden=n>0;
     document.getElementById('reset').hidden=active()===0;
     var parts=[];
@@ -81,9 +82,9 @@
   document.addEventListener('change',function(e){
     if(!e.target.classList.contains('cmp'))return;
     var id=e.target.closest('.card').dataset.id;
-    if(e.target.checked){if(cmp.size>=3){e.target.checked=false;alert('Compare up to 3 systems.');return}cmp.add(id)}else cmp.delete(id);
+    if(e.target.checked){if(cmp.size>=3){e.target.checked=false;alert(L('cmp_max','Compare up to 3 systems.'));return}cmp.add(id)}else cmp.delete(id);
     bar.style.display=cmp.size?'flex':'none';
-    document.getElementById('cmpn').textContent=cmp.size+' selected';
+    document.getElementById('cmpn').textContent=L('selected','{n} selected',{n:cmp.size});
     document.getElementById('cmplink').href='compare/?ids='+Array.from(cmp).join(',');
   });
 })();

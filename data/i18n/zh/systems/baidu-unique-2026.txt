@@ -1,0 +1,63 @@
+surface|手机百度首页信息流、发现页和短视频推荐，召回阶段
+era_reason|核心召回是在单层语义码本上做生成式的码预测，与目标感知的排序模型在同一个早期融合 Transformer 中联合训练。
+tldr|百度信息流模型在同一个早期融合 Transformer 中，为召回预测单层语义码，并为候选打分；一周 A/B：观看时长 +0.96%，分发量 +1.08%。
+summary|UNIQUE 把用户历史 token、候选 item token 和候选语义码 token 放进同一个 Transformer，并拆分出 target attention。码的 logit 在一个扁平的 16,384 码码本上实现生成式召回，该码本由 item 先验加 DSSM 风格的用户反馈双塔学习得到，并带有平衡码使用频率的约束项；随后同一个编码器对召回出的 item 做相关性、CTR、时长和完播的打分。在手机百度中，它部署在召回阶段，它的码提供了约 22.5% 的候选池。
+core_idea|一个 Transformer 在扁平码本上做生成式召回，再对召回出的 item 打分。
+deployed_in|手机百度首页信息流、发现页和短视频推荐，召回阶段
+scale_short|峰值召回 QPS 约 10,000，使用约 400 张 NVIDIA L20 GPU
+key_result|对比此前线上的召回链路，一周全量 A/B：总观看时长 +0.96%
+results_reported|线上结果为一周全量 A/B，对比此前线上的召回链路，p < 0.05：总观看时长 +0.96%，总分发量 +1.08%，用户留存 +0.70%；新用户观看时长 +1.44%，高活跃用户 +1.11%；UNIQUE 占召回候选池的 22.5%。在线服务：P80 35 ms，P99 89 ms，线上推理 MFU 44.23%，峰值约 10,000 QPS，每 1,000 个请求约 $0.0013。码本分析：资源计数方差从 1510.85 降到 389.57，即从层级码本到扁平码本。在 KuaiRand-Pure 上的离线结果：HR@10 0.0575，HR@50 0.1510，NDCG@10 0.0310，NDCG@50 0.0473，CTR-AUC 0.7252，对比 UniGRF-HSTU 的 0.0511、0.1453、0.0298、0.0430、0.7168。消融实验的指标为 HR@50：去掉生成目标为 0.1374，即 -9.01%；去掉早期融合为 0.1398，即 -7.42%；去掉扁平量化为 0.1421，即 -5.89%。
+version_note|数字已对照站长 Zotero 中的 PDF 核对，它是 20 Sep 2026 的 arXiv v1，排版采用 RecSys 2026 定稿格式，ACM DOI 为 10.1145/3773078.3831936；arXiv 上只有 v1。没有打开 ACM Digital Library 页面本身。
+serving_infra|约 400 张 NVIDIA L20 GPU，每张 GPU 一个服务实例；TensorRT FP16；item embedding 每小时预计算；参数服务器保证各模型版本一致；请求缓存窗口在中午为 15 s，晚上为 30 s。峰值约 10,000 QPS。
+stages.0.model_family|早期融合 Transformer，输入是 UIGN 用户前缀，包含 1 个画像 token 加 100 个短期、200 个中期和 200 个长期兴趣 token，预测语义码的分布；取 top N=100 个码，通过码到 item 的索引映射到 item，该索引覆盖数十万个 item，每个码保留 M=30 个 item。
+stages.0.details|粗排使用用户与 item embedding 的内积；top 10k 的 item 按码分组后交给精细排序。
+stages.1.model_family|Target-Code-Aware Discriminative Network：候选 item token 和码 token 只关注用户前缀；有相关性、CTR、归一化观看时长和完播几个 head；可配置的分数融合返回 top-K。
+stages.1.details|同一个编码器在一次前向传播中同时完成码预测和排序。
+id_tokenization.approach|单层扁平码本，EMA 向量量化，带均衡分配
+id_tokenization.details|线上为 16,384 个码，此前是 128 x 128 的层级结构；公开基准使用 1,024 个码，码 embedding 为 64 维；item 表示结合 item 元数据与感知反馈的双塔信号；分配距离按相对的码使用频率缩放，以抑制头部码被过度使用。
+features_signals.0|用户画像 token、短期曝光，包括点击的和曝光未点击的、中期的满意观看、按类目分组的长期兴趣
+features_signals.1|item ID、类目、发布者、标题词和其他 item 元数据
+features_signals.2|反馈信号，涵盖相关性、CTR、停留或时长以及完播
+training.mode|离线联合训练生成式和判别式目标；新 item 在首次曝光后 5 分钟内进入训练流，1 小时内完成量化
+training.objectives.0|码的交叉熵，用于生成式召回
+training.objectives.1|相关性、CTR 和完播用加权 BCE，观看时长用 MSE
+training.objectives.2|感知反馈的码本损失和量化正则
+training.notes|公开基准的实验使用 3 层、4 个 head、隐层 512，Adam，lr 1e-3，batch 2048。
+scale.0.metric|线上码本大小
+scale.0.value|16,384 个码
+scale.1.metric|峰值召回 QPS
+scale.1.value|约 10,000
+scale.2.value|约 400 张 NVIDIA L20
+scale.3.metric|长尾资源池
+scale.3.value|182 万个长尾 item
+results_table.online.0.setting|一周全量 A/B
+results_table.online.1.setting|一周全量 A/B
+results_table.online.2.setting|一周全量 A/B
+results_table.online.3.setting|一周全量 A/B，新用户
+results_table.online.0.versus|此前线上的召回链路
+results_table.online.1.versus|此前线上的召回链路
+results_table.online.2.versus|此前线上的召回链路
+results_table.online.3.versus|此前线上的召回链路
+results_table.online.0.metric|总观看时长
+results_table.online.1.metric|总分发量
+results_table.online.2.metric|用户留存
+results_table.online.3.metric|观看时长
+caveats.0|论文给出了两个起始时间：引言称自 February 2026 起部署，第 4.1.2 节则称 January 2026。
+caveats.1|离线证据是一个小型公开基准，即有 7,583 个 item 的 KuaiRand-Pure，作者称之为合理性检验；没有报告线上规模的离线指标。
+caveats.2|线上结果是对比此前召回链路的一周 A/B；论文没有描述该基线，也没有给出置信区间。
+caveats.3|有一位作者是在百度实习期间完成这项工作的，另有一位通讯作者在香港城市大学；部署由百度完成。
+unknown_fields.0|基线召回链路的细节
+unknown_fields.1|模型参数量
+unknown_fields.2|A/B 流量占比
+code.note|论文没有给出代码链接；2026-10-30 的网页搜索没有找到 UNIQUE 仓库。
+deployment.scenario|手机百度首页信息流、发现页和短视频召回
+deployment.ab_duration|一周，全量 A/B
+deployment.baseline|此前线上的召回链路
+deployment.serving_latency|P80 35 ms，P99 89 ms；峰值时平均 37 ms
+deployment.serving_qps|峰值约 10,000 QPS
+deployment.inference_cost|每 1,000 个请求约 $0.0013
+deployment.hardware|约 400 张 NVIDIA L20 GPU，每张 GPU 一个服务实例，TensorRT FP16；线上推理 MFU 44.23%
+deployment.notes.0|没有报告流量占比；论文称之为全量 A/B。
+deployment.online_lifts.0.metric|总观看时长
+deployment.online_lifts.1.metric|总分发量
+deployment.online_lifts.2.metric|用户留存

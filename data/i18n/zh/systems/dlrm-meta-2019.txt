@@ -1,0 +1,28 @@
+surface|个性化和 CTR 的参考模型，不绑定某个具体命名的产品场景
+era_reason|Embedding 表加 MLP 的参考模型
+tldr|开源的参考推荐模型：稀疏特征用 embedding，稠密特征用 bottom MLP，两两点积做交互，最后是 top MLP；论文重点在并行训练。
+summary|开源的参考架构 Deep Learning Recommendation Model：稀疏特征经过 embedding 表，稠密特征经过 bottom MLP，二阶交互通过两两点积实现，最后接 top MLP。论文重点是模型并行与数据并行混合的训练。
+core_idea|稀疏特征用 embedding 表，稠密特征用 bottom MLP，做点积交互，再接 top MLP。
+deployed_in|开源参考实现，不绑定具体命名的产品场景
+scale_short|没有报告线上规模
+key_result|没有报告指标：这是公开基准和系统性能的刻画，不是线上 A/B
+results_reported|公开基准和系统性能的刻画，不是线上 A/B。
+serving_infra|论文刻画了受内存容量和带宽限制的 embedding 查找，以及对系统的影响。
+stages.0.model_family|Embedding 加 bottom MLP，加两两点积交互，再加 top MLP
+stages.0.details|为 CTR 类预测设计；在 Criteo 数据上做基准测试，用 PyTorch 和 Caffe2 实现。
+id_tokenization.approach|每个类别特征一张 embedding 表
+features_signals.0|稠密的连续特征
+features_signals.1|稀疏的类别特征
+training.mode|离线，混合并行：embedding 做模型并行，MLP 做数据并行
+training.objectives.0|CTR 类的二分类预测
+training.notes|代码和基准均已开源。
+results_table.note|论文刻画了公开基准和系统上的性能，没有报告线上 A/B。
+caveats.0|这是参考模型，
+caveats.1|不是对某一个线上场景完整漏斗的描述。
+unknown_fields.0|线上场景
+unknown_fields.1|延迟
+unknown_fields.2|线上规模
+code.repos.0.note|DLRM 的 PyTorch 和 Caffe2 参考实现，带基准测试工具；论文本身指向这个仓库。不是 Meta 的线上训练栈。
+deployment.scenario|开源参考实现，不绑定具体命名的产品场景
+deployment.hardware|刻画实验在 Big Basin 平台上进行，配有双路 Intel Xeon 6138 CPU 和八块 Nvidia Tesla V100 16GB GPU
+code.repos.0.owner|Meta 的 facebookresearch

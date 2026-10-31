@@ -122,3 +122,28 @@ results_table:
     metric: Acc@1
     result: '0.3071'
     versus: Production cascade 0.2675
+deployment:
+  online_evidence: online_numbers
+  scenario: Amap app homepage Guess Where You Go card
+  ab_traffic: not_reported
+  ab_duration: One month, after a one-week short-term test
+  baseline: Production cascade ranking
+  online_lifts:
+  - metric: P-CTR
+    value: +5.83%
+  - metric: U-CTR
+    value: +6.20%
+  - metric: Active rate
+    value: +9.67%
+  - metric: Negative feedback rate
+    value: -11.11%
+  training_compute: Three training stages on 200 NVIDIA H20 GPUs
+  serving_latency: About 30 ms P99 for the deployed 0.5B model at 50 QPS on 2 H20 GPUs, against about 20 ms for
+    the cascade
+  serving_qps: 50 QPS load test; production QPS not reported
+  inference_cost: not_reported
+  hardware: 2 NVIDIA H20 GPUs in the load test
+  notes:
+  - The 7B variant was best offline and was not deployed because of serving cost.
+  basis: full_text
+  checked_on: '2026-10-31'

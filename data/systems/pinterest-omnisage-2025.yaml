@@ -97,3 +97,19 @@ results_table:
     result: About +2.5%
     versus: Previous representations
   note: Offline gains against PinSage and PinnerFormer are in Sec 4.2 of the paper and are not reproduced here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest, five applications
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous representations
+  online_lifts:
+  - metric: Sitewide repins, also called saves
+    value: About +2.5%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

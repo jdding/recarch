@@ -158,3 +158,25 @@ results_table:
     metric: Hit rate top 1000
     result: 52.2%
     versus: Content-based combined 10.5%
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest real-time candidate generation for Homefeed, Related Pins, boards and Explore
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Old systems
+  online_lifts:
+  - metric: Homefeed engagement per pin
+    value: +48%
+  - metric: Related Pins engagement per pin
+    value: +13%
+  - metric: Board recommendations engagement per pin
+    value: +26%
+  - metric: Explore tab engagement per pin
+    value: +20%
+  training_compute: not_reported
+  serving_latency: P99 latency under 60 ms
+  serving_qps: About 1,200 requests per second per server; the cluster handles nearly 100,000
+  inference_cost: not_reported
+  hardware: AWS r3.8xlarge machines with 244 GB RAM, each holding the pruned graph of about 120 GB
+  basis: full_text
+  checked_on: '2026-10-31'

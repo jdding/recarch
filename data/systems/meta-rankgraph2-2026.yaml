@@ -120,3 +120,25 @@ results_table:
     metric: Recall@100
     result: '0.775'
     versus: PBG 0.374, HSTU 0.434
+deployment:
+  online_evidence: online_numbers
+  scenario: Retrieval sources on two unnamed content recommendation surfaces
+  ab_traffic: not_reported
+  ab_duration: 14 days
+  baseline: Production without RankGraph-2 as a retrieval source
+  online_lifts:
+  - metric: U2I2I CTR, Surface 1 / Surface 2
+    value: +0.96% / +0.33%
+  - metric: U2I2I CVR, Surface 1 / Surface 2
+    value: +2.75% / +0.76%
+  - metric: U2U2I CTR, Surface 1 / Surface 2
+    value: +0.40% / +0.20%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Cluster index cuts serving cost by 83% against online KNN at comparable CTR and CVR
+  hardware: not_reported
+  notes:
+  - Graph rebuild takes about 1 hour on a 3-hour cycle, and embeddings refresh about 2 hours after engagement.
+  basis: full_text
+  checked_on: '2026-10-31'

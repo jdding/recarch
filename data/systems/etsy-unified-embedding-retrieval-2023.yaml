@@ -142,3 +142,23 @@ results_table:
     metric: R@100 / R@1000
     result: +11% / +6%
     versus: Uniform negatives only
+deployment:
+  online_evidence: online_numbers
+  scenario: Etsy search retrieval
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production search
+  online_lifts:
+  - metric: Organic search purchase rate
+    value: +5.58%
+  - metric: Site-wide conversion rate
+    value: +2.63%
+  training_compute: 4 A100 GPUs with MirroredStrategy, about 72 hours to converge
+  serving_latency: P99 retrieval latency under 20 ms; P99 inference latency 18 ms for the UEPPR boost model
+  serving_qps: Thousands of queries per second
+  inference_cost: not_reported
+  hardware: Training on 4 A100 GPUs; serving hardware not reported
+  notes:
+  - The lifts are aggregated over several A/B tests on live traffic.
+  basis: full_text
+  checked_on: '2026-10-31'

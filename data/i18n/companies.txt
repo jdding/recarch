@@ -1,0 +1,19 @@
+# Company names shown in Chinese pages. English || Chinese. Whole-string match. Names not listed stay as written.
+Kuaishou || 快手
+ByteDance || 字节跳动
+Alibaba || 阿里巴巴
+Tmall || 天猫
+Taobao || 淘宝
+Meituan || 美团
+Tencent || 腾讯
+Baidu || 百度
+Huawei || 华为
+Huawei Noah's Ark Lab || 华为诺亚方舟实验室
+Amap || 高德
+JD.com || 京东
+Xiaohongshu || 小红书
+Alibaba / Taobao || 阿里巴巴 / 淘宝
+Alibaba / Tmall || 阿里巴巴 / 天猫
+Alibaba Amap || 阿里巴巴高德
+Alibaba Taobao & Tmall Group || 阿里巴巴淘天集团
+Alibaba Taobao Shangou || 阿里巴巴淘宝闪购

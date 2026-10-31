@@ -122,3 +122,29 @@ results_table:
     metric: SID uniqueness
     result: 32.1%
     versus: Without co-engagement 16.8%
+deployment:
+  online_evidence: online_numbers
+  scenario: Snapchat short-form video recommendation, as a retrieval source
+  ab_traffic: not_reported
+  ab_duration: 7 days
+  baseline: Legacy TIGER-style T5 generative retrieval
+  online_lifts:
+  - metric: View Time
+    value: +0.37%
+  - metric: Time Spent
+    value: +0.09%
+  - metric: Deep Sessions
+    value: +0.18%
+  training_compute: Training throughput up 3.63x cumulative on a single node of 8 GPUs, including a move from A100
+    to H100
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Per-GPU inference throughput up 45.7x against the legacy centralized Python baseline
+  hardware: NVIDIA A100 and H100 GPUs; production GPU count not reported
+  notes:
+  - The launched system changes tokenizer, backbone and serving stack together, so the lift is not for one change.
+  fulltext_refs:
+  - 'Sec 4.4: all experiments use a single node with 8 A100 GPUs, besides the last row which uses a single node
+    of 8 H100 GPUs; speedups cumulative, H100 GPUs 3.63x'
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -91,3 +91,24 @@ results_table:
     metric: CTR
     result: +12%
     versus: Previous generation not stated
+deployment:
+  online_evidence: online_numbers
+  scenario: Ads on Facebook and Instagram
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous ads models
+  online_lifts:
+  - metric: Instagram ad conversions, Q2 2025
+    value: +5%
+  - metric: Facebook Feed ad conversions, Q2 2025
+    value: +3%
+  training_compute: Thousands of GPUs for training; model FLOPs utilization 20-25% in the later post; training FLOPs
+    up 4x in 12 months
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Thousands of GPUs for training; serving not described
+  notes:
+  - An Oct 2026 post reports +18.9% conversion and +12% CTR for the new generation, with no baseline stated.
+  basis: card_content
+  checked_on: '2026-10-31'

@@ -111,3 +111,25 @@ results_table:
     metric: AUC
     result: +1.57%
     versus: Base model
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin Ads, with other ByteDance advertising and e-commerce scenarios
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production baseline
+  online_lifts:
+  - metric: Live Streaming ADSS / ADVV
+    value: +1.063% / +1.168%
+  - metric: Short Video ADSS / ADVV
+    value: +2.097% / +2.151%
+  - metric: Mall ADSS / ADVV
+    value: +1.816% / +1.407%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says serving uses a KV cache and unified GPU dense and sparse updates, with no latency or QPS numbers.
+  basis: full_text
+  checked_on: '2026-10-31'

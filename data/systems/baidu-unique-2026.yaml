@@ -135,3 +135,25 @@ results_table:
     metric: CTR-AUC
     result: '0.7252'
     versus: UniGRF-HSTU 0.7168
+deployment:
+  online_evidence: online_numbers
+  scenario: Mobile Baidu homepage feed, discovery page and short-video retrieval
+  ab_traffic: not_reported
+  ab_duration: One week, full A/B
+  baseline: Previous production retrieval pipeline
+  online_lifts:
+  - metric: Total watch duration
+    value: +0.96%
+  - metric: Total distribution volume
+    value: +1.08%
+  - metric: User retention
+    value: +0.70%
+  training_compute: not_reported
+  serving_latency: P80 35 ms and P99 89 ms; average 37 ms at peak
+  serving_qps: About 10,000 QPS at peak
+  inference_cost: About $0.0013 per 1,000 requests
+  hardware: About 400 NVIDIA L20 GPUs, one service instance per GPU, TensorRT FP16; online inference MFU 44.23%
+  notes:
+  - Traffic share is not reported; the paper calls it a full A/B.
+  basis: full_text
+  checked_on: '2026-10-31'

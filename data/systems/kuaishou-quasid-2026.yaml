@@ -115,3 +115,23 @@ results_table:
     metric: NDCG@10
     result: '0.0230'
     versus: RQ-Kmeans 0.0211
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou e-commerce recommendation, retrieval and ranking
+  ab_traffic: About 5% of traffic, over 20 million users
+  ab_duration: 5 days
+  baseline: Same stack with the previous tokenizer
+  online_lifts:
+  - metric: Ranking GMV-S2
+    value: +2.38%
+  - metric: Generative retrieval GMV-S1
+    value: +1.03%
+  - metric: Cold-start retrieval completed orders, videos under 100 views
+    value: +6.42%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -1,0 +1,58 @@
+surface|抖音广告召回，作为额外的生成式召回通道加入
+era_reason|召回是对 Semantic ID token 序列的自回归生成，分词器、生成器和重排器端到端联合训练。
+tldr|字节跳动在抖音广告中上线生成式广告召回，包含 BasisRQ 分词器和联合重排头；全局 A/B 每组 5% 流量、7 天：ADSS +0.563%，ADVV +0.658%。
+summary|GEAR 训练一个 item 分词器，用前缀感知的 BasisRQ 量化双塔 item embedding，这是一种残差量化器，其码本由正交基重新参数化，以避免死码；再配一个小型 encoder-decoder 生成器，通过 beam search 解码 item token 序列；以及一个重排头，多花一步解码来为共享同一 token 序列的 item 排序。它在抖音广告中作为额外的召回通道，与现有的稠密召回系统并行运行。
+core_idea|把 item embedding 量化成 token 序列，并作为额外的召回通道解码。
+deployed_in|抖音广告召回，作为额外的生成式通道
+scale_short|服务数亿日活用户
+key_result|在抖音广告上做 7 天线上 A/B，GEAR 作为额外召回路径：ADSS +0.563%，ADVV +0.658%
+results_reported|抖音广告线上 A/B，7 天，每个实验组 5% 流量，GEAR 作为额外召回路径，对比没有它的线上系统：ADSS +0.563%，ADVV +0.658%；新广告主冷启动激活率 +1.46%。子集消融，指标为 ADSS 和 ADVV：GEAR +0.446/+0.498，去掉前缀感知 BasisRQ 为 +0.288/+0.219，去掉重排为 +0.358/+0.341，去掉 secpm 重加权为 +0.395/+0.354。分词器分析见表 2：前缀感知 BasisRQ，码本大小 2048、512、128，利用率 8.83%，碰撞率 52.3%，MSE 1.82e-3；带 EMA 的普通 RQ 分别为 4.22%、84.2%、2.32e-3。
+version_note|30 Sep 2026 的 arXiv v1 是最新版本；2026-10-30 查看 arXiv 页面时只有 v1。论文标注为预印本，没有找到发表会议。
+serving_infra|流式训练，参数服务器保存每个 item 的 token 序列和 embedding；准实时索引构建器以分钟级刷新类似 CSR 的索引，并随模型一起发布；带 KV 缓存的 beam search、token 生成、序列到 item 的展开以及 item 打分都在同一个计算图里；重排器打分使用 INT4 的用户和 item embedding。
+stages.0.model_family|Encoder-decoder 生成器：编码器把非序列用户特征，即 28 个分组 token、长度 200 的点击序列和长度 100 的转化序列，投影成共享的 key 和 value；2 层解码器，6 个头，head dim 64，门控 FFN 384，通过 cross-attention 和 beam search 生成 3 个 token，宽度分别为 256、256、512。
+stages.0.details|每个生成的 token 序列通过准实时的类 CSR 索引展开成对应的 item，索引以分钟级刷新；重排头用 INT4 点积为 item 打分，并按序列截断。
+id_tokenization.approach|在双塔 item embedding 之上的三层前缀感知 BasisRQ，与生成器联合训练
+id_tokenization.details|码本大小 2048、512、128，码维度 128，item embedding 维度 96；通过 5 次 Newton-Schulz 迭代得到正交基；仿射码本变换以前面的码为条件；token 序列和 item embedding 按 item 存在参数服务器里，并通过流式训练更新。
+features_signals.0|非序列用户特征，包括类别、统计和上下文特征
+features_signals.1|长度 200 的点击序列和长度 100 的转化序列
+features_signals.2|item 特征，包括多模态内容和类别 id
+training.mode|分词器、生成器和重排器一起做流式训练，并采用渐进式热身：先从双塔模型和 LambdaLoss 开始，再加入量化，最后加入生成和重排
+training.objectives.0|用于双塔分词器和重排器的 LambdaLoss
+training.objectives.1|RQ 码本损失和 commitment 损失
+training.objectives.2|token 生成的加权交叉熵，对有曝光的样本按 log 1 + secpm 加权
+training.notes|损失权重为 1、1、10、1，依次对应 LTR、RQ、Gen、Rerank。
+scale.0.metric|服务的日活用户
+scale.0.value|数亿
+scale.1.metric|分词器码本
+results_table.online.0.setting|抖音广告，7 天，每组 5% 流量
+results_table.online.1.setting|抖音广告，7 天，每组 5% 流量
+results_table.offline.0.setting|分词器分析，表 2
+results_table.offline.1.setting|分词器分析，表 2
+results_table.online.0.method|GEAR 作为额外召回路径
+results_table.online.0.versus|没有它的线上系统
+results_table.online.1.method|GEAR 作为额外召回路径
+results_table.online.1.versus|没有它的线上系统
+results_table.online.2.metric|新广告主冷启动激活率
+results_table.online.2.versus|没有它的线上系统
+results_table.offline.0.method|前缀感知 BasisRQ
+results_table.offline.0.metric|码本利用率
+results_table.offline.0.versus|带 EMA 的普通 RQ 4.22%
+results_table.offline.1.method|前缀感知 BasisRQ
+results_table.offline.1.metric|碰撞率
+results_table.offline.1.versus|带 EMA 的普通 RQ 84.2%
+caveats.0|arXiv 预印本 v1；没有找到经同行评审的发表会议，因此 published_version_checked 为空。
+caveats.1|论文只以相对提升报告收入类指标 ADSS 和 ADVV；没有绝对值、置信区间或分人群结果。
+caveats.2|消融实验是在一部分广告候选上线上做的，不是在全局流量上。
+caveats.3|生成器很小，只有 2 层解码器；延迟和 QPS 未报告，论文结论把解码效率列为未来工作。
+unknown_fields.0|在线延迟和 QPS
+unknown_fields.1|模型参数量
+unknown_fields.2|召回配额或占最终广告曝光的份额
+unknown_fields.3|离线召回指标
+code.note|论文没有给出官方代码链接。
+code.repos.0.owner|daiwk，第三方
+code.repos.0.note|在一个 auto-research 仓库中对该方法的自动化第三方复现；不是作者的代码，复现的忠实度未经核实。
+deployment.scenario|抖音广告召回，作为额外的生成式通道
+deployment.ab_traffic|每个实验组占总流量的 5%
+deployment.ab_duration|7 天
+deployment.baseline|没有 GEAR 通道的线上系统
+deployment.online_lifts.2.metric|新广告主冷启动激活率

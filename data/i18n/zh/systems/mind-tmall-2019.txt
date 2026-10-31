@@ -1,0 +1,39 @@
+surface|手机天猫首页的召回阶段匹配
+era_reason|胶囊路由的多兴趣召回
+tldr|MIND 用胶囊式动态路由为每个用户生成多个兴趣向量；在 TmallData 上 HR@10 为 0.0972，YouTube DNN 为 0.0589。
+summary|阿里巴巴和天猫的 CIKM 2019 论文：Multi-Interest Network with Dynamic routing 用多个向量而不是一个向量来表示每个用户。多兴趣提取层使用胶囊式的 Behavior-to-Interest 动态路由，把用户行为软聚类成兴趣胶囊；训练时使用 label-aware attention 层；服务时每个兴趣向量通过近似最近邻搜索召回 item。已部署在手机天猫 App 首页的匹配阶段。
+core_idea|用胶囊式动态路由，为每个用户生成多个兴趣向量。
+deployed_in|手机天猫 App 首页的匹配阶段
+scale_short|十亿级的 item 池，用 100 块 GPU 训练
+key_result|在天猫首页为期一周的线上 A/B 中，CTR 优于基于 item 的 CF 和 YouTube DNN，正文没有给出具体提升
+results_reported|离线 HitRate，见表 2，TmallData 上 K = 5，d = 64：MIND-K-interest 的 HR@10 为 0.0972，YouTube DNN 为 0.0589，+65.03%，HR@50 为 0.2080 对 0.1256，HR@100 为 0.2699 对 0.1648；Amazon Books 上 K = 3，d = 36：HR@10 为 0.0309 对 0.0231，+33.77%。线上：在天猫首页做为期一周的 A/B，对比基于 item 的 CF，它承接了大部分流量，以及 YouTube DNN；MIND 的 CTR 优于两者，其中 5-7 个兴趣最好，5 个就够，而动态兴趣数的 CTR 与 7 个兴趣相近，并降低了服务成本。具体的 CTR 提升只出现在图 4 中，正文里没有。
+serving_infra|请求进入天猫个性化平台，平台取最近的用户行为并调用用户兴趣提取器，即 MIND；召回引擎对每个兴趣做最近邻搜索，按相似度排序合并候选；从十亿级的 item 池中选出数千个候选耗时不到 15 ms。前 1000 个候选进入预测 CTR 的排序服务。用户行为会实时改变兴趣向量。
+stages.0.model_family|MIND：embedding 和池化层，多兴趣提取器使用带共享双线性矩阵的 B2I 动态路由、随机初始化的路由 logit，以及动态兴趣数 K' = max[1, min[K, log2|behaviors|]]，兴趣与画像拼接后过 ReLU 层，训练时用 label-aware attention
+stages.0.details|召回得分是用户各兴趣向量与 item embedding 点积的最大值；K = 1 时 MIND 退化为 YouTube DNN。用 sampled softmax 和 Adam 训练。
+id_tokenization.approach|Item ID 的 embedding
+features_signals.0|用户行为序列
+training.mode|在模型训练平台上离线训练，用 100 块 GPU，每轮约 8 小时；线上服务的网络每天更新
+training.objectives.0|sampled-softmax 的下一个 item 似然
+training.notes|离线 TmallData：2,014,865 个用户，934,751 件商品，6,377 个类目，50.9M 条样本，来自随机抽样的天猫用户 10 天的数据；Amazon Books：351,356 个用户，393,801 件商品，6.27M 条样本。下一个 item 预测，用 HitRate@N。
+scale.0.metric|Item 池
+scale.0.value|十亿级
+scale.1.metric|传给排序的候选
+scale.1.value|A/B 中每种方法 1000 个
+results_table.online.0.setting|天猫首页，为期一周的 A/B
+results_table.online.0.result|两者都优于，正文没有数字
+results_table.online.0.versus|基于 item 的 CF 和 YouTube DNN
+caveats.0|线上 CTR 的提升只在图 4 中以图的形式给出；正文中没有数值提升。
+caveats.1|论文称手机天猫 App 的首页约占天猫流量的一半；这是背景，并不是关于 MIND 占比的陈述。
+caveats.2|匹配和排序没有联合训练；排序是单独的服务。
+unknown_fields.0|线上 CTR 提升的数值
+unknown_fields.1|最近邻搜索的索引类型和规模
+unknown_fields.2|MIND 承接的流量占比
+code.repos.0.owner|阿里巴巴，EasyRec 和 PAI 团队
+code.repos.0.note|MIND 模型在阿里巴巴 EasyRec 框架中的实现；论文中没有链接。
+deployment.scenario|手机天猫 App 首页的匹配阶段
+deployment.ab_duration|一周
+deployment.baseline|基于 item 的 CF 和 YouTube DNN
+deployment.training_compute|100 块 GPU，每轮约 8 小时；线上服务的网络每天更新
+deployment.serving_latency|从十亿级的 item 池中选出数千个候选，耗时不到 15 ms
+deployment.hardware|训练用 100 块 GPU
+deployment.notes.0|在为期一周的天猫 A/B 中，MIND 的 CTR 优于两个基线。正文没有给出提升的数字。

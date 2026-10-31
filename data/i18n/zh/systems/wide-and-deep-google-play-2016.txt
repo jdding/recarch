@@ -1,0 +1,48 @@
+surface|Google Play 的应用推荐
+era_reason|联合训练的 wide 线性模型和 deep 网络
+tldr|在 Google Play 上联合训练用于记忆的 wide 线性模型和用于泛化的 deep 网络；线上 A/B：应用获取 +3.9%，只用 deep 为 +2.9%。
+summary|Wide & Deep，来自 DLRS 2016，联合训练一个基于交叉乘积特征的、用于记忆的 wide 线性模型，和一个基于 embedding 的、用于泛化的前馈网络，对 Google Play 商店中的应用排序。已产品化；在 TensorFlow 中开源。
+core_idea|基于交叉乘积特征的 wide 线性模型负责记忆，基于 embedding 的 deep 网络负责泛化。
+deployed_in|Google Play 的应用推荐，应用商店的主着陆页
+scale_short|超过十亿活跃用户，超过一百万个应用，峰值时每秒给超过一千万个应用打分
+key_result|在 Google Play 的 3 周 A/B 中，Wide 加 Deep 联合模型的线上应用获取比只用 wide 的对照 +3.9%
+results_reported|3 周 A/B 测试，每组 1% 的用户，在应用商店的主着陆页。表 1：Wide，对照，离线 AUC 0.726，线上获取增益 0%；Deep 0.722，+2.9%；Wide & Deep 0.728，+3.9%，相对对照在统计上显著。Wide & Deep 比只用 deep 多 +1%。论文指出离线 AUC 的增益很小，而线上影响更大。
+serving_infra|模型服务器接收来自召回系统的应用候选以及用户特征，并执行一次前向计算。为了在 10 ms 量级内响应请求，打分被拆成更小的 batch，用多线程运行。峰值流量下服务器每秒给超过一千万个应用打分；在单线程中一个 batch 给所有候选打分需要 31 ms，多线程使客户端延迟降到 14 ms，含开销，见表 2。
+stages.0.model_family|Wide & Deep：wide 部分 = 带交叉乘积变换的线性模型，FTRL + L1；deep 部分 = 拼接到约 1200 维的 embedding，3 层 ReLU，logistic 输出，AdaGrad；联合训练，不是集成
+stages.0.details|候选来自单独的应用召回系统，它把一百万以上的应用缩小成一个短列表；排序器给每个候选打分并按分数排序。
+id_tokenization.approach|稀疏的类别特征被 embed 成稠密向量
+features_signals.0|用户、上下文和曝光特征，包括类别特征和连续特征
+training.mode|在超过五千亿个样本上离线训练，带热启动系统，用上一个模型初始化新模型的 embedding 和线性权重
+training.objectives.0|应用获取，logistic
+training.notes|在加载到模型服务器之前，先做一次演练，检查模型不会破坏线上服务，并对照上一个模型验证质量。
+scale.0.metric|Google Play 用户
+scale.0.value|超过十亿活跃用户
+scale.1.value|超过一百万个应用
+scale.2.metric|训练样本
+scale.2.value|超过五千亿
+scale.3.metric|峰值打分
+scale.3.value|每秒超过一千万个应用
+results_table.note|论文指出离线 AUC 的增益很小，而线上影响更大。
+results_table.online.0.setting|Google Play 着陆页，3 周 A/B，每组 1% 的用户
+results_table.online.1.setting|Google Play 着陆页，3 周 A/B，每组 1% 的用户
+results_table.online.0.metric|应用获取
+results_table.online.1.metric|应用获取
+results_table.online.0.versus|只用 wide 的对照
+results_table.online.1.versus|只用 wide 的对照
+results_table.online.1.method|只用 deep
+caveats.0|对照是一个高度优化的、只用 wide 的 logistic 回归模型，带丰富的交叉乘积特征。
+caveats.1|论文对线上收益超过离线 AUC 收益给出一个假设，即线上的探索式推荐；论文中没有检验它。
+unknown_fields.0|绝对的获取率
+unknown_fields.1|确切的特征列表
+unknown_fields.2|服务所用的硬件
+code.repos.0.note|论文称实现已在 TensorFlow 中开源；现在是 tensorflow_estimator 中的 DNNLinearCombinedClassifier，仓库已于 2024-01 归档。只有模型代码，没有 Google Play 的流水线。
+deployment.scenario|Google Play 的应用推荐，主着陆页
+deployment.ab_traffic|每组 1% 的用户
+deployment.ab_duration|3 周
+deployment.baseline|只用 wide 的对照
+deployment.serving_latency|多线程下客户端为 14 ms，而单线程在一个 batch 中给所有候选打分为 31 ms
+deployment.serving_qps|峰值时每秒给超过一千万个应用打分
+deployment.online_lifts.0.metric|应用获取，Wide & Deep
+deployment.online_lifts.1.metric|应用获取，只用 deep
+results_table.online.0.method|Wide 加 Deep 联合模型
+results_table.offline.0.method|Wide 加 Deep 联合模型

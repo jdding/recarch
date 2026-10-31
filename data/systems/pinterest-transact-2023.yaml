@@ -53,9 +53,8 @@ caveats:
 - Online control group lacks all realtime sequence features, so the +11.0% is versus no-sequence Pinnability, not versus a strong sequence
   baseline.
 - Several offline deltas in Table 1 are marked statistically insignificant by the authors.
-- Absolute latency numbers for GPU serving are not given in the sections read.
 unknown_fields:
-- absolute serving latency / QPS
+- serving QPS
 - GPU type and count
 - model parameter count
 sources:
@@ -128,3 +127,28 @@ results_table:
     result: +1.9%
     versus: Pinnability without realtime sequence features
   note: Offline Table 1 reports HIT@3 gains per repin and per hide against the WDL with sequence and BST baselines, with no figures here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Homefeed, Related Pins, Notifications and Search
+  ab_traffic: 1.5% of Homefeed users per group
+  ab_duration: not_reported
+  baseline: Pinnability without realtime sequence features
+  online_lifts:
+  - metric: Homefeed repin volume, all users
+    value: +11.0%
+  - metric: Homefeed hide volume, all users
+    value: -10.0%
+  - metric: Homefeed overall time spent, all users
+    value: +2.0%
+  training_compute: not_reported
+  serving_latency: 8 ms on GPU, against 22 ms for the old CPU model and 712 ms for TransAct on CPU
+  serving_qps: not_reported
+  inference_cost: Serving cost 1x on GPU, against 32x for TransAct on CPU, relative to the old CPU model
+  hardware: GPU serving for a previously CPU-based ranking model; GPU type and count not reported
+  notes:
+  - The model is retrained twice a week because it is sensitive to behavior drift.
+  fulltext_refs:
+  - 'Sec 3.4.2 and Table 9: latency 22 ms baseline CPU, 712 ms TransAct CPU, 8 ms TransAct GPU; serving cost 1x,
+    32x, 1x'
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -113,3 +113,24 @@ results_table:
     metric: NE
     result: -0.15%
     versus: Mid-2025 baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Meta short-form video ranking for IFR and VDD, and five core ads models
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production
+  online_lifts:
+  - metric: VDD watch time
+    value: +2.76%
+  - metric: IFR watch time
+    value: +3.68%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - These lifts are for Pollen, launched April 2023 on short-form video. No A/B results are given for the Unity
+    encoder on ads.
+  basis: full_text
+  checked_on: '2026-10-31'

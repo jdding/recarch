@@ -143,3 +143,23 @@ results_table:
     metric: HR@1000
     result: 19.88%
     versus: GPRP 15.70%
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou short-video retrieval, one extra pathway
+  ab_traffic: 10% of users
+  ab_duration: One week
+  baseline: Production retrieval
+  online_lifts:
+  - metric: Video watch time, Kuaishou single page
+    value: +0.360%
+  - metric: Video watch time, Kuaishou double page
+    value: +0.411%
+  - metric: Video watch time, Kuaishou Lite single page
+    value: +0.126%
+  training_compute: not_reported
+  serving_latency: The paper says retrieval must finish within a few milliseconds; no measured number
+  serving_qps: Peak over 100,000 requests per second
+  inference_cost: not_reported
+  hardware: GPU brute-force top-K search in practice; no GPU type or count
+  basis: full_text
+  checked_on: '2026-10-31'

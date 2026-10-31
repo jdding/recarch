@@ -59,9 +59,9 @@ results_reported: 'MTGR-large vs a years-optimized DLRM baseline: online convers
 caveats:
 - Gains are against Meituan's own highly tuned DLRM baseline in specific scenarios; the scenarios are only described as 'our scenarios'.
 - The paper claims plain generative recommendation that drops cross features degrades quality, which is its own finding on its own data.
-- A/B duration and traffic share are not stated in the sections read.
+- A/B duration is not stated in the sections read.
 unknown_fields:
-- A/B traffic share and duration
+- A/B duration
 - absolute QPS / latency
 - parameter counts of the three model sizes
 sources:
@@ -107,3 +107,25 @@ results_table:
     metric: Inference cost
     result: -12%
     versus: Years-optimized DLRM baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Meituan take-away food-delivery recommendation, main traffic
+  ab_traffic: 2% of traffic, millions of exposures per day
+  ab_duration: not_reported
+  baseline: Years-optimized DLRM baseline
+  online_lifts:
+  - metric: Conversion volume
+    value: +1.22%
+  - metric: CTR
+    value: +1.31%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Training cost unchanged and inference cost down 12% against the DLRM baseline, with 65x FLOPs
+    per sample
+  hardware: NVIDIA A100 GPUs for training; training scales across more than 100 GPUs
+  fulltext_refs:
+  - 'Sec 5: A/B testing with 2% of the traffic, covering millions of exposures per day'
+  - 'Sec 4: DLRM trained with 8 NVIDIA A100 GPUs; MTGR achieves good scalability running over 100 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

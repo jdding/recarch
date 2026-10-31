@@ -58,3 +58,19 @@ scale_short: 65 billion features and 90 million model predictions per second, pe
 key_result: No reported metrics in the sources
 results_table:
   note: The sources describe the architecture and report no experiment results.
+deployment:
+  online_evidence: deployed_only
+  scenario: Instagram Explore
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: 'Earlier system, from a 2019 Meta AI post: 90 million model predictions per second'
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Caching and off-peak pre-computation are used heavily; no latency numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

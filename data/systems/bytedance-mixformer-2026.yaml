@@ -128,3 +128,26 @@ results_table:
     metric: FLOPs at the same accuracy
     result: about 36% fewer
     versus: MixFormer-medium
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin and Douyin Lite feed ranking
+  ab_traffic: not_reported
+  ab_duration: Two weeks
+  baseline: Deployed STCA to RankMixer baseline
+  online_lifts:
+  - metric: Douyin duration
+    value: +0.2799%
+  - metric: Douyin Lite duration
+    value: +0.4105%
+  - metric: Douyin Active Day
+    value: +0.0415%
+  training_compute: Hundreds of GPUs; two-week dataset of trillions of user-item records
+  serving_latency: Serving latency against candidate size is plotted, with over 30% speedup claimed for the user-item
+    decoupled variant; no absolute numbers
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - 'Cost proxy: MixFormer-medium 3,503 GFLOPs per batch, against 6,736 for STCA to RankMixer.'
+  basis: full_text
+  checked_on: '2026-10-31'

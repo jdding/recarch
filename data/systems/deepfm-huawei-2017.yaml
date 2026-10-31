@@ -73,3 +73,17 @@ results_table:
     metric: AUC and Logloss
     result: Better than every listed model, no figure
     versus: Wide&Deep, LR, FM, FNN
+deployment:
+  online_evidence: no_online_claim
+  scenario: Offline evaluation on Criteo and a Huawei App Store game-center log
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

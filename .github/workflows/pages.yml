@@ -27,8 +27,11 @@ jobs:
         with:
           node-version: "20"
       - name: Tests
+        env:
+          SITE_URL: https://jdding.github.io/recarch
         run: |
           npm install --no-save --prefix /tmp/jt jsdom
+          python3 tests/carousel_fixture.py /tmp/car-fixtures
           for t in tests/*.test.js; do NODE_PATH=/tmp/jt/node_modules node "$t"; done
       - uses: actions/upload-pages-artifact@v3
         with:

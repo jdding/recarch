@@ -112,3 +112,22 @@ results_table:
     metric: NDCG@10
     result: Up to +65.8%
     versus: SASRec
+deployment:
+  online_evidence: online_numbers
+  scenario: Multiple surfaces of an unnamed large internet platform
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production DLRM
+  online_lifts:
+  - metric: Topline metrics, exact metric not named
+    value: +12.4%
+  training_compute: 64 to 256 H100 GPUs per training job
+  serving_latency: not_reported
+  serving_qps: 'Relative only: a model 285x more complex served at 1.5x to 3x the QPS of the DLRM; no absolute QPS'
+  inference_cost: not_reported
+  hardware: NVIDIA H100 GPUs, bfloat16
+  fulltext_refs:
+  - 'Sec 5: 64-256 H100s used per job'
+  - 'Sec 5: performance in bfloat16 on NVIDIA H100 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

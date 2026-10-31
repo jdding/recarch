@@ -1,0 +1,75 @@
+surface|抖音和抖音极速版短视频精排
+era_reason|判别式精排模型，通过 STCA 加 Sketch Attention，把以目标为条件的序列建模从 10K 扩展到 100K 个行为；不涉及 Semantic ID 或大模型生成。
+tldr|抖音精排模型用 Sketch Attention 把 100K 个行为压缩成可缓存的定长 sketch，再对最近 10K 个行为做 STCA；取代 TWIN V2；1 个月 A/B：Finish +2.33%，时长 +1.5%。
+summary|SequenceO1 是抖音精排模型中处理超长历史的分支。Sketch Attention，简称 SA，把最多 100K 个历史事件压缩成只依赖用户的定长 sketch，其中 k=1K 个原型，2 步堆叠的精炼，d=128；它使用可学习的原型和按原型的 softmax，使每个 token 把权重分配给各个原型。精排模型随后运行 STCA，即堆叠的单 query、从目标到历史的 cross attention，分别作用于最近的 10K 个后缀和 sketch，并在 MixFormer 骨干中融合。sketch 与目标无关，所以训练侧的本地 KV 缓存、多请求的用户级合批、接口同为 get/put 的在线服务缓存、在召回期间于上游计算 sketch 的流水线前移，以及融合的 FlashSA kernel，共同摊薄了 100K 的成本。它取代了终身序列模块 TWIN V2。
+core_idea|把最多 100K 个历史事件压缩成定长 sketch，再对 sketch 做注意力。
+deployed_in|抖音和抖音极速版短视频精排
+scale_short|100K 个事件的历史，1K 个原型的 sketch，10K 个事件的最近后缀
+key_result|在 STCA 10K 基线中替换 TWIN V2，一个月线上 A/B：抖音整体 Finish +2.3256%
+results_reported|抖音和抖音极速版上，在 STCA 10K 基线中替换 TWIN V2，做一个月线上 A/B，全部显著。抖音整体：30 日活跃度 +0.1968%，时长 +1.4999%，Finish +2.3256%，评论 +3.5910%，点赞 +2.3617%，不喜欢 -6.9829%。抖音极速版整体：活跃度 +0.2335%，时长 +1.6655%，Finish +3.4872%，评论 +8.6132%，点赞 +2.9399%，不喜欢 -5.9972%。线上设置下的离线结果，对比 STCA 10K + TWIN V2：Finish AUC +0.29%，其 UAUC +0.40%，Skip AUC +0.23%，Share UAUC +0.94%，Favourite UAUC +1.47%。消融实验，指标为相对 STCA-512 的 Finish AUC：SA +1.07%，KMeans 聚类 +0.30%，分块均值池化 +0.46%，位置分桶 query +0.72%，Lightning-Attention +0.83%，用最近行为初始化 query +0.78%；直接扩展 STCA 为 +1.29%，因此 SA 保留了 83%。100K 下超长分支的 FLOPs 比直接用 STCA 低 49.9x，即训练，命中率 0.5，R=40，以及 63.9x，即推理，命中率 0.6，R=300。
+version_note|全文读自 8 Sep 2026 的 arXiv v1 PDF，该版本已是 RecSys 2026 定稿版格式，ACM DOI 为 10.1145/3773078.3831864；Crossref 确认于 27 Sep 2026 发表。获取时 arXiv v1 是唯一的版本。没有打开 ACM DL 页面。
+serving_infra|共享的 sketch 缓存，接口与训练时相同，均为 get/put，带 TTL 和带版本的 key，观测到命中率约 0.6，TTL 为 1 小时；流水线前移在请求入口处与召回并行计算只依赖用户的 sketch；融合的 FlashSA kernel 以流式方式计算原型与 token 之间的 softmax，不需要物化 k x n 矩阵。
+stages.0.model_family|Sketch Attention，按原型做 softmax，加上对最近 10K 和 sketch 的 STCA，再加 MixFormer 融合
+stages.0.details|精排；只依赖用户的 sketch 在训练中缓存，MRLB 分组内 TTL 为 3 h，在线服务中 TTL 为 1 h；排序对多个互动目标打分，包括 finish、skip、点赞、关注、评论、分享、收藏和不喜欢。
+features_signals.0|最多 100K 个事件的用户交互历史，item embedding 与行为类型 embedding 通过 SwiGLU 融合
+features_signals.1|最近的 10K 后缀，作为单独的分支
+features_signals.2|目标和候选 item 特征，用户和请求特征，以及非序列稠密特征
+training.mode|离线训练线上排序模型，训练侧使用 sketch 的本地 KV 缓存，即 MRLB，命中率约 0.5
+training.objectives.0|多任务排序目标：finish、skip、点赞、关注、评论、分享、收藏和不喜欢
+training.notes|消融实验使用轻量的 STCA-512 设置，聚焦 Finish AUC；线上的离线评估和在线评估都使用完整的排序模型，基线为 STCA 10K 加 TWIN V2。没有给出损失函数和优化器的细节。
+scale.0.metric|历史长度
+scale.0.value|100K 个事件
+scale.1.metric|sketch 大小
+scale.1.value|k=1K 个原型，宽度 128
+scale.2.metric|最近后缀
+scale.2.value|10K 个事件
+results_table.online.0.setting|抖音整体，一个月 A/B
+results_table.online.1.setting|抖音整体，一个月 A/B
+results_table.online.2.setting|抖音整体，一个月 A/B
+results_table.online.3.setting|抖音整体，一个月 A/B
+results_table.online.4.setting|抖音极速版整体，一个月 A/B
+results_table.online.5.setting|抖音极速版整体，一个月 A/B
+results_table.offline.0.setting|线上设置
+results_table.offline.1.setting|线上设置
+results_table.offline.2.setting|线上设置
+results_table.offline.3.setting|线上设置
+results_table.online.0.method|所提模型
+results_table.online.1.method|所提模型
+results_table.online.2.method|所提模型
+results_table.online.3.method|所提模型
+results_table.online.4.method|所提模型
+results_table.online.5.method|所提模型
+results_table.offline.0.method|所提模型
+results_table.offline.1.method|所提模型
+results_table.offline.2.method|所提模型
+results_table.offline.3.method|所提模型
+results_table.online.0.versus|STCA 10K 加 TWIN V2
+results_table.online.1.versus|STCA 10K 加 TWIN V2
+results_table.online.2.versus|STCA 10K 加 TWIN V2
+results_table.online.3.versus|STCA 10K 加 TWIN V2
+results_table.online.4.versus|STCA 10K 加 TWIN V2
+results_table.online.5.versus|STCA 10K 加 TWIN V2
+results_table.offline.0.versus|STCA 10K 加 TWIN V2
+results_table.offline.1.versus|STCA 10K 加 TWIN V2
+results_table.offline.2.versus|STCA 10K 加 TWIN V2
+results_table.offline.3.versus|STCA 10K 加 TWIN V2
+caveats.0|线上基线是字节跳动自己的 STCA 10K + TWIN V2 线上排序模型，因此提升只适用于这套链路。
+caveats.1|报告的 FLOPs 降低是在观测到的缓存命中率下，即训练 0.5，在线 0.6，分析推算出来的；没有给出实测的延迟或吞吐数字。
+caveats.2|PDF 文本中表 4 的列名有部分乱码，如 Head、Clicmmt，因此只引用没有歧义的列。
+caveats.3|从 sketch 到行为的检索和局部精炼只作为未来工作讨论，未部署。
+caveats.4|论文声称可以扩展到百万级历史，但没有评估。
+unknown_fields.0|损失函数和优化器细节
+unknown_fields.1|模型参数量和训练硬件
+unknown_fields.2|流量占比，以及一个月之外的确切 A/B 时长
+unknown_fields.3|实测的在线延迟和 QPS
+unknown_fields.4|指标的绝对值
+code.note|字节跳动没有提供官方代码。
+code.repos.0.owner|daiwk，第三方
+code.repos.0.note|自动化的第三方复现；其页面称作者没有提供官方代码。忠实度未经核实。
+deployment.scenario|抖音和抖音极速版短视频精排
+deployment.ab_duration|一个月
+deployment.baseline|STCA 10K 加 TWIN V2
+deployment.inference_cost|100K 个事件下，超长分支的训练 FLOPs 比直接用 STCA 少 49.9 倍，推理少 63.9 倍
+deployment.notes.0|sketch 缓存在 TTL 为 1 小时时命中率约 0.6。
+deployment.online_lifts.0.metric|抖音时长
+deployment.online_lifts.2.metric|抖音极速版时长

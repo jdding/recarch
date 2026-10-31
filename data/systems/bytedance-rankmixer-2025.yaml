@@ -103,3 +103,23 @@ results_table:
     metric: Inference latency
     result: Roughly unchanged
     versus: Parameters scaled by about two orders of magnitude
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin feed ranking, full traffic
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous ranking model
+  online_lifts:
+  - metric: Active days
+    value: +0.3%
+  - metric: Total in-app duration
+    value: +1.08%
+  training_compute: not_reported
+  serving_latency: Roughly unchanged while parameters grow by about two orders of magnitude; no absolute number
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Model FLOPs utilization rose from 4.5% to 45% after replacing handcrafted modules.
+  basis: full_text
+  checked_on: '2026-10-31'

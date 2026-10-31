@@ -148,3 +148,29 @@ results_table:
     metric: AUC
     result: +0.39%
     versus: Production
+deployment:
+  online_evidence: online_numbers
+  scenario: LinkedIn Feed, Jobs, People recommendation and Ads CTR
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production
+  online_lifts:
+  - metric: Ads CTR
+    value: About +2%
+  - metric: Follow Feed engaged DAU
+    value: +0.5%
+  - metric: Jobs positive hearing-back rate
+    value: +1.0%
+  - metric: People Recommendation new member connections
+    value: +2.4%
+  training_compute: Training time cut from 24 hours to 3.3 hours on the latest jobs; distributed training uses 6
+    to 24 workers
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Kubernetes with a CPU graph engine and GPU trainers; near-line inference on Apache Beam
+  fulltext_refs:
+  - 'Training scalability section: training time reduced from 24 hours, when we started, to 3.3 hours on the latest
+    training jobs'
+  basis: full_text
+  checked_on: '2026-10-31'

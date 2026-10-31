@@ -1,0 +1,63 @@
+surface|地图和列表搜索结果
+era_reason|面向地图结果的 pairwise 和 listwise 神经排序模型；不是生成式
+tldr|Airbnb 发现排在前面的地图标记点顺序并不重要，于是去掉基于排名的注意力，并用 Bookability Filter 显示更少的标记点；alpha 为 1.0 时未取消预订 +1.7%。
+summary|Airbnb 的 KDD 2024 论文，讲的是重新设计地图结果的排序。在由地图发起的搜索上做随机化 A/B，结果显示排在前面的地图标记点顺序并不重要，因此注意力随排名衰减的列表式注意力模型被换成对标记点的均匀注意力。由此得到「Less Is More」原则和 Bookability Filter，它只显示 logit 与最优房源相差不超过 alpha 的房源，标记点数量是动态的，不再固定为 18 个。后续步骤加入稳健锚点、桌面端的双层标记点，即常规标记点和迷你标记点，以及利用二维注意力衰减图的贪心地图中心搜索。
+core_idea|只把与最优房源接近的房源显示为地图标记点，不再固定显示 18 个。
+deployed_in|Airbnb 地图和列表搜索结果
+scale_short|超过 770 万个在线房源，最终 A/B 每个实验组有 3400 万名搜索用户
+key_result|在最终更大规模的线上实验中，alpha 为 1.0 的 Bookability Filter 使未取消预订 +1.9%
+results_reported|在移动端对排在前面的地图结果做随机化，预订没有差异；而对搜索框查询做同样的随机化，会损失约 8% 的预订和最多 5% 的 NDCG。Bookability Filter 的离线结果，对比 18 个标记点的基线，见表 1：alpha 为 1.0、2.0、4.0、8.0 时，标记点分别减少 -39%、-25%、-9%、-1%。线上结果见表 2：alpha 为 1.0 时，未取消预订 +1.7%，5 星行程 +1.6%，到发现页的平均曝光 -14%，到发现页的平均点击 -5.7%。alpha 为 1.0 的最终更大规模实验：未取消预订 +1.9%，5 星行程 +2%，订到房源之前看到的结果 -16%，被点击的结果 -6.8%。稳健锚点，即第二高的房源：标记点 +6%，搜索用户到房源浏览用户的转化 +0.15%；把锚点设为房源数量的函数，标记点再 +2.6%。聚焦与紧迫感的对比：在 18 个标记点中随机选 14 个，预订 -1.5%，因此紧迫感不是原因。桌面端双层标记点，见表 3，alpha 为 1.0：未取消预订 +0.7%，5 星行程 +0.5%，到发现页的曝光 -21%，到发现页的点击 -1.7%。地图中心特征：预订 +0.27%，标记点 CTR +2%。算法 2 对比算法 1：新用户预订 +0.39%，p = 0.006。
+serving_infra|除了说明因为搜索延迟预算严苛、对 t 选 k 的子集做暴力搜索不可行，所以选用贪心启发式之外，没有更多描述。
+stages.0.model_family|预订概率排序模型，即 Airbnb 此前论文中介绍的神经网络，其后接作用于它的 logit 的 Bookability Filter：当 logit[l_max] - logit[l_k] < alpha 时保留房源 k，等价于 P[l_k] > P[l_max]/e^alpha
+stages.0.details|让锚点概率更稳健：取前 3 个房源的中位数，即第二高的房源，后来改为房源总数的函数。桌面端变体：通过过滤的房源显示常规的带价格标记点，其余显示不带价格的迷你标记点，迷你标记点的注意力权重为 1/8，实测 CTR 低 8 倍。对搜索框查询，算法 2 在网格上贪心地选取地图中心，使 P_attention * P_booking 的总和最大，复杂度为 k^2 n 量级。对于移动地图的查询，则改用排序模型中的一个特征，表示标记点到地图中心的距离。
+features_signals.0|摘要中没有详述
+training.mode|这里没有涉及；排序模型的训练见论文引用的 Airbnb 早期论文。本文的 alpha 先通过离线仿真调参，再做线上 A/B 测试。
+training.objectives.0|预订概率，使用所引用的前人工作中的 pairwise 排序模型
+training.notes|论文称采用其参考文献 [9]，即 Learning To Rank Diversely At Airbnb，中的 logit 与预订概率的关系。
+scale.0.metric|在线房源数，截至 2024-06-01
+scale.0.value|超过 770 万个，分布在超过十万个城市和城镇
+scale.1.metric|房客入住人次
+scale.1.value|超过十五亿
+scale.2.metric|来自搜索框的搜索占比
+scale.2.value|20%，其余来自地图
+scale.3.metric|最终线上 A/B 规模
+scale.3.value|对照组和实验组各 3400 万名搜索用户
+results_table.online.0.setting|线上结果，表 2，alpha 为 1.0
+results_table.online.1.setting|线上结果，表 2，alpha 为 1.0
+results_table.online.2.setting|最终更大规模实验，alpha 为 1.0
+results_table.online.3.setting|最终更大规模实验，alpha 为 1.0
+results_table.online.4.setting|桌面端，表 3，alpha 为 1.0
+results_table.offline.0.setting|表 1，alpha 为 1.0
+results_table.offline.1.setting|表 1，alpha 为 2.0
+results_table.offline.2.setting|表 1，alpha 为 4.0
+results_table.offline.3.setting|表 1，alpha 为 8.0
+results_table.online.0.metric|未取消预订
+results_table.online.1.metric|5 星行程
+results_table.online.2.metric|未取消预订
+results_table.online.3.metric|5 星行程
+results_table.online.4.method|双层标记点
+results_table.online.4.metric|未取消预订
+results_table.online.5.method|地图中心特征
+results_table.offline.0.metric|显示的标记点数
+results_table.offline.1.metric|显示的标记点数
+results_table.offline.2.metric|显示的标记点数
+results_table.offline.3.metric|显示的标记点数
+results_table.offline.0.versus|18 个标记点的基线
+results_table.offline.1.versus|18 个标记点的基线
+results_table.offline.2.versus|18 个标记点的基线
+results_table.offline.3.versus|18 个标记点的基线
+caveats.0|论文描述了已上线的改动，但除了实验规模外，没有给出上线日期或流量占比。
+caveats.1|论文表 1 把平均预订概率的变化列为较大的相对提升，alpha 为 1.0 时相对基线为 47%；这些是离线仿真的数字。
+caveats.2|模型架构和特征在 Airbnb 早期的论文里，不在这一篇中。
+caveats.3|论文称 1.9% 的预订提升是按全球总预订量的百分比来衡量的。
+unknown_fields.0|本文中的排序模型架构
+unknown_fields.1|特征列表
+unknown_fields.2|在线延迟数字
+unknown_fields.3|确切的上线日期
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Airbnb 地图和列表搜索结果
+deployment.ab_traffic|最终实验中，对照组和实验组各 3400 万名搜索用户
+deployment.baseline|每次 A/B 测试的对照组
+deployment.notes.0|论文称，严格的搜索延迟预算是采用贪心启发式的原因，但没有给出数字。
+deployment.online_lifts.0.metric|未取消预订，最终实验，alpha 为 1.0
+deployment.online_lifts.1.metric|5 星行程，最终实验，alpha 为 1.0

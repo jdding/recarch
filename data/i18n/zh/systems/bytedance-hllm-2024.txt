@@ -1,0 +1,22 @@
+surface|PixelRec 和 Amazon Reviews 上的序列推荐；文中提到线上 A/B
+era_reason|7B 规模的基于大模型的 item 模型和用户模型；用大模型作序列推荐的骨干
+tldr|两个大模型：Item LLM 把 item 文本变成 embedding，User LLM 根据这段历史预测未来兴趣；扩展到 7B，并报告了「notable」的线上提升。
+summary|两层大模型：Item LLM 把 item 文本编码成 embedding，User LLM 根据 embedding 历史预测未来兴趣；扩展到 7B 参数。
+core_idea|Item LLM 对 item 文本做 embedding，User LLM 根据 embedding 历史预测未来兴趣。
+deployed_in|研究系统，在 PixelRec 和 Amazon Reviews 上评估，文中提到线上 A/B
+scale_short|最大模型七十亿参数
+key_result|文中提到线上 A/B 有显著提升，没有给出数字
+results_reported|论文报告了线上 A/B，称有「notable gains」。
+status_reason|按入选标准已退役：证据仍为 research_only，因为所读来源没有给出线上测试的平台或流量规模，且引用数低于可免除线上证据要求的 500。
+stages.0.model_family|Item LLM 生成 item embedding；User LLM 处理序列
+stages.0.details|线上测试用的是判别式推荐，不是生成式。
+features_signals.0|item 文本
+features_signals.1|交互历史
+training.objectives.0|下一个 item 预测
+scale.0.metric|最大模型
+scale.0.value|7B 参数
+results_table.note|论文报告了线上 A/B，提升显著。卡片所依据的来源没有给出数字。
+caveats.0|在所读章节中没有找到线上测试的平台和流量规模，因此标为 research_only。
+unknown_fields.0|线上平台
+unknown_fields.1|线上指标的幅度
+code.repos.0.note|论文摘要中链接的训练和评估代码，使用公开数据集。仓库已归档。

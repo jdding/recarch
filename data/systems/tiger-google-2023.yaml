@@ -56,3 +56,19 @@ results_table:
     result: Improved, no figure
     versus: Baselines
   note: The paper also claims benefits for cold-start items and diversity. No production deployment is reported.
+deployment:
+  online_evidence: no_online_claim
+  scenario: Research system on public Amazon Reviews datasets
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper notes that inference costs more than an ANN lookup.
+  basis: card_content
+  checked_on: '2026-10-31'

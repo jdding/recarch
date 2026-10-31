@@ -112,3 +112,29 @@ results_table:
     metric: AUC
     result: '0.6727'
     versus: Best baseline HSTU 0.6712
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao sponsored search ranking
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production ranking
+  online_lifts:
+  - metric: CTR
+    value: +2.9%
+  - metric: RPM
+    value: +1.2%
+  training_compute: 128 GPUs for the industrial dataset and 32 GPUs for public datasets; scaling study from 0.5B
+    to 14B parameters on 128 GPUs
+  serving_latency: Experiment budget of under 30 ms per request with 100 candidates ranked; a budget, not a measured
+    production latency
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - LUM inference runs in parallel with retrieval and pre-ranking, so it is not on the ranker critical path.
+  fulltext_refs:
+  - 'Sec 5.3: training uses 32 GPUs for public datasets and 128 GPUs for the industrial dataset'
+  - 'Sec 5.4: strict inference latency budget of under 30 ms per request, with 100 candidates ranked'
+  - 'Sec 5.5: model scale 0.5B to 14B trained on 128 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

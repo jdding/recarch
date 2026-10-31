@@ -103,3 +103,20 @@ results_table:
     metric: Gain over BASE
     result: +2.56 and +3.25 absolute
     versus: BASE
+deployment:
+  online_evidence: deployed_only
+  scenario: Post-click CVR estimation on Taobao recommender data
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says the Product Dataset model is the latest one serving the main traffic. It reports offline AUC
+    only.
+  basis: full_text
+  checked_on: '2026-10-31'

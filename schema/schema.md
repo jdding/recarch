@@ -172,3 +172,64 @@ A card for a system with several published versions presents one version in all 
 Rendering: a "Presents <version>, latest of N versions" badge (or "Presents <version>, one of N versions, latest is <other>" when the presented version is not the newest) under the title, a "Versions" list at the top of the History section, and an "other version" tag on the other versions' sources. The merged card's `version_note` says which version it presents.
 
 Merging procedure. Create the merged card with a new id from the presented version's card. Keep `added_on` as the earliest of the merged cards and add an `updates` entry. Set every old card (including the presented version's old card) to `status: superseded` with `superseded_by`, `status_date` and `status_reason`. Add an entry to `data/citations.json` for the new id, with one `papers` row per version; `count` is their sum (run `scripts/citations.py --only <id>`). See `docs/admission.md` section 4.
+
+
+## Deployment block (added 2026-10-31)
+
+Every active card has one `deployment:` mapping that records what the sources say about the online test and the cost of running the system. It renders as the "Deployment and cost" table between Results and Subscribe, feeds the compare view, and is part of `data/systems.json`. A field the sources do not state is the exact string `not_reported`. Free text such as "unknown", "n/a", "none" or "not reported" in a field is rejected so that coverage can be counted by machine.
+
+| field | type | rule |
+|---|---|---|
+| `online_evidence` | enum | `online_numbers` (an A/B or online result with figures), `online_qualitative` (online gains claimed without figures), `deployed_only` (deployment stated, no online result), `no_online_claim` |
+| `scenario` | string | required, where it runs: surface, stage and what was served |
+| `ab_traffic` | string or `not_reported` | share of traffic, buckets or user counts in the test |
+| `ab_duration` | string or `not_reported` | length of the online test |
+| `baseline` | string or `not_reported` | what the online test compared against |
+| `online_lifts` | list or `not_reported` | items `{metric, value}`; required list when `online_numbers`, must be `not_reported` for the other three values |
+| `training_compute` | string or `not_reported` | stated training compute, with its scope |
+| `serving_latency` | string or `not_reported` | stated latency, with percentile and conditions when given |
+| `serving_qps` | string or `not_reported` | stated throughput |
+| `inference_cost` | string or `not_reported` | stated cost or cost change; relative figures say they are relative |
+| `hardware` | string or `not_reported` | stated accelerators or machines |
+| `notes` | list of strings, optional | caveats such as "benchmark, not production" or "budget, not measured" |
+| `fulltext_refs` | list of strings, optional | short passages or section pointers from the full text that back a value; required when a number in the block is not elsewhere on the card |
+| `basis` | enum | `full_text` (values checked against the full text of the sources) or `card_content` (values taken from figures already on the card, full text not rechecked) |
+| `checked_on` | date | `YYYY-MM-DD`, not in the future |
+
+Rules. Values come only from verified card content or the full text, never from abstracts or snippets written from memory, and never from a guess. The published version is read first. Budgets, benchmarks and relative-only figures are labelled as such in the value or in `notes`. `build.py` (`check_deployment`) checks the keys and enums, the NR marker, the lifts format, that a card with online rows in `results_table` is not `deployed_only` or `no_online_claim`, that every number in the block appears elsewhere on the card or in `fulltext_refs` (which needs `basis: full_text`), and the date. The `unknown_fields` and `caveats` of a card must not say a value is missing when the block reports it.
+
+
+## Topics (added 2026-10-31)
+
+`data/topics/<slug>.yaml` defines one problem-oriented page at `/topics/<slug>/`, listed on `/topics/`. The page is generated, so the table cannot drift from the cards.
+
+| field | type | rule |
+|---|---|---|
+| `title` | string | page title |
+| `summary` | string | at most 160 characters, used on the index and as meta description |
+| `framing` | string | one paragraph that states the problem |
+| `members` | list, at least 3 | items `{id, approach}`; `id` is an active card, `approach` is one plain line |
+| `differences` | list | items `{heading, text, cards}`; `cards` are member ids |
+
+Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. Each page links its member cards and offers a Compare button for the first three.
+
+
+## Bilingual site (added 2026-10-31, owner decision: Chinese by default, English switchable)
+
+Chinese pages live at the site root, English pages mirror them under `/en/`. Each page has a visible 中文 / EN toggle, `hreflang` alternates (`zh-CN`, `en`, `x-default` pointing at the Chinese page), a per-language canonical URL and `<html lang>`. `sitemap.xml` lists both languages with alternates. Merged-card redirect stubs, retired cards and 404 pages are `noindex` and are not in the sitemap. The root `404.html` shows both languages because GitHub Pages serves only that file; `en/404.html` is English only.
+
+English sources are never edited for translation. Chinese text is stored in data, and `build.py` fails when a required Chinese string is missing (set `RECARCH_ALLOW_MISSING_ZH=1` only for a draft build).
+
+| what | where | format |
+|---|---|---|
+| UI chrome, nav, table headers, client script labels | `data/i18n/ui.txt` | one `key \|\| English \|\| Chinese` per line; `js.` keys go to the browser as `window.RECARCH_L10N`; `{placeholders}` must match |
+| Company names | `data/i18n/companies.txt` | same format |
+| Card prose | `data/i18n/zh/systems/<id>.txt` | one `path\|text` per line, dotted paths into the card (`summary`, `features_signals.0`, `deployment.scenario`, `results_table.online.2.setting`). `=` keeps the English. Required for every prose field; method, metric, result, versus and setting names of result tables, and lift metrics and values, are optional |
+| Diagram text | `data/i18n/zh/diagrams/<id>.txt` | same format: `alt`, `caption.fig`, `caption.note`, `columns.N.label`, `columns.N.boxes.M.text.K` |
+| Topic pages | `data/i18n/zh/topics/<slug>.yaml` | same structure as the English topic file; summary at most 100 characters |
+| Home events | `title_zh`, `note_zh` in `data/site.yaml` | |
+| Newsletter issues | `title_zh`, `summary_zh`, `body_zh`, and `note_zh` on each paper | |
+
+Rules the build enforces on Chinese text: no parentheses, ASCII or full-width; it must contain Chinese characters (or be `=`); every number must appear in the English text it translates, so a translation cannot introduce a figure. Topic prose may use only numbers on the cited cards. Keep bare system names, model names and metric names as in the source. Write magnitudes with 万 and 亿, never English words: billion is 十亿, million is 百万, half a billion is 五亿, hundreds of billions is 数千亿, "20 million" is 两千万, "7.7 million" is 770 万, "1.5 trillion" is 1.5 万亿. The build checks these by value: a Chinese quantity with 万, 亿 or 万亿, in Chinese numerals or digits, must equal a quantity of the English source, and an approximate word such as 数百万 or 数千亿 needs a matching English phrase or a source quantity in its range. A wrong conversion fails the build, and an English word like million or billion left in Chinese prose also fails. Abbreviations such as 20B or 100K stay as in the source. Well-known product and feature names with a standard Chinese name use it, in 「」 when the name is a feature label, for example 「推荐关注」 for Who to follow, 「为你推荐」 for For You and 「继续观看」 for Continue Watching. Paper and system names stay English. Common terms engineers use in English stay English (A/B, QPS, Semantic ID, Transformer). `not_reported` renders as 未报告 in Chinese. Use square brackets in formulas.
+
+Tests: `tests/zh_numbers.test.js` covers the magnitude check, good conversions pass and wrong ones fail. `tests/i18n.test.js` checks that every Chinese page has an English twin, toggles resolve, hreflang, canonical and lang are right, no internal link or anchor is broken in either language, links stay in the page's language, no UI string is left in English on Chinese pages, the sitemap and 404 pages, and that `app.js` and `compare.js` show Chinese labels. Run it with the same `SITE_URL` as the build.

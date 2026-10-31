@@ -1,0 +1,44 @@
+surface|外卖推荐
+era_reason|HSTU 风格、工业规模的生成式推荐排序框架
+tldr|基于 HSTU 的生成式排序器，保留 DLRM 的交叉特征；对比优化多年的 DLRM，转化量 +1.22%，CTR +1.31%，推理成本降低 12%。
+summary|CIKM '25 论文：用于美团外卖推荐的、基于 HSTU 的生成式排序模型，保留包括交叉特征在内的 DLRM 特征，例如候选侧的 ctr/pv 等计数器；按用户压缩样本以提高效率，加入 Group-Layer Normalization 和动态 attention mask 以防止泄漏，并运行在优化过的训练框架上。MTGR-large 已部署在美团外卖推荐上。
+core_idea|基于 HSTU 的生成式排序器，保留 DLRM 特征，并按用户压缩样本。
+deployed_in|美团外卖的外卖推荐，主流量
+scale_short|数亿用户，每个样本 65x FLOPs，对比 DLRM 基线
+key_result|线上转化量 +1.22%，CTR +1.31%，对比优化多年的 DLRM 基线
+results_reported|MTGR-large 对比优化多年的 DLRM 基线：线上转化量 +1.22%，CTR +1.31%；训练成本不变，推理成本 -12%；被描述为近两年最大的收益，承接主流量。
+version_note|对照站长的 Zotero 副本核对过，它是 22 Aug 2025 的 arXiv v4，用 CIKM '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3746252.3761565，8 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+serving_infra|用户级压缩，加快训练和推理
+stages.0.model_family|MTGR：HSTU 风格的堆叠，token 来自用户特征、实时和历史行为序列，以及候选 item，带它们的交叉特征；通过 MLP 从候选 token 读出 logit
+stages.0.details|Group-Layer Normalization 对来自不同语义空间的 token 组分别归一化；动态 mask 混合了全量 attention、自回归和仅自身可见三种可见性，使候选不会泄漏。用户级聚合把同一用户的多个曝光样本合并。
+features_signals.0|DLRM 特征，包括交叉特征
+training.mode|在约六个月的数据上离线训练三种模型规模，即扩展定律研究；自研框架
+training.objectives.0|CTR 和转化排序
+training.notes|框架：动态哈希表用于稀疏 embedding 的实时插入和删除，跨 GPU 的动态序列均衡，embedding ID 去重和自动合并表；吞吐为 TorchRec 的 1.6x-2.4x，在超过 100 块 GPU 时扩展性良好。
+scale.0.metric|每个样本的计算量
+scale.0.value|单样本前向为 DLRM 基线的 65x FLOPs，MTGR-large
+scale.1.value|部署在外卖推荐系统上，服务数亿用户
+scale.2.metric|所支持的复杂度范围
+scale.2.value|DLRM 计算复杂度的 10-100x，而成本没有显著增加
+results_table.online.0.setting|美团外卖推荐，MTGR-large
+results_table.online.1.setting|美团外卖推荐，MTGR-large
+results_table.online.2.setting|美团外卖推荐，MTGR-large
+results_table.online.0.metric|转化量
+results_table.online.0.versus|优化多年的 DLRM 基线
+results_table.online.1.versus|优化多年的 DLRM 基线
+results_table.online.2.versus|优化多年的 DLRM 基线
+results_table.online.2.metric|推理成本
+caveats.0|收益是对比美团自己高度调优的 DLRM 基线，且在特定场景中；这些场景只被描述为「our scenarios」。
+caveats.1|论文称，去掉交叉特征的纯生成式推荐会降低质量，这是它在自己数据上的发现。
+caveats.2|在所读章节中没有说明 A/B 时长。
+unknown_fields.0|A/B 时长
+unknown_fields.1|绝对的 QPS 和延迟
+unknown_fields.2|三种模型规模的参数量
+updates.0.note|对照 arXiv 托管的、带最终 DOI 的 CIKM '25 定稿 PDF 核对；所有卡片数字均已确认，没有改动。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|美团外卖的外卖推荐，主流量
+deployment.ab_traffic|2% 的流量，每天数百万次曝光
+deployment.baseline|优化多年的 DLRM 基线
+deployment.inference_cost|对比 DLRM 基线，训练成本不变，推理成本下降 12%，每个样本 65x FLOPs
+deployment.hardware|训练用 NVIDIA A100 GPU；训练可扩展到超过 100 块 GPU
+deployment.online_lifts.0.metric|转化量

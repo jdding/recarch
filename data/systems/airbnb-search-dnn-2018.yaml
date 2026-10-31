@@ -53,3 +53,21 @@ scale_short: 1.7 billion training pairs
 key_result: Online booking gains reported for the neural network stages, no figure in the card sources
 results_table:
   note: The paper presents offline NDCG gains and online booking gains from the neural network stages. The card sources give no figures.
+deployment:
+  online_evidence: online_qualitative
+  scenario: Airbnb search ranking
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Java server for retrieval and scoring, running on AWS instances; no instance types or counts
+  notes:
+  - The paper states a booking gain without giving its size.
+  fulltext_refs:
+  - 'Sec 5, System Engineering: a Java server does retrieval and scoring; components run on AWS instances'
+  basis: full_text
+  checked_on: '2026-10-31'

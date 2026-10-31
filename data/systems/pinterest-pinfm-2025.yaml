@@ -103,3 +103,21 @@ results_table:
     result: +600%
     versus: Without DCAT
   note: Per-surface online lifts are in the paper's tables and are not reproduced here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Home Feed and Related Items Feed
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts:
+  - metric: Engagement with new items
+    value: +20%
+  training_compute: not_reported
+  serving_latency: Marginal latency increase; no absolute number
+  serving_qps: not_reported
+  inference_cost: Neutral serving cost reported; DCAT gives +600% throughput on Pinterest internal data
+  hardware: Embedding table on CPU hosts; transformer on GPU inference hosts
+  notes:
+  - A two-week online test of int4 embedding quantization was statistically neutral against full precision.
+  basis: full_text
+  checked_on: '2026-10-31'

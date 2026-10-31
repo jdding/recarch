@@ -140,3 +140,25 @@ results_table:
     metric: eCPM
     result: +5.5%
     versus: Baseline in the simulator
+deployment:
+  online_evidence: online_numbers
+  scenario: WeChat Channels advertising, generative ad recommendation
+  ab_traffic: 5% of ad traffic
+  ab_duration: not_reported
+  baseline: Production baseline
+  online_lifts:
+  - metric: GMV
+    value: +1.19%
+  - metric: GMV-Normal
+    value: +1.55%
+  - metric: CTR
+    value: +1.16%
+  - metric: Dislike rate
+    value: -2.02%
+  training_compute: not_reported
+  serving_latency: No LLM inference at serving time; the online generator is lightweight, with no figures
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

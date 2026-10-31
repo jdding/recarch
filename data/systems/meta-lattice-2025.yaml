@@ -99,3 +99,27 @@ results_table:
     result: 20% saving
     versus: Previous models
   note: Per-task offline results are in Table 3 of the paper and are not reproduced here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Meta Ads recommendation
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous models
+  online_lifts:
+  - metric: Revenue-driving top-line metrics
+    value: +10%
+  - metric: User satisfaction
+    value: +11.5%
+  - metric: Conversion rate
+    value: +6%
+  training_compute: An 8-layer Lattice network was parallelized on 128 NVIDIA A100 GPUs; hardware efficiency gains
+    reported on 1024 GPUs
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: 20% capacity saving
+  hardware: NVIDIA A100 GPUs for training
+  fulltext_refs:
+  - 'Sec 3: parallelization strategy on 128 Nvidia A100 GPUs for an 8-layer Lattice Network; hardware efficiency
+    gains on 1024 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

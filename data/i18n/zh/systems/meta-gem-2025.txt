@@ -1,0 +1,40 @@
+surface|Facebook 和 Instagram 的广告推荐基础模型
+era_reason|基础模型规模的广告模型，以接近 LLM 的规模训练
+tldr|Meta 用于广告排序的大型基础模型，充当中央大脑，把知识迁移给各场景专属模型；2025 年的博客：Instagram 转化 +5%。
+summary|GEM，即 Generative Ads Recommendation Model，是在数千块 GPU 上训练的大型基础模型，作为广告排序的「central brain」，把知识迁移给下游各场景专属的模型；后续博客描述了 LLM 规模的训练，以及跨场景的单一中央模型。
+core_idea|用于广告排序的中央基础模型，把知识迁移给各场景专属的模型。
+deployed_in|Facebook 和 Instagram 的广告
+scale_short|2026 年博客中 MFU 为 20-25%，12 个月内训练 FLOPs 增长 4x
+key_result|Q2 中，Instagram 广告转化 +5%，Facebook Feed +3%
+results_reported|2025 年博客：Instagram 广告转化 +5%，Facebook Feed +3%，Q2。Oct 2026 的博客：新一代的转化提升 18.9%，CTR 提升 12%。
+serving_infra|训练用数千块 GPU
+stages.0.model_family|基础模型，并把知识迁移给下游模型
+stages.0.details|仅在博客层面描述。
+features_signals.0|在所读博客中未列举
+training.mode|大规模离线预训练，再迁移给下游模型
+training.notes|后续博客：MFU 为 20-25%，12 个月内训练 FLOPs 增长 4x。
+scale.0.metric|MFU，2026 年博客
+scale.1.metric|训练 FLOPs 增长
+scale.1.value|12 个月内 4x
+results_table.online.0.setting|Instagram，Q2，2025 年博客
+results_table.online.0.metric|广告转化
+results_table.online.1.metric|广告转化
+results_table.online.0.versus|之前的广告模型
+results_table.online.1.versus|之前的广告模型
+results_table.online.1.setting|Facebook Feed，Q2，2025 年博客
+results_table.online.2.setting|Oct 2026 的博客，新一代
+results_table.online.3.setting|Oct 2026 的博客，新一代
+results_table.online.2.versus|未说明上一代
+results_table.online.3.versus|未说明上一代
+caveats.0|只有博客；没有给出指标定义和基线。
+unknown_fields.0|架构细节
+unknown_fields.1|参数量
+unknown_fields.2|服务
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Facebook 和 Instagram 的广告
+deployment.baseline|之前的广告模型
+deployment.training_compute|训练用数千块 GPU；后续博客中模型 FLOPs 利用率为 20-25%；12 个月内训练 FLOPs 增长 4x
+deployment.hardware|训练用数千块 GPU；未描述服务
+deployment.notes.0|Oct 2026 的博客报告新一代转化 +18.9%，CTR +12%，没有说明基线。
+deployment.online_lifts.0.metric|Instagram 广告转化，Q2 2025
+deployment.online_lifts.1.metric|Facebook Feed 广告转化，Q2 2025

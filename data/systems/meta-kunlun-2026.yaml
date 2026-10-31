@@ -114,3 +114,22 @@ results_table:
     metric: MFU
     result: 17% to 37%
     versus: Earlier utilization
+deployment:
+  online_evidence: online_numbers
+  scenario: Major Meta Ads models for CTR and conversion prediction
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous production
+  online_lifts:
+  - metric: Topline metrics
+    value: +1.2%
+  training_compute: Training model FLOPs utilization 17% to 37% on NVIDIA B200 GPUs
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: H100, B200 and GB200 GPUs in training experiments; serving hardware not reported
+  notes:
+  - The paper reports training QPS and utilization, not online serving latency.
+  - Computation Skip cuts FLOPs by 43.1% and raises training QPS by about 35% with neutral NE.
+  basis: full_text
+  checked_on: '2026-10-31'

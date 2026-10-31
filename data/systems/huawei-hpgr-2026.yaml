@@ -100,3 +100,21 @@ results_table:
     metric: AUC
     result: '0.8929'
     versus: Production DLRM 0.8880
+deployment:
+  online_evidence: online_numbers
+  scenario: AppGallery app recommendation ranking
+  ab_traffic: Half of traffic, split evenly between control and treatment
+  ab_duration: 7 days
+  baseline: Production DLRM
+  online_lifts:
+  - metric: eCPM
+    value: +1.99%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says training and inference time rise only modestly over MTGR, with no figures.
+  basis: full_text
+  checked_on: '2026-10-31'

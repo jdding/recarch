@@ -1,0 +1,57 @@
+surface|Snapchat 短视频推荐，作为召回源
+era_reason|预训练的 decoder-only Qwen3-0.6B 大模型在继续预训练和 SFT 之后，生成多模态 Semantic ID token，作为核心召回机制。
+tldr|Snap 基于大模型的生成式召回模型，即基于多模态 Semantic ID 的 Qwen3-0.6B 大模型，已作为召回源上线；对比 TIGER 风格基线做 7 天 A/B：View Time +0.37%，Time Spent +0.09%。
+summary|SnapLGR 对 Qwen3-VL 的多模态视频 embedding 做残差量化，用 RQ-VAE 加 Personalized PageRank 共同互动对比损失来构建 Semantic ID，从而提高码本利用率并减少冲突。Qwen3-0.6B decoder-only 大模型先在继续预训练阶段接入新的 SID token，该阶段只训练 SID embedding，任务是生成视频描述；随后在用户的 SID 交互历史上做全参数微调，并每小时做增量 SFT。在线服务是离线的：每天用 TensorRT-LLM 做批量 beam search，宽度 32，为每个用户生成 top-k SID，再通过按价值加权的 SID 到视频映射表物化成视频，写入线上索引，在排序之前作为召回源使用。
+core_idea|残差量化的多模态 Semantic ID 加 decoder-only 大模型，通过每天的批量 beam search 生成视频。
+deployed_in|Snapchat 短视频推荐，作为召回源
+scale_short|Qwen3-0.6B 骨干，beam 宽度 32，码本为 1024 x 512 x 256
+key_result|对比旧的 TIGER 风格 T5 生成式召回，7 天线上 A/B：View Time +0.37%
+results_reported|7 天线上 A/B，对比旧的 TIGER 风格 T5 生成式召回；上线的系统同时更换了 tokenizer、骨干和在线服务栈：View Time +0.37%，置信区间 +/-0.27%，p=0.007；Time Spent +0.09%，p=0.048；Deep Sessions +0.18%，p=0.027；Deep Sessions Unique User +0.11%，p=0.017。离线 SID 召回，对比使用同一套 Qwen3-VL SID 的 13M T5：Pass@10 为 21.78%，对比 8.685%，即 2.51x；Pass@32 为 2.27x；Recall@32 为 11.11%，对比 4.624%，即 2.40x。decoder-only 架构是离线收益最大的一项；在预训练加 SFT 的基础上，CPT 使 Pass@10 再提高 +0.83%，Recall@10 提高 +1.51%。SID 唯一率为 32.1%，没有共同互动时为 16.8%；训练的单 GPU 吞吐 +3.63x，推理 +45.7x。
+version_note|仅有预印本，没有找到发表的会议或期刊。数字已对照读到的最新 arXiv 版本核对，即 25 Sep 2026 的 v4；获取时 arXiv 摘要页列出的是 v1 30 Jul、v2 13 Aug 和 v3 18 Aug，v4 只出现在 PDF 上，因此可能还有更新的版本。
+serving_infra|基于 CUDA 的 TensorRT-LLM beam search，单张 A100 吞吐提升 9.3x，去中心化的 worker 循环架构累计提升 30.7x，异步 I/O 使单 GPU 吞吐累计提升 45.7x，对比旧的集中式 Python 基线。
+stages.0.model_family|Qwen3-0.6B decoder-only 大模型，ChatML 格式的 prompt 包含 SID 历史和未来事件，损失只算在 assistant 的 token 上
+stages.0.details|每天离线批量为每个用户生成 top-k SID，beam 宽度 32；按价值加权的物化把 SID 映射到候选视频；在线请求只从线上索引读取预先物化好的列表，随后在下游做排序。
+id_tokenization.approach|对 Qwen3-VL-Embedding-8B 的多模态 embedding，取 4096 维中的前 1024 维，做 RQ-VAE 残差量化，并加 PPR 共同互动对比损失
+id_tokenization.details|三层码本，大小为 1024、512、256；视频文本描述由 Gemini 2.5 Flash 生成；LayerNorm 和全码本 straight-through estimator 抑制码本塌缩；用 PPR 分数的 P75 阈值选取正样本对。
+features_signals.0|视频多模态 embedding，由视频和文本描述组成
+features_signals.1|用户交互历史，按时间顺序的 SID 序列
+features_signals.2|用户与视频的二部互动图，用于构造 PPR 共同互动对
+features_signals.3|互动率，用于按价值加权的 SID 到视频物化
+training.mode|初始基础模型训练时做一次 CPT，之后每小时在新的交互序列上做增量 SFT
+training.objectives.0|RQ-VAE 的重建损失、commitment 损失和共同互动对比损失，用于 tokenizer
+training.objectives.1|继续预训练：根据 SID 生成视频描述，只训练 SID embedding，大模型冻结
+training.objectives.2|SFT：在用户历史上做下一个 SID 预测，训练全部权重
+training.notes|离线设置使用 1 天的 SFT 窗口和 1 个月的 CPT 窗口，后者在前者之前 1 周结束；训练吞吐提升 3.63x，来自 torch.compile、FlashAttention-2 变长、序列打包以及 A100 换成 H100。
+scale.1.metric|beam 宽度
+scale.2.metric|码本大小
+results_table.online.0.setting|Snapchat 7 天 A/B
+results_table.online.1.setting|Snapchat 7 天 A/B
+results_table.online.2.setting|Snapchat 7 天 A/B
+results_table.online.3.setting|Snapchat 7 天 A/B
+results_table.offline.2.setting|SID 构建
+results_table.online.0.versus|旧的 T5 生成式召回
+results_table.online.1.versus|旧的 T5 生成式召回
+results_table.online.2.versus|旧的 T5 生成式召回
+results_table.online.3.versus|旧的 T5 生成式召回
+results_table.offline.0.method|decoder-only 大模型
+results_table.offline.1.method|decoder-only 大模型
+results_table.offline.2.method|使用共同互动损失
+results_table.offline.2.metric|SID 唯一率
+results_table.offline.2.versus|没有共同互动 16.8%
+caveats.0|这次 A/B 对比的是整个上线系统与基于 CLIP 的 SID 的 T5 TIGER 风格基线，因此没有分离出大模型、tokenizer 或在线服务各自的贡献。
+caveats.1|提升的相对幅度较小，也没有给出指标的绝对值。
+caveats.2|候选由每天的批量任务离线生成并按用户缓存，不是针对每个请求实时生成。
+caveats.3|CPT 带来的 grounding 提升很小，RSA 文本对齐在 SFT 之后基本丢失，从 0.322 降到 0.167。
+caveats.4|截至核查时，没有找到会议或正式发表的版本；arXiv PDF 仍带有 ACM 模板占位符 Conference 17。
+unknown_fields.0|互动指标的绝对值
+unknown_fields.1|A/B 测试的流量占比
+unknown_fields.2|线上 GPU 数量
+unknown_fields.3|在线请求路径的延迟
+code.note|没有找到代码发布。
+deployment.scenario|Snapchat 短视频推荐，作为召回源
+deployment.ab_duration|7 天
+deployment.baseline|旧的 TIGER 风格 T5 生成式召回
+deployment.training_compute|在 8 张 GPU 的单机上，训练吞吐累计提升 3.63x，其中包括从 A100 换成 H100
+deployment.inference_cost|对比旧的集中式 Python 基线，单 GPU 推理吞吐提升 45.7x
+deployment.hardware|NVIDIA A100 和 H100 GPU；线上 GPU 数量未报告
+deployment.notes.0|上线的系统同时更换了 tokenizer、骨干和在线服务栈，因此提升不能归因于某一项改动。

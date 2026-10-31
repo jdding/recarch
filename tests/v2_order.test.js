@@ -2,7 +2,7 @@
 // Cited by is optional, blog-only cards have none. Every card page uses the v2 layout with a fixed section order. The architecture block exists only for cards with a diagram.
 const { JSDOM } = require("jsdom"); const fs = require("fs"); const path = require("path");
 const _F = require("fs"), _D = __dirname + "/../data/systems", _Y = _F.readdirSync(_D).filter((f) => f.endsWith(".yaml")), N_SUP = _Y.filter((f) => /^status: superseded\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length, N_CARDS = _Y.length, N_GEN = _Y.filter((f) => /^era: generative\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length;
-const dist = process.argv[2] || path.join(__dirname, "../dist");
+const dist = process.argv[2] || path.join(__dirname, "../dist/en");
 let fails = 0, checks = 0; const ok = (c, m) => { checks++; if (!c) { fails++; console.log("FAIL", m); } };
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const ids = fs.readdirSync(`${dist}/systems`).filter((d) => fs.existsSync(`${dist}/systems/${d}/index.html`)).sort();
@@ -10,7 +10,7 @@ ok(ids.length === N_CARDS, `${N_CARDS} card pages, found ${ids.length}`);
 // merged-away (superseded) cards are static redirect pages, not v2 layouts; retired.test.js checks them
 const redirects = ids.filter((id) => /http-equiv="refresh"/.test(fs.readFileSync(`${dist}/systems/${id}/index.html`, "utf8")));
 ok(redirects.length === N_SUP, `${N_SUP} superseded cards are redirect pages, found ${redirects.length}`);
-const base = ["top", "key-facts", "how-it-works", "results", "subscribe", "details", "limitations", "sources", "history"];
+const base = ["top", "key-facts", "how-it-works", "results", "deployment", "subscribe", "details", "limitations", "sources", "history"];
 const cellNames = ["Stage", "Core idea", "Deployed in", "Scale", "Headline result", "Code status"];
 let withDiagram = [];
 for (const id of ids.filter((i) => !redirects.includes(i))) {
@@ -20,7 +20,13 @@ for (const id of ids.filter((i) => !redirects.includes(i))) {
   const seen = [...art.querySelectorAll("[id]")].map((e) => e.id).filter((i) => [...base, "architecture"].includes(i));
   const hasArch = seen.includes("architecture");
   const hasLim = seen.includes("limitations");
-  const want = base.filter((i) => i !== "limitations" || hasLim);
+  const hasDep = seen.includes("deployment");
+  const want = base.filter((i) => (i !== "limitations" || hasLim) && (i !== "deployment" || hasDep));
+  if (hasDep) {
+    const rows = [...d.querySelectorAll("#deployment table.dep tr")].map((r) => r.querySelector("th").textContent.trim());
+    ok(rows.length === 11 && rows[0] === "Online evidence" && rows[10] === "Hardware", `${id}: deployment table has the 11 fixed rows, got ${rows.length}`);
+    ok(!!d.querySelector(".toc a[href='#deployment']"), `${id}: TOC links to deployment`);
+  } else ok(!d.querySelector(".toc a[href='#deployment']"), `${id}: no TOC link without a deployment block`);
   if (hasArch) want.splice(2, 0, "architecture");
   ok(eq(seen, want), `${id}: sections in order, got ${seen.join(" > ")}`);
   if (hasArch) {

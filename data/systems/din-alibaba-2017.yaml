@@ -133,3 +133,21 @@ code:
     official: true
     note: 'Linked from the paper: experiment code on two public datasets (Amazon, MovieLens). Not the
       Alibaba ad-system code.'
+deployment:
+  online_evidence: online_numbers
+  scenario: Alibaba online display advertising, main traffic
+  ab_traffic: not_reported
+  ab_duration: 2017-05 to 2017-06, about a month
+  baseline: BaseModel, the previous online model
+  online_lifts:
+  - metric: CTR
+    value: up to +10.0%
+  - metric: RPM
+    value: up to +3.8%
+  training_compute: not_reported
+  serving_latency: Hundreds of ads per visitor predicted in under 10 ms
+  serving_qps: More than 1 million users per second at peak; serving techniques roughly double single-machine QPS
+  inference_cost: not_reported
+  hardware: CPU-GPU serving architecture; GPU type and count not given
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -53,3 +53,19 @@ scale_short: At most 1,200 candidates after retrieval
 key_result: Consistent online experiment improvements, no headline number reported
 results_table:
   note: The blog reports consistent online experiment improvements without a single headline number.
+deployment:
+  online_evidence: online_qualitative
+  scenario: DoorDash homepage of stores, carousels and items
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The card reports consistent improvements in online experiments, with no headline number.
+  basis: card_content
+  checked_on: '2026-10-31'

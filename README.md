@@ -49,3 +49,7 @@ See `era_audit.md` (rules, per-card table, borderline cases) and `needs_publishe
 ## Deploy
 
 Pushing to `main` runs `.github/workflows/pages.yml`: it builds with `SITE_URL=https://jdding.github.io/recarch`, runs the tests and deploys `dist/` to GitHub Pages. To go live, make the repo public, then set Settings > Pages > Source to GitHub Actions.
+
+## Round 11: bilingual site (nothing deployed)
+
+Chinese is the default language at the site root and English is at `/en/`, with a 中文 / EN toggle on every page. Translations live in `data/i18n/` (see the "Bilingual site" section of `schema/schema.md`), and the build fails if a required Chinese string is missing. New cards need `data/i18n/zh/systems/<id>.txt`; new newsletter issues need the `*_zh` fields; new topics need `data/i18n/zh/topics/<slug>.yaml`. `tests/i18n.test.js` covers twins, toggles, links, hreflang and untranslated UI. The existing tests that read `dist/` now default to `dist/en`. Chinese prose writes magnitudes with 万 and 亿 instead of English million and billion, and the build checks each conversion by value against the English source (`tests/zh_numbers.test.js`).

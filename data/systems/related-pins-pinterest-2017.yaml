@@ -124,3 +124,19 @@ results_table:
     result: 9% to 54%
     versus: Before
   note: Memboost is described as significantly boosting engagement, with no percentage given.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Related Pins item-to-item recommendations
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous ranking
+  online_lifts:
+  - metric: Propensity to save and click, first learned ranker
+    value: Over +30%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: Peak load of many tens of thousands of queries per second
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: card_content
+  checked_on: '2026-10-31'

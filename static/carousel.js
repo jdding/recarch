@@ -1,5 +1,6 @@
 /* Home carousel: vanilla JS, no deps. Autoplay 5s; pauses on hover/focus/touch; arrows, dots, keyboard, swipe; no autoplay with prefers-reduced-motion. */
 (function () {
+  var _L = window.RECARCH_L10N || {}; function L(k, d, o) { var s = _L[k] != null ? _L[k] : d; return o ? s.replace(/\{(\w+)\}/g, function (m, x) { return o[x]; }) : s; }
   var root = document.querySelector(".carousel");
   if (!root) return;
   var track = root.querySelector(".car-track"), slides = [].slice.call(root.querySelectorAll(".slide")), dots = [].slice.call(root.querySelectorAll(".dot"));
@@ -11,7 +12,7 @@
   // relative dates stay correct even if the page is older than the build
   function rel(d) {
     var a = new Date(d + "T00:00:00"), b = new Date(); b.setHours(0, 0, 0, 0);
-    var k = Math.round((b - a) / 864e5); return k <= 0 ? "today" : k === 1 ? "yesterday" : k + " days ago";
+    var k = Math.round((b - a) / 864e5); return k <= 0 ? L("today", "today") : k === 1 ? L("yesterday", "yesterday") : L("days_ago", "{n} days ago", { n: k });
   }
   [].forEach.call(root.querySelectorAll("time[data-date]"), function (t) { t.textContent = rel(t.getAttribute("data-date")); });
 
@@ -52,7 +53,7 @@
   if (pauseBtn) {
     if (reduced || n < 2) pauseBtn.hidden = true;
     pauseBtn.addEventListener("click", function () {
-      hold.user = !hold.user; pauseBtn.setAttribute("aria-pressed", hold.user ? "true" : "false"); pauseBtn.textContent = hold.user ? "Play" : "Pause";
+      hold.user = !hold.user; pauseBtn.setAttribute("aria-pressed", hold.user ? "true" : "false"); pauseBtn.textContent = hold.user ? L("play", "Play") : L("pause", "Pause");
     });
   }
   root.setAttribute("data-autoplaying", reduced ? "false" : "true");

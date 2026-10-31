@@ -110,3 +110,24 @@ results_table:
     metric: NE
     result: -0.14% upstream gives -0.07% downstream
     versus: About 50% transfer ratio
+deployment:
+  online_evidence: online_numbers
+  scenario: Meta Ads ranking on Facebook Feed and Reels
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production ranker
+  online_lifts:
+  - metric: Conversion on Facebook Feed and Reels
+    value: +4.3%
+  - metric: NE on the flagship ads ranker
+    value: About -0.25%
+  training_compute: Scaling runs on 128 H100 GPUs, 229K steps on 30B examples
+  serving_latency: No measurable P99 latency change
+  serving_qps: Upstream encoders run at much lower QPS than the ranker; the ranker handles trillions of requests
+    per day
+  inference_cost: not_reported
+  hardware: Upstream encoders on a dedicated H100 cluster
+  notes:
+  - The online path adds one feature lookup.
+  basis: full_text
+  checked_on: '2026-10-31'

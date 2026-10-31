@@ -39,7 +39,7 @@ training:
   - 'InfoNCE contrastive retrieval loss, temperature 0.07'
   - 'Vector quantization with commitment coefficient 0.25 for the intent codes'
   notes: 'Adam with learning rate 1e-4, batch of 256 sessions. Recall@100 grows approximately log-linearly with GFLOPs, and extending the context from 200 to 10k tokens gives a cumulative 24.9% gain in Recall@100.'
-serving_infra: 'Parallel ANN retrieval, one query per predicted intent code; the paper states no added latency but gives no latency or hardware figures.'
+serving_infra: 'Parallel ANN retrieval, one query per predicted intent code; the paper states no added latency and gives peak-hour latency for one and three intents in Table 5, but no hardware type.'
 scale:
 - metric: Internal dataset
   value: 56.9M users, 69.6M items, 6.88B interactions
@@ -54,9 +54,8 @@ results_reported: 'Online A/B, 7 days on a 15% random bucket against the product
 caveats:
 - 'The online gains are cumulative over three rollout stages against a two-tower control, so they mix the generative backbone, state conditioning and multi-intent generation.'
 - 'The offline evidence is mainly an internal dataset; the public KuaiRand-Pure set lacks content, POI and spatiotemporal signals.'
-- 'Latency is described as no additional, with no figures.'
+- 'Latency figures come from Table 5 and are peak-hour values for one and three intents.'
 unknown_fields:
-- serving latency figures
 - GPU count
 - traffic share beyond the 15% bucket per experiment
 - whether the A/B led to full launch
@@ -119,3 +118,32 @@ results_table:
     metric: Recall@100
     result: '0.3265'
     versus: HSTU 0.3184
+deployment:
+  online_evidence: online_numbers
+  scenario: Dianping homepage feed and immersive video stream, retrieval stage
+  ab_traffic: 15% random traffic bucket
+  ab_duration: 7 days
+  baseline: Production discriminative two-tower retriever
+  online_lifts:
+  - metric: Content views
+    value: +1.486%
+  - metric: Content watch time
+    value: +1.015%
+  - metric: POI clicks
+    value: +0.527%
+  - metric: POI collects
+    value: +5.209%
+  training_compute: not_reported
+  serving_latency: 'Three-intent retrieval: average 3.1 ms and P99 33.1 ms. One intent: average 2.7 ms and P99 15.5
+    ms'
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: CPU utilization 55.7% for three intents and 30.9% for one intent, on the same peak-hour hardware; hardware
+    type not reported
+  notes:
+  - Lifts are cumulative over three rollout stages.
+  - Latency and CPU figures come from Table 5 of the paper.
+  fulltext_refs:
+  - 'Sec 5, Table 5: peak-hour latency K=1 avg/P99 2.7/15.5 ms at 30.9% CPU; K=3 3.1/33.1 ms at 55.7% CPU'
+  basis: full_text
+  checked_on: '2026-10-31'

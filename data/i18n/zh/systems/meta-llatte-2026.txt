@@ -1,0 +1,57 @@
+surface|Meta 在 Facebook Feed 和 Reels 上的广告排序
+era_reason|在 DHEN/FM 风格的 CTR/CVR 排序模型中扩展判别式 Transformer 序列模块，并配一个异步的上游用户模型；不是自回归生成，也不使用 Semantic ID。
+tldr|Meta 的两阶段广告序列建模：一个庞大的异步上游用户模型缓存 embedding，供轻量的在线排序模型使用；Feed 和 Reels 上 NE 约提升 0.25%，转化 +4.3%。
+summary|LLaTTE 是一个 Transformer 序列模块，带有多头 latent attention、自适应金字塔式 token 裁剪和目标感知的 query token，与 DHEN 风格的非序列骨干并列，用于 Meta 的广告排序。论文研究了在深度、宽度、序列长度和内容 embedding 丰富度上的扩展，然后部署了两阶段设计：大型异步上游用户模型把缓存的用户 embedding 写入特征库，在线排序模型里的紧凑 LLaTTE 模块读取并使用这些 embedding。
+core_idea|在线排序模型里的紧凑 Transformer 序列模块，使用大型异步上游用户模型缓存的 embedding。
+deployed_in|Meta 在 Facebook Feed 和 Reels 上的广告排序
+scale_short|上游每条样本 92 GFLOPs，每天数万亿次请求
+key_result|在多个大规模 A/B 测试中，Facebook Feed 和 Reels 的转化提升 4.3%，P99 无可测量的变化
+results_reported|扩展实验，离线，NE 相对线上基线：Deep-Balanced L=8、d=256 时 NE 为 -0.17%；加入内容 embedding 后，4 层模型 NE 为 -0.118%，不加则为 +0.06% 到 -0.01%。斜率 alpha 对 log10 FLOPs：序列长度 0.265，深度 0.200，宽度 0.133，不含内容 0.082。上游到下游的传递比约为 50%，上游 -0.14% 对应下游 -0.07%；偏模型的变体为 53%。线上：在多个大规模 A/B 测试中，在线 LLaTTE 加上游 embedding 让旗舰广告排序模型的 NE 约降低 0.25%，Facebook Feed 和 Reels 的转化提升 4.3%，P99 无可测量的变化。
+version_note|数字已对照 KDD 2026 定稿版 PDF 核对，来自站长的 Zotero 副本。arXiv 只有 27 Jan 2026 的 v1，至少有一处细节不同：触发事件在 arXiv 版是转化，在 KDD 版是点击。
+serving_infra|上游编码器运行在专用的 H100 集群上，大量合批，QPS 远低于排序模型；在线路径只多一次特征查询。论文称 P99 延迟无可测量的变化。
+stages.0.model_family|在线广告排序模型：紧凑的 LLaTTE 序列模块，每个来源的时间窗约 400 个事件，采用激进的金字塔式裁剪和广告、上下文 query token，再加 DHEN 风格的非序列骨干和多任务头，包括 CTR、CVR 等。它还把缓存的上游 LLaTTE 用户 embedding 作为稠密特征读入。
+stages.0.details|上游用户模型：与 LLaTTE 架构相同，只使用用户侧特征，更深更长，使用完整自注意力，序列 FLOPs 约为在线模块的 45x，在 H100 集群上异步运行；传递瓶颈的 embedding 维度为 2048。
+stages.1.model_family|异步 embedding 服务，即上游用户模型
+stages.1.details|由高价值用户事件触发，KDD 版本中主要是用户点击；把压缩后的用户 embedding 写入特征库，请求时读取。
+id_tokenization.approach|ID embedding 加稠密内容 embedding
+id_tokenization.details|稀疏 ID 做 embedding；行为由类型、item、场景、时间和元数据 token 化；每个事件还会加入来自微调 LLaMA 和多模态内容理解模型的语义内容 embedding。不属于 Semantic ID 的 tokenization。
+features_signals.0|实验中的用户序列为 500 到 5000 个行为，线上每个来源约 400 个
+features_signals.1|广告、用户与广告交叉以及上下文特征
+features_signals.2|来自基于 LLaMA 和多模态内容理解模型的稠密内容 embedding
+training.mode|离线训练；扩展实验使用 128 张 H100 GPU，在线上流量抽样的 30B 条样本上训练 229K 步
+training.objectives.0|加权多任务二元交叉熵，包括 CTR、CVR 等
+training.notes|主要指标是相对强线上基线的 Normalized Entropy 相对变化；论文称在内部数据上，0.02% 的 NE 变化具有统计显著性，并且与收入相关。
+scale.0.metric|上游与在线的序列 FLOPs 之比
+scale.1.metric|上游每条样本的算力
+scale.2.metric|在线排序量
+scale.2.value|每天数万亿次请求
+results_table.online.0.setting|Facebook Feed 和 Reels，多个 A/B 测试
+results_table.online.1.setting|旗舰广告排序模型，多个 A/B 测试
+results_table.offline.0.setting|扩展实验，L=8，d=256
+results_table.offline.1.setting|上游到下游的传递
+results_table.online.0.method|带上游 embedding 的 LLaTTE
+results_table.online.0.versus|线上排序模型
+results_table.online.1.method|带上游 embedding 的 LLaTTE
+results_table.online.1.versus|线上排序模型
+results_table.offline.0.versus|线上基线
+results_table.offline.1.method|上游模型
+results_table.offline.1.result|上游 -0.14%，对应下游 -0.07%
+results_table.offline.1.versus|传递比约 50%
+caveats.0|扩展律研究是在私有平台上对上游模型做的离线实验；论文报告斜率和 NE 变化量，但没有绝对 NE。
+caveats.1|线上部署的序列模块有意比扩展实验中的模型小得多。
+caveats.2|没有给出流量占比、时长和分场景拆解等 A/B 细节；「转化提升 4.3%」与「NE 约降低 0.25%」是一并给出的。
+caveats.3|arXiv v1 的文本称上游更新「主要由用户转化触发」；KDD 定稿版称「主要是用户点击」。本卡片采用 KDD 版本。
+unknown_fields.0|已部署模型的参数量
+unknown_fields.1|A/B 流量占比和时长
+unknown_fields.2|绝对 NE 值
+unknown_fields.3|embedding 服务的 QPS 和集群规模
+code.note|论文没有给出仓库链接；2026-10-30 在 GitHub 上搜索，没有找到 Meta 或 facebookresearch 下的 LLaTTE 仓库。
+deployment.scenario|Meta 在 Facebook Feed 和 Reels 上的广告排序
+deployment.baseline|线上排序模型
+deployment.training_compute|扩展实验使用 128 张 H100 GPU，在 30B 条样本上训练 229K 步
+deployment.serving_latency|P99 延迟无可测量的变化
+deployment.serving_qps|上游编码器的 QPS 远低于排序模型；排序模型每天处理数万亿次请求
+deployment.hardware|上游编码器运行在专用的 H100 集群上
+deployment.notes.0|在线路径只多一次特征查询。
+deployment.online_lifts.0.metric|Facebook Feed 和 Reels 的转化
+deployment.online_lifts.1.metric|旗舰广告排序模型的 NE

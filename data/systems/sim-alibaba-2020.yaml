@@ -124,3 +124,24 @@ results_table:
     metric: AUC
     result: '0.7510'
     versus: DIN 0.7276, MIMN 0.7396
+deployment:
+  online_evidence: online_numbers
+  scenario: Alibaba display advertising CTR prediction, main traffic since 2019
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous production model
+  online_lifts:
+  - metric: CTR
+    value: +7.1%
+  - metric: RPM
+    value: +4.4%
+  training_compute: not_reported
+  serving_latency: Real-time budget under 30 ms; serving over ten thousand behaviors adds about 5 ms against MIMN
+    on truncated behavior
+  serving_qps: More than 1 million users per second at peak
+  inference_cost: not_reported
+  hardware: Daily-rebuilt user behavior tree of about 22 TB; machine and GPU counts not reported
+  fulltext_refs:
+  - 'Sec 5: serving latency should be less than 30 milliseconds'
+  basis: full_text
+  checked_on: '2026-10-31'

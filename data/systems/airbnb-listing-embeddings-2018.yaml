@@ -85,3 +85,21 @@ results_table:
     metric: Bookings
     result: Significant gain, size not given
     versus: Ranking without them
+deployment:
+  online_evidence: online_numbers
+  scenario: Airbnb Search Ranking and Similar Listings
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous algorithm for Similar Listings; ranking without the embedding features
+  online_lifts:
+  - metric: Similar Listings click-through rate
+    value: +20%
+  - metric: Search ranking bookings
+    value: Significant gain, size not given
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: card_content
+  checked_on: '2026-10-31'

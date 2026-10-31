@@ -1,0 +1,51 @@
+surface|抖音和抖音极速版信息流排序
+era_reason|统一的 Transformer 风格判别式排序模型，用于 CTR 和多任务预估；同时扩展稠密交互和序列建模，不是生成式，也不基于 Semantic ID。
+tldr|抖音统一的 Transformer 风格排序模型，同步扩展稠密特征和用户序列；离线 AUC 高于 STCA to RankMixer；用户与 item 解耦的变体让 FLOPs 降低约 36%；已在抖音和抖音极速版做 A/B。
+summary|MixFormer 取代常见的双模块设计，即由序列 Transformer 给稠密特征交互网络提供输入，改用一个骨干和一个参数空间。非序列特征被切分成多个 head，无参数的 HeadMixing Query Mixer 配合每个 head 各自的 SwiGLU FFN 生成高阶 query，对用户行为序列的 cross-attention 以这些 query 为条件，最后由 Output Fusion 层施加每个 head 各自的 FFN。用户与 item 解耦的变体 UI-MixFormer 屏蔽了从 item 到用户的信息流，因此通过请求级合批，同一请求里的各候选可以共享用户侧的计算。
+core_idea|一个骨干在同一个参数空间里混合特征交互和序列建模。
+deployed_in|抖音和抖音极速版信息流排序，已做 A/B 测试
+scale_short|数万亿条训练记录，medium 模型有 1,226M 稠密参数
+key_result|对比线上的 STCA to RankMixer 基线，两周线上 A/B：抖音整体时长 +0.2799%
+results_reported|离线见表 1，相对 TA to DLRM 基线，基线的 AUC 为 Finish 0.8554、Skip 0.8124：MixFormer-medium 的 Finish AUC +1.28%，Finish UAUC +1.60%，Skip AUC +1.60%，Skip UAUC +2.46%，稠密参数 1,226M，每个 batch 3,503 GFLOPs；STCA to RankMixer 为 +1.12%、+1.40%、+1.43%、+2.14%，参数 1,255M，6,736 GFLOPs；UI-MixFormer-medium 精度相同，只需 2,242 GFLOPs，FLOPs 约减少 36%。两周线上 A/B，对比线上的 STCA to RankMixer 基线，见表 2：抖音整体活跃天数 +0.0415%，时长 +0.2799%，点赞 +0.1766%，完播 +0.3897%，评论 +0.7035%；抖音极速版整体活跃天数 +0.0252%，时长 +0.4105%，点赞 +0.2125%，完播 +0.2924%，评论 +1.9097%。论文称所有指标都显著，且尚未收敛。
+version_note|数字已对照站长 Zotero 副本核对，该副本是 2 Jul 2026 的 arXiv v2，采用 KDD 2026 定稿版格式，ACM DOI 为 10.1145/3770855.3818447；没有打开 ACM Digital Library 页面本身。arXiv v1 为 15 Feb 2026，未比对。
+serving_infra|用户与 item 解耦的变体采用请求级合批；图 6 报告了在线服务延迟随候选数量的变化，并称在线服务提速超过 30%。未说明硬件。
+stages.0.model_family|L 层堆叠的 MixFormer block，包括 Query Mixer、对用户序列的 Cross Attention 和 Output Fusion，后接多任务 TaskNet。配置：N=16 个 head，L=4，D=386 对应 small，D=768 对应 medium。
+stages.0.details|UI-MixFormer 把 head 分成用户侧和 item 侧，比例约 1:1，并屏蔽 HeadMixing，使用户 head 看不到 item 信号；用户侧 head 和序列 cross-attention 每个请求只算一次，由各候选共享。
+id_tokenization.approach|=
+id_tokenization.details|item ID、行为类型、时间戳和辅助信息按每次行为做 embedding；非序列特征按每个特征做 embedding 再切分成 head。不使用 Semantic ID。
+features_signals.0|每个样本 300+ 个特征，包括来自用户画像、item 属性和上下文的类别特征、数值特征和交叉特征
+features_signals.1|用户行为序列，包含 item id、行为类型、时间戳和辅助属性；扩展实验中长度为 512 到 10,000
+training.mode|在抖音日志上以混合框架做离线训练，稀疏部分用 Adagrad 异步更新，稠密部分用 RMSProp 同步更新，lr 为 0.01
+training.objectives.0|Finish 和 Skip 任务的 CTR 风格二分类，指标为 AUC 和 UAUC
+training.notes|Batch size 1,500；数百张 GPU；2 周的数据集，包含数万亿条用户与 item 的记录。
+scale.0.metric|离线训练数据
+scale.0.value|两周内数万亿条用户与 item 的记录
+scale.1.metric|稠密参数，MixFormer-medium
+results_table.online.0.setting|抖音整体，两周 A/B，表 2
+results_table.online.1.setting|抖音整体，两周 A/B，表 2
+results_table.online.2.setting|抖音整体，两周 A/B，表 2
+results_table.online.3.setting|抖音极速版整体，两周 A/B，表 2
+results_table.online.4.setting|抖音极速版整体，两周 A/B，表 2
+results_table.offline.0.setting|表 1，MixFormer-medium
+results_table.offline.1.setting|表 1，MixFormer-medium
+results_table.offline.2.setting|表 1，UI-MixFormer-medium
+results_table.offline.0.versus|TA to DLRM 基线 0.8554
+results_table.offline.1.versus|TA to DLRM 基线 0.8124
+results_table.offline.2.metric|相同精度下的 FLOPs
+results_table.offline.2.result|约减少 36%
+caveats.0|表 2 只报告相对提升，没有置信区间、流量占比或上线状态；论文说做了 A/B 实验，但没有说 MixFormer 已取代线上排序模型。
+caveats.1|离线数据集是抖音内部的；论文没有在公开数据集上评估。
+caveats.2|表 1 中 MixFormer-small 的 UAUC 有缺失项，标注原因为「平台问题」。
+caveats.3|图 5 的序列长度扩展显示，MixFormer 的斜率与 STCA 相当，并不更好。
+unknown_fields.0|A/B 流量占比以及是否上线
+unknown_fields.1|在线服务硬件和绝对延迟数字
+unknown_fields.2|线上稠密参数和稀疏参数总量
+code.repos.0.note|社区的 PyTorch 实现，使用 Alibaba UserBehavior 相关工具；其 README 注明了论文出处，并列出字节跳动的作者。没有找到字节跳动的仓库，且该仓库所有者不是论文作者。
+deployment.scenario|抖音和抖音极速版信息流排序
+deployment.ab_duration|两周
+deployment.baseline|线上的 STCA to RankMixer 基线
+deployment.training_compute|数百张 GPU；两周的数据集，包含数万亿条用户与 item 的记录
+deployment.serving_latency|给出了在线服务延迟随候选数量变化的曲线，并称用户与 item 解耦的变体提速超过 30%；没有绝对数字
+deployment.notes.0|成本代理指标：MixFormer-medium 每个 batch 3,503 GFLOPs，STCA to RankMixer 为 6,736。
+deployment.online_lifts.0.metric|抖音时长
+deployment.online_lifts.1.metric|抖音极速版时长

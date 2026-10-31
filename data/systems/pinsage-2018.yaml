@@ -71,3 +71,19 @@ results_table:
     metric: Repin rate
     result: +10% to +30%
     versus: Previous candidate generation
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Related Pins and Homefeed candidate generation
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous candidate generation
+  online_lifts:
+  - metric: Repin rate
+    value: +10% to +30%
+  training_compute: Trained with 16 Tesla K80 GPUs in TensorFlow
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: MapReduce inference on 378 d2.8xlarge AWS nodes; training on 16 Tesla K80 GPUs
+  basis: full_text
+  checked_on: '2026-10-31'

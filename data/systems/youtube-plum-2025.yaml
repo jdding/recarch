@@ -71,3 +71,24 @@ results_table:
     metric: Retrieval quality
     result: Substantial improvement, no figure
     versus: Heavily optimised embedding-table model
+deployment:
+  online_evidence: online_qualitative
+  scenario: YouTube video recommendation retrieval in LFV and Shorts
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Heavily optimised embedding-table production model
+  online_lifts: not_reported
+  training_compute: Experiments ran on 1,024 TPU v6e chips as four parallel trainers of 256 TPUs each. Overall retrieval
+    training cost is comparable to the embedding model despite 100x more dense parameters, due to faster convergence
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Google TPU v6e with 32GB HBM per chip, for training experiments
+  notes:
+  - Reports a substantial retrieval quality improvement with no figure.
+  fulltext_refs:
+  - Experiments used 1,024 Google v6e TPUs each with 32GB HBM; 4 trainers in parallel each taking 256 TPUs
+  - PLUM retrieval has 100x dense parameters than LEM, the overall training cost for the retrieval task is comparable
+    due to faster convergence
+  basis: full_text
+  checked_on: '2026-10-31'

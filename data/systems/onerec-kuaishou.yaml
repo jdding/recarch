@@ -132,3 +132,21 @@ updates:
 - date: '2026-10-30'
   note: Merged OneRec, OneRec-V2 and OneRec-Think into one card presenting OneRec-V2, the version chosen as the main one. OneRec-Think is the latest version and OneRec the first; both stay in the version list and sources.
 version_note: This card presents OneRec-V2, one of 3 versions of one system. OneRec-V1 is the first version and OneRec-Think the latest; they are kept only as sources and in the version list.
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou and Kuaishou Lite short-video feeds
+  ab_traffic: 5% traffic group
+  ab_duration: One week
+  baseline: OneRec-V1
+  online_lifts:
+  - metric: App Stay Time, Kuaishou / Kuaishou Lite
+    value: +0.467% / +0.741%
+  - metric: LT7, Kuaishou / Kuaishou Lite
+    value: +0.069% / +0.034%
+  training_compute: not_reported
+  serving_latency: 36 ms online latency with context length 3000 and beam size 512
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: L20 GPUs with 62% model FLOPs utilization
+  basis: full_text
+  checked_on: '2026-10-31'

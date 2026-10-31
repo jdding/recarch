@@ -69,3 +69,19 @@ scale_short: Not stated in the sources
 key_result: Open-source reference, no reported metrics
 results_table:
   note: The README lists dated updates through Oct 26, 2026 and reports no metrics.
+deployment:
+  online_evidence: deployed_only
+  scenario: X For You feed, open repository
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The repository README lists updates and no metrics.
+  basis: card_content
+  checked_on: '2026-10-31'

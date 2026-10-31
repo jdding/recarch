@@ -1,0 +1,55 @@
+era_reason|用于搜索的双塔 embedding 召回
+tldr|Facebook 搜索 用统一的双塔 embedding 做召回，把搜索者、query 和上下文与文档匹配，用 triplet 损失和 hard 负样本训练。
+summary|来自 Facebook 的 KDD 2020 论文，讲 Facebook 搜索 中基于 embedding 的召回。双塔的「统一 embedding」一侧编码搜索者、query 文本和上下文，另一侧编码文档，例如人、群组、主页或活动；训练用基于余弦距离的 triplet 损失、随机负样本，后来加入 hard 负样本挖掘和集成。服务端通过 nn 算子，把 Faiss 风格的粗量化加乘积量化集成进 Unicorn 倒排索引引擎，使 embedding 与布尔词项匹配作为一次混合召回运行。论文报告了部署以及在垂直领域上显著的线上 A/B 收益，但只定性地给出线上数字。
+core_idea|搜索者和文档的双塔统一 embedding，在 Unicorn 倒排索引内部提供服务。
+deployed_in|Facebook 搜索 召回，包括人、群组、主页和活动
+scale_short|索引有数十亿或数万亿个文档，这是一般性说法
+key_result|在垂直领域的线上 A/B 实验中有显著提升，没有报告线上数字
+results_reported|离线 recall 提升：统一 embedding 对比文本 embedding，活动 +18%，群组 +16%；群组模型见表 1，位置特征使 recall 绝对提升 +2.20%，社交 embedding 特征提升 +1.77%；在字符三元组之上加词 n-gram 提升 +1.5%；在线 hard 负样本挖掘提升：人 +8.38%，群组 +7%，活动 +5.33%；离线 HNM 集成和级联相比基线使 recall 提升最高约 3.4% 到 4.39%。ANN，见表 3，128 维：1-recall@10 在 PQ16 下为 67.54%，OPQ16,PQ16 为 70.51% 到 74.29%，PQ64 为 74.81%，与 flat 的 74.81% 相同。线上：论文称垂直领域上的 EBR 在 A/B 实验中带来了显著的指标提升，但没有报告线上数字。
+serving_infra|Query embedding 由在线 embedding 推理服务提供；文档 embedding 用 Spark 批量计算，发布到正排索引中，并经量化，即粗聚类词项加 PQ 载荷，写入倒排索引。NN 搜索是 Facebook 的召回引擎 Unicorn 中的一等算子 nn :radius，因此可以与布尔词项组合成混合召回，并继承实时更新和 query 规划；线上使用 radius 模式而不是 top-K，因为它在性能和质量之间取得了更好的平衡。用 Faiss 做 ANN 调优：粗量化选 IVF 还是 IMI，OPQ 通常好于 PCA，pq_bytes 约为 d/4，nprobe 和聚类数要在线上和离线都调。Query 筛选避免对简单 query 触发 EBR；索引筛选保留月活用户、近期活动、热门主页和群组。
+stages.0.model_family|双塔统一 embedding 模型：query 塔输入 query 文本、搜索者和上下文特征，包括城市、地区、国家、语言和社交 embedding；文档塔输入文档文本和元数据，例如群组位置和社交聚类。类别特征通过 embedding 查找进入编码器，多热特征用加权组合。相似度为余弦；训练用 triplet 损失 max[0, D[q,d+] - D[q,d-] + m]，D 为余弦距离。
+stages.0.details|文本特征使用字符 n-gram 加哈希的词 n-gram，query 三元组的基数为 352M。社交 embedding 特征来自单独训练的图 embedding 模型。训练的正样本：点击，曝光表现类似；负样本：随机文档，把未点击的曝光作负样本会使人物的 recall 绝对下降 55%。margin 很重要：recall 有 5 到 10% 的波动。Hard 负样本挖掘：在线的，即 batch 内，每个正样本最多两个 hard 负样本；以及离线的，采样排名 101 到 500，混合 easy 和 hard，最高 100:1，并从 hard 迁移到 easy。从失败会话中挖掘的 hard 正样本，只用 4% 的数据就达到点击级别的 recall。集成：加权拼接和级联。
+stages.1.model_family|Embedding 余弦相似度特征，以及一个用人工评分重新训练的相关性模型，用于过滤 embedding 召回的结果
+stages.1.details|后期优化：把 query 与结果 embedding 的余弦相似度加为排序特征，效果好于 Hadamard 积或原始 embedding；并用人工评分反馈闭环重新训练相关性模型，以过滤不相关的 EBR 结果。
+id_tokenization.approach|稠密 embedding
+features_signals.0|Query 文本
+features_signals.1|搜索者上下文
+features_signals.2|社交图上下文
+training.mode|在搜索日志上离线训练；用 ANN 生成的 top-K 列表做离线 hard 负样本挖掘，在一个随机分片上跑 ANN 就足够。
+training.objectives.0|基于余弦距离的 triplet 损失
+training.objectives.1|离线评估指标为 recall@K，采样 10,000 个会话
+training.notes|Recall 是离线指标，定义为目标集合中，在整个索引上精确 KNN 的 top K 内被找到的比例。
+scale.0.metric|召回层规模
+scale.0.value|搜索索引中有数十亿或数万亿个文档，这是一般性说法
+scale.1.metric|评估集
+scale.1.value|采样的 10,000 个搜索会话
+results_table.online.0.setting|垂直领域上的 A/B 实验
+results_table.online.0.method|基于 embedding 的召回
+results_table.online.0.metric|线上指标
+results_table.online.0.result|显著提升，没有数字
+results_table.online.0.versus|线上搜索
+results_table.offline.0.method|统一 embedding
+results_table.offline.0.versus|文本 embedding
+results_table.offline.1.method|统一 embedding
+results_table.offline.1.versus|文本 embedding
+results_table.offline.2.setting|群组模型，表 1
+results_table.offline.2.method|位置特征
+results_table.offline.2.metric|绝对 recall
+results_table.offline.2.versus|不含这些特征的模型
+results_table.offline.3.setting|群组模型，表 1
+results_table.offline.3.method|社交 embedding 特征
+results_table.offline.3.metric|绝对 recall
+results_table.offline.3.versus|不含这些特征的模型
+results_table.offline.4.versus|Flat 索引 74.81%
+caveats.0|论文中没有线上 A/B 数字；关于 A/B 的说法是定性的。
+caveats.1|离线 recall 的提升是不同垂直领域上的相对或绝对百分点，不能叠加。
+caveats.2|论文提醒，最好的离线模型，即含未点击曝光的集成，在量化后精度下降，因此它的线上收益减弱。
+caveats.3|Facebook 具体的索引规模、QPS 和延迟没有公布。
+unknown_fields.0|线上指标的变化量
+unknown_fields.1|QPS 和延迟
+unknown_fields.2|线上的 embedding 维度；只有表 3 的例子用了 128
+unknown_fields.3|索引规模
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Facebook 搜索 召回，包括人、群组、主页和活动
+deployment.baseline|线上搜索
+deployment.notes.0|垂直领域的 A/B 实验带来显著的指标提升，没有数字。

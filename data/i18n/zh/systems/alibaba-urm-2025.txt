@@ -1,0 +1,40 @@
+surface|在线广告平台的召回
+era_reason|把大模型用作生成式召回模型
+tldr|Qwen-7B 大模型根据用户特征加上目标的文字描述生成召回结果；阿里广告的一项核心指标线上提升超过 3%。
+summary|Universal Retrieval Model：默认基于 Qwen-7B 全参数微调的大模型，输入用户特征和召回目标的文字描述，从约 10^7 的候选池中生成一组 item，采用多 query 表示、把 item 映射矩阵分解为判别部分和可迁移部分，以及概率采样。采用异步方式服务，据报告使广告平台的一项核心指标在线上提升超过 3%。
+core_idea|微调后的大模型根据文字形式的召回目标和用户特征，生成一组 item。
+deployed_in|阿里广告平台的召回
+scale_short|候选池约 10^7 个 item
+key_result|在阿里广告平台的线上 A/B 中，核心指标 +3%，指标名称未给出
+results_reported|阿里广告平台的线上 A/B：核心指标 +3%。摘要没有说明是哪项指标，正文给出的是广告收入。公开数据集包括 Sports、Beauty、Toys 和 Yelp：按表 1，URM 比最强的基线平均高 46% 的 HR@5 和 29% 的 NDCG@5。离线的工业实验优于针对具体任务的专家召回模型。
+serving_infra|异步流程：用户行为按可配置的窗口聚合，线上为十分钟，每个窗口触发一次 URM 推理；引擎服务把用户特征与目标文本拼接，调用推理服务，对最终 item 采样，并持久化保存结果，供之后的在线召回阶段使用。论文称召回结果在数十毫秒内返回。
+stages.0.model_family|URM：带多 query 表示的大模型，报告的设置中有 M=128 个 query token；item 映射 W = U [V_dis + V_trans]^T，其中 |C| ~ 10^7，H=128，D=4096；目标以自然语言指令表达，涵盖多场景、多行为、长尾和意外发现
+stages.0.details|矩阵分解加采样把候选映射的开销从约 5000 GFLOPs 降到约 2 GFLOPs，论文设置为 tau=0.07，M=128，T=4，K=1000，最多 32 个邻居。1.5B 模型在序列长度 1024 下单次前向传播达到 50 ms，这是论文给出的在线召回上限。
+features_signals.0|item 和用户的文本特征
+scale.0.metric|候选集
+scale.0.value|约 10^7 个 item
+scale.1.value|Qwen-7B，默认的特征生成器；1.5B 模型在长度 1024 下前向传播为 50 ms
+results_table.online.0.setting|阿里广告平台 A/B
+results_table.offline.0.setting|Sports、Beauty、Toys、Yelp，见表 1
+results_table.offline.1.setting|Sports、Beauty、Toys、Yelp，见表 1
+results_table.online.0.metric|核心指标，名称未给出
+results_table.online.0.versus|线上召回
+results_table.offline.0.result|平均 +46%
+results_table.offline.1.result|平均 +29%
+results_table.offline.0.versus|最强基线
+results_table.offline.1.versus|最强基线
+caveats.0|召回结果按每个十分钟窗口异步预先算好，因此这不是针对每个请求的大模型推理。
+caveats.1|摘要和引言没有定义 +3% 背后的核心指标。正文说明它是广告收入。
+caveats.2|归属于阿里巴巴是依据作者署名和单位；论文只把该平台描述为「our advertising platform」。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|异步推理的 GPU 集群规模
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|阿里广告平台的召回
+deployment.baseline|线上召回
+deployment.training_compute|Qwen-7B 在 64 张 NVIDIA H20 GPU 上训练：数据按 5% 采样后，五千万条训练样本用时 25 小时
+deployment.serving_latency|延迟在数十毫秒之内；1.5B 模型在序列长度 1024 下为 50 ms，即在线上限
+deployment.hardware|训练和延迟测试使用 NVIDIA H20 GPU
+deployment.notes.0|摘要没有说明核心指标。正文说明它是广告收入。
+deployment.notes.1|50 ms 这个数字是 1.5B 模型的基准测试，不是已部署的 7B 模型。
+deployment.online_lifts.0.metric|广告收入，即核心指标
+deployment.online_lifts.3.metric|长尾 item

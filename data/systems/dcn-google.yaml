@@ -129,3 +129,20 @@ updates:
 - date: '2026-10-30'
   note: Merged DCN and DCN V2 into one card presenting DCN V2.
 version_note: This card presents DCN V2, the latest of 2 versions of one system. Earlier versions are kept only as sources and in the version list.
+deployment:
+  online_evidence: online_qualitative
+  scenario: Web-scale learning-to-rank systems at Google, product not named
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production model
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Significant online business metric gains, unnamed.
+  - A 0.6% AUCLoss gain over the production MLP is reported, with no latency numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

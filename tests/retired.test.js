@@ -2,7 +2,7 @@
 // Retired and superseded cards: page stays reachable with a notice and noindex, but they are absent from the home list, count, timeline,
 // carousel, compare data, feed card events and sitemap; they are listed in the home archive. Never deleted.
 const { JSDOM } = require("jsdom"); const fs = require("fs"); const path = require("path");
-const dist = process.argv[2] || path.join(__dirname, "../dist"), D = path.join(__dirname, "../data/systems");
+const dist = process.argv[2] || path.join(__dirname, "../dist/en"), D = path.join(__dirname, "../data/systems");
 let fails = 0, checks = 0; const ok = (c, m) => { checks++; if (!c) { fails++; console.log("FAIL", m); } };
 const files = fs.readdirSync(D).filter((f) => f.endsWith(".yaml"));
 const meta = files.map((f) => { const t = fs.readFileSync(`${D}/${f}`, "utf8"); const m = t.match(/^status: (\w+)\s*$/m); return { id: f.slice(0, -5), st: m ? m[1] : "active", to: (t.match(/^superseded_by: (\S+)\s*$/m) || [])[1], versions: (t.match(/^  - name: /gm) || []).length, reason: (t.match(/^status_reason: "(.*)"\s*$/m) || [])[1] }; });
@@ -19,7 +19,7 @@ const slides = [...home.querySelectorAll(".carousel .slide")].map((s) => s.datas
 const arch = home.querySelector("details#archive");
 ok(!!arch, "home has an archive section");
 const archLinks = arch ? [...arch.querySelectorAll("li a")].map((a) => a.getAttribute("href")) : [];
-const sitemap = fs.readFileSync(`${dist}/sitemap.xml`, "utf8"), feed = fs.readFileSync(`${dist}/feed.xml`, "utf8");
+const sitemap = fs.readFileSync(path.join(dist, "../sitemap.xml"), "utf8"), feed = fs.readFileSync(`${dist}/feed.xml`, "utf8");
 const sysJson = JSON.parse(fs.readFileSync(`${dist}/data/systems.json`, "utf8")).map((c) => c.id);
 ok(sysJson.length === act.length, `compare data holds ${act.length} active cards, found ${sysJson.length}`);
 const clog = fs.readFileSync(`${dist}/changelog/index.html`, "utf8");

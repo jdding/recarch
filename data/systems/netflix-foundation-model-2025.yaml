@@ -54,3 +54,19 @@ scale_short: Hundreds of billions of interactions, over 300 million members at t
 key_result: No reported metrics in the sources
 results_table:
   note: The sources describe the approach and report no A/B results.
+deployment:
+  online_evidence: deployed_only
+  scenario: Netflix personalization, including the homepage and other applications
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - KV caching is used for multi-step decoding at inference. The blog gives no numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

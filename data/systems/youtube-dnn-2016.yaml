@@ -70,3 +70,19 @@ key_result: 'Offline: reports MAP and watch-time-weighted metrics, with no live 
 results_table:
   note: The paper reports offline MAP and watch-time-weighted metrics, and notes that live A/B results are not always correlated with offline
     ones.
+deployment:
+  online_evidence: deployed_only
+  scenario: YouTube homepage recommendations
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: About 1 billion parameters trained on hundreds of billions of examples
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says live A/B results are not always correlated with offline metrics.
+  basis: card_content
+  checked_on: '2026-10-31'

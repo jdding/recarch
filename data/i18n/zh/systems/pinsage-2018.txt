@@ -1,0 +1,36 @@
+surface|Related Pins 和 Homefeed 的候选生成
+era_reason|Web 规模的图卷积网络
+tldr|基于随机游走的图卷积网络，用 pin-board 图加视觉和文本特征构建 pin embedding；A/B 中 repin 率提升 10-30%。
+summary|基于随机游走的图卷积网络，用 pin-board 图加视觉和文本特征产出 pin embedding；用于最近邻的候选生成。
+core_idea|基于随机游走的图卷积网络，用 pin-board 图加视觉和文本特征构建 pin embedding。
+deployed_in|Pinterest 的 Related Pins 和 Homefeed 候选生成
+scale_short|3B 个节点和 18B 条边，7.5B 条训练样本
+key_result|线上 A/B 中 repin 率提升 10-30%，来自论文
+results_reported|A/B 测试报告 repin 率提升 10-30%，来自论文。
+version_note|对照站长的 Zotero 副本核对过，它是 6 Jun 2018 的 arXiv v1，用 KDD '18 的 ACM 模板排版，带引用格式和 DOI 10.1145/3219819.3219890，10 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+serving_infra|在 378 个 d2.8xlarge AWS 节点上做 MapReduce 推理；用最近邻查找候选。
+stages.0.model_family|图卷积网络，即带重要性池化的随机游走邻域，加最近邻查找
+stages.0.details|Embedding 用于 Related Pins 和 Homefeed 中的最近邻查找，论文用 LSH + Weak AND。用 max-margin 损失和困难负样本课程来训练。
+id_tokenization.approach|来自图和内容特征的节点 embedding，1024 维；没有 Semantic ID 的 tokenization
+features_signals.0|视觉特征，VGG-16，4096 维
+features_signals.1|文本标注特征，256 维
+features_signals.2|=
+features_signals.3|Pin-board 图结构
+training.mode|离线；用 MapReduce 推理得到 embedding
+training.objectives.0|带困难负样本的 max-margin 排序损失
+training.notes|按论文，在 TensorFlow 中用 16 块 K80 GPU 训练。
+scale.0.metric|图规模
+scale.0.value|3B 个节点，18B 条边，2B 个 pin，1B 个 board
+scale.1.metric|训练样本
+results_table.online.0.setting|A/B 测试
+results_table.online.0.metric|Repin 率
+results_table.online.0.versus|之前的候选生成
+unknown_fields.0|目前在 Pinterest 的使用情况
+updates.0.note|对照 arXiv 托管的、带最终 DOI 的 KDD '18 定稿 PDF 核对；所有卡片数字均已确认，没有改动。
+code.repos.0.owner|DGL 团队
+code.repos.0.note|DGL 中的 PinSage 示例；不是 Pinterest 发布的，pinterest/pinsage 不存在。
+deployment.scenario|Pinterest 的 Related Pins 和 Homefeed 候选生成
+deployment.baseline|之前的候选生成
+deployment.training_compute|在 TensorFlow 中用 16 块 Tesla K80 GPU 训练
+deployment.hardware|在 378 个 d2.8xlarge AWS 节点上做 MapReduce 推理；用 16 块 Tesla K80 GPU 训练
+deployment.online_lifts.0.metric|Repin 率

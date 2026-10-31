@@ -1,0 +1,42 @@
+surface|推荐和广告的排序模型
+era_reason|判别式排序骨干 RankMixer，即 token mixing 的扩展；主导范式是扩展判别式的排序模型，不是生成式或 Semantic ID 建模
+tldr|排序骨干用无参数的 token mixing 和每个 token 独立的 FFN，取代 self-attention；抖音信息流全量上线后，活跃天数 +0.3%，应用内时长 +1.08%。
+summary|面向硬件设计的排序架构：把特征组变成 token，用无参数的多头 token mixing 取代二次复杂度的 self-attention，并给每个 token 配一个独立的 FFN，可选带动态路由的 Sparse-MoE。已部署在抖音信息流推荐的全量流量排序中。
+core_idea|把特征组变成 token，不用 self-attention 来混合它们，并给每个 token 配独立的 FFN。
+deployed_in|抖音信息流排序，全量流量
+scale_short|1B 稠密参数模型，已用于全量流量的在线服务
+key_result|抖音信息流排序全量上线后，应用内总时长 +1.08%
+results_reported|抖音信息流排序全量上线：活跃天数 +0.3%，应用内总时长 +1.08%，来自摘要；广告场景中也做了 A/B 测试。参数量扩大约两个数量级，推理延迟大致不变。
+serving_infra|面向硬件的设计；参数量扩大 100x，推理延迟保持不变
+stages.0.model_family|RankMixer：多头 token mixing 加每个 token 的 FFN 堆叠成的 block，SMoE 变体用于约 1B 参数
+stages.0.details|每个 block：S = LN[TokenMixing[X] + X]；X' = LN[PFFN[S] + S]。特征 token 的构造方式是把拼接后的 embedding 切成 T 个等宽的特征组 token。
+features_signals.0|万亿规模的线上数据集
+training.mode|先离线，再在线
+scale.0.metric|模型规模
+scale.0.value|1B 稠密参数的 RankMixer 已用于全量流量的在线服务；论文在贡献部分称参数扩大 70x 而推理成本不增加，其他地方称「over 100x」或「two orders of magnitude」
+scale.1.value|通过替换人工设计的模块，从 4.5% 提高到 45%
+scale.2.metric|训练数据
+scale.2.value|「万亿规模」的线上数据集
+results_table.online.0.setting|抖音信息流排序，全量上线
+results_table.online.1.setting|抖音信息流排序，全量上线
+results_table.online.0.versus|此前的排序模型
+results_table.online.1.versus|此前的排序模型
+results_table.online.0.metric|活跃天数
+results_table.online.1.metric|应用内总时长
+results_table.offline.0.metric|推理延迟
+results_table.offline.0.result|大致不变
+results_table.offline.0.versus|参数量扩大约两个数量级
+caveats.0|论文给出了不同的扩大倍数，即 70x、over 100x 和两个数量级；在所读章节中没有确定具体使用的基线。
+caveats.1|全量上线说明的是抖音；第二个 A/B 场景是广告，这里没有复现细节。
+caveats.2|在所读章节中没有重述绝对延迟、QPS 和 GPU 数量。
+unknown_fields.0|绝对延迟和 QPS
+unknown_fields.1|GPU 型号和数量
+unknown_fields.2|基线的确切参数量
+updates.0.note|按站长的决定，时代从生成式改为深度模型：主导范式是扩展判别式的排序和序列模型，不是生成式或 Semantic ID 建模。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|抖音信息流排序，全量流量
+deployment.baseline|此前的排序模型
+deployment.serving_latency|参数量增长约两个数量级，延迟大致不变；没有给出绝对数字
+deployment.notes.0|替换人工设计的模块之后，模型 FLOPs 利用率从 4.5% 提高到 45%。
+deployment.online_lifts.0.metric|活跃天数
+deployment.online_lifts.1.metric|应用内总时长

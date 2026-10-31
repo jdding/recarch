@@ -1,0 +1,21 @@
+surface|搜索广告点击预估
+era_reason|逻辑回归加 FTRL-Proximal 在线学习
+tldr|来自已部署的 Google Ads CTR 系统的经验：FTRL-Proximal 在线逻辑回归，带每坐标学习率、L1 稀疏、校准和内存节省。
+summary|来自已部署 CTR 系统的工业经验：FTRL-Proximal 在线逻辑回归，带每坐标学习率、L1 稀疏、节省内存的技巧、校准和置信度估计。
+core_idea|用 FTRL-Proximal 做在线逻辑回归，带每坐标学习率和 L1 稀疏。
+deployed_in|Google 搜索广告点击预估
+scale_short|来源中没有说明
+key_result|没有抓取到单一的头条数字，论文按各项技术分别报告了离线和线上收益
+results_reported|论文报告了每项技术带来的离线和线上提升；没有抓取到单一的头条数字。
+stages.0.model_family|用 FTRL-Proximal 训练的稀疏逻辑回归
+id_tokenization.approach|数十亿个稀疏的哈希或类别特征
+features_signals.0|Query、广告和上下文特征
+training.objectives.0|对数损失 log-loss
+training.notes|每坐标学习率；节省内存和做校准的技术。
+results_table.note|论文按各项技术分别报告了离线和线上提升。卡片所依据的来源中没有抓取到单一的头条数字。
+unknown_fields.0|服务基础设施
+unknown_fields.1|绝对指标
+code.repos.0.owner|=
+code.repos.0.note|Keras 中实现 FTRL-Proximal 的 Ftrl 优化器。只有算法；论文中的广告点击系统没有发布。
+deployment.scenario|Google 搜索广告点击预估
+deployment.notes.0|论文按各项技术报告了线上收益。这张卡片没有单一的头条数字。

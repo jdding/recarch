@@ -65,3 +65,19 @@ scale_short: About 1,500 candidates, heavy ranker of about 48M parameters
 key_result: Open-source reference, no reported metrics
 results_table:
   note: The open-sourced code and documentation report no online or offline metrics.
+deployment:
+  online_evidence: deployed_only
+  scenario: X For You home timeline, open-sourced pipeline
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - No A/B results are published.
+  basis: card_content
+  checked_on: '2026-10-31'

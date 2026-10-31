@@ -1,15 +1,23 @@
+# Both languages are required: the build fails when a *_zh field is missing. Chinese texts may not add numbers or use parentheses.
 # Copy to data/newsletter/<slug>.yaml, e.g. data/newsletter/2026-11-06-issue-1.yaml, then run `python3 build.py`.
 # The issue gets its own page at /newsletter/<slug>/, is listed in /newsletter/, and appears in /feed.xml and /changelog/.
 title: "Issue 1: example title"
 date: "2026-11-06"            # quoted YYYY-MM-DD
+title_zh: "第 1 期：示例标题"      # required: Chinese is the default language of the site
 summary: "One or two sentences, used in the archive list, the feed and the page description."
+summary_zh: "一到两句话，用于归档列表、订阅源和页面描述。"
 body: |
   First paragraph. Paragraphs are separated by a blank line; plain text only (HTML is escaped).
 
   Second paragraph.
+body_zh: |
+  第一段。段落之间用空行分隔；纯文本，HTML 会被转义。数字只能使用英文正文中已有的数字。
+
+  第二段。
 cards:                          # optional: ids of cards covered (must exist in data/systems/)
   - hstu-meta-2024
 papers:                         # optional: papers/posts worth reading that have no card yet
   - title: "Paper title"
     url: "https://arxiv.org/abs/0000.00000"
     note: "One line on why it matters."
+    note_zh: "一句话说明它为什么重要。"

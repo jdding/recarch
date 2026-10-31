@@ -1,0 +1,25 @@
+surface|CTR 预估，在华为应用商店游戏中心的日志上评估，该公司在论文中匿名为 Company*
+era_reason|用于 CTR 的 FM 加 DNN
+tldr|DeepFM 把 Wide & Deep 手工设计的 wide 部分换成与 deep 部分共享 embedding 的因子分解机，在 Criteo 上优于 Wide&Deep、LR 和 FM。
+summary|把 Wide & Deep 手工设计的 wide 部分换成与 deep 部分共享 embedding 的因子分解机，端到端地学习低阶和高阶特征交互，不需要特征工程。
+core_idea|让因子分解机和 deep 部分共享 embedding，不需要特征工程。
+deployed_in|在 Criteo 和华为应用商店游戏中心的日志上做离线评估
+scale_short|离线，8 天内约十亿条点击记录
+key_result|离线：在 Criteo 和一份公司数据集上，AUC 和 Logloss 优于 Wide&Deep、LR、FM 和 FNN，卡片所依据的来源没有给出数字
+results_reported|论文报告在 Criteo 数据集和公司数据集上，AUC 和 Logloss 优于 Wide&Deep、LR、FM、FNN 等。
+stages.0.model_family|FM 部分加共享同一个 embedding 层的 deep 部分
+id_tokenization.approach|FM 与 DNN 共享的 field-aware 稀疏 embedding
+features_signals.0|类别和连续的 CTR 特征
+training.objectives.0|CTR 预估，log loss
+training.notes|用应用商店游戏中心一周的点击做训练，次日做测试；约十亿条记录，来源为 PDF。
+scale.0.metric|离线数据集
+scale.0.value|8 天内约十亿条点击记录
+results_table.offline.0.setting|Criteo 和公司数据集
+results_table.offline.0.metric|AUC 和 Logloss
+results_table.offline.0.result|优于所列的每个模型，没有数字
+caveats.0|只有离线评估；PDF 没有描述线上部署；PDF 中公司被匿名，作者来自华为。
+unknown_fields.0|部署情况
+unknown_fields.1|延迟
+unknown_fields.2|线上指标
+code.repos.0.note|流行的第三方 DeepFM 实现。FuxiCTR github.com/reczoo/FuxiCTR 是另一个被广泛使用的基准库。我没有找到论文作者发布的仓库。
+deployment.scenario|在 Criteo 和华为应用商店游戏中心的日志上做离线评估

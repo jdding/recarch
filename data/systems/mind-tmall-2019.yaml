@@ -122,3 +122,19 @@ results_table:
     metric: HR@10
     result: 0.0309, +33.77%
     versus: YouTube DNN 0.0231
+deployment:
+  online_evidence: online_qualitative
+  scenario: Matching stage of the Mobile Tmall App homepage
+  ab_traffic: not_reported
+  ab_duration: One week
+  baseline: Item-based CF and YouTube DNN
+  online_lifts: not_reported
+  training_compute: 100 GPUs, about 8 hours per run; the served network is updated every day
+  serving_latency: Under 15 ms to select thousands of candidates from a billion-scale item pool
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: 100 GPUs for training
+  notes:
+  - MIND beats both baselines on CTR in the one-week Tmall A/B. The text gives no figure for the deltas.
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -1,0 +1,44 @@
+surface|用于信息流、职位、广告和人的推荐的图 embedding
+era_reason|大规模的 GraphSAGE 风格 GNN；不是生成式
+tldr|LiGNN：已部署的 GraphSAGE 风格 GNN，图规模最高达千亿节点；报告广告 CTR 约 +2%，求职申请收到回复率约 +1%。
+summary|LinkedIn 的 KDD 2024 论文，讲 LiGNN，一个已部署的大规模 GNN 框架。GraphSAGE 风格的编码器带 cosine 和 batch 内解码器，在一张最多千亿节点、数千亿条边的异构图上训练，使用 ID embedding；时序建模用 SAGE 编码器加 Transformer，带前缀因果 mask 和长期损失；用图稠密化解决冷启动，并用 2 跳 PPR 采样。训练建立在 Microsoft DeepGNN 的图引擎之上，并加速了 7x；embedding 用 Beam 近线产出，作为特征用于 Feed EBR、OON Feed、职位、人的推荐和广告 CTR。
+core_idea|在千亿节点的图上用 GraphSAGE 风格的编码器，带时序建模和 2 跳 PPR 采样。
+deployed_in|LinkedIn 信息流、职位、人的推荐和广告 CTR
+scale_short|图最高达千亿节点、数千亿条边
+key_result|线上广告 CTR 约 +2%，来自摘要
+results_reported|摘要中给出的线上相对收益，均为近似值：求职申请收到回复率 1%，广告 CTR 2%，Feed 互动 DAU 0.5%，人的推荐带来的会话数 0.2% 和 WAU 0.1%。Follow Feed，见表 4，增量验证 AUC：200 个邻居对比 20 个 +3.2%，attention 聚合器 +0.9%，双编码器 +2.5%，ID embedding +15.3%，图稠密化 +0.5%，2 跳 PPR 采样 +0.6%，时序图 +5.8%；离线 recall 相比基于规则的候选选择 +9.6%；线上 Feed 互动 DAU +0.5%。时序消融，见表 1，Feed：基线 AUC 0.71978；全部组合 0.76176，即 +5.83%。OON Feed：与专业内容互动的 DAU 约 +0.2%。职位，见表 5：离线 AUC +1.1%，线上续订率 +0.3%，正向回复率 +1.0%，公司关注 +1.8%；时序模型在职位推荐排序中 AUC +6.8%，职位浏览者 +0.4%，合格申请者 +0.4%。人的推荐，见表 7：离线 recall +29.6%，会话数 +0.2%，WAU +0.1%，新增成员连接 +2.4%；PPR 采样至少比加权采样好 2%，多跳 PPR +2.3%，2 跳 PPR +2.1%。广告，见表 8：成员 embedding AUC +0.17%，全部 embedding AUC +0.39%，线上 CTR 约 +2%。
+serving_infra|基于 Apache Beam 的近线推理流水线：item 创建或成员交互事件通过 Kafka 到达，特征被拼接，GNN 编码器运行，embedding 写入 Venice 特征存储或 Kafka topic，供其他 Beam 流水线使用。选择 2 跳 PPR 采样，是因为近线服务只支持 2 跳。论文称为人的推荐生成了 500M 个成员 embedding。
+stages.0.model_family|Encoder-decoder GNN：GraphSAGE 风格的编码器，用均值或 attention 聚合，带节点 ID embedding，源节点和目标节点用双编码器；可选的时序 Transformer 作用于最近 N 个活动，例如 100 个，加 H 个 SAGE 输出头，例如 4 个，带前缀因果 mask 和长期损失；解码器：MLP、cosine 或 batch 内负采样。只保留训练好的编码器，用来产出节点 embedding，作为下游模型的特征。
+stages.0.details|用于 Follow Feed EBR 和站外 Feed EBR，作为额外的候选生成器，人的推荐召回，Top Applicant Jobs 排序特征和职位推荐排序，也作为广告 CTR 模型的特征。因此论文同时覆盖召回和排序用途；表中的阶段把基于 embedding 的召回列为主要用途。
+features_signals.0|LinkedIn 的图
+training.mode|在 Kubernetes 上离线训练，用 CPU 图引擎 Microsoft DeepGNN，加上通过 gRPC 拉取采样计算图的 GPU 训练器；Horovod 搭配 NCCL ring allreduce。分布式训练使用 6 到 24 个 worker。
+training.objectives.0|链接预测，使用二元交叉熵和 batch 内负样本目标
+training.objectives.1|预测未来事件的长期损失，用于时序模型
+training.notes|图中有互动、亲和和属性三类边。稠密化：出度低于第 30 百分位的节点，借助外部 embedding，成员用画像 LLM embedding，item 用内容 embedding，以及 HNSW，链接到第 90 百分位以上最相似的 top k 个节点，k 约为 50。训练速度：在一个大的 Follow Feed 数据集上从 24 小时缩短到 3.3 小时；按表 3，收益为 MLPinit 16.25%，自适应邻居采样 24.2%，分组和切片 69.9%，混合精度 8%，本地梯度聚合 35.2%，共享内存队列 68.04%，GPU 同机部署 0%。训练成功率从 30% 提高到超过 90%，gRPC 重试 +15%，Horovod +35%，GeneratorEnqueuer +10%。
+scale.0.metric|图规模
+scale.0.value|最高达千亿节点和数千亿条边
+scale.1.value|在超过 200 个国家和地区有超过十亿成员
+scale.2.metric|人的推荐的图
+scale.2.value|最多十亿个成员节点，数十亿条连接边；生成了 500M 个成员 embedding
+results_table.online.0.versus|线上排序
+results_table.online.1.metric|Feed 互动 DAU
+results_table.online.2.metric|正向回复率
+results_table.online.3.metric|新增成员连接
+results_table.offline.0.versus|基于规则的候选选择
+results_table.offline.1.setting|时序消融，表 1，Feed
+results_table.offline.1.method|全部组合
+results_table.offline.3.method|全部 embedding
+caveats.0|论文把头条收益描述为近似的相对提升，并非全部来自同一个 A/B；每个产品有自己的 A/B 和自己的指标。
+caveats.1|论文的消融数字是 Follow Feed 上的验证 AUC 提升，且是增量的，即每一行都叠加在上一行之上。
+caveats.2|论文提到一条线上经验：曝光折扣组件放在召回之后，丢弃了相关的更新，所以离线收益在线上消失，直到把它移到召回之前。
+caveats.3|arXiv 文本中的 ACM 引用块里仍是占位的 DOI；会议 KDD 2024，巴塞罗那，取自页眉。
+unknown_fields.0|模型维度和参数量
+unknown_fields.1|在线延迟
+unknown_fields.2|A/B 流量占比和时长
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|LinkedIn 信息流、职位、人的推荐和广告 CTR
+deployment.training_compute|在最新的任务上训练时间从 24 小时缩短到 3.3 小时；分布式训练使用 6 到 24 个 worker
+deployment.hardware|Kubernetes，带 CPU 图引擎和 GPU 训练器；近线推理在 Apache Beam 上
+deployment.online_lifts.1.metric|Follow Feed 互动 DAU
+deployment.online_lifts.2.metric|职位正向回复率
+deployment.online_lifts.3.metric|人的推荐新增成员连接

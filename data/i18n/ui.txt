@@ -1,0 +1,326 @@
+# UI strings. One per line: key || English || Chinese. Placeholders in {braces} must match in both languages.
+# The Chinese side may not add numbers, may not contain parentheses, and must contain Chinese characters when the English has prose.
+# Keys starting with js. are sent to the browser scripts as window.RECARCH_L10N.
+
+# --- language switch, nav, footer
+lang.label || Language || 语言
+lang.switch_title || Switch to 中文 || 切换到 English
+feed.link_title || RecArch updates || RecArch 更新
+nav.systems || Systems || 系统
+nav.topics || Topics || 专题
+nav.compare || Compare || 对比
+nav.changelog || Changelog || 更新日志
+nav.newsletter || Newsletter || 周报
+nav.rss_title || Atom feed || Atom 订阅源
+nav.sponsor || Sponsor || 赞助
+nav.method || Method || 方法
+footer.text || RecArch · structured notes on how real companies build recommender, search and ranking systems. Every card cites its public sources; unknowns are marked unknown. || RecArch · 结构化整理真实公司如何构建推荐、搜索和排序系统。每张卡片都标注公开来源，未知信息一律标为未知。
+nr || not reported || 未报告
+
+# --- group labels used by the home filters
+grp.era || Era || 时代
+grp.stage || Stage || 阶段
+grp.family || Paradigm || 范式
+grp.paradigm || Paradigm tag || 范式标签
+grp.evidence || Evidence || 证据等级
+
+era.classic || Classic / pre-deep || 经典 / 深度学习之前
+era.deep || Deep-learning era || 深度学习时代
+era.generative || Generative / LLM / scaling era || 生成式 / 大模型 / 规模化时代
+evid.production_described || Production described || 已披露线上部署
+evid.open_source_reference || Open-source reference || 开源参考实现
+evid.research_only || Research only || 仅研究
+code.official_full || Full official code || 完整官方代码
+code.official_partial || Partial official code || 部分官方代码
+code.third_party_only || Third-party code only || 仅有第三方代码
+code.none || No code found || 未发现公开代码
+stage.retrieval || Retrieval || 召回
+stage.pre-rank || Pre-ranking || 粗排
+stage.rank || Ranking || 精排
+stage.re-rank || Re-ranking || 重排
+stage.single-stage || Single-stage || 单阶段
+stage.other || Other || 其他
+depev.online_numbers || Online numbers || 有线上数据
+depev.online_qualitative || Online, no figures || 有线上描述，无具体数字
+depev.deployed_only || Deployed, no online results || 已部署，无线上结果
+depev.no_online_claim || No online claim || 未声称线上效果
+family.sequence || Sequence & user modeling || 序列与用户建模
+family.multitask || Multi-task, ranking & training || 多任务、排序与训练
+family.graph || Graph & random-walk || 图与随机游走
+family.generative || Semantic ID, generative & LLM || Semantic ID、生成式与大模型
+family.retrieval || Embedding retrieval & CF || 向量召回与协同过滤
+family.scaling || Feature interaction & scaling || 特征交互与规模化
+stagegroup.retrieval || Retrieval || 召回
+stagegroup.ranking || Ranking || 精排
+stagegroup.prepost || Pre-/re-ranking || 粗排与重排
+stagegroup.other || Single-stage & other || 单阶段与其他
+srctype.paper || paper || 论文
+srctype.engineering_blog || engineering blog || 工程博客
+srctype.documentation || documentation || 文档
+srctype.source_code || source code || 源代码
+srctype.press || press || 媒体报道
+
+# --- kinds in the changelog and carousel
+kind.added || Added || 新增
+kind.updated || Updated || 更新
+kind.site || Site || 站点
+kind.issue || Newsletter || 周报
+kind.retired || Retired || 已退役
+feedkind.added || New system || 新系统
+feedkind.updated || Updated || 更新
+feedkind.site || Site || 站点
+feedkind.issue || Newsletter || 周报
+feedkind.retired || Retired || 已退役
+status.superseded || Superseded || 已被取代
+status.word_retired || retired || 已退役
+status.word_superseded || superseded || 已被取代
+status.line || {word}: {reason} || {word}：{reason}
+status.on_retired || Retired on {date}. || 已于 {date} 退役。
+status.on_superseded || Superseded on {date}. || 已于 {date} 被取代。
+status.replaced || Replaced by <a href="{href}">{name}</a>. || 替代它的是 <a href="{href}">{name}</a>。
+status.stays || This card stays online at its URL for reference. It is not counted on the home page and is no longer updated. || 本卡片仍保留在原地址供参考，不计入首页数量，也不再更新。
+status.title_retired || Retired: {title} || 已退役：{title}
+status.title_superseded || Superseded: {title} || 已被取代：{title}
+
+# --- subscribe box
+sub.heading_default || Get the weekly RecArch digest || 订阅 RecArch 每周精选
+sub.heading_issue || Get the next issue by email || 通过邮件获取下一期
+sub.heading_card || Like this card? Get one a week. || 喜欢这张卡片？每周收到一张。
+sub.copy || One email a week: new industrial recsys systems, read in full so you don't have to. || 每周一封邮件：新的工业级推荐系统，我们通读全文，你只需看结论。
+sub.noscript || Subscribe on Beehiiv || 在 Beehiiv 订阅
+sub.fine || Free. Unsubscribe any time. || 免费，可随时退订。
+sub.rss || Prefer RSS? || 更喜欢 RSS？
+
+# --- date words
+date.today || today || 今天
+date.yesterday || yesterday || 昨天
+date.days_ago || {n} days ago || {n} 天前
+
+# --- carousel
+car.title || Recently added & updated || 最近新增与更新
+car.week || This week: {na} added, {nu} updated || 本周新增 {na} 个，更新 {nu} 个
+car.quiet || Nothing new this week || 本周暂无更新
+car.update || Update: || 更新：
+car.read || Read the card || 阅读卡片
+car.slide_of || {i} of {n} || 第 {i} 张，共 {n} 张
+car.go || Go to slide {n} || 转到第 {n} 张
+car.aria || Recently added and updated systems || 最近新增与更新的系统
+car.prev || Previous slide || 上一张幻灯片
+car.next || Next slide || 下一张幻灯片
+car.full_changelog || Full changelog || 完整更新日志
+
+# --- home
+hero.h1 || The atlas of recommender system architecture. || 推荐系统架构全景图
+hero.p || A living map of industrial recommender architecture, tracking every shift as it happens. || 一张持续更新的工业级推荐系统架构地图，实时记录每一次技术演进。
+home.title || RecArch - The atlas of recommender system architecture || RecArch - 推荐系统架构全景图
+home.desc || A living map of industrial recommender system architecture, with sourced cards on how companies build recommenders and every shift from collaborative filtering to generative recommendation. || 一张持续更新的工业级推荐系统架构地图，用带来源的系统卡片，讲清各家公司如何构建推荐系统，以及从协同过滤到生成式推荐的每一次转变。
+home.filters || Filters || 筛选
+home.search_ph || Search by name, company or summary… || 按名称、公司或摘要搜索…
+home.search_aria || Search systems || 搜索系统
+home.prod_only || Production-deployed only || 仅看已上线
+home.has_code || Has official code || 有官方代码
+home.more || More filters || 更多筛选
+home.count || {n} systems || {n} 个系统
+home.clear || Clear all || 清除全部
+home.sort || Sort || 排序
+home.sort_aria || Sort systems || 系统排序
+home.sort_default || Default || 默认
+home.sort_cites || Most cited || 引用最多
+home.view || View || 视图
+home.view_list || List || 列表
+home.view_timeline || Timeline || 时间线
+home.empty || No systems match. Try fewer filters or {btn}. || 没有匹配的系统。请减少筛选条件，或{btn}。
+home.empty_btn || clear all || 清除全部
+card.citations || {n} citations || 被引用 {n} 次
+card.sources_one || {n} source || {n} 个来源
+card.sources_many || {n} sources || {n} 个来源
+card.compare || Compare || 对比
+timeline.note || Ordered by first public disclosure; the year is the arXiv v1, blog or venue date. Columns are eras by dominant paradigm, so a year can hold systems from different eras. || 按首次公开时间排序，年份取 arXiv v1、博客或会议发表的日期。各列按主导范式划分时代，因此同一年可能包含不同时代的系统。
+archive.summary || Archive: {n} retired or superseded cards, not counted above || 归档：{n} 张已退役或已被取代的卡片，不计入上方数量
+
+# --- changelog
+changelog.title || Changelog | RecArch || 更新日志 | RecArch
+changelog.desc || What was added or updated on RecArch, by date: new industrial recommender system cards, corrections and re-verifications. || 按日期记录 RecArch 的新增与更新：新的工业推荐系统卡片、勘误和重新核对。
+changelog.lead || Every system card added or updated, by date. Each card page shows its own “Added” and “Last verified” dates. Follow along by {rss} or the {digest}. || 按日期列出每一张新增或更新的系统卡片。每张卡片页都有各自的“新增”和“最后核对”日期。你可以通过 {rss} 或 {digest} 关注更新。
+changelog.rss_text || RSS / Atom || RSS / Atom 订阅
+changelog.digest_text || weekly digest || 每周周报
+feed.title || RecArch: new and updated recommender system cards || RecArch：新增与更新的推荐系统卡片
+feed.subtitle || Industrial recsys, search and ads architectures, read in full. Card additions, updates and weekly digest issues. || 工业级推荐、搜索与广告系统架构，通读全文后整理。包含卡片新增、更新和每周周报。
+
+# --- newsletter
+nl.title || Newsletter | RecArch || 周报 | RecArch
+nl.desc || Weekly digest of new industrial recommender system cards and papers. Archive of past issues; subscribe by email or RSS. || 每周精选新的工业推荐系统卡片和论文，含往期存档，可通过邮件或 RSS 订阅。
+nl.h1 || The RecArch weekly digest || RecArch 每周周报
+nl.lead || Newly added system cards, notable papers and engineering posts from industrial recsys teams, with the structured fields pulled out for you. || 新增的系统卡片，以及工业界推荐团队值得一读的论文和工程文章，并为你提取好结构化字段。
+nl.issues || Issues || 往期周报
+nl.none || No issues yet. Issue #1 is in preparation; every issue will be published here as its own page and announced in the {feed}. || 暂无期刊。第 1 期正在筹备中，每一期都会作为独立页面在此发布，并通过{feed}通知。
+nl.none_feed || feed || 订阅源
+nl.past || Past issues also live on {link}. || 往期周报也可在 {link} 查看。
+nl.covered || Systems covered || 本期涉及的系统
+nl.papers || Papers and posts || 论文与文章
+nl.issue_title || {title} | RecArch newsletter || {title} | RecArch 周报
+
+# --- card page
+card.title || {name} - {company}, {year} | RecArch || {name} - {company}，{year} | RecArch
+card.desc || {name} by {company}: {summary} || {company} 的 {name}：{summary}
+card.onpage || On this page || 本页内容
+card.paper || Paper || 论文
+card.primary || Primary source || 主要来源
+card.code || Code || 代码
+card.official || official || 官方
+card.unofficial || unofficial || 非官方
+card.no_code || No public code found || 未发现公开代码
+card.no_code_found || No code found. || 未发现代码。
+card.preprint || preprint || 预印本
+card.unk || unknown, the source does not say || 未知，来源未说明
+card.unknown_word || unknown || 未知
+card.other_version || other version: {v} || 其他版本：{v}
+sec.architecture || Architecture || 架构
+sec.how || How it works || 工作原理
+sec.results || Results || 结果
+sec.details || Technical details || 技术细节
+sec.limits || Limitations || 局限
+sec.sources || Sources || 来源
+sec.history || History || 历史
+kf.h2 || Key facts || 关键信息
+kf.stage || Stage || 阶段
+kf.core || Core idea || 核心思路
+kf.deployed || Deployed in || 部署场景
+kf.scale || Scale || 规模
+kf.result || Headline result || 核心结果
+kf.code || Code status || 代码状态
+rt.setting || Setting || 设置
+rt.method || Method || 方法
+rt.metric || Metric || 指标
+rt.result || Result || 结果
+rt.versus || Compared with || 对比基线
+rt.online || Online || 线上
+rt.offline || Offline || 离线
+rt.other || Reported, type not stated || 已报告，未说明类型
+tr.mode || Mode: || 训练方式：
+tr.obj || Objectives: || 训练目标：
+det.features || Features & signals || 特征与信号
+det.training || Training || 训练
+det.serving || Serving & infra || 服务与基础设施
+det.idtok || ID / tokenization || ID 与 tokenization
+lim.unknown || Not stated in the sources: {fields}. || 来源未说明：{fields}。
+hist.published || Card published. || 卡片发布。
+hist.verified || Last verified {date}. Spotted an error? Check the sources above and tell us once a contact address is set. || 最后核对于 {date}。发现错误？请先对照上方来源核实，联系方式设置好之后欢迎反馈。
+hist.compare || Compare this system || 对比此系统
+ver.h3 || Versions || 版本
+ver.here || presented here || 本卡展示
+ver.source || source || 来源
+ver.badge_latest || Presents {v}, latest of {n} versions || 展示 {v}，共 {n} 个版本中的最新版
+ver.badge_older || Presents {v}, one of {n} versions, latest is {latest} || 展示 {v}，共 {n} 个版本之一，最新为 {latest}
+cite.line || Cited by <b>{n}</b>{tot} per <a href="{url}" rel="noopener nofollow" target="_blank">{source}</a>, as of <time datetime="{date}">{date}</time>{note} || 被引用 <b>{n}</b> 次{tot}，数据来自 <a href="{url}" rel="noopener nofollow" target="_blank">{source}</a>，截至 <time datetime="{date}">{date}</time>{note}
+cite.tot || in total across the papers of all {nv} versions, || ，为全部 {nv} 个版本论文的合计
+diagram.cap || Redrawn and simplified from {fig} of <a href="{url}" rel="noopener nofollow" target="_blank">{work}</a>. || 改绘并简化自 <a href="{url}" rel="noopener nofollow" target="_blank">{work}</a> 中的{fig}。
+dep.h2 || Deployment and cost || 部署与成本
+dep.evidence || Online evidence || 线上证据
+dep.scenario || Scenario || 场景
+dep.ab_traffic || A/B traffic || A/B 流量
+dep.ab_duration || A/B duration || A/B 时长
+dep.baseline || Compared with || 对比基线
+dep.lifts || Online lifts || 线上收益
+dep.compute || Training compute || 训练算力
+dep.latency || Serving latency || 服务延迟
+dep.qps || Serving throughput || 服务吞吐
+dep.cost || Inference cost || 推理成本
+dep.hardware || Hardware || 硬件
+dep.how_full || against the full text of the sources || 对照来源全文
+dep.how_card || against the figures already on this card, the full text was not rechecked for this block || 对照本卡片已有的数字，本部分未重新核对全文
+dep.foot || Checked on {date} {how}. Fields the sources do not state are marked not reported. || 核对于 {date}，{how}。来源未说明的字段标记为未报告。
+redirect.title || Moved to {name} | RecArch || 已移至 {name} | RecArch
+redirect.text || {old} was merged into <a href="{href}">{new}</a>, which presents the latest version. || {old} 已合并到 <a href="{href}">{new}</a>，后者展示最新版本。
+nf.title || Not found | RecArch || 页面未找到 | RecArch
+nf.h1 || Not found || 页面未找到
+nf.back || Back to all systems || 返回全部系统
+
+# --- topics
+topics.title || Topics | RecArch || 专题 | RecArch
+topics.desc || Problem-oriented comparisons of production recommender systems. || 围绕具体问题，对比生产环境中的推荐系统。
+topics.lead || Problem-oriented pages. Each one compares the systems that attack the same problem and explains how their approaches differ. || 按问题组织的专题页。每个专题对比解决同一问题的系统，并解释它们的做法有何不同。
+topic.title || {t} | RecArch || {t} | RecArch
+topic.vs || Compared with {b} || 对比基线 {b}
+topic.th_system || System || 系统
+topic.th_approach || Approach || 做法
+topic.th_online || Online result || 线上结果
+topic.th_latency || Serving latency || 服务延迟
+topic.th_hardware || Hardware || 硬件
+topic.foot || The online result and serving columns come from the Deployment and cost block of each card. Lifts are against different baselines, so they are not comparable across rows. || 线上结果和服务相关列来自各卡片的“部署与成本”部分。各行的收益对应不同的对比基线，因此不能跨行直接比较。
+topic.cards || Cards: || 相关卡片：
+topic.compared || Systems compared || 对比的系统
+topic.differ || How the approaches differ || 各方案有何不同
+topic.compare_btn || Compare the first three side by side || 并排对比前三个系统
+
+# --- compare, sponsor, method pages
+compare.title || Compare recommender systems | RecArch || 推荐系统对比 | RecArch
+compare.desc || Side-by-side comparison of 2-3 industrial recommender, search or ranking systems: stages, paradigms, tokenization, training and scale. || 并排对比 2 到 3 个工业级推荐、搜索或排序系统：阶段、范式、tokenization、训练与规模。
+compare.h1 || Compare systems || 系统对比
+compare.lead || Pick 2–3 systems to compare side by side. || 选择 2 到 3 个系统并排对比。
+sponsor.title || Advertise / sponsor | RecArch || 广告与赞助 | RecArch
+sponsor.desc || Sponsor RecArch to reach recommender, search and ranking practitioners. This is a placeholder page. || 赞助 RecArch，触达推荐、搜索和排序领域的从业者。本页为占位页。
+sponsor.h1 || Advertise / sponsor RecArch || 广告与赞助 RecArch
+sponsor.lead || Reach practitioners who design and operate recommender, search and ranking systems. || 触达设计和运营推荐、搜索与排序系统的从业者。
+sponsor.todo || TODO: placeholder || 待办：占位页
+sponsor.p || Planned: a sponsor slot in the weekly digest and a labelled sponsor line on the home page. Sponsors never change card content; all cards are sourced and editorially independent. || 计划中：每周周报中的赞助位，以及首页带明确标注的赞助行。赞助方不会改变卡片内容，所有卡片都有来源且编辑独立。
+sponsor.audience || Audience: ML engineers, researchers and leads in recsys, search and ads; audience numbers will be added once real data exists. || 受众：推荐、搜索和广告领域的机器学习工程师、研究者和负责人；有真实数据后会补充受众规模。
+sponsor.formats || Formats: newsletter sponsor line, home-page sponsor, job post. || 形式：周报赞助行、首页赞助位、招聘信息。
+sponsor.pricing || Pricing: || 价格：
+sponsor.notset || not set || 未确定
+sponsor.contact || Contact: || 联系方式：
+sponsor.todo_contact || TODO: add a contact address || 待办：补充联系邮箱
+about.title || Method | RecArch || 方法 | RecArch
+about.desc || How RecArch cards are sourced and what the evidence levels mean. || RecArch 卡片的来源方式，以及各证据等级的含义。
+about.h1 || Method || 方法
+about.lead || RecArch cards are written from public primary sources only: papers, official engineering blogs, documentation and released code. || RecArch 的卡片只依据公开的一手来源撰写：论文、官方工程博客、文档和已发布的代码。
+about.l1 || Every card lists its sources. If a source does not state a fact, the field is marked unknown rather than guessed. || 每张卡片都列出来源。来源没有说明的事实，字段标为未知，不做猜测。
+about.l2 || Evidence level separates systems a source says are deployed from open-source references and research-only work. || 证据等级把来源明确说已上线的系统，与开源参考实现和纯研究工作区分开。
+about.l3 || Scale numbers are only those the sources state, with attribution. || 规模数字只采用来源明确给出的，并注明出处。
+about.l4 || New systems are added as they are read in full. Candidate sources are queued by a refresh script and reviewed by hand before publication. || 新系统在通读全文后才会加入。候选来源由刷新脚本排队，发布前经人工审核。
+
+# --- client script strings
+js.count_all || {n} systems || {n} 个系统
+js.count_some || {n} of {t} systems || {n} / {t} 个系统
+js.cmp_max || Compare up to 3 systems. || 最多同时对比 3 个系统。
+js.selected || {n} selected || 已选 {n} 个
+js.pause || Pause || 暂停
+js.play || Play || 播放
+js.today || today || 今天
+js.yesterday || yesterday || 昨天
+js.days_ago || {n} days ago || {n} 天前
+js.cmp_add || Add || 添加
+js.cmp_choose || Choose a system… || 选择一个系统…
+js.cmp_option || {name} ({company}) || {name}，{company}
+js.cmp_empty || Choose at least two systems above, or tick “Compare” on cards from the home page. || 请在上方选择至少两个系统，或在首页的卡片上勾选“对比”。
+js.cmp_title || Compare: {names} | RecArch || 对比：{names} | RecArch
+js.nr || not reported || 未报告
+js.unknown || unknown || 未知
+js.preprint || preprint / blog only || 仅预印本或博客
+js.none_stated || none stated || 未说明
+js.unofficial_tag || (unofficial) || 非官方
+js.year_fmt || {y} ({m}) || {y}，{m}
+js.row_company || Company || 公司
+js.row_surface || Surface || 产品场景
+js.row_year || Year (first public) || 年份，首次公开时间
+js.row_venue || Venue || 发表场所
+js.row_era || Era || 时代
+js.row_evidence || Evidence || 证据等级
+js.row_paradigms || Paradigms || 范式
+js.row_stages || Stages || 阶段
+js.row_idtok || ID / tokenization || ID 与 tokenization
+js.row_features || Features || 特征
+js.row_training || Training || 训练
+js.row_serving || Serving || 服务
+js.row_scale || Scale (stated) || 规模，来源所述
+js.row_online_evidence || Online evidence || 线上证据
+js.row_lifts || Online lifts || 线上收益
+js.row_ab_traffic || A/B traffic || A/B 流量
+js.row_ab_duration || A/B duration || A/B 时长
+js.row_latency || Serving latency || 服务延迟
+js.row_cost || Inference cost || 推理成本
+js.row_hardware || Hardware || 硬件
+js.row_results || Results || 结果
+js.row_code || Code || 代码
+js.row_caveats || Caveats || 局限
+js.row_sources || Sources || 来源

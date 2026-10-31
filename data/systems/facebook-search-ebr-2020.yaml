@@ -141,3 +141,19 @@ results_table:
     metric: 1-recall@10
     result: 74.81%
     versus: Flat index 74.81%
+deployment:
+  online_evidence: online_qualitative
+  scenario: Facebook Search retrieval, including people, groups, pages and events
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production search
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Significant metric gains from A/B experiments on verticals, with no numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

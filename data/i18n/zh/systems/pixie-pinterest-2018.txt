@@ -1,0 +1,64 @@
+surface|实时的基于图的候选生成
+era_reason|在图上做随机游走，没有学习的模型，所以是图随机游走式 CF
+tldr|Pixie 在含 2B 个 pin 和 17B 条边的内存 pin-board 图上做有偏随机游走，实时产出候选；离线 top-1000 命中率为 52.2%，基于内容的为 10.5%。
+summary|Pinterest 的 WWW 2018 论文。Pixie 是实时的、基于图的推荐器，在内存中的 pin-board 二部图上做带重启的有偏随机游走，该图被裁剪到 1B 个 board、2B 个 pin 和 17B 条边，约 120 GB，为一组加权的查询 pin 返回候选。关键技巧：按用户特征对边的选择加偏置，在多个查询 pin 之间按度缩放步数分配，多次命中增强器，提前停止，以及基于熵和相似度的图裁剪。一台服务器每秒处理约 1,200 个请求，p99 延迟低于 60 ms；论文称由 Pixie 支撑的系统占每日 pin 保存量的一半以上。
+core_idea|在内存 pin-board 图上做带重启的有偏随机游走，实时返回候选。
+deployed_in|Pinterest 面向 Homefeed、Related Pins、board 和「探索」的实时候选生成
+scale_short|裁剪后的图有三十亿个节点，每个集群每秒近 100,000 个请求
+key_result|在线上 A/B 中，相对旧系统，Homefeed 每个 pin 的互动 +48%
+results_reported|离线命中率，预测被再次 pin 的 pin，见表 1，top 10 / 100 / 1000：基于内容的文本 1.0% / 2.2% / 4.8%，视觉 1.1% / 2.4% / 4.5%，二者结合 2.1% / 4.6% / 10.5%，Pixie 6.3% / 23.1% / 52.2%。线上 A/B 相对旧系统，见表 2，每个 pin 的互动：Homefeed +48%，Related Pins +13%，board 推荐 +26%，「探索」标签页 +20%，本地化使用用户语言的 pin +48% 到 75%；正文还给出把 Homefeed 的一个来源从 Hadoop 换成 Pixie 带来 +50%，以及更短的游走使 Related Pins 每天的保存量 +3%。实时响应比等待数天或数小时，互动高 30% 到 50%。提前停止，n_p = 2000，n_v = 4，与金标准集合的重合度为 84%，速度快约 3 倍。图裁剪：F1 分数在 delta = 0.91 时达到峰值，比未裁剪的图高 58%，而只保留 20% 的边，图大小约为原来的六分之一。语言偏置，见表 3：对英文的查询 pin，目标语言占比，基础游走对 Pixie 游走，日语为 16.35% 对 80.33%，西班牙语为 41.94% 对 94.51%，斯洛伐克语为 2.13% 对 42.55%。
+serving_infra|C++，基于 Stanford Network Analysis Platform，即 SNAP；244 GB 内存的 AWS r3.8xlarge 机器装下约 120 GB 的整张裁剪后的图，所以游走不会跨机器。自定义的邻接数组，即带偏移的 edgeVec，以及带线性探测和乘法哈希的开放寻址哈希表访问计数器；2 MB 的 Linux HugePages 让虚拟机用一半的运行时间服务两倍的请求；加载图约需 10 分钟。每台服务器有 IO 线程和工作线程，每个工作线程一个计数器，每个查询由单个工作线程处理。p99 延迟低于 60 ms；每台服务器约 1,200 个请求每秒；集群接近每秒 100,000 个请求。
+stages.0.model_family|图随机游走，没有学习的模型：在 pin-board 二部图上的 Pixie Random Walk。对每个查询 pin q，步数 N_q = w_q * N * s_q / sum[s_r]，其中 s_q = |E[q]| [C - log|E[q]|]，C 为 pin 的最大度。各 pin 的访问计数 V_q 合并为 V[p] = [sum_q sqrt[V_q[p]]]^2，以增强被多个查询 pin 到达的 pin。当至少 n_p 个 pin 的访问次数达到 n_v 时，游走提前停止。
+stages.0.details|边的选择按用户特征，即语言和主题，加偏置，做法是离散的权重集合加连续的边存储，所以 PersonalizedNeighbor 是一个子区间操作。查询集合因用户而异，每次用户行为后更新；权重取决于行为类型，并随半衰期衰减。因为游走同时访问 board 和 pin，两者都可以被推荐；新 pin 通过先推荐 board 来提供服务。提到的场景：Homefeed、Related Pins，Pixie 是主要的候选来源，另有其他层，board 推荐，即「Picked「为你推荐」，Explore、邮件、个性化文章。
+id_tokenization.approach|Pin 和 board 的节点 ID
+features_signals.0|Pin-board 图
+features_signals.1|用户特征，用于游走的偏置
+training.mode|不训练模型。图每天重建一次：Hadoop 流水线输出 board-pin 边，再由一台太字节级内存的机器上的图编译器裁剪它，并写出供服务器加载的二进制文件；服务器每天重启一次以加载最新的图。
+training.objectives.0|无；按随机游走的访问次数排序
+training.notes|裁剪：用最新 pin 的 LDA 主题向量计算 board 的熵；最多样的 10% 的 board 被移除；高度数 pin 的边通过保留主题向量 cosine 相似度最高的 board 来剪掉，裁剪因子为 delta，度变为 |E[p]|^delta。
+scale.0.value|超过三十亿个 pin
+scale.1.value|超过两亿月活
+scale.2.metric|原始图
+scale.2.value|七十亿个节点，超过一千亿条边
+scale.3.metric|裁剪后用于服务的图
+scale.3.value|三十亿个节点，1B 个 board，2B 个 pin，170 亿条边，约 120 GB 内存
+scale.4.metric|集群吞吐
+scale.4.value|每秒近 100,000 个请求
+results_table.online.0.metric|每个 pin 的互动
+results_table.online.1.metric|每个 pin 的互动
+results_table.online.2.metric|每个 pin 的互动
+results_table.online.3.metric|每个 pin 的互动
+results_table.online.0.versus|旧系统
+results_table.online.1.versus|旧系统
+results_table.online.2.versus|旧系统
+results_table.online.3.versus|旧系统
+results_table.online.2.setting|board 推荐，表 2
+results_table.online.3.setting|「探索」标签页，表 2
+results_table.offline.0.setting|预测被再次 pin 的 pin，表 1
+results_table.offline.1.setting|预测被再次 pin 的 pin，表 1
+results_table.offline.2.setting|预测被再次 pin 的 pin，表 1
+results_table.offline.0.metric|命中率 top 10
+results_table.offline.1.metric|命中率 top 100
+results_table.offline.2.metric|命中率 top 1000
+results_table.offline.0.versus|基于内容的结合方法 2.1%
+results_table.offline.1.versus|基于内容的结合方法 4.6%
+results_table.offline.2.versus|基于内容的结合方法 10.5%
+caveats.0|论文在摘要和引言中报告「more than 80% of all user engagement」，在第 5 节和结论中又对 Pixie 支撑的系统报告「over half of all pins saved each day」；这是不同的度量。
+caveats.1|这篇 2017 年论文的 A/B 提升是对比之前的线上系统，那些系统大多是离线的、基于 Hadoop 的、预计算的，而不是现代的排序栈。
+caveats.2|离线命中率的基线只有基于内容的 embedding 方法，即 VGG-16 视觉和 Word2Vec 文本；论文称没有对比 CF 或矩阵分解，因为在这个规模上没有现成可用的方法。
+caveats.3|硬件和数字来自 2017 年；论文在 arXiv 上的年份是 2017，而会议年份是 WWW 2018。
+unknown_fields.0|查询权重半衰期 lambda 的确切值
+unknown_fields.1|Pixie 的候选在下游如何排序
+unknown_fields.2|目前，即 2017 年之后的状态
+updates.0.note|范式标签已更正：random-walk 取代 graph-neural-network，因为 Pixie 是随机游走系统，不是 GNN；embedding-based-retrieval 换成 item-cf，因为它是没有学习 embedding 的图随机游走式 CF。
+updates.1.note|首次公开的年份由 2018 更正为 2017，依据是 2017-11 的 arXiv 预印本。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Pinterest 面向 Homefeed、Related Pins、board 和「探索」的实时候选生成
+deployment.baseline|旧系统
+deployment.serving_latency|P99 延迟低于 60 ms
+deployment.serving_qps|每台服务器约 1,200 个请求每秒；集群处理近 100,000 个
+deployment.hardware|244 GB 内存的 AWS r3.8xlarge 机器，每台装下约 120 GB 的裁剪后的图
+deployment.online_lifts.0.metric|Homefeed 每个 pin 的互动
+deployment.online_lifts.1.metric|Related Pins 每个 pin 的互动
+deployment.online_lifts.2.metric|board 推荐每个 pin 的互动
+deployment.online_lifts.3.metric|「探索」标签页每个 pin 的互动

@@ -1,0 +1,50 @@
+surface|Homefeed 排序、Related Pins、通知、搜索
+era_reason|在近期行为上用 Transformer 作为排序特征；判别式 CTR 模型
+tldr|在 Homefeed 的 Pinnability 内，对用户最近 100 个实时行为做 Transformer；A/B：repin 量 +11.0%，hide 量 -10.0%。
+summary|Pinterest Homefeed 的实时与批量混合排序器：一个 transformer 对每个用户最近 100 个行为编码，并与候选 pin 做早期融合，其输出与批量的 PinnerFormer 用户 embedding 在 Pinnability 内结合，后者使用 DCN-V2 特征交叉和 MLP 多任务头。论文报告已在 Homefeed、Related Pins、通知和搜索中上线使用。
+core_idea|对最近 100 个行为做 transformer，带候选早期融合，并与批量用户 embedding 结合。
+deployed_in|Pinterest 的 Homefeed、Related Pins、通知和搜索
+scale_short|每个用户最近 100 个行为，A/B 每组为 1.5% 的 Homefeed 用户
+key_result|在线上 A/B 中，相对不带实时序列特征的 Pinnability，所有用户的 Homefeed repin 量 +11.0%
+results_reported|线上 A/B，以不带实时序列特征的 Pinnability 作对照，每组 1.5% 的 Homefeed 用户：Homefeed repin 量 +11.0%，所有用户，/ +17.0%，非核心用户；Homefeed hide 量 -10.0% / -10.5%；总停留时长 +2.0% / +1.5%。其他场景：Related Pins repin +2.8%，搜索 repin +2.3%，邮件 CTR +1.4%，通知推送打开率 +1.9%。离线表 1：HIT@3 的 repin 和 hide 相对 WDL+seq 和 BST 基线的提升。
+version_note|对照站长的 Zotero 副本核对过，它是 31 May 2023 的 arXiv v1，用 KDD '23 的 ACM 模板排版，带最终 DOI 和 ACM 引用格式，即已接收的定稿文本。没有单独对比 ACM-DL 的副本。
+serving_infra|出于基础设施成本和延迟，序列长度上限为 100 个近期行为；论文描述了一些优化，使原来基于 CPU 的排序模型可以用 GPU 提供服务。
+stages.0.model_family|带 TransAct 的 Pinnability 排序器：point-wise 多任务，实时行为序列，最近 100 个行为，PinSage pin embedding + 行为类型 embedding，把候选 pin 的 embedding 拼接到序列的每一步上做早期融合，transformer 输出用前 K=10 列 + max pooling 压缩
+stages.0.details|基线：Wide&Deep + 序列池化，BST，全部行为和正向行为两种。表 4 对输出压缩做了消融：选择前 K 列 + max-pool，是为了在性能和延迟之间取得平衡。
+features_signals.0|实时用户行为
+features_signals.1|批量用户 embedding
+training.mode|在 2 周的数据集上离线训练；线上每周重训两次，因为 TransAct 对行为漂移敏感
+training.objectives.0|多任务 point-wise 预测，例如 repin 和 hide 头
+training.notes|不重训的话，第一天的互动收益在两周内衰减；用新数据重训使其恢复，见图 6。论文还讨论了推荐多样性下降及缓解办法，其中随机时间窗口 mask 以互动为代价提高了多样性。
+results_table.note|离线表 1 报告了 HIT@3 在每个 repin 和 hide 上相对带序列的 WDL 和 BST 基线的提升，这里没有数字。
+results_table.online.0.setting|Homefeed A/B，所有用户 / 非核心用户
+results_table.online.1.setting|Homefeed A/B，所有用户 / 非核心用户
+results_table.online.2.setting|Homefeed A/B，所有用户 / 非核心用户
+results_table.online.0.versus|不带实时序列特征的 Pinnability
+results_table.online.1.versus|不带实时序列特征的 Pinnability
+results_table.online.2.versus|不带实时序列特征的 Pinnability
+results_table.online.3.versus|不带实时序列特征的 Pinnability
+results_table.online.4.versus|不带实时序列特征的 Pinnability
+results_table.online.5.versus|不带实时序列特征的 Pinnability
+results_table.online.6.versus|不带实时序列特征的 Pinnability
+results_table.online.0.metric|Repin 量
+results_table.online.1.metric|Hide 量
+results_table.online.2.metric|总停留时长
+results_table.online.6.metric|推送打开率
+caveats.0|线上对照组缺少所有实时序列特征，所以 +11.0% 是相对没有序列的 Pinnability，而不是相对一个强的序列基线。
+caveats.1|表 1 中有几处离线差异被作者标为统计上不显著。
+unknown_fields.0|服务 QPS
+unknown_fields.1|GPU 型号和数量
+unknown_fields.2|模型参数量
+updates.0.note|对照 KDD 2023 格式的 PDF 核对，即带最终 DOI 的 arXiv v1；所有数字均已确认。
+code.repos.0.note|论文链接的 PyTorch TransAct 模块，带一次测试运行。不是完整的 Homefeed 排序模型。
+deployment.scenario|Pinterest 的 Homefeed、Related Pins、通知和搜索
+deployment.ab_traffic|每组 1.5% 的 Homefeed 用户
+deployment.baseline|不带实时序列特征的 Pinnability
+deployment.serving_latency|GPU 上为 8 ms，旧的 CPU 模型为 22 ms，CPU 上的 TransAct 为 712 ms
+deployment.inference_cost|相对旧的 CPU 模型，GPU 上的服务成本为 1x，CPU 上的 TransAct 为 32x
+deployment.hardware|原来基于 CPU 的排序模型改用 GPU 服务；未报告 GPU 型号和数量
+deployment.notes.0|模型每周重训两次，因为它对行为漂移敏感。
+deployment.online_lifts.0.metric|Homefeed repin 量，所有用户
+deployment.online_lifts.1.metric|Homefeed hide 量，所有用户
+deployment.online_lifts.2.metric|Homefeed 总停留时长，所有用户

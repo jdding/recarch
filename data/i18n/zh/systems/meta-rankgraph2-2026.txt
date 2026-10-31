@@ -1,0 +1,53 @@
+surface|两个未具名的主要内容推荐场景上的召回源，即 U2I2I 和 U2U2I，共 20+ 次召回上线
+era_reason|异构图神经网络 embedding，配合 PPR 预计算的邻居和残差量化的聚类索引，用对比式链接预测训练。这是一个图召回系统，不是基于 Semantic ID 或大模型的生成。
+tldr|Meta 的图召回系统，联合设计图构建、GNN 训练和学习得到的聚类索引；14 天 A/B 中 CTR 最高 +0.96%，CVR 最高 +2.75%，在线服务成本 -83%，共 20+ 次召回上线。
+summary|RankGraph-2 每 3 小时根据互动数据构建一张异构共同互动图，包含用户到用户、item 到 item 和用户到 item 的边；它在做流行度偏置校正的同时，把数百万亿条边子采样到数千亿条，并用 personalized PageRank 预计算多跳邻居，因此训练不需要在线图基础设施。多头异构聚合器用 margin 加 InfoNCE 的对比式链接预测训练，同时联合学习一个两层残差量化的聚类索引。在线服务时，U2U2I 从用户聚类队列中读取 item，不再做在线 KNN，U2I2I 则使用离线预计算的 item KNN。这些 embedding 作为一个召回源，加入现有的线上链路。
+core_idea|异构共同互动图加上联合学习的聚类索引，取代在线 KNN。
+deployed_in|两个未具名内容推荐场景上的 U2I2I 和 U2U2I 召回源
+scale_short|数十亿个节点，数千亿条边，250,000 个聚类
+key_result|把 RankGraph-2 作为召回源加入后，场景 1 上 14 天 A/B：U2I2I CVR +2.75%
+results_reported|线上结果来自两个场景上 14 天的 A/B，把 RankGraph-2 作为召回源加入，所有结果在 p < 0.05 下显著：场景 1 和场景 2 上，U2I2I 的 CTR 分别为 +0.96% 和 +0.33%，CVR 分别为 +2.75% 和 +0.76%；U2U2I 的 CTR 分别为 +0.40% 和 +0.20%，CVR 分别为 +1.01% 和 +0.17%。聚类索引的在线服务成本比在线 KNN 低 83%，CTR 和 CVR 相当；共 20+ 次召回上线。离线结果见表 2，100K 用户：Recall@5 为 0.143，GAT-DGI 为 0.038，即 3.8x，HSTU 为 0.013；item embedding 见表 3，Recall@100 为 0.775，PBG 为 0.374，即 2.1x，HSTU 为 0.434。索引 hitrate@1 为 0.846，原始 embedding 为 0.871，去掉正则为 0.717。
+version_note|RecSys 2026 的 DOI 已通过 Crossref 确认，但没有阅读 ACM 版本。数字来自站长 Zotero 中的 PDF，即 26 Jun 2026 的 arXiv v2，Meta 格式，并与最新的 arXiv 版本做了比对，即 11 Jul 的 v3 和 24 Jul 2026 的 v4：所有核心数字以及表 2、表 3 和表 8 都相同。v3 和 v4 只修改了署名单位的脚注，涉及 Meta MRS、Meta Training Data Infra 和 FB Monetization。
+serving_infra|图的重建约需 1 小时，周期为 3 小时；从互动数据到 embedding 刷新的端到端延迟约为 2 小时。对 U2U2I，聚类索引取代了在线近似 KNN，后者需要数千台机器。
+stages.0.model_family|多头异构 GNN 聚合器，输入为自身、用户邻居和 item 邻居的 embedding，256 维 embedding，基于节点特征做归纳式训练
+stages.0.details|U2I2I：先取互动过的 item，再查预计算的 item KNN。U2U2I：只取过去约 15 分钟内活跃的相似用户，通过最近互动 item 的聚类队列实现，共 5,000 x 50 = 250,000 个聚类。
+id_tokenization.approach|与 embedding 联合学习的两层残差量化聚类索引，用作在线服务索引，而不是用作生成时的 item token
+id_tokenization.details|码本 5,000 x 50；对 1000 个 batch 窗口做码不均衡正则，并配合有偏的码选择，防止码本塌缩。
+features_signals.0|用户特征，包括人口属性和最近互动 item 的序列
+features_signals.1|item 的内容类型和基于 ID 的特征
+features_signals.2|来自点击、点赞、分享和购买的共同互动边，带有互动类型权重
+training.mode|在每 3 小时用 24 小时互动数据重建一次的图上，基于以边为中心的数据持续训练
+training.objectives.0|每种边类型各用 margin ranking loss 加 InfoNCE，tau 为 0.06，并用不确定性加权
+training.objectives.1|聚类索引使用重建损失、对重建 embedding 的对比损失以及码不均衡正则
+training.notes|Batch size 32,768，稀疏参数用 AdaGrad，lr 0.02，稠密参数用 AdamW，lr 0.004；每条正边有 100 个负样本，来自 batch 内、batch 外和多头增强三个来源；每个节点 50 个 PPR 邻居，每条训练边采样其中 10 个。
+scale.0.metric|图规模
+scale.0.value|数十亿个节点，子采样后数千亿条边
+scale.1.metric|聚类索引
+scale.1.value|250,000 个聚类
+results_table.online.0.setting|U2I2I，14 天 A/B，场景 1 和场景 2
+results_table.online.1.setting|U2I2I，14 天 A/B，场景 1 和场景 2
+results_table.online.2.setting|U2U2I，14 天 A/B，场景 1 和场景 2
+results_table.online.3.setting|U2U2I，14 天 A/B，场景 1 和场景 2
+results_table.online.4.setting|聚类索引的在线服务
+results_table.offline.0.setting|100K 用户，表 2
+results_table.offline.1.setting|item embedding，表 3
+results_table.online.0.versus|没有它的线上系统
+results_table.online.1.versus|没有它的线上系统
+results_table.online.2.versus|没有它的线上系统
+results_table.online.3.versus|没有它的线上系统
+results_table.online.4.metric|在线服务成本
+caveats.0|两个场景被匿名为场景 1 和场景 2；没有给出指标的绝对值。
+caveats.1|离线基线为 GAT-DGI、PyTorch-BigGraph 和 HSTU，在 Meta 内部数据上评估，样本为 100K 用户或 1,000 条边。
+caveats.2|83% 的成本下降没有给出绝对机器数，只说明在线 KNN 需要数千台机器。
+caveats.3|范围限于基于相似度的召回，即 U2U2I 和 U2I2I；论文称，直接的用户到 item 召回可能更适合由带实时特征的排序模型来承担。
+caveats.4|3 小时的刷新周期对时效性极强的场景可能不够。
+unknown_fields.0|两个场景的名称
+unknown_fields.1|CTR 和 CVR 的绝对值
+unknown_fields.2|模型深度和参数量
+unknown_fields.3|在线服务所需机器数
+code.note|没有找到官方代码；daiwk/auto-research 中有一个社区复现，但这里没有核实，因此没有作为仓库列出。
+deployment.scenario|两个未具名内容推荐场景上的召回源
+deployment.ab_duration|14 天
+deployment.baseline|没有把 RankGraph-2 作为召回源的线上系统
+deployment.inference_cost|聚类索引使在线服务成本比在线 KNN 降低 83%，CTR 和 CVR 相当
+deployment.notes.0|图的重建约需 1 小时，周期为 3 小时，embedding 在互动发生约 2 小时后刷新。

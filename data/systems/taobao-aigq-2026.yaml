@@ -118,3 +118,24 @@ results_table:
     metric: Query HR@30
     result: '0.0745'
     versus: EBR 0.0100
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao homepage HintQ pre-search query box, as a recall source
+  ab_traffic: not_reported
+  ab_duration: 30 days
+  baseline: Existing HintQ stack, control not detailed
+  online_lifts:
+  - metric: Attributed GMV
+    value: +10.68%
+  - metric: Attributed orders
+    value: +10.31%
+  - metric: HintQ UCTR
+    value: +7.42%
+  training_compute: not_reported
+  serving_latency: A request takes several seconds of LLM inference, so serving uses nearline caching and a daily
+    trigger-to-query index
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: PPU 810E platform; count not reported
+  basis: full_text
+  checked_on: '2026-10-31'

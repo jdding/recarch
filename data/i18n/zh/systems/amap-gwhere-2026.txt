@@ -1,0 +1,64 @@
+surface|高德 App 首页「猜你想去」卡片
+era_reason|下一个 POI 推荐被建模为大模型对对比学习得到的 Semantic ID 的生成，取代召回、粗排、精排和重排的级联。
+tldr|高德 Gwhere 让 Qwen 大模型为 App 首页生成下一个 POI 的 Semantic ID；对比线上级联做一个月 A/B：P-CTR +5.83%，U-CTR +6.20%，负反馈 -11.11%。SID 代码已开源。
+summary|Gwhere 分两部分。第一部分是对比式残差量化分词器，把每个 POI 的文本、图像、空间和协同四种视角融合成一个简短的 Semantic ID 元组。第二部分是 Qwen2.5 大模型，先在时空 POI 序列上继续预训练，再做 SFT，最后用 Exposure-Aware Kahneman-Tversky Optimization 对齐：该方法把被点击的 POI 视为期望结果，把曝光未点击的 POI 视为不期望结果，同时抑制噪声负样本的影响。在线服务时，数据服务把用户画像、最近的打卡、时间、位置和天气转成 prompt，大模型以 Semantic ID 的形式生成下一个 POI，再映射回具体的 POI。上线的是最小的 0.5B 变体，前面有 continuous batching 和 PagedAttention。
+core_idea|大模型根据对比学习得到的多模态分词器生成下一个 POI 的 Semantic ID，并按曝光反馈对齐。
+deployed_in|高德 App 首页「猜你想去」卡片，取代四阶段级联
+scale_short|离线一千万用户和 3.8 亿条交互，线上 0.5B 模型，一个月 A/B
+key_result|对比线上级联做一个月 A/B：P-CTR +5.83%，U-CTR +6.20%
+results_reported|高德数据集上的离线 Acc@1：已部署的 0.5B 变体为 0.2820，7B 变体为 0.3071，线上级联为 0.2675，7B 模型相对提升 14.8%。在公开的 Foursquare 和 Gowalla 数据上，7B 模型相比 GNPR-SID 分别提升 11.3%、8.1% 和 13.2%。去掉 Semantic ID 的消融使 Acc@1 下降 16.01%；SFT 加新的对齐方法达到 0.2820，SFT 加 GRPO 为 0.2759，SFT 加 DPO 为 0.2634。在高德首页卡片上对比线上级联做一个月 A/B，P-CTR 提升 5.83%，U-CTR 提升 6.20%，活跃率提升 9.67%，负反馈率下降 11.11%。没有对齐目标时，负反馈率只下降 5.85%。
+version_note|数字已对照 13 July 2026 的 arXiv v1 核对，该版本采用 RecSys 2026 格式，DOI 文本仍是占位符。ACM 把正式发表版登记在 DOI 10.1145/3773078.3831863 下，经 doi.org 跳转检查确认已注册。定稿版 PDF 本身无法获取，因此 published_version_checked 为 false。
+serving_infra|模型引擎位于数据服务引擎之后，采用 continuous batching、PagedAttention、prefill 与 decoding 解耦以及 multi-token prediction。在 2 张 H20 GPU 上做 50 QPS 压测，已部署变体的 P99 约 30 ms，级联约 20 ms。
+stages.0.model_family|Qwen2.5 大模型生成 POI 的 Semantic ID，取代召回、粗排、精排和认知重排的级联
+stages.0.details|根据由画像、最近打卡、时间、位置和天气组成的指令 prompt，以 Semantic ID 的形式预测下一个 POI，再映射回可读的地点。
+id_tokenization.approach|对比式残差量化，配合层次化标识符学习
+id_tokenization.details|96 维的隐向量由三个码本量化。融合文本、图像、空间和协同四种视角；公开数据集每个码本使用 48 个码字，高德使用更多。
+features_signals.0|POI 标题和描述文本
+features_signals.1|POI 图像
+features_signals.2|来自距离和移动流的空间图 embedding
+features_signals.3|来自交替最小二乘的协同信号
+features_signals.4|用户画像、最近 50 次打卡、时间、位置和天气
+training.mode|离线，三个阶段，使用 200 张 NVIDIA H20 GPU
+training.objectives.0|在丰富的时空 POI 语料上继续预训练，约一百亿个 token
+training.objectives.1|监督微调
+training.notes|学习率 1e-5，20 步热身，序列长度 4096。
+scale.0.metric|高德离线数据集
+scale.0.value|一千万用户，8310 万个 POI，3.8 亿条交互
+scale.1.metric|已部署模型
+scale.1.value|0.5B 参数
+scale.2.value|一个月
+results_table.online.0.setting|高德首页卡片，一个月 A/B
+results_table.online.1.setting|高德首页卡片，一个月 A/B
+results_table.online.2.setting|高德首页卡片，一个月 A/B
+results_table.offline.0.setting|高德数据集
+results_table.offline.1.setting|高德数据集
+results_table.online.0.method|Gwhere 已部署变体
+results_table.online.0.versus|线上级联排序
+results_table.online.1.method|Gwhere 已部署变体
+results_table.online.1.versus|线上级联排序
+results_table.online.2.method|Gwhere 已部署变体
+results_table.online.2.metric|负反馈率
+results_table.online.2.versus|线上级联排序
+results_table.offline.0.method|Gwhere 已部署变体
+results_table.offline.0.versus|线上级联 0.2675
+results_table.offline.1.method|Gwhere 最大变体
+results_table.offline.1.versus|线上级联 0.2675
+caveats.0|这里使用的 arXiv v1 PDF 仍带有占位的 ACM 元数据，因此无法确认它就是定稿版文本；DOI 已注册。
+caveats.1|除了服务数百万活跃用户之外，论文没有说明 A/B 的流量占比和用户数。
+caveats.2|已部署的 0.5B 模型比级联慢，压测中 P99 约 30 ms，对比约 20 ms。
+caveats.3|PDF 文本中线上结果表的版式不清晰；这里只使用正文中重复出现的数字。
+caveats.4|Gwhere 建立在作者此前的下一个 POI 大模型论文之上，即 2025 年的 arXiv 2510.14702；2026 年的这篇论文新增了对比式分词器和线上部署。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|日请求量
+unknown_fields.2|大模型训练代码
+code.repos.0.note|来自论文摘要中的链接。包含 Semantic ID 的训练和推理脚本；README 注明大模型训练代码即将发布。
+deployment.scenario|高德 App 首页「猜你想去」卡片
+deployment.ab_duration|一个月，此前有一周的短期测试
+deployment.baseline|线上级联排序
+deployment.training_compute|三个训练阶段，使用 200 张 NVIDIA H20 GPU
+deployment.serving_latency|已部署的 0.5B 模型在 2 张 H20 GPU 上 50 QPS 时 P99 约 30 ms，级联约 20 ms
+deployment.serving_qps|50 QPS 压测；线上 QPS 未报告
+deployment.hardware|压测使用 2 张 NVIDIA H20 GPU
+deployment.notes.0|7B 变体离线效果最好，但因在线服务成本没有部署。
+deployment.online_lifts.2.metric|活跃率
+deployment.online_lifts.3.metric|负反馈率

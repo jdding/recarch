@@ -66,3 +66,19 @@ scale_short: Not stated in the sources
 key_result: No single headline number captured, the paper reports offline and online gains per technique
 results_table:
   note: The paper reports offline and online improvements from each technique. No single headline number is captured in the card sources.
+deployment:
+  online_evidence: online_qualitative
+  scenario: Google sponsored search ad click prediction
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper reports online gains per technique. This card holds no single headline number.
+  basis: card_content
+  checked_on: '2026-10-31'

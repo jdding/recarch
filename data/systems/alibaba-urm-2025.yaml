@@ -49,16 +49,15 @@ scale:
 - metric: Backbone
   value: Qwen-7B (default feature generator); 1.5B forward pass at length 1024 = 50 ms
   note: paper
-results_reported: 'Online A/B on the Alibaba advertising platform: core metric +3% (exact metric not named in abstract). Public datasets
+results_reported: 'Online A/B on the Alibaba advertising platform: core metric +3%. The abstract does not name the metric, the full text gives advertising revenue. Public datasets
   (Sports, Beauty, Toys, Yelp): URM beats the strongest baseline by an average of 46% HR@5 and 29% NDCG@5 per Table 1. Offline industrial
   experiments outperform task-specific expert retrieval models.'
 caveats:
 - Retrieval results are precomputed asynchronously per ten-minute window, so this is not per-request LLM inference.
-- The 'core metric' behind the +3% is not defined in the abstract/intro.
+- The abstract and intro do not define the core metric behind the +3%. The full text names it as advertising revenue.
 - Company attribution to Alibaba is from authorship/affiliation; the platform is described only as 'our advertising platform'.
 unknown_fields:
-- name of the core online metric
-- A/B traffic share and duration
+- A/B traffic share
 - GPU fleet size for the asynchronous inference
 sources:
 - title: URM, arXiv 2502.03041
@@ -100,3 +99,36 @@ results_table:
     metric: NDCG@5
     result: +29% on average
     versus: Strongest baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Retrieval on the Alibaba advertising platform
+  ab_traffic: not_reported
+  ab_duration: 28 April to 14 May 2025
+  baseline: Production retrieval
+  online_lifts:
+  - metric: Advertising revenue, the core metric
+    value: +3.01%
+  - metric: CTR
+    value: +0.78%
+  - metric: CVR
+    value: +1.24%
+  - metric: Long-tail items
+    value: +2.23%
+  training_compute: 'Qwen-7B on 64 NVIDIA H20 GPUs: 25 hours for 50 million training examples, after 5% sampling
+    of the data'
+  serving_latency: Latency within tens of milliseconds; 1.5B model at sequence length 1024 reaches 50 ms, the online
+    limit
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: NVIDIA H20 GPUs for training and latency tests
+  notes:
+  - The abstract does not name the core metric. The full text names it as advertising revenue.
+  - The 50 ms figure is a benchmark for a 1.5B model, not the deployed 7B model.
+  fulltext_refs:
+  - 'Sec 5.5, Table 6: online results 28 April 2025 to 14 May 2025: revenue +3.01%, CTR +0.78%, CVR +1.24%, long-tail
+    items +2.23%'
+  - 'Sec 5.1: Qwen-7B on 64 NVIDIA H20 GPUs takes 25 hours to process 50 million training examples; 5% sampling
+    of the data'
+  - 'Sec 4: 1.5B model, sequence length 1024, single forward pass 50 ms, the limit for online retrieval'
+  basis: full_text
+  checked_on: '2026-10-31'

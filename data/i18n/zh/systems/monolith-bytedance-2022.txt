@@ -1,0 +1,25 @@
+surface|推荐训练系统，已产品化为 BytePlus Recommend；论文没有提到 TikTok
+era_reason|面向 embedding 表模型的实时在线训练
+tldr|字节跳动的训练和服务系统，带无冲突的 Cuckoo-HashMap embedding 表和分钟级的线上参数同步；在线训练优于批量训练。
+summary|训练和服务系统，带无冲突的 Cuckoo-HashMap embedding 表、频次过滤和过期，另有一条在线训练流水线，以分钟粒度同步稀疏参数。
+core_idea|无冲突的 Cuckoo-HashMap embedding 表，配合在线训练，以分钟粒度同步稀疏参数。
+deployed_in|推荐训练系统，已产品化为 BytePlus Recommend
+scale_short|来源中未说明
+key_result|在线训练优于批量训练，没有报告具体数字
+results_reported|论文报告在线训练优于批量训练。
+serving_infra|TensorFlow Worker-PS 架构；从训练 PS 到服务 PS 的参数同步。
+stages.0.model_family|对重 embedding 的模型做 Worker-PS 的 TensorFlow 训练，论文示例用 DeepFM
+stages.0.details|重点是稀疏 embedding 和实时训练的基础设施，而不是某个具体的漏斗。
+id_tokenization.approach|无冲突的 embedding 表，即 Cuckoo HashMap，带特征过滤和过期
+id_tokenization.details|避免 ID 特征的哈希冲突。
+features_signals.0|通过 Kafka + Flink，把实时用户反馈与特征拼接
+training.mode|在线训练，即流式，加上来自 HDFS 的批量训练
+training.objectives.0|CTR 类预测，对负采样做 log-odds 校正
+training.notes|稀疏参数分钟级同步，稠密参数每天同步；PS 快照每天一次。
+results_table.note|论文报告在线训练优于批量训练。卡片的来源没有给出具体数字。
+caveats.0|论文称该系统落地在 BytePlus Recommend；它并没有说这是 TikTok 的线上系统。不要依据这一来源声称是 TikTok。
+unknown_fields.0|模型规模
+unknown_fields.2|召回和排序阶段的细节
+code.repos.0.note|基于 TensorFlow 的框架，带无冲突 embedding 表和实时训练。论文称「code to be released soon」。仓库自 2025-10-13 起已归档，只读。
+deployment.scenario|推荐训练系统，已产品化为 BytePlus Recommend
+deployment.notes.0|稀疏参数分钟级同步，稠密参数每天同步。论文对比了在线训练和批量训练，没有给出服务数字。

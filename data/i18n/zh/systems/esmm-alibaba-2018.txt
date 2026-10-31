@@ -1,0 +1,32 @@
+surface|淘宝推荐数据上的点击后 CVR 预估
+era_reason|全空间多任务神经 CVR 模型
+tldr|ESMM 在整个曝光空间上训练 CTR 和 CTCVR，从而在没有样本选择偏差的情况下估计转化率；公开数据上 CVR AUC 为 68.56，对比基线 66.00。
+summary|来自阿里巴巴的 SIGIR 2018 论文：Entire Space Multi-Task Model 通过共享 embedding 表，在整个空间上训练 CTR 和 CTCVR 两个任务，再隐式推导 pCVR = pCTCVR / pCTR，因为 pCTCVR = pCTR x pCVR，借此估计所有曝光上的点击后转化率，解决样本选择偏差和数据稀疏问题。在淘宝推荐日志上做了离线评估；论文没有说明 ESMM 本身已在线上部署。
+core_idea|用共享 embedding 表在整个空间上训练 CTR 和 CTCVR，再由它们推导 CVR。
+deployed_in|淘宝推荐数据上的点击后 CVR 预估，离线评估
+scale_short|没有报告规模
+key_result|离线：在 Product Dataset 上，相比 BASE，CVR 的 AUC 绝对提升 +2.18%，CTCVR 提升 +2.32%
+results_reported|Public Dataset 的 AUC，格式为 CVR / CTCVR：BASE 66.00 / 62.07；OVERSAMPLING 67.18 / 63.05；UNBIAS 66.65 / 63.56；DIVISION 67.56 / 63.62；ESMM-NS 68.25 / 64.44；ESMM 68.56 / 65.32，相比 BASE 绝对提升 +2.56 和 +3.25。在完整数据上训练的 Product Dataset：相比 BASE，ESMM 在 CVR 上 AUC 绝对提升 +2.18%，在 CTCVR 上提升 +2.32%，论文称 BASE 是其真实系统中承担主要流量的最新模型；论文认为 0.1% 的 AUC 提升就很可观。
+stages.0.model_family|ESMM：共享 embedding 层，同时供给 CVR 塔和 CTR 塔，两个塔都是 Embedding&MLP；损失 = CTR 损失 + CTCVR 损失，都在全部曝光上计算，没有直接的 CVR 损失
+stages.0.details|共享 embedding 参数，把较丰富的 CTR 任务的特征表示迁移到稀疏的 CVR 任务；乘法形式避免了用 pCTCVR 除以 pCTR 带来的数值不稳定，后者即 DIVISION 基线。
+id_tokenization.approach|共享的 embedding 表
+features_signals.0|曝光 -> 点击 -> 转化 的序列标签
+training.mode|在淘宝推荐流量日志上离线训练；按时间排序，前一半数据训练，后一半测试；AUC 取 10 次重复的平均值
+training.objectives.0|CTR，点击标签
+training.objectives.1|CTCVR，点击且转化的标签
+training.notes|Public Dataset：论文发布了 1% 的样本，84M 次曝光，3.4M 次点击，18k 次转化。Product Dataset：8,950M 次曝光，324M 次点击，1,774k 次转化。所报告设置中 embedding 大小为 18。论文指出 CVR 的训练样本约为 CTR 样本的 4%。
+results_table.offline.0.setting|Product Dataset，完整数据
+results_table.offline.0.result|绝对提升 +2.18%
+results_table.offline.1.setting|Product Dataset，完整数据
+results_table.offline.1.result|绝对提升 +2.32%
+results_table.offline.3.metric|相比 BASE 的提升
+results_table.offline.3.result|绝对提升 +2.56 和 +3.25
+caveats.0|只有离线 AUC；论文没有报告线上 A/B 测试，也没有说明 ESMM 已部署，所以这里证据仍为 research_only。
+caveats.1|论文称 BASE 模型承担主要流量；它是基线，不是 ESMM。
+caveats.2|实验属于淘宝推荐流量，这一归属来自论文对数据集的描述。
+unknown_fields.0|线上 A/B 结果
+unknown_fields.1|线上部署
+unknown_fields.2|在线延迟
+code.repos.0.note|阿里巴巴 XDL 框架中的 ESMM 示例；论文中没有链接，且是框架示例，不是广告系统的代码。
+deployment.scenario|淘宝推荐数据上的点击后 CVR 预估
+deployment.notes.0|论文称 Product Dataset 上的模型是承担主要流量的最新模型。它只报告了离线 AUC。

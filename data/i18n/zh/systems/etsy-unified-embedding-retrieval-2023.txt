@@ -1,0 +1,48 @@
+surface|搜索召回
+era_reason|带统一 embedding 的双塔神经召回；不是生成式
+tldr|Etsy 的双塔搜索召回统一了文本、T5、图和位置编码器；离线 Recall@1000 达到 0.82，基础模型为 0.61。
+summary|Etsy 的 UEPPR，即 Unified Embedding based Personalized Product Retrieval 模型：用于 Etsy 搜索的双塔召回模型。商品塔把 n-gram、类目和属性的 token 编码器，与预训练的 T5-small、query 与商品的二部图以及位置编码器统一起来；query 塔用 1 层 transformer 联合编码 query、位置以及用户最近的搜索和点击过的店铺。训练使用多部分 hinge 损失和三种负样本来源，通过 Faiss ANN 提供服务，并用 hydrated 向量实现与 query 无关的质量加权。汇总的 A/B 测试：自然搜索购买率 +5.58%，全站转化率 +2.63%。
+core_idea|一个双塔召回模型，商品塔统一了文本、图和位置编码器。
+deployed_in|Etsy 搜索召回
+scale_short|超过一亿件商品，每个 query 数千个候选
+key_result|在线上流量的汇总 A/B 测试中，自然搜索购买率 +5.58%
+results_reported|离线结果，见表 I，格式为 Recall@100 的全部 / 头部 / 长尾，以及 Recall@1000：BM25 0.55/0.63/0.45，0.62；Base 0.33/0.32/0.42，0.61；Large vocab 0.45/0.45/0.49，0.72；Random-walk 0.6/0.74/0.52，0.72；UEPPR 0.674/0.71/0.69，0.82；UEPPR boost 0.708/0.72/0.71，0.85。负样本挖掘消融，见表 II：hard 加 uniform 使 R@100 提升 +3%，R@1000 提升 +1.2%；加入 dynamic 后为 +9.3% 和 +5.1%；加权后为 +11% 和 +6%。没有 hard 负样本时，购买 recall@100 下降 7%。特征重要性，见表 III，相对 Large vocab 模型：T5 标题加标签 1.0%，属性 3.9%，描述 6.3%，图 15%。位置特征：美国用户的购买 recall 相对提升 8%；第 98 百分位的候选距离为 2600 对比 4200 英里。在用户历史上加 1 层 transformer：离线 recall 提升 +2%。线上 A/B 测试，在线上流量中汇总：全站转化率 +2.63%，自然搜索购买率 +5.58%，登录用户和老买家的提升更大。
+serving_infra|召回服务的 ANN 索引离线构建，query 在线编码。Faiss：HNSW 在 K = 100 时有效，recall 损失 5%，但在 K = 1000 时变差，损失超过 10%；于是改用 4-bit 乘积量化的 FastScan 索引，取回 5 倍 K 后重排，recall 损失低于 4%，P99 延迟低于 20 ms。ANN 参数用 Google Vizier 上的黑盒优化调优。缓存键对 query 上下文特征做哈希，使带有会话内特征时仍能保持较长的 TTL。UEPPR boost 的 P99 推理延迟为 18 ms；论文称数十 ms，每秒数千次查询。
+stages.0.model_family|双塔。得分 y = cos[P[p], Q[q,u]]。商品编码器 P：按字段分组的 token 和 ID 平均 embedding，位置编码器，使用 k = 50、100、500 的 K-means 分桶和邮政编码前缀，来自 T5-small 编码器的 transformer 表示，该编码器经预训练，用于根据商品文本生成购买最多的 query，以及二部图编码器，对来自超过一年日志的采样邻居 query embedding 取平均，并冻结共享参数的更新。Query 与用户编码器 Q：query token、用户位置、最近的搜索、最近点击的店铺、最近点击商品的词项和已购商品的标签，通过对 q、最近的 query 和最近点击的店铺做 1 层轻量 transformer 得到。
+stages.0.details|微调 distilBERT 和 T5 编码器没有带来离线收益；受 docT5query 启发的 T5 预训练策略则有收益。基于 ANN 的商品加权：向量被扩展为 p' = [p; f[p]] 和 q' = [q; w]，使 dot[p',q'] = dot[p,q] + dot[f[p],w]；query 权重 w 是静态的，用黑盒贝叶斯优化 skopt 调优，使购买 recall 最大。
+features_signals.0|Query、用户历史、商品
+training.mode|离线。正样本来自跨平台过去一个月日志中的加购和购买；最多三千万个用户，超过 1.5 亿次交互。TensorFlow 2.6，在 4 张 A100 GPU 上使用 MirroredStrategy，约 72 小时收敛。
+training.objectives.0|多部分 hinge 损失，每种交互类型有一个阈值，负样本另有一个阈值，使得召回时可以做阈值剪枝
+training.notes|负样本：batch 内的 hard 样本，即 batch 内最相似的商品；语料库内的 uniform 负样本；以及用当前参数从一个大的随机 batch 中选出的 dynamic hard 负样本。损失权重：先用 uniform 负样本做 warm up，再线性衰减 uniform 权重并提高 hard 负样本的权重。评估：用接下来 5 天的购买计算 Recall@100 和 @1000，每天 11k 个有购买的不同 query。
+scale.0.value|超过一亿件古董、手工和手作商品
+scale.1.metric|召回候选集
+scale.1.value|每个 query 数千件商品
+scale.2.metric|训练数据
+scale.2.value|最多 30M 个用户，超过 150M 次交互
+results_table.online.0.setting|线上流量的汇总 A/B 测试
+results_table.online.1.setting|线上流量的汇总 A/B 测试
+results_table.online.0.versus|线上搜索
+results_table.online.1.versus|线上搜索
+results_table.online.0.metric|自然搜索购买率
+results_table.online.1.metric|全站转化率
+results_table.offline.4.setting|表 II，负样本挖掘消融
+results_table.offline.4.method|加权负样本
+results_table.offline.4.versus|仅 uniform 负样本
+caveats.0|线上数字是多个 A/B 测试的汇总；论文没有给出每个测试的流量、时长或置信区间。
+caveats.1|论文没有标注上线日期。
+caveats.2|表 I 只报告了购买上的 Recall@100 和 Recall@1000；没有展示相关性指标。
+caveats.3|加权的权重是静态的，与 query 无关；论文把依赖 query 的权重列为未来工作。
+unknown_fields.0|上线日期
+unknown_fields.1|A/B 流量占比和时长
+unknown_fields.2|下游排序模型的细节
+unknown_fields.3|索引规模
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Etsy 搜索召回
+deployment.baseline|线上搜索
+deployment.training_compute|4 张 A100 GPU，MirroredStrategy，约 72 小时收敛
+deployment.serving_latency|P99 召回延迟低于 20 ms；UEPPR boost 模型的 P99 推理延迟为 18 ms
+deployment.serving_qps|每秒数千次查询
+deployment.hardware|训练用 4 张 A100 GPU；没有报告服务硬件
+deployment.notes.0|提升是在线上流量的多个 A/B 测试上汇总得到的。
+deployment.online_lifts.0.metric|自然搜索购买率
+deployment.online_lifts.1.metric|全站转化率

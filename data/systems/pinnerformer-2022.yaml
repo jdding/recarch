@@ -64,3 +64,26 @@ results_table:
     metric: Time Spent
     result: +1%
     versus: Previous Homefeed
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Homefeed and Ads ranking, and retrieval
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous Homefeed
+  online_lifts:
+  - metric: Homefeed Repins
+    value: +7.5%
+  - metric: Homefeed Time Spent
+    value: +1%
+  training_compute: Training on 16 GPUs across 2 machines for sequence length 512 and 32 GPUs across 4 machines
+    for length 1024
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Embeddings are inferred in daily batches, not in real time, and served from a KV store with an HNSW index.
+  fulltext_refs:
+  - 'Sec 5: 16 GPUs/2 machines for 512 sequence length, 32 GPUs/4 machines for 1024'
+  basis: full_text
+  checked_on: '2026-10-31'

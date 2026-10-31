@@ -1,0 +1,50 @@
+surface|用策略梯度训练的线上 top-K 推荐器
+era_reason|带 off-policy 校正的 REINFORCE 策略梯度深度推荐器
+tldr|带 off-policy 和 top-K 校正的 REINFORCE 策略梯度候选生成器；线上 A/B 显示 ViewTime 有提升，随机策略桶为 +0.07%。
+summary|Google 旗下 YouTube 的 WSDM 2019 论文：面向数百万个 item 的推荐动作空间的 REINFORCE 策略梯度候选生成器。它加入了用学习得到的记录策略模型，也叫行为策略，做的 off-policy 校正，用于推荐 K 个 item 的集合的 top-K 校正，以及通过权重截断降低方差。据称已运行在 YouTube 线上生产系统中，并做了线上 A/B 实验。
+core_idea|带 off-policy 和 top-K 校正以及权重截断的 REINFORCE 候选生成器。
+deployed_in|YouTube 线上的候选生成
+scale_short|动作空间为数百万个 item
+key_result|在线上生产的候选生成器的 A/B 中，top-K off-policy 校正使 ViewTime +0.85%
+results_reported|对线上生产的候选生成器做的 A/B 实验，持续多天：带探索数据的随机策略，用户分桶 90/5/5，随机策略占 5%，ViewTime +0.07%，统计上显著；标准 off-policy 校正的 ViewTime 没有显著变化，但观看视频数 +0.53%；top-K off-policy 校正，K = 16，截断 e^3，ViewTime +0.85%，观看视频数 -0.16%；为期 5 天的 K 扫描：K = 1 时 ViewTime -0.66%，K = 2 时 -0.35%，K = 32 与 K = 16 相近，后续实验中 K = 8 为 +0.15%；把权重截断从 e^3 放宽到 e^5，使 ViewTime 下降 0.52%。
+serving_infra|候选生成使用高效的近似最近邻查找，从 softmax 中取 top M 个 item，而不是对数百万个 item 做完整的 softmax。
+stages.0.model_family|RNN，Chaos Free RNN cell，用户状态模型，对数百万个 item 的 softmax 策略头，用 REINFORCE 训练，另有一个梯度被阻断的独立行为策略头；用近似最近邻查找取 top M 个 item 来归一化 softmax
+stages.0.details|这个模型是众多候选生成器之一；它的输出在展示到 YouTube 首页或观看页侧栏之前，由单独的排序模型打分和排序。长期奖励在 4-10 小时的时间范围内聚合。
+features_signals.0|记录下来的隐式反馈，点击、停留时长
+training.mode|在记录下来的反馈上持续训练，每隔数小时收集一次，在部署新策略之前做很多次参数更新；新事件作为训练数据，滞后低于 24 小时
+training.objectives.0|来自用户行为的策略梯度奖励，未被点击的推荐奖励为零
+training.objectives.1|单独的行为策略估计头，梯度被阻断，不进入用户状态
+training.notes|Off-policy 校正的权重 pi/beta，top-K 乘子 lambda_K，线上使用权重截断 c = e^3，测试过 c = e^5，线上 K = 16。服务时的探索通过返回最可能的 top K' 个 item，并从 top M 的其余部分中采样剩下的 K - K' 个来完成。
+scale.0.metric|动作空间
+scale.0.value|数百万个 item 的量级
+results_table.online.0.setting|线上 A/B，K=16，权重截断 e^3
+results_table.online.1.setting|线上 A/B，5% 的用户
+results_table.online.3.setting|线上 A/B，5 天
+results_table.online.4.setting|线上 A/B，5 天
+results_table.online.0.method|top-K off-policy 校正
+results_table.online.0.result|+0.85%，观看视频数 -0.16%
+results_table.online.0.versus|线上生产的候选生成器
+results_table.online.1.versus|线上生产的候选生成器
+results_table.online.2.versus|线上生产的候选生成器
+results_table.online.3.versus|线上生产的候选生成器
+results_table.online.4.versus|线上生产的候选生成器
+results_table.online.1.method|带探索数据的随机策略
+results_table.online.2.method|标准 off-policy 校正
+results_table.online.2.metric|观看视频数
+results_table.online.2.result|+0.53%，ViewTime 没有显著变化
+results_table.online.5.method|权重截断从 e^3 放宽到 e^5
+results_table.online.5.versus|权重截断 e^3
+caveats.0|实验是依次进行的，每次都建立在之前上线的生产模型之上，所以效果是按组件算的，不能相加，论文也这么说。
+caveats.1|没有给出奖励的绝对定义和规模，即用户、item、QPS。
+caveats.2|+0.85% 的 top-K 收益是相对之前经过 off-policy 校正的生产模型。
+unknown_fields.0|目录规模
+unknown_fields.1|用户数
+unknown_fields.2|服务延迟
+unknown_fields.3|硬件
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|YouTube 线上的候选生成
+deployment.ab_traffic|用户按 90%、5% 和 5% 划分；随机策略服务 5%
+deployment.ab_duration|持续多天；K 扫描为 5 天
+deployment.baseline|线上生产的候选生成器
+deployment.notes.0|同一测试中观看视频数下降 0.16%。卡片中的其他设置显示 ViewTime 的变化更小或为负。
+deployment.online_lifts.0.metric|ViewTime，K=16 的 top-K 校正

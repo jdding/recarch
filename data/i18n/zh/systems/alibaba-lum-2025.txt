@@ -1,0 +1,38 @@
+surface|工业级推荐
+era_reason|大型用户模型，采用预训练、扩展的三步范式；主张存在 scaling law
+tldr|Large User Model：生成式预训练的 Transformer，参数最多达 7B，其输出供传统 DLRM 使用；淘宝搜索广告排序上线后 CTR +2.9%，RPM +1.2%。
+summary|WSDM '26 论文：LUM，即 Large User Model，是在用户行为上做生成式预训练的 Transformer，分三步使用：知识构建；用条件 token 做知识查询；以及把知识作为额外特征供传统 DLRM 使用。离线扩展到 7B 参数，并部署在淘宝搜索广告的排序阶段。
+core_idea|在用户行为上预训练一个 Transformer，再把它的输出作为特征提供给现有的排序模型。
+deployed_in|淘宝搜索广告排序
+scale_short|离线扩展到七十亿参数，约四十亿条工业交互数据
+key_result|在淘宝搜索广告排序的线上 A/B 中，CTR +2.9%，RPM +1.2%
+results_reported|淘宝搜索广告排序的线上 A/B：CTR +2.9%，RPM +1.2%。公开数据集见表 2，指标为 AUC：ML-1M 上 LUM 为 0.7615，已列出的最佳基线为 0.7579，即 SIM；ML-20M 上 LUM 为 0.7483，最佳基线为 0.7463，即 HSTU；Amazon Books 上 LUM 为 0.6727，最佳基线为 0.6712，即 HSTU。
+serving_infra|集中式缓存保存实时的 LUM 查询结果，并以离线推理出的兴趣作为兜底；按第 4.4 节所述，LUM 推理与召回和粗排并行运行，而不是放在排序模型内部。
+stages.0.model_family|LUM 以 next-condition-item 预测做预训练；查询条件 token 得到的输出，作为特征输入淘宝搜索广告中现有的 DLRM 排序模型
+stages.0.details|第 2 步，即知识查询，在请求处理早期实时运行，与召回和粗排并行，因此 LUM 的延迟与最终排序阶段解耦。集中式缓存保存实时结果，并预加载离线推理出的用户兴趣，在响应时间预算紧张时作为兜底。
+features_signals.0|未逐项列出
+training.mode|三步
+scale.0.metric|模型规模
+scale.0.value|性能随规模持续提升，直到七十亿参数，来自离线的规模扩展研究
+scale.1.metric|工业数据集
+scale.1.value|约四十亿条交互，见表 1
+results_table.online.0.setting|淘宝搜索广告排序 A/B
+results_table.online.1.setting|淘宝搜索广告排序 A/B
+results_table.online.0.versus|线上排序
+results_table.online.1.versus|线上排序
+results_table.offline.0.versus|已列出的最佳基线 SIM 0.7579
+results_table.offline.1.versus|最佳基线 HSTU 0.7463
+results_table.offline.2.versus|最佳基线 HSTU 0.6712
+caveats.0|表 2 的数字已对照已发表的 WSDM 2026 PDF 核对，三个 LUM 和最佳基线的 AUC 都一致。
+caveats.1|线上结果只针对搜索广告中的排序任务，见第 5.6 节。
+caveats.2|作者单位为 Alibaba Group；部署场景写明为淘宝搜索广告。
+unknown_fields.0|A/B 流量占比和时长
+unknown_fields.1|在线服务的 GPU 规模
+unknown_fields.2|线上 LUM 输入序列的确切长度
+updates.0.note|已对照已发表的 WSDM 2026 PDF 核对；所有数字均已确认，表 2 的 AUC 已验证。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|淘宝搜索广告排序
+deployment.baseline|线上排序
+deployment.training_compute|工业数据集用 128 张 GPU，公开数据集用 32 张 GPU；规模扩展研究在 128 张 GPU 上从 0.5B 扩展到 14B 参数
+deployment.serving_latency|实验预算是每个请求不超过 30 ms，排序 100 个候选；这是预算，不是实测的线上延迟
+deployment.notes.0|LUM 推理与召回和粗排并行运行，因此不在排序模型的关键路径上。

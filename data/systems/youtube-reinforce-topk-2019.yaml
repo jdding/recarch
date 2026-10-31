@@ -120,3 +120,21 @@ results_table:
     metric: ViewTime
     result: -0.52%
     versus: Weight cap e^3
+deployment:
+  online_evidence: online_numbers
+  scenario: YouTube production candidate generation
+  ab_traffic: Users split 90%, 5% and 5%; the stochastic policy served 5%
+  ab_duration: Multi-day runs; 5 days for the K sweep
+  baseline: Production candidate generator
+  online_lifts:
+  - metric: ViewTime, top-K correction with K=16
+    value: +0.85%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Videos viewed fell 0.16% in the same test. Other settings in the card show smaller or negative ViewTime changes.
+  basis: full_text
+  checked_on: '2026-10-31'

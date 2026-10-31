@@ -1,0 +1,42 @@
+surface|AppGallery 应用推荐排序
+era_reason|基于 HSTU 的生成式推荐模型，带会话级预训练和偏好引导的稀疏注意力，取代线上 DLRM 排序模型。
+tldr|华为 HPGR 在 HSTU 排序模型上加入会话预训练和偏好引导的稀疏注意力；AppGallery 上对比线上 DLRM 做 7 天 50% A/B：eCPM +1.99%。
+summary|HPGR 保留 HSTU 生成式推荐模型作为排序骨干，并去掉其扁平序列假设。第一阶段用 masked item modeling 预训练 Session Enhancement Module：用户历史按不活跃间隔切分成会话，由会话内和会话间两个 Transformer 做汇总，这里学到的 item embedding 会在后面继承。第二阶段在 pCTR 上微调，使用时间感知的位置编码和 Preference-Guided Sparse Attention，后者按与候选的 embedding 相似度挑出 top 50 个历史 item，并在 HSTU 编码器中施加高斯软掩码。该模型已在 AppGallery 推荐平台上做过线上测试。
+core_idea|HSTU 排序模型先在用户会话上预训练，再通过稀疏注意力掩码，把注意力限制在最相关的历史上。
+deployed_in|AppGallery 应用推荐排序，在一半流量上测试
+scale_short|45.8M 用户，285M 条训练交互，在一半流量上做 7 天 A/B
+key_result|对比线上 DLRM，流量平均分配，7 天 A/B：eCPM +1.99%
+results_reported|AppGallery 上做 7 天线上 A/B，流量平均分配，对比线上 DLRM：eCPM +1.99%，论文称统计显著。2.5% 用户样本上的离线 AUC：HPGR 为 0.8377，MTGR 为 0.8253，HSTU 为 0.8220，SASRec 为 0.8194，相比 MTGR 绝对提升 0.0124，相对提升 1.50%。在完整测试集上，HPGR 的 AUC 为 0.89288，比 MTGR 高 0.01139，线上 DLRM 为 0.8880，HPGR 为 0.8929。仅预训练为 0.8327，加入会话模块为 0.8374，加入稀疏注意力模块为 0.8348。
+version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792790，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+serving_infra|未说明。论文称相比 MTGR，训练和推理时间的增加在可接受范围内，但没有给出数字。
+stages.0.model_family|带会话编码器和稀疏注意力掩码的 HSTU 编码器
+stages.0.details|为每个用户和候选对预测 CTR。两层 Transformer 生成会话上下文向量，加到每个历史 token 上；按与候选的相似度取 top 50 个历史 item，据此构造高斯掩码，施加在 HSTU 的注意力分数上；最后由 MLP 输出分数。
+id_tokenization.approach|不使用 Semantic ID；item ID embedding 由 masked item 预训练初始化
+id_tokenization.details|预训练得到的 item embedding 在微调时用更小的学习率继续更新。
+features_signals.0|带时间戳的长用户交互历史，按不活跃间隔切分成会话
+features_signals.1|候选 item，以及它在历史 item 中的时间感知位置
+training.mode|离线两阶段训练，先做无标注预训练，再做有监督微调
+training.objectives.0|预训练使用 masked item modeling
+training.objectives.1|微调使用点击标签上的二元交叉熵
+training.notes|主要的消融实验使用一个月 AppGallery 日志中随机抽取的 2.5% 用户样本；最终检查使用完整测试集。
+scale.0.metric|离线数据集用户数
+scale.0.value|约 4580 万
+scale.1.metric|离线数据集 item 数
+scale.2.value|约 2.85 亿条训练，738 万条测试
+scale.3.value|7 天，流量平均分配
+results_table.online.0.setting|AppGallery 7 天 A/B，平均分流
+results_table.offline.0.setting|工业数据集样本，2.5% 用户
+results_table.offline.1.setting|完整测试集
+caveats.0|线上证据只有一个 eCPM 数字，没有置信区间，也没有分指标的拆解。
+caveats.1|主要的离线结果使用私有数据集的 2.5% 用户样本，只对排名靠前的模型做了完整数据集的检查。
+caveats.2|相比 MTGR，训练和推理时间都有增加，且没有给出延迟数字。
+caveats.3|论文没有说明线上使用的模型规模。
+unknown_fields.0|线上模型规模
+unknown_fields.1|在线延迟
+unknown_fields.2|AppGallery 的流量规模
+unknown_fields.3|代码
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 HPGR 仓库。
+deployment.scenario|AppGallery 应用推荐排序
+deployment.ab_traffic|一半流量，在对照组和实验组之间平均分配
+deployment.ab_duration|7 天
+deployment.notes.0|论文称相比 MTGR，训练和推理时间只有小幅增加，但没有给出数字。

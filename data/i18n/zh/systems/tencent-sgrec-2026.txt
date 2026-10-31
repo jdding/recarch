@@ -1,0 +1,56 @@
+surface|微信视频号广告，生成式广告推荐
+era_reason|基于 RQ-VAE Semantic ID 的 Qwen2.5-1.5B 生成器端到端地生成广告；大模型只在训练阶段提供奖励，因此在线服务的核心机制仍是生成。
+tldr|腾讯 S-GRec 用离线大模型评审和以业务为锚点的 RL，训练轻量的 Semantic ID 生成器；微信视频号广告 5% A/B：GMV +1.19%，CTR +1.16%。
+summary|S-GRec 让在线模型保持为基于 Semantic ID 的小型生成式推荐模型，把大模型挪到离线，作为 Personalized Semantic Judge。评审模型是 Qwen3-4B，分两个阶段训练：先在四个语义维度上做维度级打分，用 SFT 和 GRPO；再根据成对反馈做用户条件的聚合。随后用 Asymmetric Advantage Policy Optimization 训练生成器，它把优势锚定在 eCPM 这类业务奖励上，只有当语义优势与业务方向一致、且在一定界限内时才加入。在线服务时不运行任何大模型。
+core_idea|离线大模型评审提供语义奖励，业务奖励则引导轻量的 Semantic ID 生成器。
+deployed_in|微信视频号广告，在 5% 广告流量上做过线上测试
+scale_short|离线用 Qwen3-4B 评审模型，公开基准用 Qwen2.5-1.5B 生成器，A/B 流量 5%
+key_result|对比线上基线，在微信视频号 5% 广告流量上做线上 A/B：GMV +1.19%
+results_reported|在微信视频号 5% 广告流量上做线上 A/B，对比线上基线：GMV +1.19%，GMV-Normal +1.55%，CTR +1.16%，不喜欢率 -2.02%；此前在仿真环境中 eCPM +5.5%。在 Amazon Industrial 和 Office 上对比 MiniOneRec 基础模型的离线结果：Industrial 的 HR@10 +2.9%，NDCG@10 +3.0%；Office 的 HR@10 +3.4%，NDCG@10 +5.3%。在 1,000 个留出样本上，GRPO 之后评审模型的维度打分达到 PairAUC 0.8116 和 PointAcc 0.8687。
+version_note|数字已对照 25 Feb 2026 的 arXiv v3 核对，来自站长 Zotero 中的 PDF；其 ACM 模板仍显示 Conference 17，因此不是 KDD 定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自 Zotero 记录。
+serving_infra|在线服务时没有大模型推理；论文只说在线生成器是轻量的，没有给出延迟或硬件数字。
+stages.0.model_family|基于定长 RQ-VAE Semantic ID 的 Qwen2.5-1.5B 生成器，由公开数据上的 MiniOneRec SFT checkpoint 初始化
+stages.0.details|生成器输入用户画像、行为历史和时空上下文，以 Semantic ID 序列的形式生成广告。论文把线上使用的模型描述为轻量生成器，没有说明线上模型的规模。
+id_tokenization.approach|每个广告对应一条定长 Semantic ID token 序列，使用 RQ-VAE tokenization
+id_tokenization.details|每个 item 或广告映射为一条定长 SID 序列；生成器自回归地产生它。线上的码本大小未说明。
+features_signals.0|用户画像和长期兴趣
+features_signals.1|近期行为序列
+features_signals.2|请求时的上下文，如时间和位置
+features_signals.3|广告的曝光、点击和转化日志，用于构建评审模型的训练数据
+features_signals.4|线上部署中以 eCPM 作为业务奖励
+training.mode|离线策略优化，使用大模型评审的语义奖励和业务奖励
+training.objectives.0|评审模型第一阶段：先 SFT，再对维度级分数做 GRPO
+training.objectives.1|评审模型第二阶段：根据成对偏好做用户条件的聚合
+training.objectives.2|生成器：采用带非对称优势的 GRPO 式裁剪目标
+training.notes|评审模型使用来自线上广告系统的约 20k 条经人工核验的 point-wise 样本和 40k 条 pairwise 样本训练；论文设置中生成器的 group size 为 16，KL 系数为 0.04。
+scale.0.metric|评审模型骨干
+scale.1.metric|生成器骨干
+scale.2.metric|评审模型训练数据
+scale.2.value|20k 条 point-wise 和 40k 条 pairwise 样本
+scale.3.metric|线上 A/B 流量
+results_table.online.0.setting|微信视频号广告，5% 流量 A/B
+results_table.online.1.setting|微信视频号广告，5% 流量 A/B
+results_table.online.2.setting|微信视频号广告，5% 流量 A/B
+results_table.online.3.setting|微信视频号广告，5% 流量 A/B
+results_table.other.0.setting|A/B 之前的仿真环境
+results_table.online.0.versus|线上基线
+results_table.online.1.versus|线上基线
+results_table.online.2.versus|线上基线
+results_table.online.3.versus|线上基线
+results_table.online.3.metric|不喜欢率
+results_table.other.0.versus|仿真器中的基线
+caveats.0|离线对比使用公开的 Amazon Industrial 和 Office 数据集，不是线上数据；线上 A/B 没有对应的离线结果。
+caveats.1|论文没有说明模型在 A/B 之后是否已全量上线。
+caveats.2|A/B 中的生成器被称为轻量；它的规模、tokenizer 和延迟均未给出。
+caveats.3|读取的 Zotero PDF 是带有 ACM 模板占位符的 arXiv v3，不是 KDD 定稿版。
+unknown_fields.0|线上生成器规模
+unknown_fields.1|线上 Semantic ID 码本大小
+unknown_fields.2|在线延迟
+unknown_fields.3|模型是否已全量上线
+unknown_fields.4|A/B 时长
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 S-GRec 仓库。公开的 MiniOneRec 基础模型有自己的仓库。
+deployment.scenario|微信视频号广告，生成式广告推荐
+deployment.ab_traffic|5% 广告流量
+deployment.baseline|线上基线
+deployment.serving_latency|在线服务时没有大模型推理；线上生成器是轻量的，没有给出数字
+deployment.online_lifts.3.metric|不喜欢率

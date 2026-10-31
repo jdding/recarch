@@ -86,3 +86,23 @@ results_table:
     metric: Ads quality
     result: +8%
     versus: Previous retrieval
+deployment:
+  online_evidence: online_numbers
+  scenario: Ads retrieval on Facebook and Instagram
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts:
+  - metric: Recall, selected segments
+    value: +6%
+  - metric: Ads quality, selected segments
+    value: +8%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: More than 3x end-to-end QPS improvement; absolute QPS not reported
+  inference_cost: Model capacity up 10,000x; feature extraction more than 100x faster
+  hardware: NVIDIA Grace Hopper Superchip; MTIA integration planned
+  notes:
+  - The blog does not describe the A/B setup behind the recall and ads quality figures.
+  basis: card_content
+  checked_on: '2026-10-31'

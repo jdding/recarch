@@ -115,3 +115,27 @@ results_table:
     metric: HR@1%
     result: 71.06%
     versus: Best baseline, 28.95 points lower
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao Flash Shopping homepage re-ranking
+  ab_traffic: 2% of live traffic
+  ab_duration: 8 days
+  baseline: Base multi-objective point-wise strategy
+  online_lifts:
+  - metric: GMV
+    value: +3.75%
+  - metric: Orders
+    value: +2.14%
+  - metric: CTR
+    value: +2.85%
+  training_compute: not_reported
+  serving_latency: Mean added latency of 14.8 ms, against 6.2 ms for the PRM baseline
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Models implemented on NVIDIA A100 80GB GPUs; serving hardware not reported
+  notes:
+  - Only the generator is deployed.
+  fulltext_refs:
+  - 'Sec 5.1.4: models implemented in PyTorch on NVIDIA A100 (80GB) GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

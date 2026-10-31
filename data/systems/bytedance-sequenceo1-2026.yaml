@@ -146,3 +146,26 @@ results_table:
     metric: Favourite UAUC
     result: +1.47%
     versus: STCA 10K with TWIN V2
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin and Douyin Lite short-video fine-ranking
+  ab_traffic: not_reported
+  ab_duration: One month
+  baseline: STCA 10K with TWIN V2
+  online_lifts:
+  - metric: Douyin duration
+    value: +1.4999%
+  - metric: Douyin Finish
+    value: +2.3256%
+  - metric: Douyin Lite duration
+    value: +1.6655%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Ultra-long branch at 100K events needs 49.9 times fewer FLOPs in training and 63.9 times fewer
+    at inference than direct STCA
+  hardware: not_reported
+  notes:
+  - Sketch cache hit rate is about 0.6 at a 1-hour TTL.
+  basis: full_text
+  checked_on: '2026-10-31'

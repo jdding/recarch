@@ -1,0 +1,36 @@
+surface|广告和电商中的长序列用户建模
+era_reason|判别式长序列 Transformer 排序模型 LONGER 的扩展；主导范式是扩展判别式的排序和序列模型，不是生成式或 Semantic ID 建模
+tldr|长序列 Transformer 排序模型，可建模最长 10,000 个 item 的历史；已部署在抖音广告和电商，例如短视频 ADSS +2.097%。
+summary|来自 RecSys '25 的长序列 Transformer 排序模型，用全局 token、InnerTransformer token 合并模块和混合注意力，端到端地建模最长 10,000 个 item 的用户历史，使 FLOPs 减少约 50%，并配合 GPU 同步训练、混合精度、激活重计算和 KV 缓存的在线服务。据报告已在字节跳动数十个场景全量部署。
+core_idea|用全局 token 和 token 合并，端到端地建模最长 10,000 个 item 的用户历史。
+deployed_in|字节跳动数十个广告和电商场景
+scale_short|序列最长 10,000 个行为，离线样本 5.2B
+key_result|在线 A/B 中，抖音广告短视频 ADSS +2.097%，ADVV +2.151%
+results_reported|抖音广告 A/B，指标为 ADSS 和 ADVV：直播 +1.063% 和 +1.168%，短视频 +2.097% 和 +2.151%，商城 +1.816% 和 +1.407%。论文还报告了抖音电商 A/B，指标为 Order/U 等，这里没有复现。离线：在抖音广告 CVR 上，AUC 比基础模型高 +1.57%。
+version_note|已对照站长的 Zotero 副本核对，该副本是 18 Jul 2025 的 arXiv v2，排版采用 RecSys '25 的 ACM 模板，页眉和 DOI 为 10.1145/3705328.3748065，即已接收的定稿文本。没有另外比对 ACM-DL 的副本；其数字与此前使用的 arXiv 文本一致。
+serving_infra|KV 缓存的在线服务；统一的 GPU 稠密和稀疏更新
+stages.0.model_family|LONGER：全局 token 加原始长序列，用 InnerTransformer 做 token 合并，混合注意力
+stages.0.details|离线任务：抖音广告系统中的 CVR 预估；数据集包含 130 天内的 52 亿个样本，时间为 16 Oct 2024 - 23 Feb 2025。表 1：LONGER 的 AUC 为 0.85290，LogLoss 为 0.47103，AUC 比基础模型高 +1.57%，基础模型为 0.83968 和 0.48758；论文称线上 0.1% 的提升就被视为显著。
+features_signals.0|超长的用户行为序列
+training.mode|混合精度，激活重计算，稠密加稀疏的 GPU 同步训练
+scale.0.metric|序列长度
+scale.0.value|最长 10,000 个行为，端到端
+scale.1.metric|离线数据集
+scale.1.value|5.2B 个样本，130 天，抖音广告 CVR
+scale.2.value|字节跳动的「dozens」个场景，数十亿用户，来自摘要
+results_table.online.0.versus|线上基线
+results_table.online.1.versus|线上基线
+results_table.online.2.versus|线上基线
+results_table.offline.0.versus|基础模型
+caveats.0|离线基准是论文自己的抖音广告 CVR 数据集；基线包括 DIN、TWIN、HSTU 和普通 Transformer。
+caveats.1|「dozens of scenarios」的部署数量是论文的说法，没有按场景拆分。
+caveats.2|ADSS 和 ADVV 是广告主侧的内部指标，论文文本之外没有定义。
+unknown_fields.0|在线延迟和 QPS
+unknown_fields.1|GPU 数量
+unknown_fields.2|已部署版本的模型参数量
+updates.0.note|按站长的决定，时代从生成式改为深度模型：主导范式是扩展判别式的排序和序列模型，不是生成式或 Semantic ID 建模。
+updates.1.note|已对照 RecSys '25 定稿版 PDF 核对，该 PDF 托管在 arXiv，带有最终 DOI；卡片上的数字均已确认，无改动。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|抖音广告，以及字节跳动其他广告和电商场景
+deployment.baseline|线上基线
+deployment.notes.0|论文称在线服务使用 KV 缓存和统一的 GPU 稠密、稀疏更新，没有给出延迟或 QPS 数字。

@@ -39,7 +39,7 @@ training:
   objectives:
   - 'Ordered regression for page-level click, order and GMV objectives'
   notes: 'Three months of Miaosha production traffic, Adam with learning rate 0.001 and batch size 1024.'
-serving_infra: 'Greedy decoding with shared candidate scoring to fit real-time latency; the paper reports operating within production latency budgets but gives no latency figures.'
+serving_infra: 'Greedy decoding with shared candidate scoring to fit real-time latency; the paper reports 26 ms mean latency in total against 24 ms for Sort-gen.'
 scale:
 - metric: Candidates in, items out
   value: 100 in, 10 out
@@ -57,7 +57,6 @@ caveats:
 - 'Evidence is from the Miaosha discount scenario only.'
 - 'Training labels come from logged exposures and carry position bias from the upstream ranker.'
 unknown_fields:
-- serving latency figures
 - GPU or hardware setup
 - whether other Taobao scenarios use it
 sources:
@@ -119,3 +118,27 @@ results_table:
     metric: CVR AUC
     result: '0.8433'
     versus: Sort-gen 0.7739
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao Miaosha time-limited discount re-ranking
+  ab_traffic: 5% of traffic
+  ab_duration: 14 days
+  baseline: Sort-gen, the deployed generative re-ranker
+  online_lifts:
+  - metric: GMV
+    value: +18.85%
+  - metric: Order volume
+    value: +12.35%
+  - metric: CTR
+    value: +18.77%
+  training_compute: not_reported
+  serving_latency: 26 ms total, against 24 ms for Sort-gen, which is 2 ms more mean latency
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The 26 ms and 24 ms figures are mean inference latency from Sec 5.
+  fulltext_refs:
+  - 'Sec 5: NextGen incurs only 2ms additional mean inference latency at 26ms total vs. Sort-gen 24ms, an 8.3% increase'
+  basis: full_text
+  checked_on: '2026-10-31'

@@ -1,0 +1,46 @@
+surface|京东外卖广告排序
+era_reason|上下文由生成得到，而不是查表得到：经大模型推理的动态上下文、flow matching 生成的兴趣表示和大模型 embedding 一起输入排序模型，作者称这是一种生成式范式，用来取代特征交叉式 DLRM 排序。
+tldr|京东 GCRank 把大模型和 flow matching 生成的上下文输入外卖广告排序；对比线上 DLRM 做 7 天 20% A/B：CTR +5.07%，CVR +4.71%，RPM +6.42%，随后全量上线。
+summary|GCRank 把外卖广告请求的上下文拆成静态、动态、个性化和群体四部分。Generative Contextual Encoder 有三个模块。Dynamic Context Enhancer 用大模型把实时的时间和位置上下文转成 embedding，其中用 DeepSeek-R1 做推理，前面有一个以相似度为键的知识库，大多数请求都能命中缓存。Collective Context Enhancer 以 Qwen1.5-0.5B 为骨干，构建区域级和店铺级 embedding，并由流水线定期刷新。Personalized Context Enhancer 用条件 flow matching 和 MeanFlow，把用户的平均兴趣向即时上下文偏移。Generative Contextual Fusion 模块用 LoRA 风格的 adapter 和一个 MLP 对齐四个上下文向量。
+core_idea|大模型和 flow matching 生成四类上下文，外卖广告排序模型通过 LoRA 风格的 adapter 融合它们。
+deployed_in|京东外卖广告排序，先在 20% 流量上测试，再推到全量流量
+scale_short|约二十亿条训练样本，在 20% 流量上做 7 天 A/B，TP99 增加约 2 ms
+key_result|对比线上 DLRM，7 天 20% A/B：CTR +5.07%，CVR +4.71%，RPM +6.42%
+results_reported|线上 7 天 A/B，分配 20% 流量，对比线上 DLRM，全部 p < 0.0001：CTR +5.07%，CVR +4.71%，RPM +6.42%，TP99 延迟增加约 2 ms；7 天内每日收益保持稳定，随后模型推到平台全量流量。工业数据集上的离线 AUC：GCRank 的 CTR 为 0.7679，CVR 为 0.7053；线上 DLRM 分别为 0.7513 和 0.6619；HSTU 分别为 0.7545 和 0.6659。
+version_note|数字已对照 WWW 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3774904.3792818，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+serving_infra|现有的实时 DLRM 在线服务链路会查询动态知识库和群体 embedding 缓存，因此大模型调用不在主链路上。TP99 延迟增加约 2 ms。
+stages.0.model_family|以大模型和 flow matching 为骨干的上下文编码器，通过 LoRA 风格的 adapter 融合进 CTR 和 CVR 排序模型
+stages.0.details|输出 pCTR 和 pCVR，用于 eCPM 以及广告与自然内容的混合排序。除现有的实时 DLRM 在线服务链路外，还新增两条生成式流水线，分别负责更新和提供动态知识库与群体 embedding 缓存。
+id_tokenization.approach|不使用 Semantic ID；文本和上下文 prompt 由大模型编码成 embedding
+id_tokenization.details|当查询上下文与已存储的上下文足够相似时，动态模块返回缓存的 embedding，否则调用大模型并把结果存下来。
+features_signals.0|过去 60 天的用户行为序列，最多 300 次交互
+features_signals.1|时间、位置、POI 和 AOI 上下文
+features_signals.2|店铺和区域的文本属性，如口味和价格档位
+features_signals.3|广告特征
+training.mode|在 A100 GPU 上离线训练，并接入生产流水线做流式更新
+training.objectives.0|用交叉熵做 CTR 和 CVR 预估
+training.notes|来自真实外卖广告平台的约二十亿条样本，Adam，学习率 0.00002，batch size 512，结果取五次运行的平均。
+scale.0.metric|训练样本
+scale.0.value|约二十亿
+scale.1.value|7 天，20% 流量
+scale.2.value|平台全量流量
+results_table.online.0.setting|外卖广告 7 天 A/B，20% 流量
+results_table.online.1.setting|外卖广告 7 天 A/B，20% 流量
+results_table.online.2.setting|外卖广告 7 天 A/B，20% 流量
+results_table.offline.0.setting|外卖工业数据集
+results_table.offline.1.setting|外卖工业数据集
+caveats.0|论文说明，为保护商业机密，报告的结果经过变换，因此绝对数值可能与原始日志不一致。
+caveats.1|离线数据集是私有的，没有使用公开数据集。
+caveats.2|线上对照组是线上 DLRM，而不是生成式排序模型，论文也没有在线上拆分大模型上下文和 flow matching 各自的贡献。
+caveats.3|离线 AUC 相比基线的提升很大，而这些基线，例如 OneLoc，是为该场景改造过的。
+unknown_fields.0|大模型在线服务硬件
+unknown_fields.1|知识库缓存命中率
+unknown_fields.2|模型参数量
+unknown_fields.3|用户和请求量
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 GCRank 仓库。
+deployment.scenario|京东外卖广告排序
+deployment.ab_traffic|20% 流量
+deployment.ab_duration|7 天
+deployment.serving_latency|TP99 延迟增加约 2 ms
+deployment.hardware|在 NVIDIA A100 GPU 上训练；大模型在线服务硬件未报告
+deployment.notes.0|测试结束后，模型已推到平台全量流量。大模型调用不在在线服务主链路上。

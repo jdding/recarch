@@ -74,3 +74,19 @@ results_table:
     metric: Connections created
     result: Millions per day
     versus: Not stated
+deployment:
+  online_evidence: online_qualitative
+  scenario: Twitter Who to follow user recommendation, in production since summer 2010
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Single large-memory server per replica holding the whole follow graph
+  notes:
+  - Reports millions of connections created per day. This is volume, not a lift against a baseline.
+  basis: card_content
+  checked_on: '2026-10-31'

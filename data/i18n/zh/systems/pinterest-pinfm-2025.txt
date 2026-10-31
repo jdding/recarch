@@ -1,0 +1,40 @@
+surface|跨应用的用户行为序列基础模型
+era_reason|在用户行为序列上预训练的基础模型
+tldr|一个 20B+ 参数、预训练的用户序列基础模型，耦合进 Home Feed 和 Related Items 的排序器；DCAT 带来 +600% 吞吐，新 item 互动 +20%。
+summary|Pinterest 的、20B+ 参数的预训练用户行为序列基础模型：用多年的用户行为，以 InfoNCE 的 next-positive-item 目标训练，再微调，并通过 Deduplicated Cross-Attention Transformer，即 DCAT，耦合进 Home Feed 和 Related Items Feed 等下游排序器，同时用 int4 embedding 量化保持成本持平。
+core_idea|预训练的用户行为序列模型，通过去重的 cross-attention transformer 为下游排序器提供输入。
+deployed_in|Pinterest 的 Home Feed 和 Related Items Feed
+scale_short|20B+ 参数，序列最长 16,000 个行为，超过五亿用户
+key_result|在已上线的 Home Feed 和 Related Items Feed 中，对新 item 的互动 +20%
+results_reported|DCAT 带来吞吐 +600%，内部数据；对新 item，即 fresh item 的互动 +20%，归因于学习用户序列和候选之间的交互；已部署到 Home Feed 和 Related Items Feed，成本持平，延迟略有增加。各场景的线上提升在论文的表中，这里未复现。
+serving_infra|大的 ID embedding 表与稠密模型分离，部署在 CPU 主机或集群上，由推理路由器为用户序列取 embedding，而 transformer 运行在 GPU 推理主机上。DCAT 对用户序列只处理一次，并在各候选之间复用，在 Pinterest 内部数据上吞吐 +600%。Embedding 的 int4 训练后量化：为期两周的线上 A/B 与全精度相比在统计上持平。
+stages.0.model_family|PinFM 在用户行为序列上预训练的 transformer，序列元素包括 item id、行为类型、场景和时间戳，在现有排序模型内部微调
+stages.0.details|序列上限为 16,000 个行为，训练时切成每段数百个 token、互不重叠的片段。预训练使用 InfoNCE，带 batch 内负样本和可学习的温度；正样本行为按表 4 的消融来选。微调损失在表 3 中做了消融，默认用 L_ntl；L_mtl 因内存和速度原因默认不使用。Fresh item 的处理：item 特征，加上对未见过 item 的额外 dropout。
+features_signals.0|用户行为序列
+training.mode|在大规模行为日志上预训练，再按应用微调；大的 ID embedding 表用 TorchRec 跨 GPU 分布式训练
+training.objectives.0|InfoNCE 的 next-positive-item 损失，预训练
+training.objectives.1|微调序列损失 L_ntl，可选再加 L_mtl
+training.notes|下游消融在 Home Feed 排序模型上评估，看 Save 和 Hide 的 HIT@3 变化。
+scale.0.metric|模型规模
+scale.0.value|20B+ 参数，来自摘要
+scale.1.metric|最大序列
+scale.1.value|16,000 个行为
+scale.2.value|跨应用部署给超过五亿用户，来自摘要
+results_table.note|各场景的线上提升在论文的表中，这里未复现。
+results_table.online.0.setting|部署在 Home Feed 和 Related Items Feed
+results_table.online.0.metric|对新 item 的互动
+results_table.online.0.versus|不学习用户序列和候选的交互
+results_table.offline.0.setting|内部数据
+caveats.0|没有提取各场景的线上 A/B 百分比，所以只列出摘要层面的结论。
+caveats.1|新 item 互动 20% 的数字来自论文摘要；这里没有重新推导它的实验设置。
+caveats.2|Embedding 表的服务放在单台 CPU 主机上，作者指出这限制了灵活性。
+unknown_fields.0|各场景的线上指标提升
+unknown_fields.1|GPU 型号和数量
+unknown_fields.2|绝对延迟
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Pinterest 的 Home Feed 和 Related Items Feed
+deployment.serving_latency|延迟略有增加；没有绝对数字
+deployment.inference_cost|报告服务成本持平；在 Pinterest 内部数据上，DCAT 带来吞吐 +600%
+deployment.hardware|Embedding 表在 CPU 主机上；transformer 在 GPU 推理主机上
+deployment.notes.0|为期两周的 int4 embedding 量化线上测试，与全精度相比在统计上持平。
+deployment.online_lifts.0.metric|对新 item 的互动

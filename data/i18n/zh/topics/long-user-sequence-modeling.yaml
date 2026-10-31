@@ -1,0 +1,35 @@
+title: 长用户序列建模
+summary: 生产级推荐系统如何在延迟预算内读取很长的用户历史，在十张 RecArch 卡片之间做对比。
+framing:
+- 用户的历史可以多达数万个事件，而排序器每个请求只有数十毫秒。本页的每个系统都在回答同样的两个问题。历史读多少，以及什么时候为读取付出代价？
+- 答案差别很大。有的系统实时只读最近的数百个行为。有的对完整历史做搜索或压缩。有的把重模型移出请求路径，只提供缓存的结果。表格列出了每张卡片的报告。之后的各节解释了在选择方案时重要的那些差别。
+members:
+- id: pinterest-transact-2023
+  approach: 在 Homefeed 排序器内部实时读取最近 100 个行为。
+- id: pinnerformer-2022
+  approach: 在每日批处理任务中最多读取 256 个行为，并提供一个用户 embedding。
+- id: kuaishou-kuaiformer-2024
+  approach: 一个召回模型，把 256 个 item 的历史压缩成 55 个 token，并保留多个兴趣向量。
+- id: sim-alibaba-2020
+  approach: 在完整历史中搜索与候选接近的行为，然后只对这些行为做 attention。最多可处理 54,000 个行为。
+- id: bytedance-longer-2025
+  approach: 端到端读取最多 10,000 个行为，合并 token 以降低成本，并用 KV cache 提供服务。
+- id: pinterest-pinfm-2025
+  approach: 在最多 16,000 个行为的序列上预训练，再耦合进现有的排序器。它只读取一次序列，并在各候选之间复用。
+- id: bytedance-sequenceo1-2026
+  approach: 把最多 100K 个事件压缩成可缓存的固定大小的 sketch，并直接读取最近的 10K 个事件。
+- id: meta-llatte-2026
+  approach: 大模型异步运行，并把用户 embedding 写入特征存储。线上排序器中的一个小模块读取它们。
+- id: alibaba-lum-2025
+  approach: 经过生成式预训练的用户模型，其输出成为现有排序器的额外特征。查询结果会被缓存。
+- id: hstu-meta-2024
+  approach: 把召回和排序都视为对用户行为的序列预测，并用 HSTU encoder 取代通常的特征交叉层。
+differences:
+- heading: 输入多少历史
+  text: 两个系统读取较短的窗口。TransAct 读取最近 100 个行为，PinnerFormer 最多读取 256 个。两个系统做压缩。KuaiFormer 把 256 个 item 压缩成 55 个 token，SequenceO1 把 100K 个事件变成一个 sketch，同时仍直接读取最近的 10K 个事件。两个系统读取很长的原始序列，LONGER 最多 10,000 个行为，PinFM 最多 16,000 个行为。SIM 先搜索，因此能触及最多 54,000 个行为。在这里，窗口更长并不自动更好。每张卡片都给出自己的上限，而这些上限各自配有不同的降成本技巧。
+- heading: 成本在什么时候付出
+  text: TransAct 和 LONGER 在请求时运行 attention，依赖 GPU 服务或 KV cache。PinnerFormer 在每日批处理中运行。LLaTTE 异步运行大模型，所以线上排序器只做一次特征查找。SequenceO1 构建的 sketch 不依赖候选，所以这个 sketch 可以缓存。LUM 缓存其实时查询的结果。如果你的请求预算很紧，应该先看这条轴。
+- heading: 给排序器供数，还是取代它
+  text: LUM 和 PinFM 的输出可以接入团队已在运行的排序器，迁移成本小。LLaTTE 把工作分给上游模型和紧凑的线上模块。HSTU 反其道而行，取代排序器自己的特征交叉层。PinnerFormer 和 KuaiFormer 位于召回一侧，提供 embedding。
+- heading: 线上数字能说明什么，不能说明什么
+  text: 表中的每个提升都是相对该公司自己的基线。TransAct 的对照组完全没有实时序列特征，所以它的收益是相对没有序列，而不是相对强的序列模型。SequenceO1 的基线已经是带 TWIN V2 的 10K 排序器。不要按百分比给这些系统排名。请改为比较每张卡片上的基线、流量占比和服务数字。

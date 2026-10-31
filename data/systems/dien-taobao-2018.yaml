@@ -125,3 +125,23 @@ results_table:
     metric: AUC
     result: '0.8453'
     versus: DIN 0.7880
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao display advertising CTR prediction
+  ab_traffic: not_reported
+  ab_duration: 2018-06-07 to 2018-07-12
+  baseline: BaseModel
+  online_lifts:
+  - metric: CTR
+    value: +20.7%
+  - metric: eCPM
+    value: +17.1%
+  - metric: PPC
+    value: -3.0%
+  training_compute: not_reported
+  serving_latency: Reduced from 38.2 ms to 6.6 ms by serving optimizations
+  serving_qps: 360 QPS per worker after optimization; system peak above 1 million users per second
+  inference_cost: not_reported
+  hardware: GPU serving with request batching across users; GPU type and count not given
+  basis: full_text
+  checked_on: '2026-10-31'

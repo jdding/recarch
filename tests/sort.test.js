@@ -1,6 +1,6 @@
 // Run: NODE_PATH=/tmp/jt/node_modules node tests/sort.test.js [dist]   (tests "Most cited" sort on the built home page)
-const { JSDOM } = require("jsdom"); const fs = require("fs"); const dist = process.argv[2] || __dirname + "/../dist";
-const html = fs.readFileSync(dist + "/index.html", "utf8"), js = fs.readFileSync(dist + "/static/app.js", "utf8");
+const { JSDOM } = require("jsdom"); const fs = require("fs"); const dist = process.argv[2] || __dirname + "/../dist/en";
+const html = fs.readFileSync(dist + "/index.html", "utf8"), js = fs.readFileSync(dist + "/../static/app.js", "utf8");
 const _F = require("fs"), _D = __dirname + "/../data/systems", _Y = _F.readdirSync(_D).filter((f) => f.endsWith(".yaml") && !/^status: (retired|superseded)\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))), N_CARDS = _Y.length, N_GEN = _Y.filter((f) => /^era: generative\s*$/m.test(_F.readFileSync(_D + "/" + f, "utf8"))).length;
 let fail = 0; const ok = (c, m) => { console.log(c ? "OK  " : "FAIL", m); if (!c) fail++; };
 function mk(url) { const d = new JSDOM(html, { runScripts: "outside-only", url: url || "http://localhost/" }); d.window.alert = () => {}; d.window.eval(js); return d.window; }

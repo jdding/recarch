@@ -1,0 +1,30 @@
+surface|快手和快手极速版的信息流，以及本地生活服务
+era_reason|带 Semantic ID 和 RL 对齐的端到端生成式推荐
+tldr|单阶段 encoder-decoder 生成式推荐，带 RQ-KMeans Semantic ID 和 RL 后训练，取代快手的召回、预排序、排序级联。
+summary|单阶段 encoder-decoder 生成式推荐，取代召回、预排序、排序的级联，带 RQ-KMeans Semantic ID、MoE 解码器和 RL 后训练。
+core_idea|单阶段 encoder-decoder 生成器，取代召回、预排序和排序的级联。
+deployed_in|快手和快手极速版的信息流，以及本地生活服务
+scale_short|快手和快手极速版约占总 QPS 的 25%，本地生活服务为 100%
+key_result|在线上 A/B 中，快手的 App 停留时长 +0.54%，快手极速版 +1.24%
+results_reported|论文报告了快手和快手极速版的线上 A/B 停留时长收益，App 停留时长分别为 +0.54% 和 +1.24%，与规模字段中的数字相同。
+status_reason|已并入 OneRec 卡片，一个系统一张卡片，该卡片以 OneRec-V2 作为主版本。
+serving_infra|在 L20 GPU 上用 TensorRT 推理。
+stages.0.model_family|带 MoE 解码器的 encoder-decoder；next-token 预测；Pass@512 推理
+stages.0.details|编码器通路：静态、短期，20，正反馈，256，终身，其中最多 100k 条经层级 k-means 压缩到 2000，再经 QFormer 压缩到 128 个 query。后训练使用 RSFT 和 RL，其中 RL 用 ECPO，即 early-clipped GRPO，以及奖励模型，包括 P-Score、格式奖励和工业奖励。
+id_tokenization.approach|多模态 embedding，即 miniCPM-V-8B + QFormer，与协同 item 对对齐，再用 RQ-KMeans 量化
+id_tokenization.details|3 层，码本大小 8192，消融中为 32768。
+features_signals.0|用户短期、正反馈和终身行为序列
+features_signals.1|多模态的 item 内容
+training.mode|离线预训练，加 RL 后训练
+training.objectives.0|Next-token 预测
+training.notes|模型规模 0.015B / 0.121B / 0.935B / 2.633B；在 90 台服务器 x 8 块 GPU 上训练，用 SKAI GPU 参数服务器。
+scale.0.value|训练 23.7%，推理 28.8%
+scale.1.metric|相比传统流水线的 OPEX
+scale.2.metric|流量占比
+scale.2.value|快手和快手极速版约占总 QPS 的 25%；本地生活服务占总 QPS 的 100%
+scale.3.metric|线上提升
+results_table.online.0.versus|传统流水线
+results_table.online.1.versus|传统流水线
+caveats.0|论文在推理 MFU 上前后不一致，为 28.8% 和 28.6%。
+code.repos.0.owner|快手，OneRec 团队的组织
+code.repos.0.note|该团队的开源发布：基于 Qwen3 的 OneRec-Foundation 1.7B/8B 模型、RecIF-Bench 基准和一条训练流水线。与本文的线上 OneRec 相关，但不是同一个东西。

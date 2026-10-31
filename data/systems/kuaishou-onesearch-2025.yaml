@@ -124,3 +124,27 @@ results_table:
     metric: Orders
     result: +3.22%
     versus: Online cascade
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou e-commerce mall search
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Online cascade
+  online_lifts:
+  - metric: Orders, with reward-model selection
+    value: +3.22%
+  - metric: Buyers, with reward-model selection
+    value: +2.40%
+  - metric: Item CTR, with reward-model selection
+    value: +1.67%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Operational expenditure reduced by 75.40%
+  hardware: not_reported
+  notes:
+  - Pure OneSearch without reward-model selection is comparable to the online cascade.
+  - 'Rollout: full traffic on detail-page search, 50% on mall search, 20% on homepage search.'
+  - Model FLOPs utilization rose from 3.26% to 27.32%.
+  basis: full_text
+  checked_on: '2026-10-31'

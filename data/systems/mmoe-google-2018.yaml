@@ -157,3 +157,23 @@ results_table:
     metric: Best AUC
     result: '0.8860'
     versus: Shared-Bottom 0.8836
+deployment:
+  online_evidence: online_numbers
+  scenario: Large-scale content recommendation ranking at Google, product not named
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Shared-Bottom model
+  online_lifts:
+  - metric: Satisfaction
+    value: +2.65%
+  - metric: Engagement
+    value: +0.25%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Launch is not stated. The paper says MMoE adds no noticeable computation cost over the shared-bottom model.
+  basis: full_text
+  checked_on: '2026-10-31'

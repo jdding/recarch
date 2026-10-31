@@ -1,0 +1,26 @@
+surface|在公开的 Amazon Reviews 数据集上的研究系统，不是描述过的线上场景
+era_reason|基于 Semantic ID 的生成式检索
+tldr|Item 通过 RQ-VAE 得到 Semantic ID，由 Transformer 解码下一个 item 的 ID，取代基于 embedding 表的 ANN 检索；在公开数据集上对冷启动 item 有帮助。
+summary|TIGER，即 Transformer Index for GEnerative Recommenders，用 RQ-VAE 对内容 embedding 做量化，从而给 item 分配 Semantic ID；由 Transformer sequence-to-sequence 模型自回归地解码下一个 item 的 Semantic ID，取代基于 embedding 表的 ANN 检索。
+core_idea|用 RQ-VAE 把内容 embedding 量化为 Semantic ID，再用 Transformer 解码下一个 item 的 Semantic ID。
+deployed_in|在公开的 Amazon Reviews 数据集上的研究系统，没有描述线上场景
+scale_short|来源中未说明
+key_result|离线：在公开数据集上，召回和 NDCG 优于基线，没有报告具体数字
+results_reported|论文称在公开数据集上，召回和 NDCG 优于基线，并对冷启动 item 和多样性有益。
+serving_infra|论文指出推理比 ANN 查找更贵。
+stages.0.model_family|T5X encoder-decoder，4+4 层，约 13M 参数，用 beam search 生成 Semantic ID 元组
+stages.0.details|Item 内容 -> Sentence-T5 的 768 维 embedding -> 3 级、每级 256 个码字、外加一个处理冲突的 token 的 RQ-VAE。
+id_tokenization.details|Encoder 为 512-256-128，隐层 32；3 级，码本 256，外加第 4 个 token 用来消除冲突；2000 个经哈希的 user-ID token。
+features_signals.0|Item 内容文本 embedding
+features_signals.1|用户交互序列
+training.objectives.0|下一个 Semantic ID 的预测
+training.notes|在 Amazon Beauty / Sports / Toys 数据集上评估。
+results_table.note|论文还称对冷启动 item 和多样性有益。没有报告线上部署。
+results_table.offline.0.setting|公开的 Amazon Reviews 数据集
+results_table.offline.0.metric|召回和 NDCG
+results_table.offline.0.result|有提升，没有数字
+caveats.0|没有被描述为在 Google 产品中部署。
+unknown_fields.0|线上部署
+code.repos.0.note|PyTorch 实现，自称非官方。论文没有链接代码。
+deployment.scenario|在公开的 Amazon Reviews 数据集上的研究系统
+deployment.notes.0|论文指出推理的成本比 ANN 查找更高。

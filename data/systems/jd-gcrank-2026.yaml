@@ -109,3 +109,25 @@ results_table:
     metric: CVR AUC
     result: '0.7053'
     versus: Production DLRM 0.6619
+deployment:
+  online_evidence: online_numbers
+  scenario: JD takeout food delivery ad ranking
+  ab_traffic: 20% of traffic
+  ab_duration: 7 days
+  baseline: Production DLRM
+  online_lifts:
+  - metric: RPM
+    value: +6.42%
+  - metric: CTR
+    value: +5.07%
+  - metric: CVR
+    value: +4.71%
+  training_compute: not_reported
+  serving_latency: TP99 latency up about 2 ms
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Trained on NVIDIA A100 GPUs; LLM serving hardware not reported
+  notes:
+  - After the test the model was rolled out to all platform traffic. LLM calls are off the main serving path.
+  basis: full_text
+  checked_on: '2026-10-31'

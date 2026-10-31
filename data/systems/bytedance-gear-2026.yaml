@@ -115,3 +115,23 @@ results_table:
     metric: Collision rate
     result: 52.3%
     versus: Vanilla RQ with EMA 84.2%
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin Ads retrieval, as an extra generative channel
+  ab_traffic: 5% of total traffic per treatment group
+  ab_duration: 7 days
+  baseline: Production system without the GEAR channel
+  online_lifts:
+  - metric: ADSS
+    value: +0.563%
+  - metric: ADVV
+    value: +0.658%
+  - metric: Cold-start activation of new advertisers
+    value: +1.46%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

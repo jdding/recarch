@@ -50,3 +50,22 @@ scale_short: Several million candidate stores per eater, narrowed to the top sev
 key_result: No reported metrics in the sources
 results_table:
   note: The sources describe the retrieval design and report no A/B results.
+deployment:
+  online_evidence: deployed_only
+  scenario: Uber Eats home feed store recommendations
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper reports that a bag-of-words item tower is 25x smaller and cuts training time from days to a few hours.
+    No A/B results are given.
+  fulltext_refs:
+  - 'Conclusion: model size reduced by 25x; training time reduced from days to a few hours'
+  basis: full_text
+  checked_on: '2026-10-31'

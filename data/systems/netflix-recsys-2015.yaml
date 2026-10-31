@@ -89,3 +89,21 @@ results_table:
     metric: Savings from reduced cancellations
     result: More than $1B per year
     versus: No personalisation
+deployment:
+  online_evidence: deployed_only
+  scenario: Netflix homepage, most screens and search
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Estimated value of personalization and recommendations is more than $1B per year. This is an estimate, not an
+    A/B result.
+  - The paper discusses A/B test design and gives no model metrics.
+  basis: card_content
+  checked_on: '2026-10-31'

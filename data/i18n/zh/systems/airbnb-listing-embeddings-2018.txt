@@ -1,0 +1,39 @@
+surface|搜索排序和相似房源
+era_reason|2018 年，Skip-gram 风格的神经网络 embedding 为排序模型提供输入；属于神经网络，但结构较浅
+tldr|在点击会话上训练的 Skip-gram 房源 embedding，以预订作为全局上下文，用于 Airbnb 搜索排序；相似房源的 CTR 比之前的算法提高 20%。
+summary|Skip-gram 风格的房源 embedding 在点击会话上训练，带有以预订作为全局上下文和按市场选取负样本的设计，另有用户类型和房源类型的 embedding 来刻画长期兴趣；它们作为相似度特征用于排序模型。
+core_idea|从点击会话中学习房源 embedding，并把它们用作相似度特征。
+deployed_in|Airbnb 搜索排序和相似房源
+scale_short|训练使用超过八亿个搜索点击会话
+key_result|相似房源的 CTR 比之前的算法提高 20%
+results_reported|PDF：embedding 特征在搜索排序中带来显著的预订提升，来自 A/B 测试；相似房源的 CTR 比之前的算法提高 20%。
+stages.0.model_family|embedding 相似度特征，针对最近点击、跳过和预订过的房源，输入搜索排序模型
+stages.0.details|排序特征用的是相似度，不是原始向量，这一点来自对论文的二手摘要。
+stages.1.model_family|相似房源，基于 embedding 的最近邻
+id_tokenization.approach|房源 ID、房源类型和用户类型
+features_signals.0|点击会话
+features_signals.2|跳过，属于负信号
+features_signals.3|按类型分桶的房源属性
+training.mode|离线训练，每天重新训练
+training.objectives.0|Skip-gram，以已预订房源作为全局上下文
+training.notes|32 维 embedding。
+scale.0.metric|训练会话数
+scale.0.value|超过八亿个搜索点击会话
+scale.1.metric|embedding 维度
+scale.2.metric|这两个渠道占预订的比例
+scale.2.value|99%，来自搜索排序和相似房源
+results_table.online.0.method|房源 embedding
+results_table.online.0.versus|之前的算法
+results_table.online.1.setting|搜索排序 A/B
+results_table.online.1.method|把 embedding 特征用作排序特征
+results_table.online.1.result|显著提升，未给出幅度
+results_table.online.1.versus|没有这些特征的排序
+caveats.0|这里没有收录预订提升的绝对数字。
+unknown_fields.0|在线延迟
+unknown_fields.1|预订提升的绝对值
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Airbnb 搜索排序和相似房源
+deployment.baseline|相似房源对比之前的算法；搜索排序对比没有 embedding 特征的排序
+deployment.online_lifts.0.metric|相似房源点击率
+deployment.online_lifts.1.metric|搜索排序的预订
+deployment.online_lifts.1.value|显著提升，未给出幅度

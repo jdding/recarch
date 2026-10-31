@@ -1,0 +1,31 @@
+surface|YouTube 在 LFV 和 Shorts 中视频推荐的生成式召回
+era_reason|用 Semantic ID 把预训练语言模型适配到生成式召回
+tldr|用 Semantic ID 的 tokenization 和生成式召回，把预训练的 LLM 适配到推荐；已面向数十亿用户上线，优于基于 embedding 表的线上模型。
+summary|把预训练的 LLM 适配到推荐：Semantic ID 的 tokenization，在领域数据上继续预训练，然后微调出解码 Semantic ID 的生成式召回；已面向数十亿用户上线。
+core_idea|用 Semantic ID 的 tokenization、继续预训练和微调，适配预训练的 LLM，做生成式召回。
+deployed_in|YouTube 在 LFV 和 Shorts 中的视频推荐召回
+scale_short|数十亿用户
+key_result|相对经过深度优化的基于 embedding 表的线上模型，召回有明显提升，没有报告具体数字
+results_reported|摘要：相对经过深度优化的基于 embedding 表的线上模型，召回有明显提升。
+serving_infra|论文描述了用于上线的训练和推理方法
+stages.0.model_family|预训练的 LLM，MoE，据 PDF 总计约 4.2B 参数，生成 Semantic ID
+stages.0.details|据 PDF，SFT 之后报告的幻觉率 <5%。
+id_tokenization.approach|Semantic ID，含 SIDv2 的改进
+features_signals.0|用户上下文和历史
+features_signals.1|视频内容
+training.mode|继续预训练 + SFT
+training.notes|PDF 中提到约 260B token 的 CPT 配置。
+scale.0.value|数十亿用户
+results_table.online.0.setting|线上生产，摘要
+results_table.online.0.metric|召回质量
+results_table.online.0.result|明显提升，没有数字
+results_table.online.0.versus|经过深度优化的基于 embedding 表的模型
+caveats.0|具体的线上指标变化在论文正文里，但没有被记录。
+unknown_fields.0|线上指标变化
+unknown_fields.1|延迟
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|YouTube 在 LFV 和 Shorts 中的视频推荐召回
+deployment.baseline|经过深度优化的基于 embedding 表的线上模型
+deployment.training_compute|实验在 1,024 块 TPU v6e 芯片上运行，分成四个并行训练器，每个 256 块 TPU。整体的召回训练成本与 embedding 模型相当，尽管稠密参数多 100x，原因是收敛更快
+deployment.hardware|Google TPU v6e，每块芯片 32GB HBM，用于训练实验
+deployment.notes.0|报告召回质量有明显提升，没有数字。

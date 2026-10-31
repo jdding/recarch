@@ -153,3 +153,23 @@ results_table:
     metric: Pins shown
     result: -1%
     versus: 18-pin baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Airbnb map and list search results
+  ab_traffic: 34 million searchers in each of control and treatment, final run
+  ab_duration: not_reported
+  baseline: Control arm of each A/B test
+  online_lifts:
+  - metric: Uncanceled bookings, final run, alpha 1.0
+    value: +1.9%
+  - metric: 5-star trips, final run, alpha 1.0
+    value: +2%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper cites strict search latency budgets as the reason for a greedy heuristic, and gives no numbers.
+  basis: full_text
+  checked_on: '2026-10-31'

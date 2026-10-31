@@ -131,3 +131,26 @@ results_table:
     metric: Hit@5
     result: +10.2% to +16.9%
     versus: OneRec
+deployment:
+  online_evidence: online_numbers
+  scenario: Tencent PCG news, video, web novel and advertising surfaces
+  ab_traffic: CCFormer over one million exposed users per day per group; BARGE 6% of live traffic; HiGR 5% in one
+    scenario
+  ab_duration: Two weeks for CCFormer and BARGE
+  baseline: Production DLRM for CCFormer video, deployed HSTU for ads, multi-stage incumbent for BARGE
+  online_lifts:
+  - metric: CCFormer video CTR
+    value: +3.57%
+  - metric: CCFormer advertising revenue
+    value: +1.71%
+  - metric: BARGE total reading time
+    value: +1.70%
+  - metric: HiGR average watch time
+    value: +1.22%
+  training_compute: CCFormer trains 2.21x faster than HSTU at about half the GFLOPs
+  serving_latency: HiGR keeps P99 latency below 50 ms; BARGE adds no latency to its channel
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Training on NVIDIA H20 clusters; online serving on NVIDIA L20 GPUs with KV caching
+  basis: full_text
+  checked_on: '2026-10-31'

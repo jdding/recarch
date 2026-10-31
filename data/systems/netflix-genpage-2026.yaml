@@ -119,3 +119,24 @@ results_table:
     metric: Entity AUC
     result: '0.920'
     versus: Without 0.910
+deployment:
+  online_evidence: online_numbers
+  scenario: Netflix homepage, WBC variant tested online
+  ab_traffic: not_reported
+  ab_duration: 14 days
+  baseline: Mature multi-stage production homepage recommender
+  online_lifts:
+  - metric: Core engagement metric, best of five variants
+    value: +0.24%
+  - metric: End-to-end serving latency
+    value: -20%
+  training_compute: not_reported
+  serving_latency: End-to-end serving latency 20% lower than the multi-stage stack
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The online model has about 200M parameters, chosen to fit the serving latency budget.
+  - Full launch is not stated.
+  basis: full_text
+  checked_on: '2026-10-31'

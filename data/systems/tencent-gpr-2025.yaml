@@ -109,3 +109,21 @@ results_table:
     metric: GMV
     result: +0.58%
     versus: Previous version
+deployment:
+  online_evidence: online_numbers
+  scenario: Tencent Weixin Channels advertising system
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Mature cascade
+  online_lifts:
+  - metric: GMV, first launch v0.1
+    value: +2.11%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Four later launches add +0.70%, +0.63%, +0.71% and +0.58% GMV, each against the previous version.
+  basis: full_text
+  checked_on: '2026-10-31'

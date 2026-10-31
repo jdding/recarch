@@ -100,3 +100,28 @@ results_table:
     metric: Member sessions
     result: +0.5%
     versus: Previous ranking
+deployment:
+  online_evidence: online_numbers
+  scenario: LinkedIn Feed, Jobs and Ads CTR ranking
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous ranking
+  online_lifts:
+  - metric: Ads CTR
+    value: +4.3%
+  - metric: Jobs qualified job applications
+    value: +1.76%
+  - metric: Feed member sessions
+    value: +0.5%
+  training_compute: 4D model parallelism cut training time from 70 hours to 20 hours, a 71% reduction
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Quantization and vocabulary compression are used for serving; no latency or QPS numbers.
+  fulltext_refs:
+  - 'Training scalability section: 4D model parallelism cut end-to-end training time by 71%; model parallelism reduced
+    training time from 70 hours to 20 hours'
+  basis: full_text
+  checked_on: '2026-10-31'

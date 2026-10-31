@@ -1,0 +1,39 @@
+surface|Facebook 和 Instagram 的广告召回
+era_reason|神经召回引擎加硬件协同设计；不是生成式
+tldr|Meta 的广告召回引擎：与 Grace Hopper 硬件协同设计的深度网络，加层级索引；博客报告召回 +6%，广告质量 +8%。
+summary|新一代广告召回引擎：与 NVIDIA Grace Hopper 硬件协同设计的深度神经网络，加上与召回模型联合训练的层级索引，从数千万候选中挑出数千条广告。
+core_idea|与 Grace Hopper 硬件协同设计的深度神经网络，加与召回联合训练的层级索引。
+deployed_in|Facebook 和 Instagram 的广告召回
+scale_short|从数千万候选中挑出数千条广告
+key_result|博客：在选定的细分上，召回 +6%，广告质量 +8%
+results_reported|博客：在选定的细分上，召回提升 +6%，广告质量提升 +8%。
+serving_infra|NVIDIA Grace Hopper Superchip；层级索引与召回模型联合训练；计划集成 MTIA
+stages.0.model_family|带层级索引的深度 NN，与召回模型联合训练，在 Grace Hopper 上服务
+stages.0.details|博客称预计会转向自回归损失并与 MTIA 集成；目前并没有被描述为生成式模型。
+features_signals.0|广告特征，博客中未列举
+training.mode|离线，与硬件协同设计
+training.objectives.0|召回目标，未给出细节
+scale.0.metric|候选池
+scale.0.value|数千万条广告
+scale.1.metric|传给下一阶段的候选
+scale.1.value|数千条
+scale.2.metric|模型容量提升
+scale.3.metric|特征提取加速
+scale.4.metric|端到端 QPS
+results_table.other.0.setting|选定的细分，来自博客
+results_table.other.1.setting|选定的细分，来自博客
+results_table.other.0.versus|之前的召回
+results_table.other.1.versus|之前的召回
+results_table.other.1.metric|广告质量
+caveats.0|工程博客；没有论文，没有消融。
+unknown_fields.0|架构细节
+unknown_fields.1|损失函数
+unknown_fields.2|特征列表
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Facebook 和 Instagram 的广告召回
+deployment.serving_qps|端到端 QPS 提升超过 3x；未报告绝对 QPS
+deployment.inference_cost|模型容量提高 10,000x；特征提取快超过 100x
+deployment.hardware|NVIDIA Grace Hopper Superchip；计划集成 MTIA
+deployment.notes.0|博客没有描述召回和广告质量数字背后的 A/B 设置。
+deployment.online_lifts.0.metric|召回，选定的细分
+deployment.online_lifts.1.metric|广告质量，选定的细分

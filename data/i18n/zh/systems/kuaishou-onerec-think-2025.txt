@@ -1,0 +1,37 @@
+surface|带推理的生成式推荐
+era_reason|LLM 推理加生成式推荐
+tldr|一个 Qwen3-8B 的 LLM，在 item token 上统一了对话、推理和推荐；线上 A/B 中 App 停留时长 +0.159%。
+summary|在一个基于 LLM 的生成式推荐模型中统一对话、文本推理和推荐：item 是加到 Qwen3-8B 词表里的 itemic token，分三个阶段训练，即 itemic 对齐、推理激活和强化学习推理增强，并通过两阶段的「Think-Ahead」设计部署，为实时的 OneRec 模型提前生成由推理得到的 item token 前缀。
+core_idea|一个 LLM 统一对话、推理和推荐，item 作为新增的 itemic token。
+deployed_in|快手，在 1.29% 的流量组上测试，未说明更大范围的上线
+scale_short|Qwen-8B 骨干，新增 24,576 个 itemic token
+key_result|在 1.29% 的流量上做一周线上 A/B，App 停留时长 +0.159%
+results_reported|对比线上模型的线上 A/B：APP 停留时长 +0.159%，1.29% 的流量，一周。公开基准：声称在 Amazon Beauty、Toys 和 Sports 上达到 state-of-the-art。
+status_reason|已合并进 OneRec 卡片，每个系统一张卡片，该卡片以 OneRec-V2 作为主版本。
+stages.0.model_family|基于 Qwen-8B 骨干的 LLM，词表扩展了 24,576 个 itemic token，即 3 层 x 8,192，先生成推理文本，再生成 itemic token
+stages.0.details|第 1 阶段是多任务预训练，交错使用用户画像对齐、itemic 稠密描述、通用语言建模等，使 item 与文本对齐；第 2 阶段提示模型写出偏好理由；第 3 阶段用强化学习和面向推荐的奖励来精炼推理。
+stages.1.model_family|Think-Ahead 部署架构
+stages.1.details|第一阶段根据对意图和一般偏好的推理，提前生成 item token 前缀；第二阶段是实时更新的 OneRec 模型，把这些前缀作为受约束的前缀，生成最终的 item token，见附录 A.3.4。
+id_tokenization.approach|与文本对齐的 itemic token
+features_signals.0|Item 文本、用户历史
+training.mode|三阶段：多任务对齐预训练，然后通过提示模型生成偏好理由来激活推理，再用带推荐感知奖励的强化学习
+training.objectives.0|在文本和 itemic token 上做下一个 token 预测
+training.objectives.1|为推荐准确率定制的强化学习奖励
+training.notes|在 Amazon Beauty、Toys 和 Sports 上做离线基准，对比 BERT4Rec、HGN、GRU4Rec、SASRec、TIGER、HSTU、ReaRec；在 Beauty 上的消融显示 Base+IA+R 高于 Base+IA。
+scale.0.value|Qwen-8B，由公开权重初始化
+scale.1.metric|新增词表
+scale.1.value|24,576 个 itemic token，即 3 x 8,192
+scale.2.metric|线上实验
+scale.2.value|一周的 1.29% 流量组，平台日活用户数以亿计
+results_table.online.0.setting|快手 A/B，1.29% 的流量，一周
+results_table.online.0.versus|线上模型
+results_table.offline.0.metric|公开基准
+results_table.offline.0.result|声称达到 state-of-the-art，没有数字
+results_table.offline.0.versus|此前的方法
+caveats.0|+0.159% 的 App 停留时长，绝对值不大；论文把它定位为在线上验证了推理的作用。
+caveats.1|Think-Ahead 把推理生成移出了实时路径，所以线上模型仍然依赖 OneRec 实时模型。
+caveats.2|在所读章节中没有说明推理阶段完整的服务成本和延迟。
+unknown_fields.0|推理阶段的延迟和 GPU 成本
+unknown_fields.1|1.29% 实验之外的上线范围
+code.repos.0.owner|Shiyao Wang，论文的共同第一作者，快手；论文中有链接
+code.repos.0.note|基于公开 Amazon 数据的 Qwen3-1.7B 流水线：itemic 对齐、推理激活和评估。不包含已部署的 Think-Ahead 线上系统。

@@ -1,0 +1,53 @@
+surface|淘宝秒杀限时折扣场景，重排阶段
+era_reason|Encoder-decoder 模型自回归地构建最终页面，每一步都从整个候选集里选择；重排模型的核心是生成，而不是对 item 打分。
+tldr|淘宝 NextGen 是一个全候选自回归重排模型；秒杀上对比此前的生成式重排模型 Sort-gen，做 14 天 5% A/B：GMV +18.85%，订单 +12.35%。
+summary|NextGen 把排序阶段输出的 100 个候选重排成一个含 10 个 item 的页面。全局编码器对用户 token、所有候选和点击历史做注意力；解码器每一步从所有剩余候选中选一个 item，并共用一个候选打分层，使全候选打分的开销保持很低。上游的 CTR 和 CVR 分数被 embed 后同时输入 item 层和打分层，因此模型只需学习相对排序模型的增益。淘宝多模态大模型 TBStar 的冻结 embedding 在离线阶段加入，所以在线服务时不运行大模型。训练在页面级的点击、订单和 GMV 目标上使用 ordered regression；推理是贪心的，并带有 MMR 多样性项。
+core_idea|Encoder-decoder 模型在多个业务目标下，每次从全候选集中选一个 item，逐步构建页面。
+deployed_in|淘宝秒杀重排，在 5% 流量上测试
+scale_short|输入 100 个候选，输出 10 个 item，每天服务数亿用户
+key_result|对比此前的生成式重排模型 Sort-gen，14 天 5% 线上 A/B：GMV +18.85%，订单量 +12.35%
+results_reported|在 5% 秒杀流量上做 14 天线上 A/B，所有提升在 p < 0.01 下显著。对比线上的生成式重排模型 Sort-gen，NextGen 的 GMV +18.85%，订单量 +12.35%，CTR +18.77%，访问购买率 +11.78%。对比 RULE 基线，NextGen 的 GMV +24.73%，订单量 +15.61%，CTR +20.08%，访问购买率 +14.84%。14 天的 A/A 测试没有显著差异。离线结果：NextGen 的平均 CTR AUC 为 0.8123，CVR AUC 为 0.8433；Sort-gen 分别为 0.7705 和 0.7739。
+version_note|数字已对照 RecSys 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3773078.3831881，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+serving_infra|用贪心解码和共享的候选打分来满足实时延迟；论文报告总平均延迟为 26 ms，Sort-gen 为 24 ms。
+stages.0.model_family|Encoder-decoder Transformer，2 层编码器和 2 层解码器，隐层大小 256，4 个头
+stages.0.details|从排序阶段取 N=100 个候选，通过对所有剩余候选的贪心自回归选择，输出 K=10 个 item；ordered regression 为多个目标预测各阈值档位的概率，经排名归一化后，与 MMR 多样性分数融合。
+id_tokenization.approach|不使用 Semantic ID；item ID embedding 加冻结的 TBStar 多模态大模型 embedding
+id_tokenization.details|每个 item 的表示由 ID、item 侧、大模型、位置、CTR 分数和 CVR 分数的 embedding 拼接而成；大模型向量是对标题和图片离线计算的 256 维平均池化编码。
+features_signals.0|用户 ID、设备类型和时间特征
+features_signals.1|候选 item 的 ID、类目、品牌以及历史 CTR 和 CVR
+features_signals.2|上游排序的 CTR 和 CVR 分数以及位置
+features_signals.3|标题和图片的冻结大模型语义 embedding
+features_signals.4|历史点击序列和曝光日志序列
+training.mode|在曝光日志序列上用 teacher forcing 做离线训练
+training.objectives.0|对页面级的点击、订单和 GMV 目标做 ordered regression
+training.notes|三个月的秒杀线上流量，Adam，学习率 0.001，batch size 1024。
+scale.0.metric|输入候选数和输出 item 数
+scale.0.value|输入 100，输出 10
+scale.1.metric|训练数据
+scale.1.value|3 个月的线上流量
+scale.2.metric|服务的用户
+scale.2.value|每天数亿
+results_table.online.0.setting|秒杀 14 天 A/B，5% 流量
+results_table.online.1.setting|秒杀 14 天 A/B，5% 流量
+results_table.online.2.setting|秒杀 14 天 A/B，5% 流量
+results_table.online.3.setting|秒杀 14 天 A/B，5% 流量
+results_table.online.4.setting|秒杀 14 天 A/B，5% 流量
+results_table.offline.0.setting|秒杀离线
+results_table.offline.1.setting|秒杀离线
+results_table.online.1.metric|订单量
+results_table.online.3.metric|访问购买率
+results_table.online.4.versus|RULE 基线
+caveats.0|主要提升是相对 Sort-gen 得到的，它是同一团队更早的方法，并在新的多样性约束下重新部署；论文指出，Sort-gen 的数字因此与其原始论文不同。
+caveats.1|NextGen 对前 100 个候选打分，而 Sort-gen 只对前 30 个打分，作者说明，这种候选池的影响没有在线上测试中被单独分离出来。
+caveats.2|证据只来自秒杀折扣这一个场景。
+caveats.3|训练标签来自曝光日志，带有上游排序模型造成的位置偏置。
+unknown_fields.0|GPU 或硬件配置
+unknown_fields.1|淘宝其他场景是否在用
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 NextGen 仓库。
+deployment.scenario|淘宝秒杀限时折扣重排
+deployment.ab_traffic|5% 流量
+deployment.ab_duration|14 天
+deployment.baseline|Sort-gen，已部署的生成式重排模型
+deployment.serving_latency|总计 26 ms，Sort-gen 为 24 ms，即平均延迟多 2 ms
+deployment.notes.0|26 ms 和 24 ms 是第 5 节中的平均推理延迟。
+deployment.online_lifts.1.metric|订单量

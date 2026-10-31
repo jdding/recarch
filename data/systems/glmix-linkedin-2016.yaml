@@ -72,3 +72,19 @@ results_table:
     metric: Total job applications from active job seekers
     result: +20% to +40%
     versus: Previous recommender
+deployment:
+  online_evidence: online_numbers
+  scenario: LinkedIn job recommender, Jobs you may be interested in
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous recommender
+  online_lifts:
+  - metric: Total job applications from active job seekers
+    value: +20% to +40%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Apache Spark on YARN for training; serving not described
+  basis: card_content
+  checked_on: '2026-10-31'

@@ -1,0 +1,54 @@
+title: Generative retrieval
+summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across sixteen RecArch cards.
+framing:
+  - A classic retrieval stack finds items by nearest-neighbor search over embeddings. Generative retrieval has a model write the answer. It produces a short code for each item, called a semantic ID, or it produces text, and the output is mapped back to items. All systems below report production use except TIGER, which reports public datasets only.
+  - The word covers very different designs. Some replace the whole retrieval, pre-rank and rank cascade. Some add one more retrieval channel. Some generate things other than item IDs. The sections after the table explain the differences that change cost and risk.
+members:
+  - id: tiger-google-2023
+    approach: Quantizes item content embeddings into semantic IDs with RQ-VAE, and a Transformer decodes the next item's ID.
+  - id: youtube-plum-2025
+    approach: Adapts a pretrained LLM with semantic ID tokens, continued pretraining and fine-tuning. Reported to beat the embedding-table production model.
+  - id: snap-snaplgr-2026
+    approach: A Qwen3-0.6B decoder over multimodal semantic IDs. Serving is offline, as daily batch beam search.
+  - id: meituan-dpgr-2026
+    approach: An HSTU model over content and POI actions. It generates a few intent codes, and each code runs one ANN query.
+  - id: bytedance-gear-2026
+    approach: Runs as one extra retrieval channel. Decodes item token sequences by beam search, then a reranking head orders items that share a token sequence.
+  - id: kuaishou-quasid-2026
+    approach: A tokenizer, not a generator. It pushes apart items whose semantic IDs collide, and the tokenizer serves retrieval and ranking.
+  - id: amap-gwhere-2026
+    approach: A Qwen LLM generates the next POI's semantic IDs for the app homepage. Tested against the production cascade.
+  - id: taobao-aigq-2026
+    approach: No semantic IDs. An LLM writes query text for the search box, served nearline and through a daily index.
+  - id: alibaba-urm-2025
+    approach: A Qwen-7B LLM reads user features and a text description of the goal, then generates a set of items. Served asynchronously.
+  - id: netflix-genpage-2026
+    approach: A decoder-only Transformer generates the whole homepage. Rows and entities are single tokens, not semantic IDs.
+  - id: onerec-kuaishou
+    approach: One generator over 3-level semantic IDs, post-trained with rewards from real user feedback.
+  - id: tencent-gpr-2025
+    approach: One model replaces the retrieval, pre-rank and rank cascade for Weixin Channels ads, over multi-level semantic IDs.
+  - id: tencent-sgrec-2026
+    approach: A small generator over semantic IDs. An LLM judge is used offline during training and not at serving.
+  - id: kuaishou-onesearch-2025
+    approach: One encoder-decoder generates item semantic IDs for mall search, replacing the recall, pre-rank and rank cascade.
+  - id: baidu-unique-2026
+    approach: One Transformer predicts a single-layer semantic code for retrieval and scores the retrieved items. In Mobile Baidu its codes supply about 22.5% of the candidate pool.
+  - id: tencent-tgr-2026
+    approach: The BARGE model generates semantic ID paths by beam search and uses them as an embedding query in a retrieval channel. The report also covers ranking and slate generation.
+differences:
+  - heading: What the model writes
+    text: Most systems write semantic IDs. DPGR writes a few intent codes and lets ANN search find the items for each code. AIGQ writes query text. URM asks an LLM for a set of items from a text description of the goal. GenPage writes a whole page, with one token for each row and each entity. Check this first, because it decides what you must build besides the model.
+    cards: [tiger-google-2023, meituan-dpgr-2026, taobao-aigq-2026, alibaba-urm-2025, netflix-genpage-2026]
+  - heading: Replace the cascade or add a channel
+    text: GPR and OneSearch replace the retrieval, pre-rank and rank cascade. Gwhere and OneRec are single-stage systems. GEAR, BARGE, DPGR, URM and AIGQ are added next to existing retrieval sources, and SnapLGR is launched as one retrieval source. An added channel is easier to roll back and to measure. A replacement removes stages but puts the whole result on one model.
+    cards: [tencent-gpr-2025, kuaishou-onesearch-2025, amap-gwhere-2026, onerec-kuaishou, bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026, snap-snaplgr-2026]
+  - heading: The tokenizer is the hard part
+    text: Several cards spend most of their effort on semantic IDs themselves. TIGER adds a fourth token to separate items that collide. QuaSID pushes colliding items apart. GEAR uses a residual quantizer meant to avoid dead codes. SnapLGR adds a co-engagement loss that raises codebook utilization and reduces collisions. UNIQUE moved to one flat codebook of 16,384 codes, from a 128 x 128 hierarchical layout.
+    cards: [tiger-google-2023, kuaishou-quasid-2026, bytedance-gear-2026, snap-snaplgr-2026, baidu-unique-2026]
+  - heading: How serving is kept affordable
+    text: TIGER notes that inference costs more than an ANN lookup. The production systems avoid per-request generation in different ways. SnapLGR runs beam search as a daily offline batch. AIGQ serves nearline through a cached list and a daily index. URM runs asynchronously. S-GRec keeps the LLM offline and serves a small generator. OneRec reports 36 ms online latency with beam size 512. Gwhere reports about 30 ms P99 on 2 GPUs in a load test, against about 20 ms for the cascade. UNIQUE runs on about 400 GPUs.
+    cards: [tiger-google-2023, snap-snaplgr-2026, taobao-aigq-2026, alibaba-urm-2025, tencent-sgrec-2026, onerec-kuaishou, amap-gwhere-2026, baidu-unique-2026]
+  - heading: What the online numbers can and cannot tell you
+    text: Every lift is against the company's own baseline, and the baselines differ. OneRec-V2 is measured against OneRec-V1, not against the old multi-stage stack. GEAR is measured against the production system without its channel. TIGER has no online result. Do not rank these systems by their percentages. Read the baseline and the traffic share on each card.
+    cards: [onerec-kuaishou, bytedance-gear-2026, tiger-google-2023]

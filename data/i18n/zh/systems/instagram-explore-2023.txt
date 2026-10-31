@@ -1,0 +1,31 @@
+era_reason|双塔召回加多任务排序；不是生成式
+tldr|Instagram「探索」使用召回、两个排序阶段和最终重排的四阶段漏斗，建立在缓存和预计算之上，前期用双塔网络。
+summary|由召回、第一阶段排序、第二阶段排序和最终重排组成的四阶段漏斗，大量依赖缓存和预计算，召回的来源和第一阶段排序使用 Two Tower 网络。
+core_idea|建立在缓存和预计算之上的四阶段漏斗，召回和第一阶段排序使用 Two Tower 网络。
+scale_short|每秒 650 亿个特征和九千万次模型预测，来自 2019 年 Meta AI 的文章
+key_result|来源中没有报告指标
+serving_infra|大量使用缓存和非高峰时段预计算；推荐流水线使用自定义 DSL。
+stages.0.model_family|启发式和机器学习来源的混合，包括 item CF、个性化 PageRank 和双塔稀疏网络，有实时的，也有预生成的
+stages.0.details|各来源用可调权重混合；Meta 的透明度页面称，召回结束时最多取出 1500 个 media。
+stages.1.model_family|轻量的第一阶段排序模型，即使用 media 和用户特征的双塔神经网络
+stages.1.details|透明度页面称，前 100 个 media 会传给下一阶段。
+stages.2.model_family|较重的第二阶段模型，按 Meta 的透明度页面是多任务多标签神经网络
+stages.2.details|预测点赞和保存等互动；也使用「see less」这类负反馈信号。
+stages.3.model_family|最终重排，规则和多样性，见工程文章
+stages.3.details|工程文章中把它列为单独的一个阶段。
+features_signals.0|用户互动历史
+features_signals.1|Media 特征
+features_signals.2|实时交互
+training.objectives.0|互动预测：点赞
+training.objectives.1|保存
+training.objectives.2|等
+scale.0.metric|特征数和预测数，来自 2019 年 Meta AI 的文章
+scale.0.value|每秒提取 650 亿个特征，做九千万次模型预测
+results_table.note|来源描述了架构，没有报告实验结果。
+caveats.0|数字来自 Meta 不同年份的文章；引用前请核对来源。
+unknown_fields.0|模型规模
+unknown_fields.1|训练频率
+unknown_fields.2|分词方式
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.serving_qps|较早的系统，来自 2019 年 Meta AI 的文章：每秒九千万次模型预测
+deployment.notes.0|大量使用缓存和非高峰时段预计算；没有延迟数字。

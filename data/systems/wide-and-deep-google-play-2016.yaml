@@ -111,3 +111,22 @@ results_table:
     result: '0.728'
     versus: Wide 0.726, Deep 0.722
   note: The paper notes that the offline AUC gain is small while the online impact is larger.
+deployment:
+  online_evidence: online_numbers
+  scenario: Google Play app recommendations, main landing page
+  ab_traffic: 1% of users per group
+  ab_duration: 3 weeks
+  baseline: Wide-only control
+  online_lifts:
+  - metric: App acquisition, Wide & Deep
+    value: +3.9%
+  - metric: App acquisition, Deep only
+    value: +2.9%
+  training_compute: not_reported
+  serving_latency: 14 ms client-side with multithreading, against 31 ms for scoring all candidates in one batch
+    on one thread
+  serving_qps: Over 10 million apps scored per second at peak
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

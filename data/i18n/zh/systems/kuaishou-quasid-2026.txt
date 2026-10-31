@@ -1,0 +1,58 @@
+surface|快手电商召回和排序
+era_reason|专为生成式推荐设计的 Semantic ID 分词器，部署在生成式召回通道中，也用于判别式召回和排序。
+tldr|快手 QuaSID 学习 Semantic ID，只排斥真正发生冲突的 item；电商 5% 流量、5 天 A/B：排序 GMV-S2 +2.38%，冷启动召回成交订单最高 +6.42%。
+summary|QuaSID 是一个 Semantic ID 分词器，在残差量化自编码器之上端到端训练。Hamming-guided Margin Repulsion 把不同 item 的 SID 之间较低的 Hamming 距离，转成编码器空间里的余弦距离 margin，并按冲突的严重程度缩放。Conflict-Aware Valid Pair Masking 去掉出于无害原因而重叠的 item 对，例如同一个 item 被采样两次，或者为对比损失构造的正样本。基于触发 item 与目标 item 对的双塔对比目标注入协同信号。来自文本、语音转写和关键帧的多模态 item embedding 输入编码器。得到的 SID 用于生成式召回模型，也用于常规的召回阶段和排序阶段。
+core_idea|Semantic ID 分词器只推开那些码冲突属于真实冲突的 item 对，并按严重程度缩放。
+deployed_in|快手电商推荐，用于生成式召回、判别式召回和排序
+scale_short|5% 流量，超过两千万用户，5 天 A/B
+key_result|在 5% 流量上做 5 天 A/B：排序 GMV-S2 +2.38%，冷启动召回成交订单最高 +6.42%
+results_reported|在快手电商约 5% 流量、超过两千万用户上做 5 天 A/B，所有结果显著；把分词器换成 QuaSID 后，生成式召回的成交订单 +0.21%，GMV-S1 +1.03%，GMV-S2 +0.55%；排序的 GMV-S2 +2.38%，GMV-S1 +1.44%，成交订单 +0.20%。冷启动召回上，观看次数不足 100 的视频成交订单 +6.42%，不足 600 的 +4.69%；召回整体成交订单 +1.09%，GMV +1.69%。在 Amazon Beauty 上用 TIGER 骨干做离线实验，HR@10 为 0.0392，RQ-Kmeans 为 0.0379，RQ-VAE 为 0.0300；NDCG@10 为 0.0230，对比 0.0211；论文称 top-K 排序质量比最佳基线高 5.9%。把排斥损失加到其他分词器上，NDCG@10 在 Beauty 上最多提升 15.3%，在 Toys 上最多提升 20.1%。
+version_note|数字已对照 28 February 2026 的 arXiv v1 核对，该版本仍带有模板会议行。KDD 2026 的 DOI 10.1145/3770855.3818486 来自站长的 Zotero 记录，经 doi.org 跳转检查确认已注册；定稿版 PDF 无法获取，因此 published_version_checked 为 false。
+serving_infra|训练好的分词器作为推理服务部署，为召回和排序链路把 item ID 映射成 SID。
+stages.0.model_family|QuaSID 分词器，为生成式召回模型和常规召回阶段提供输入
+stages.0.details|生成式召回生成下一个 item 的 SID；冷启动 item 获益最大。
+stages.1.model_family|判别式排序模型，用 QuaSID 的 Semantic ID 作为 item 标识
+stages.1.details|提升幅度小于召回，但在各个场景下都为正。
+id_tokenization.approach|带冲突判定排斥的残差量化，线上 4 层码本，每层 1024 个码，离线 3 层，每层 256 个码
+id_tokenization.details|Hamming 半径线上为 2，离线为 1，完全冲突和部分冲突的 margin 分别为 0.8 和 0.5。
+features_signals.0|item 文本描述
+features_signals.1|语音转写文本
+features_signals.2|关键帧图像
+features_signals.3|多模态大模型 item embedding
+features_signals.4|协同的触发 item 与目标 item 对
+training.mode|离线周期性训练分词器，再应用到召回和排序中
+training.objectives.0|重建和残差量化
+training.objectives.1|Hamming 引导的 margin 排斥
+training.objectives.2|双塔对比损失
+training.notes|离线结果使用 TIGER 生成式骨干，在 Amazon Beauty 和 Toys 上用五个随机种子；线上 batch size 为 1024。
+scale.0.value|约 5% 流量，超过两千万用户，5 天
+scale.1.metric|公开基准
+scale.1.value|Amazon Beauty 有 22,363 个用户，Amazon Toys 有 19,412 个用户
+results_table.online.0.setting|快手电商排序，5 天 A/B
+results_table.online.1.setting|快手电商生成式召回，5 天 A/B
+results_table.online.2.setting|冷启动召回，观看次数不足 100 的视频
+results_table.offline.0.setting|Amazon Beauty，TIGER 骨干
+results_table.offline.1.setting|Amazon Beauty，TIGER 骨干
+results_table.online.0.method|QuaSID 的 Semantic ID
+results_table.online.0.versus|同一链路，使用此前的分词器
+results_table.online.1.method|QuaSID 的 Semantic ID
+results_table.online.1.versus|同一链路，使用此前的分词器
+results_table.online.2.method|QuaSID 的 Semantic ID
+results_table.online.2.metric|成交订单
+results_table.online.2.versus|同一链路，使用此前的分词器
+caveats.0|线上对照组是同一条链路加上它此前的分词器，论文没有说明是哪一个。
+caveats.1|这里使用的 arXiv v1 PDF 带有模板会议占位符，因此无法确认它就是 KDD 定稿版文本；DOI 已注册。
+caveats.2|公开的离线测试使用较小的 Amazon 数据集和 TIGER 骨干，不是工业环境的设置。
+caveats.3|排序上的提升绝对值很小，论文也没有给出指标的绝对值。
+caveats.4|该系统是一个分词器，因此线上提升混合了分词器本身的质量和使用它的下游模型的作用。
+unknown_fields.0|线上对照组分词器
+unknown_fields.1|语料规模
+unknown_fields.2|线上模型规模
+unknown_fields.3|代码
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索 QuaSID 和论文标题，没有找到仓库。
+deployment.scenario|快手电商推荐，召回和排序
+deployment.ab_traffic|约 5% 流量，超过两千万用户
+deployment.ab_duration|5 天
+deployment.baseline|同一链路，使用此前的分词器
+deployment.online_lifts.1.metric|生成式召回 GMV-S1
+deployment.online_lifts.2.metric|冷启动召回成交订单，观看次数不足 100 的视频

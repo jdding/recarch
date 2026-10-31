@@ -54,3 +54,20 @@ scale_short: Not stated in the sources
 key_result: Online training improves over batch training, no figure reported
 results_table:
   note: The paper reports that online training improves over batch training. The card sources give no figures.
+deployment:
+  online_evidence: deployed_only
+  scenario: Recommendation training system, productized as BytePlus Recommend
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Sparse parameters sync at minute level and dense parameters daily. The paper compares online and batch training
+    and gives no serving numbers.
+  basis: full_text
+  checked_on: '2026-10-31'

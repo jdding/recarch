@@ -1,0 +1,42 @@
+surface|广告推荐的模型空间重新设计
+era_reason|多领域多目标的模型整合；不是生成式；处于边界
+tldr|Lattice 通过数据、特征和网络的统一，整合了 Meta 广告数千个领域目标模型；报告核心指标 +10%，节省 20% 容量。
+summary|Meta 关于 Meta 广告推荐的论文：Lattice 在数千个领域与目标的组合，即 portfolio，上重新设计模型空间：用 Lattice Zipper 整合数据，用 Lattice Filter 选出 Pareto 最优的特征，用多领域多目标的 Lattice Networks 统一模型，其中用到交错学习和参数解耦，并通过 Lattice KTAP 和异步预计算，把知识迁移给线上服务的模型。
+core_idea|通过整合数据和统一模型，重新设计数千个领域目标组合上的模型空间。
+deployed_in|Meta 广告推荐
+scale_short|数千个领域目标组合，称为 portfolio
+key_result|在 Meta 部署后，带来收入的核心指标 +10%
+results_reported|在 Meta 的部署，来自摘要：带来收入的核心指标 +10%，用户满意度 +11.5%，转化率 +6%，节省 20% 容量。各任务的离线结果见表 3，这里未复现。
+stages.0.model_family|Lattice Networks：在整合后的数据集和特征上的 MDMO 排序模型，目标涵盖点击、转化和广告质量
+stages.0.details|Lattice Zipper 把每次广告曝光关联到随机选取的归因窗口，以平衡新鲜度和正确性。按表 3，在复杂度相当时，Lattice Networks 在每个任务上都优于 Wukong。
+features_signals.0|跨领域的广告数据
+training.mode|离线，带蒸馏
+results_table.note|各任务的离线结果见论文表 3，这里未复现。
+results_table.online.0.setting|在 Meta 的部署，摘要
+results_table.online.1.setting|在 Meta 的部署，摘要
+results_table.online.2.setting|在 Meta 的部署，摘要
+results_table.online.3.setting|在 Meta 的部署，摘要
+results_table.online.0.versus|之前的模型
+results_table.online.1.versus|之前的模型
+results_table.online.2.versus|之前的模型
+results_table.online.3.versus|之前的模型
+results_table.online.0.metric|带来收入的核心指标
+results_table.online.1.metric|用户满意度
+results_table.online.2.metric|转化率
+results_table.online.3.result|节省 20%
+caveats.0|头条数字来自摘要，是整个重新设计合在一起的效果。
+caveats.1|摘要中没有定义每个百分比背后的基线和场景。
+caveats.2|离线的表和图只通过周围的文字读到。
+unknown_fields.0|A/B 设计和流量占比
+unknown_fields.1|每个百分比的绝对基线
+unknown_fields.2|线上实际整合的 portfolio 数量
+updates.0.note|首次公开的年份由 2025 更正为 2023，依据是 2023-05 的 arXiv 预印本。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Meta 广告推荐
+deployment.baseline|之前的模型
+deployment.training_compute|一个 8 层的 Lattice 网络在 128 块 NVIDIA A100 GPU 上并行；在 1024 块 GPU 上报告了硬件效率提升
+deployment.inference_cost|节省 20% 容量
+deployment.hardware|训练用 NVIDIA A100 GPU
+deployment.online_lifts.0.metric|带来收入的核心指标
+deployment.online_lifts.1.metric|用户满意度
+deployment.online_lifts.2.metric|转化率

@@ -1,0 +1,44 @@
+surface|一个未具名的「large internet platform」上的排序和召回
+era_reason|生成式推荐：把行为当作 token，万亿参数的 transducer，带 scaling law
+tldr|把召回和排序重新表述为序列转导，用 HSTU 注意力编码器取代 DLRM 的特征交互；报告线上头条指标 +12.4%。
+summary|把召回和排序重新表述为在用户行为与内容合并而成的一条时间序列上做序列转导，称为 Generative Recommenders，并用 HSTU 取代 DLRM 的特征交互，HSTU 是一种 pointwise 聚合注意力的编码器；报告已部署在一个未具名大型互联网平台的多个场景。
+core_idea|用 pointwise 聚合注意力的编码器，把召回和排序重新表述为序列转导。
+deployed_in|一个未具名大型互联网平台的多个场景
+scale_short|最大的模型有 1.5 万亿个参数
+key_result|线上 A/B 头条指标 +12.4%，已部署在多个场景
+results_reported|线上 A/B 头条指标 +12.4%，已部署在多个场景，来自摘要；各任务的线上变化见表 6，召回部分见上文。公开数据集：HSTU-large 在 NDCG@10 上最高比 SASRec 高 +65.8%，Amazon Books。
+serving_infra|按摘要，在序列长度 8192 时，HSTU 比基于 FlashAttention2 的 Transformer 快 5.3x-15.2x；M-FALCON 用修改过的注意力 mask 和偏置，在一次前向传播中处理 b_m 个候选，并可选用带 KV 缓存的 micro-batching，使 cross-attention 的成本为 n^2 d 量级，而不是 b_m n^2 d 量级；论文称可以用 1.5x-3x 的 QPS 服务复杂 285x 的模型。
+stages.0.model_family|HSTU 生成式召回，用户序列编码器
+stages.0.details|表 6，工业数据，对比 DLRM：GR 的离线 HR@100 为 36.9%，HR@500 为 62.4%，DLRM 为 29.0% 和 55.5%，这是新增来源；线上 E-Task +6.2%，C-Task +5.0%，新增来源，以及 +5.1% / +1.9%，替换来源。仅用内容的 GR 差很多，为 11.6% / 18.8%；仅用交互的 GR 为 35.6% / 61.7%。
+stages.1.model_family|HSTU 生成式排序，多任务，包含互动 E-Task 和消费 C-Task，用 Normalized Entropy 评估
+stages.1.details|GR 中去掉了数值型聚合特征，如计数和比率，因为它们所聚合的类别特征已经在序列里；对候选做 target-aware 打分用的是 M-FALCON。
+id_tokenization.approach|item 和行为合并成一条时间序列；高基数的 ID 直接做 embedding，不做 Semantic ID 量化
+id_tokenization.details|论文强调，十亿规模且不断变化的词表是核心难点。
+features_signals.0|用户行为和 item 合并而成的主时间序列，类别特征被序列化
+features_signals.1|作为序列 token 的内容和类别特征
+features_signals.2|GR 中去掉了数值型聚合特征；DLRM 基线被描述为约 1000 个稠密特征和约 50 个稀疏特征
+training.mode|流式持续训练；生成式训练按约 1/n_i 的比率采样用户，使编码器的成本在各个目标之间摊销，为 N^2 d + N d^2 量级
+training.objectives.0|召回：序列转导，离线指标为 log-perplexity
+training.objectives.1|排序：多任务 E-Task / C-Task，指标为 NE
+training.notes|工业消融实验在 100B 个样本上训练，相当于 DLRM，每个任务使用 64-256 张 H100；论文认为 NE 降低 0.001 就算显著，约相当于 0.5% 的头条指标。Stochastic Length：alpha=1.6 时，长度 4096 的序列大多数情况下变成约 776，超过 80% 的 token 被去掉。
+scale.0.value|按摘要为 1.5 万亿个参数；按图 6 的说明，DLRM 的质量在约两千亿个参数时饱和
+scale.1.value|比此前的 SOTA 「three orders of magnitude more computationally complex」，见引言
+scale.2.metric|扩展定律
+scale.2.value|按摘要，在三个数量级的训练算力上呈幂律，直至 GPT-3 和 LLaMa-2 的规模
+results_table.online.0.setting|线上 A/B，多个场景
+results_table.online.0.metric|头条指标，具体指标未具名
+results_table.offline.0.method|=
+caveats.0|论文没有说出平台和场景，只称为「拥有数十亿用户的大型互联网平台」；这张卡片仅根据作者所属单位把公司标为 Meta。
+caveats.1|+12.4% 是头条数字；摘要和引言中没有给出它的指标定义。
+caveats.2|表 7，即排序的线上指标，没能从 PDF 中干净地提取出来，所以没有复现各任务的排序变化。
+caveats.3|工业数据集是内部的，没有发布。
+unknown_fields.0|具体的产品场景
+unknown_fields.1|绝对 QPS 和延迟数字
+unknown_fields.2|+12.4% 背后的具体指标
+code.repos.0.owner|=
+code.repos.0.note|论文的代码：HSTU、M-FALCON、公开数据集配置、kernel。论文中的链接 facebookresearch/generative-recommenders 会跳转到这里。不包含线上模型和数据。
+deployment.scenario|一个未具名大型互联网平台的多个场景
+deployment.training_compute|每个训练任务使用 64 到 256 张 H100 GPU
+deployment.serving_qps|只有相对值：复杂 285x 的模型，QPS 为 DLRM 的 1.5x 到 3x；没有绝对 QPS
+deployment.hardware|NVIDIA H100 GPU，精度为 bfloat16
+deployment.online_lifts.0.metric|头条指标，具体指标未具名

@@ -1,0 +1,52 @@
+surface|快手 App 中的短视频推荐
+era_reason|带 Semantic ID 的端到端生成式推荐
+tldr|OneRec-V2：在 Semantic ID 上的 lazy decoder-only 生成器，带真实反馈的 RL；A/B 对比 OneRec-V1，App 停留时长 +0.467%，快手，+0.741%，极速版。
+summary|OneRec-V2 的技术报告：把 OneRec-V1 的 encoder-decoder 换成在 3 级 Semantic ID 上的 lazy decoder-only 生成器，其中上下文只处理一次、共享 KV，cross-attention 跳过 KV 投影并使用 GQA，并用真实的用户反馈奖励做后训练，在 GBPO 中使用时长感知的奖励塑形和自适应的比例裁剪。通过快手和快手极速版上的 A/B 测试评估。
+core_idea|在 3 级 Semantic ID 上的 lazy decoder-only 生成器，用真实的用户反馈奖励做后训练。
+deployed_in|快手和快手极速版的短视频信息流，A/B 用 5% 的流量组
+scale_short|线上模型 1B 参数，实验中扩展到 8B
+key_result|相比 OneRec-V1，在 5% 流量上为期一周的 A/B 中，快手的 App 停留时长 +0.467%，快手极速版 +0.741%
+results_reported|OneRec-V2 在快手和快手极速版信息流上相对 OneRec-V1 的 A/B：5% 流量组，一周，1B 模型，只用用户反馈信号：App 停留时长 +0.467% / +0.741%，LT7 +0.069% / +0.034%，见表 8。平台有四亿日活用户。在图 1 右侧和表 7 中，与 1B 参数的 OneRec-V1 对比。
+version_note|这张卡片展示 OneRec-V2，它是同一系统 3 个版本中的一个。OneRec-V1 是第一个版本，OneRec-Think 是最新的；它们只作为来源和出现在版本列表中。
+serving_infra|线上 A/B 模型在 L20 GPU 上，延迟 36 ms，MFU 62%，beam 大小 512，见第 4 节；未说明 QPS。
+stages.0.model_family|Lazy decoder-only 生成式推荐，端到端生成 Semantic ID
+stages.0.details|论文的动机：在 V1 的 encoder-decoder 中，97.66% 的计算花在上下文编码上，而不是目标生成上。一个 item 是来自 OneRec-V1 tokenizer 的 3 个 Semantic ID；训练输入为 [BOS, s1, s2]；损失对 3 个 token 取平均，V1 是求和。上下文是静态用户特征加短期和长期行为序列；线上模型使用 1B 参数，上下文长度 N_s + T_short + T_long 约为 3000，架构消融中约为 512。
+id_tokenization.approach|Semantic ID，来自 OneRec-V1
+features_signals.0|用户行为序列
+features_signals.1|真实的用户交互作为奖励
+training.mode|先预训练生成器，再用真实的用户交互信号做偏好对齐的后训练
+training.objectives.0|下一个 Semantic ID token 的预测
+training.objectives.1|Duration-Aware Reward Shaping，用于降低视频时长偏差
+training.objectives.2|Adaptive Ratio Clipping 和 GBPO，即 Gradient-Bounded Policy Optimization，用于稳定策略更新
+training.notes|扩展曲线从 0.1B 到 8B 参数；按图 5 的说明，lazy decoder-only 达到与经典架构相近的损失，所用 FLOPs 约少 10x，并且损失符合扩展定律的拟合。
+scale.0.metric|线上模型规模
+scale.0.value|按第 2.3 节，1B 参数
+scale.1.metric|扩展实验
+scale.1.value|最多 8B 参数
+scale.2.metric|线上上下文长度
+scale.2.value|约 3000 个 token，即 N_s+T_short+T_long
+scale.3.metric|线上实验
+scale.3.value|在快手和快手极速版信息流上用 5% 流量组做一周，平台有四亿日活用户
+results_table.online.0.setting|快手信息流 A/B，5% 流量，一周
+results_table.online.1.setting|快手极速版信息流 A/B，5% 流量，一周
+results_table.online.2.setting|快手信息流 A/B，5% 流量，一周
+results_table.online.3.setting|快手极速版信息流 A/B，5% 流量，一周
+caveats.0|收益是相对 OneRec-V1，而不是相对非 OneRec 的基线；A/B 只用用户反馈奖励信号，以降低系统复杂度。
+caveats.1|在一个单独的 1% 实验中，关闭缓存，见附录 D，论文报告冷启动视频的播放量在快手下降 44.7%，在快手极速版下降 36.7%，这是生态层面的代价。
+caveats.2|在所读章节中没有给出服务的 QPS 和成本。
+caveats.3|扩展定律的结论来自快手内部数据。
+unknown_fields.0|服务 QPS
+unknown_fields.1|除引用 V1 之外的 item tokenizer 细节
+versions.0.note|技术报告：单阶段 encoder-decoder 生成式推荐，带 RQ-KMeans Semantic ID 和 RL 后训练。
+versions.1.note|在 Semantic ID 上的 lazy decoder-only 生成器，带真实反馈的 RL 后训练。本卡片展示的版本。
+versions.2.note|文本内推理：一个把对话、推理和推荐统一在 item token 上的 LLM。
+updates.0.note|把 OneRec、OneRec-V2 和 OneRec-Think 合并为一张卡片，展示选为主版本的 OneRec-V2。OneRec-Think 是最新版本，OneRec 是第一个；两者都保留在版本列表和来源中。
+code.repos.0.owner|快手，OneRec 团队的组织
+code.repos.0.note|该团队的开源发布：基于 Qwen3 的 OneRec-Foundation 1.7B/8B 模型、RecIF-Bench 基准和一条训练流水线。与本文的线上 OneRec 相关，但不是同一个东西。
+code.repos.1.owner|Shiyao Wang，论文共同第一作者，快手；论文中有链接
+code.repos.1.note|在公开 Amazon 数据上的 Qwen3-1.7B 流水线：itemic 对齐、推理激活、评估。不包含已部署的 Think-Ahead 线上系统。
+deployment.scenario|快手和快手极速版的短视频信息流
+deployment.ab_traffic|5% 流量组
+deployment.ab_duration|一周
+deployment.serving_latency|线上延迟 36 ms，上下文长度 3000，beam 大小 512
+deployment.hardware|L20 GPU，模型 FLOPs 利用率 62%

@@ -1,0 +1,70 @@
+surface|腾讯 PCG 内容信息流、视频、网络小说和广告
+era_reason|用生成式模型逐段取代级联各阶段的整套技术栈：生成范式的排序模型，基于 Semantic ID 的 next-token 生成和 next-slate 生成，以及注入生成器的大模型推理 token。
+tldr|腾讯 TGR 报告涵盖线上的生成式排序、SID 召回和 slate 生成：CCFormer 视频 CTR +3.57%，BARGE 召回 CTR +0.60%，HiGR 观看时长 +1.22%。仅有预印本。
+summary|TGR 是腾讯 PCG 的生成式推荐技术栈，由 TGR 团队的技术报告介绍。TGR-GenRank 即 CCFormer，是一个排序模型，包含统一特征 tokenization、按特征域分离的 cross attention、子空间 token 混合和层级序列压缩，仍然输出每个 item 的多任务分数，因此可以直接放进现有的级联。TGR-GenRec 有两种生成范式。BARGE 用 beam search 生成 Semantic ID 路径，并把它们作为 embedding query 用在召回通道中。HiGR 用规划器和基于前缀结构 Semantic ID 的 item 生成器生成整个 slate，并用 listwise 偏好优化做对齐。TGR-Reason 在离线运行大模型 Think 模型，把推理 token 写成 Semantic ID，用来提示在线解码器，请求时不需要做推理展开。
+core_idea|生成式技术栈逐段取代级联，包括生成式排序模型、Semantic ID 召回和 slate 生成，以及离线大模型推理 token。
+deployed_in|腾讯 PCG 的资讯、视频、网络小说和广告场景，服务数亿用户
+scale_short|数亿用户，四十亿条训练样本，A/B 测试流量 6% 及以上
+key_result|CCFormer 使视频 CTR +3.57%，广告收入 +1.71%；BARGE 在 6% 流量上使召回 CTR +0.60%
+results_reported|CCFormer 在五个场景中做了两周 A/B，所有提升在 p < 0.05 下显著。在视频场景中，它取代了长期使用的 DLRM，CTR +3.57%，page view +3.86%，观看时长 +1.29%，独立观看用户 +2.61%；在广告排序场景中，它取代了 HSTU，广告收入 +1.71%。两者随后都已全量上线。它的训练速度比 HSTU 快 2.21x，GFLOPs 约为一半。BARGE 在 6% 流量上跑了两周，对比多阶段的原有系统：CTR +0.60%，点击用户数 +1.34%，总阅读时长 +1.70%，随后作为召回通道全量上线。离线 Hit@5 比 OneRec 高 10.2-16.9%。HiGR 在一个场景的 5% 流量上，平均观看时长 +1.22%，平均视频观看数 +1.73%；在另一个场景中 CTR +0.68%，广告收入 +0.56%。TGR-Reason 使冷启动新用户的 Hit@1 从 0.0451 提高到 0.2606，即 +477.8%，线上有效消费率 +1.75%，新用户曝光到转化率 +13.09%。
+version_note|仅有预印本。数字已对照 arXiv v1 核对，这是 TGR 团队的技术报告，已于 2026-10-30 通读。没有找到经同行评审的发表渠道，因此 venue 为空。
+serving_infra|Numerous-Torch 训练和在线服务栈。BARGE 没有给其通道增加参数、beam 宽度或延迟。HiGR 使用 KV 缓存，P99 延迟保持在 50 ms 以下。
+stages.0.model_family|CCFormer，可扩展的 Transformer 排序模型，带有按特征域分离的 cross attention 和子空间 token 混合
+stages.0.details|在一个视频场景中取代线上的 DLRM 排序模型，在另外四个场景中取代已部署的 HSTU 排序模型，同时保持每个 item 的多任务分数。
+stages.1.model_family|BARGE，层级 Semantic ID 生成，采用双路径解码
+stages.1.details|beam search 为每个请求生成 50 条 Semantic ID 序列；每条通过近似最近邻检索 10 个 item，最多 500 个候选，交给下游级联。
+stages.2.model_family|HiGR，整个 slate 的生成，包含 slate 规划器和 item 生成器
+stages.2.details|把结果列表作为一个结构化对象一次性输出。P99 延迟保持在 50 ms 以下，GPU 需求比完整序列解码低约 60%。
+id_tokenization.approach|层级 Semantic ID，BARGE 用 OSQ-VAE，HiGR 用前缀对比的 RQ-VAE
+id_tokenization.details|两个生成模型分别使用两类 tokenizer；推理模型把完整的 Semantic ID 写成推理 token。
+features_signals.0|用户、item、上下文和序列特征，被 tokenize 成一条流，输入 CCFormer
+features_signals.1|层级压缩的长行为序列
+features_signals.2|供 Semantic ID tokenizer 使用的多模态 item 内容
+training.mode|基于腾讯线上日志，使用 Numerous-Torch 基础设施做离线训练
+training.objectives.0|排序模型的多任务 CTR 和互动分数
+training.objectives.1|BARGE 的 next-token 预测，加对称 InfoNCE
+training.objectives.2|HiGR 的 next-token 预测，加 ORPO listwise 对齐
+training.objectives.3|Think 模型使用 LatentRec 隐式多步监督
+training.notes|BARGE 在两张 NVIDIA H20 GPU 上训练。CCFormer 的线上数据集有四十亿条样本。
+scale.0.metric|服务用户数
+scale.0.value|数亿
+scale.1.metric|CCFormer 训练数据
+scale.1.value|四十亿条样本
+scale.2.value|每组每天超过一百万曝光用户，两周
+scale.3.value|6% 线上流量，两周
+scale.4.value|一个场景中 5% 线上流量
+results_table.online.0.setting|视频推荐，两周 A/B
+results_table.online.1.setting|广告排序，两周 A/B
+results_table.online.2.setting|媒体平台召回，6% 流量，两周
+results_table.online.3.setting|视频场景，5% 流量
+results_table.offline.0.setting|两个工业场景
+results_table.online.0.method|CCFormer 排序模型
+results_table.online.1.method|CCFormer 排序模型
+results_table.online.1.metric|广告收入
+results_table.online.2.metric|总阅读时长
+results_table.online.2.versus|多阶段的原有系统
+results_table.online.3.metric|平均观看时长
+results_table.online.3.versus|线上原有系统
+results_table.online.4.versus|线上原有的生成器
+caveats.0|这是一份 arXiv 技术报告，没有经同行评审的发表渠道；HiGR 和 Think 模型也有各自单独的论文，其中 HiGR 首次发布于 December 2025。
+caveats.1|线上对照组因组件而异：DLRM、已部署的 HSTU、多阶段级联，或线上原有的生成器。
+caveats.2|只有两个场景中的 CCFormer 和 BARGE 被明确说明已全量上线；HiGR 和 TGR-Reason 的上线状态没有以同样的方式给出。
+caveats.3|这套技术栈是一组相互耦合的模型，不是单个模型，冷启动 item 仍受限于 tokenizer 的质量。
+caveats.4|报告只给出了 BARGE 和一个 HiGR 场景的 A/B 流量占比。
+unknown_fields.0|模型参数量
+unknown_fields.1|指标的绝对值
+unknown_fields.2|线上 GPU 集群规模
+unknown_fields.3|代码
+code.note|报告没有给出代码链接；2026-10-30 在 GitHub 上搜索 TGR、CCFormer、BARGE 和 HiGR，没有找到仓库。
+deployment.scenario|腾讯 PCG 的资讯、视频、网络小说和广告场景
+deployment.ab_traffic|CCFormer 每组每天超过一百万曝光用户；BARGE 6% 线上流量；HiGR 在一个场景中 5%
+deployment.ab_duration|CCFormer 和 BARGE 为两周
+deployment.baseline|CCFormer 视频场景对比线上 DLRM，广告对比已部署的 HSTU，BARGE 对比多阶段的原有系统
+deployment.training_compute|CCFormer 的训练速度比 HSTU 快 2.21x，GFLOPs 约为一半
+deployment.serving_latency|HiGR 的 P99 延迟保持在 50 ms 以下；BARGE 没有给其通道增加延迟
+deployment.hardware|训练使用 NVIDIA H20 集群；在线服务使用带 KV 缓存的 NVIDIA L20 GPU
+deployment.online_lifts.0.metric|CCFormer 视频 CTR
+deployment.online_lifts.1.metric|CCFormer 广告收入
+deployment.online_lifts.2.metric|BARGE 总阅读时长
+deployment.online_lifts.3.metric|HiGR 平均观看时长
+results_table.online.4.setting|内容平台，新用户
