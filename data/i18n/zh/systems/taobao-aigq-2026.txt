@@ -1,0 +1,56 @@
+surface|淘宝首页 HintQ 搜索前 query 推荐
+era_reason|经过微调的 Qwen3-30B-A3B 大模型生成个性化 query 列表，用列表级 SFT 和强化学习训练，并作为召回源取代 ID 匹配和共同点击启发式。
+tldr|淘宝 AIGQ 用列表级 SFT 和 GRPO 微调 30B MoE 大模型，生成首页 HintQ 的 query，并以准实时方式提供服务；30 天 A/B：归因 GMV +10.68%，订单 +10.31%。
+summary|AIGQ 根据用户行为序列和画像，为淘宝首页 HintQ 搜索框生成个性化的搜索前 query。Qwen3-30B-A3B 模型先在按会话聚合、按兴趣重排的 query 列表上做 Interest-Aware List SFT，再做 Interest-aware List GRPO；后者采用双重奖励，既为单个 query 的相关性打分，也为列表级属性打分，并加入来自线上 CTR 排序模型的模型奖励。系统部署了两个变体。AIGQ-Direct 以准实时方式运行，并缓存用户到 query 列表的映射。AIGQ-Think 生成带思维链的触发词到 query 的映射，每天蒸馏成紧凑索引，用于实时召回。两者都接入现有的多路召回和排序链路。
+core_idea|微调后的大模型生成个性化 query 列表，以准实时方式运行，并蒸馏成实时触发词索引。
+deployed_in|淘宝首页 HintQ 搜索前 query 框，作为召回源
+scale_short|30B MoE 大模型，30 天 A/B，约一百万次页面浏览的训练数据
+key_result|淘宝 HintQ 上 30 天线上 A/B：归因 GMV +10.68%，归因订单 +10.31%
+results_reported|HintQ 场景 30 天线上 A/B：归因 GMV +10.68%，归因订单 +10.31%，HintQ UCTR +7.42%，7 日留存 +3.73%，搜索 UV +0.20%；AIGQ 产出的 query 中，79.3% 以及叶子类目中的 37.3% 没有被其他渠道覆盖。淘宝测试集上的离线结果：think 变体经 IL-GRPO 后 Cate HR@30 为 0.4704，线上双塔 EBR 为 0.1998；Query HR@30 为 0.0745，对比 0.0100。
+version_note|数字已对照 arXiv v1 核对，版本日期 20 Mar 2026，来源是站长 Zotero 中带有 ACM 模板占位符的 PDF，因此不是 KDD 的最终定稿版，也没有打开 ACM 页面。KDD 2026 和 DOI 来自 Zotero 记录。
+serving_infra|部署在 PPU 810E 平台上。一次请求需要数秒的大模型推理，输入约几百个 token，输出数十个 token，因此在线服务采用准实时缓存加每日更新的触发词到 query 索引，而不是逐请求生成。
+stages.0.model_family|Qwen3-30B-A3B 稀疏 MoE 大模型，direct 和 think 两个变体
+stages.0.details|AIGQ-Direct 在观察到有意义的行为时异步生成 query 列表，写入按用户划分的 key-value 缓存，缓存保留最近几次结果；AIGQ-Think 的输出被转成每日更新的触发词到 query 索引，用于实时召回。召回出的 query 再由现有排序模块排序。
+id_tokenization.approach|不使用 Semantic ID；大模型直接生成 query 文本
+id_tokenization.details|输出是自然语言 query 列表；prompt 经过压缩，以减少冗余 token。
+features_signals.0|用户历史行为序列
+features_signals.1|用户画像属性，如年龄、性别和城市
+features_signals.2|上下文，如天气和季节
+features_signals.3|线上 CTR 排序模型的分数，作为奖励信号
+training.mode|离线 SFT 加 RL，并根据线上反馈每天更新策略
+training.objectives.0|IL-SFT：在按兴趣重排的 query 列表上做列表级监督微调
+training.objectives.1|IL-GRPO：组相对策略优化，使用 query 级和列表级奖励，外加 CTR 模型奖励
+training.notes|训练日志跨越 2025 年十月到十一月，约一百万次页面浏览，使用 Megatron 和 ROLL 强化学习框架训练；一次 10 天的 A/B 显示，每天做 RL 更新能提升 PVR 和 CTR。
+scale.1.metric|训练集
+scale.1.value|约一百万次页面浏览
+scale.2.metric|线上 A/B 时长
+scale.2.value|30 天
+results_table.online.0.setting|淘宝 HintQ 30 天 A/B
+results_table.online.1.setting|淘宝 HintQ 30 天 A/B
+results_table.online.2.setting|淘宝 HintQ 30 天 A/B
+results_table.online.3.setting|淘宝 HintQ 30 天 A/B
+results_table.offline.0.setting|淘宝测试集
+results_table.offline.1.setting|淘宝测试集
+results_table.online.0.versus|现有 HintQ 链路，对照组未详述
+results_table.online.1.metric|归因订单
+results_table.online.1.versus|现有 HintQ 链路，对照组未详述
+results_table.online.2.versus|现有 HintQ 链路，对照组未详述
+results_table.online.3.metric|7 日留存
+results_table.online.3.versus|现有 HintQ 链路，对照组未详述
+results_table.offline.0.method|经 IL-GRPO 的 AIGQ-Think
+results_table.offline.1.method|经 IL-GRPO 的 AIGQ-Think
+caveats.0|论文没有说明 A/B 的对照组和流量占比；这些收益被描述为线上 HintQ 系统中的相对提升。
+caveats.1|没有使用实时生成；准实时缓存带来的个性化会滞后于最新行为，要到用户下次访问才会更新。
+caveats.2|读取的 Zotero PDF 是带有 ACM 模板占位符的 arXiv v1，不是 KDD 最终定稿版。
+caveats.3|所有方法的 Query HR@30 绝对值都偏低。
+unknown_fields.0|A/B 对照组和流量占比
+unknown_fields.1|线上 QPS
+unknown_fields.2|PPU 硬件数量
+unknown_fields.3|每个用户保留的缓存次数
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 AIGQ 仓库。
+deployment.scenario|淘宝首页 HintQ 搜索前 query 框，作为召回源
+deployment.ab_duration|30 天
+deployment.baseline|现有 HintQ 链路，对照组未详述
+deployment.serving_latency|一次请求需要数秒的大模型推理，因此在线服务采用准实时缓存和每日更新的触发词到 query 索引
+deployment.hardware|PPU 810E 平台；数量未报告
+deployment.online_lifts.1.metric|归因订单

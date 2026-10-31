@@ -1,0 +1,73 @@
+id: airbnb-search-dnn-2018
+name: Applying Deep Learning to Airbnb Search
+company: Airbnb
+surface: Airbnb search ranking
+year: 2018
+era: deep
+era_reason: "Airbnb's move from GBDT to neural networks for search ranking"
+first_public: "2018-10"
+venue: "KDD 2019"
+venue_year: 2019
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3292500.3330658"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: search
+evidence_level: production_described
+tldr: "How Airbnb search ranking moved from a GBDT to neural nets, ending at a 2-hidden-layer DNN after about 10x more training data, with offline NDCG and online booking gains."
+summary: >-
+  Narrative of moving search ranking from a GBDT to neural networks: simple NN, pairwise LambdaRank-style NN,
+  GBDT/FM outputs as features, and finally a 2-hidden-layer DNN after scaling training data about 10x.
+paradigms: [learning-to-rank, gbdt]
+stages:
+  - stage: rank
+    model_family: Evolution GBDT -> single-hidden-layer NN (32 ReLU) -> pairwise LambdaRank NN -> DNN with 2 hidden layers
+    details: >-
+      LambdaRank-style NN uses pairwise cross-entropy between booked and not-booked listings, weighted by difference in NDCG.
+      Final DNN: 195 input features after expanding categorical features to embeddings, then 127 and 83 ReLU units.
+id_tokenization: {approach: "Listing-ID embeddings were tried and mostly overfit, since listings can be booked at most 365 times a year; multi-task booking + long-view learning also tried.", details: null}
+features_signals: [Listing properties such as price and amenities, Historical booking count, Smart Pricing price, "Similarity to user's past views (co-view embeddings)"]
+training:
+  mode: Offline
+  objectives: [Pairwise booking preference weighted by delta NDCG]
+  notes: Training on 1.7 billion pairs closed the train/test generalization gap (per paper).
+serving_infra: null
+scale:
+  - {metric: Training pairs, value: "1.7 billion", note: "paper"}
+results_reported: Paper presents offline NDCG gains and online booking gains from the NN stages.
+caveats: [Paper explicitly documents failed approaches (listing ID embeddings, multi-task with long views).]
+unknown_fields: [candidate retrieval, latency, QPS]
+sources:
+  - {title: "Applying Deep Learning to Airbnb Search, KDD 2019", url: "https://doi.org/10.1145/3292500.3330658", type: paper}
+  - {title: "Applying Deep Learning To Airbnb Search, arXiv 1810.09591", url: "https://arxiv.org/abs/1810.09591", type: paper}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Move search ranking from a GBDT to neural networks, one step at a time.
+deployed_in: Airbnb search ranking
+scale_short: 1.7 billion training pairs
+key_result: Online booking gains reported for the neural network stages, no figure in the card sources
+results_table:
+  note: The paper presents offline NDCG gains and online booking gains from the neural network stages. The card sources give no figures.
+deployment:
+  online_evidence: online_qualitative
+  scenario: Airbnb search ranking
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Java server for retrieval and scoring, running on AWS instances; no instance types or counts
+  notes:
+  - The paper states a booking gain without giving its size.
+  fulltext_refs:
+  - 'Sec 5, System Engineering: a Java server does retrieval and scoring; components run on AWS instances'
+  basis: full_text
+  checked_on: '2026-10-31'

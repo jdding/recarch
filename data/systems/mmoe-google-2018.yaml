@@ -1,0 +1,179 @@
+id: mmoe-google-2018
+name: "MMoE"
+company: Google
+surface: Multi-task learning; evaluated on a large-scale content recommendation system at Google, product not named
+year: 2018
+era: deep
+era_reason: "Mixture-of-experts multi-task network"
+first_public: "2018-07"
+venue: "KDD 2018"
+venue_year: 2018
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3219819.3220007"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: research
+evidence_level: research_only
+tldr: "Multi-gate Mixture-of-Experts gives each task its own gate over shared experts, learning task relationships from data; tested at Google, shared-bottom was the one in production."
+summary: KDD 2018 paper from Google and the University of Michigan; the first author was an intern at Google. MMoE replaces the shared-bottom
+  layer of a multi-task network with a set of shared expert networks and gives each task its own linear-softmax gate over the experts,
+  so task relationships are learned from data with few extra parameters. It is evaluated on synthetic data, the UCI census-income benchmark
+  and a large-scale content recommendation ranking model at Google with an engagement task and a satisfaction task, where live experiments
+  are reported. The paper says a shared-bottom model is already in production there, but does not say MMoE was launched.
+paradigms:
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Multi-gate Mixture-of-Experts: n shared expert MLPs f_i (ReLU), per-task gate g_k(x) = softmax(W_gk x), task input
+    f_k(x) = sum_i g_k(x)_i f_i(x), then a task tower h_k. In the Google system the top layer of the shared-bottom network is replaced
+    by an MMoE layer with the same output dimensionality.'
+  details: 'The recommendation system has a candidate generator followed by a deep ranking model; the ranking model predicts two binary
+    tasks: an engagement subtask (click-through rate and engagement time type objectives) and a satisfaction subtask (like rate type
+    objectives). A one-gate variant (OMoE) is the ablation. The paper notes the gate can be made a sparse top-k gate for efficiency
+    as a possible extension.'
+id_tokenization:
+  approach: Embeddings for sparse features; dense features normalized to [0, 1]
+  details: As described for the Google recommendation system; no semantic or hashed ID scheme is described.
+features_signals:
+- Sparse features with embeddings and normalized dense features in the Google content recommendation system; the feature list is not given
+- User implicit feedback such as clicks and likes as labels
+- UCI census-income demographic features, 40 in total, with education and marital status removed when used as labels
+- Synthetic regression data with controlled task correlation
+training:
+  mode: 'Offline. Google system: mini-batch SGD with batch size 1024; offline comparison trains on a fixed set of 30 billion implicit
+    feedbacks and evaluates on a 1 million hold-out set after 2M, 4M and 6M steps (2M steps = 10 billion examples). The intro says the
+    training data includes hundreds of billions of examples. Benchmarks use Adam; hyperparameters tuned with a Gaussian-process tuner,
+    capping hidden units per layer at 2048 for all methods.'
+  objectives:
+  - 'Two binary classification tasks: engagement and satisfaction (Google system)'
+  - Binary classification on census-income, regression on synthetic data
+  notes: The satisfaction label is much sparser than engagement, so offline results for it are too noisy and only engagement AUC and
+    R-squared are shown offline.
+serving_infra: Not described beyond the claim that MMoE does not add noticeable computation cost over the shared-bottom model because
+  the gates are light and experts are shared; L2-Constrained and Cross-Stitch roughly double parameters and serving time, so they were
+  not run live.
+scale:
+- metric: Items
+  value: hundreds of millions of unique items
+  note: Sec 6.4
+- metric: Users
+  value: billions of users per Sec 6.4; the intro says hundreds of millions of users and items
+  note: paper is inconsistent
+- metric: Training examples
+  value: hundreds of billions of user implicit feedbacks (intro, Sec 6.4); offline comparison uses 30 billion
+  note: paper
+- metric: Census-income
+  value: 199,523 training and 99,762 test examples, 40 features
+  note: paper
+results_reported: 'Synthetic data, with 200 runs per setting, input dim 100, 8 experts of size 16, towers of size 8 and 13,056 parameters, shows that
+  the performance gap across task correlations is much smaller for MMoE than for OMoE and Shared-Bottom, both MoE models beat Shared-Bottom
+  on average, and repeated-run loss variance is much lower for MoE models. Census-income, mean AUC over 400 runs: Group 1 (income main
+  task) best / mean AUC: Single-Task 0.9398 / 0.9337, Shared-Bottom 0.9361 / 0.9295, Cross-Stitch 0.9406 / 0.9361, OMoE 0.9387 / 0.9319,
+  MMoE 0.9410 / 0.9359; Group 2 (education main task): Single-Task 0.8843 / 0.8792, Shared-Bottom 0.8836 / 0.8813, Cross-Stitch 0.8855
+  / 0.8819, OMoE 0.8852 / 0.8813, MMoE 0.8860 / 0.8826; Tensor-Factorization is far worse in both (0.7460 / 0.6765 and 0.7367 / 0.7256).
+  Google content recommendation, offline engagement per Table 3 AUC at 2M / 4M / 6M steps: Shared-Bottom 0.6879 / 0.6888 / 0.6900, MMoE
+  0.6894 / 0.6897 / 0.6908; R-squared Shared-Bottom 0.08812 / 0.09159 / 0.09287, MMoE 0.08978 / 0.09263 / 0.09362. Live experiments
+  (Table 4, same live traffic share for both): Shared-Bottom vs Single-Task: engagement -0.22% (90% confidence level), satisfaction
+  +19.72% (95%); MMoE vs Shared-Bottom: engagement +0.25% (95%), satisfaction +2.65% (95%).'
+caveats:
+- 'No launch is stated: the paper says a shared-bottom model is already used in production and reports live experiments for MMoE, but
+  never says MMoE was deployed, so evidence_level is research_only. See youtube-multitask-ranking-2019 for a separate paper that uses
+  MMoE in a ranking system (not yet verified against full text).'
+- The Google product, traffic share, experiment length and metric definitions are not given; the live metrics are relative changes with
+  confidence levels only.
+- The offline AUC gains are small (about 0.0009 to 0.0015 AUC); the paper itself says the satisfaction-subtask offline results were
+  too noisy to show.
+- User and item scale is stated inconsistently, with billions of users in Sec 6.4 and hundreds of millions of users and items in the intro.
+- On census-income the AUC differences between MMoE, Cross-Stitch and the single-task model are in the third or fourth decimal; the
+  multi-task models were not tuned for the auxiliary task.
+- The paper does not give expert count, expert size or tower size for the Google system.
+unknown_fields:
+- expert count and size in the Google system
+- serving latency
+- traffic share and duration of live experiments
+- the name of the Google product
+sources:
+- title: Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts, KDD 2018
+  url: https://doi.org/10.1145/3219819.3220007
+  type: paper
+- title: Google Research publication page
+  url: https://research.google/pubs/modeling-task-relationships-in-multi-task-learning-with-multi-gate-mixture-of-experts/
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3219819.3220007
+  local_pdf: /workspace/recarch/zotero/mmoe-2018.pdf
+  sections_read: 'Entire paper (10 pages, pdftotext): abstract, intro, related work, Sec 3 (shared-bottom, synthetic data, task relatedness),
+    Sec 4 (MoE, MMoE, OMoE), Sec 5 (synthetic experiments, trainability), Sec 6 (baselines, tuning, census-income Tables 1-2, large-scale
+    content recommendation Tables 3-4 and Figure 6 caption), conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/drawbridge/keras-mmoe
+    owner: Drawbridge
+    official: false
+    note: Keras implementation of the MMoE paper; unofficial.
+core_idea: Replace the shared bottom with shared experts and give each task its own gate.
+deployed_in: Evaluated on a large-scale content recommendation ranking model at Google, product not named, launch not stated
+scale_short: Hundreds of millions of unique items, hundreds of billions of training examples
+key_result: 'Live experiment: MMoE over Shared-Bottom gave engagement +0.25% and satisfaction +2.65%'
+results_table:
+  online:
+  - setting: Google content recommendation live experiment, Table 4
+    method: MMoE
+    metric: Engagement
+    result: +0.25%
+    versus: Shared-Bottom
+  - setting: Google content recommendation live experiment, Table 4
+    method: MMoE
+    metric: Satisfaction
+    result: +2.65%
+    versus: Shared-Bottom
+  - setting: Google content recommendation live experiment, Table 4
+    method: Shared-Bottom
+    metric: Engagement
+    result: -0.22%
+    versus: Single-Task
+  - setting: Google content recommendation live experiment, Table 4
+    method: Shared-Bottom
+    metric: Satisfaction
+    result: +19.72%
+    versus: Single-Task
+  offline:
+  - setting: Google content recommendation, Table 3, 6M steps
+    method: MMoE
+    metric: Engagement AUC
+    result: '0.6908'
+    versus: Shared-Bottom 0.6900
+  - setting: Census-income Group 1
+    method: MMoE
+    metric: Best AUC
+    result: '0.9410'
+    versus: Shared-Bottom 0.9361
+  - setting: Census-income Group 2
+    method: MMoE
+    metric: Best AUC
+    result: '0.8860'
+    versus: Shared-Bottom 0.8836
+deployment:
+  online_evidence: online_numbers
+  scenario: Large-scale content recommendation ranking at Google, product not named
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Shared-Bottom model
+  online_lifts:
+  - metric: Satisfaction
+    value: +2.65%
+  - metric: Engagement
+    value: +0.25%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Launch is not stated. The paper says MMoE adds no noticeable computation cost over the shared-bottom model.
+  basis: full_text
+  checked_on: '2026-10-31'

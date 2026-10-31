@@ -1,0 +1,159 @@
+id: baidu-unique-2026
+name: "UNIQUE"
+company: Baidu
+surface: Mobile Baidu homepage feed, discovery page and short-video recommendation, retrieval stage
+year: 2026
+deployed_year: 2026
+era: generative
+era_reason: "Core retrieval is generative code prediction over a single-layer semantic codebook, trained jointly with a target-aware ranker in one early-fusion Transformer."
+first_public: "2026-09"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831936"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Baidu feed model that predicts single-layer semantic codes for retrieval and scores candidates in the same early-fusion Transformer; one-week A/B: watch duration +0.96%, distribution volume +1.08%."
+summary: 'UNIQUE places user history tokens, candidate item tokens and candidate semantic-code tokens in one Transformer with a target-attention split. Code logits give generative retrieval over a flat 16,384-code codebook learned from item priors plus DSSM-style user-feedback towers, with a balancing term for code usage; the same encoder then scores the retrieved items for relevance, CTR, duration and completion. In Mobile Baidu it is deployed in the retrieval stage, where its codes supply about 22.5% of the candidate pool.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- sequential-transformer
+- multi-task
+stages:
+- stage: retrieval
+  model_family: 'Early-fusion Transformer over a UIGN user prefix of 1 profile token plus 100 short-term, 200 medium-term and 200 long-term interest tokens predicts a distribution over semantic codes; top N=100 codes map to items via a code-to-item index (hundreds of thousands of items), M=30 items kept per code.'
+  details: 'Coarse ranking uses the inner product of user and item embeddings; the top 10k items are grouped by code and passed to fine-grained ranking.'
+- stage: rank
+  model_family: 'Target-Code-Aware Discriminative Network: candidate item and code tokens attend only to the user prefix; heads for relevance, CTR, normalized watch duration, completion; configurable score fusion returns top-K.'
+  details: 'The same encoder serves code prediction and ranking in one forward pass.'
+id_tokenization:
+  approach: Single-layer flat codebook (EMA vector quantization) with balanced assignment
+  details: '16,384 codes in production, compared with the previous 128 x 128 hierarchical layout; public benchmark uses 1,024 codes with 64-d code embeddings; item representation combines item metadata with feedback-aware two-tower signals; assignment distance is scaled by relative code usage to counter head-code overuse.'
+features_signals:
+- User profile token, short-term impressions (clicked and exposed-not-clicked), medium-term satisfied watches, long-term interests grouped by category
+- Item ID, category, publisher, title terms and other item metadata
+- Feedback signals covering relevance, CTR, dwell or duration, and completion
+training:
+  mode: Joint offline training of generative and discriminative objectives; new items join the training stream within 5 minutes of first impression and are quantized within 1 hour
+  objectives:
+  - Code cross-entropy (generative retrieval)
+  - Weighted BCE for relevance, CTR and completion; MSE for watch duration
+  - Feedback-aware codebook loss and quantization regularization
+  notes: 'Public benchmark runs use 3 layers, 4 heads, hidden 512, Adam lr 1e-3, batch 2048.'
+serving_infra: 'About 400 NVIDIA L20 GPUs, one service instance per GPU; TensorRT FP16; item embeddings precomputed hourly; parameter server keeps model versions consistent; request cache windows of 15 s at noon and 30 s in the evening. Peak about 10,000 QPS.'
+scale:
+- metric: Production codebook size
+  value: 16,384 codes
+  note: Single-layer flat; 128 x 128 hierarchical used as comparison
+- metric: Peak retrieval QPS
+  value: about 10,000
+  note: Average latency 37 ms at peak
+- metric: Serving GPUs
+  value: about 400 NVIDIA L20
+  note: One service instance per GPU
+- metric: Long-tail resource pool
+  value: 1.82 million tail items
+  note: Bottom 20% of distributable items by historical clicks
+results_reported: 'Online (one-week full A/B vs previous production retrieval pipeline, p < 0.05): total watch duration +0.96%, total distribution volume +1.08%, user retention +0.70%; new users +1.44% watch time, high-activity +1.11%; UNIQUE accounts for 22.5% of the retrieval candidate pool. Serving: P80 35 ms, P99 89 ms, online inference MFU 44.23%, about 10,000 QPS peak, about $0.0013 per 1,000 requests. Codebook analysis: resource-count variance 1510.85 to 389.57 (flat vs hierarchical). Offline on KuaiRand-Pure: HR@10 0.0575, HR@50 0.1510, NDCG@10 0.0310, NDCG@50 0.0473, CTR-AUC 0.7252 vs UniGRF-HSTU 0.0511/0.1453/0.0298/0.0430/0.7168. Ablation (HR@50): w/o generative objective 0.1374 (-9.01%), w/o early fusion 0.1398 (-7.42%), w/o flat quantization 0.1421 (-5.89%).'
+caveats:
+- 'The paper gives two start dates: the introduction says deployed since February 2026, Section 4.1.2 says January 2026.'
+- 'Offline evidence is a small public benchmark (KuaiRand-Pure, 7,583 items) that the authors call a sanity check; production-scale offline metrics are not reported.'
+- 'Online results are a one-week A/B against the previous retrieval pipeline; the baseline is not described and no confidence intervals are given.'
+- 'One author did the work during an internship at Baidu and one corresponding author is at City University of Hong Kong; the deployment is by Baidu.'
+unknown_fields:
+- baseline retrieval pipeline details
+- model parameter count
+- A/B traffic share
+sources:
+- title: "UNIQUE: A Unified Retrieval and Ranking System for Large-Scale Feed Recommendation, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831936
+  type: paper
+- title: UNIQUE, arXiv 2609.23718
+  url: https://arxiv.org/abs/2609.23718
+  type: paper
+version_note: 'Numbers checked against the owner Zotero PDF, which is arXiv v1 of 20 Sep 2026 typeset in the RecSys 2026 camera-ready format with the ACM DOI 10.1145/3773078.3831936; arXiv has only v1. The ACM Digital Library page itself was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2609.23718
+  local_pdf: /workspace/recarch/zotero/baidu-unique-2026.pdf
+  sections_read: 'Abstract, introduction, related work, methodology 3.1-3.7, training objective, experiments (setup, RQ1-RQ3, online serving), conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'RecSys 2026-format PDF (arXiv v1 with ACM DOI) read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; a web search on 2026-10-30 found no UNIQUE repository.'
+core_idea: One Transformer does generative retrieval over a flat code book, then scores the retrieved items.
+deployed_in: Mobile Baidu homepage feed, discovery page and short-video recommendation, retrieval stage
+scale_short: About 10,000 peak retrieval QPS on about 400 NVIDIA L20 GPUs
+key_result: Total watch duration +0.96% in a one-week full A/B against the previous production retrieval pipeline
+results_table:
+  online:
+  - setting: One-week full A/B
+    method: UNIQUE
+    metric: Total watch duration
+    result: +0.96%
+    versus: Previous production retrieval pipeline
+  - setting: One-week full A/B
+    method: UNIQUE
+    metric: Total distribution volume
+    result: +1.08%
+    versus: Previous production retrieval pipeline
+  - setting: One-week full A/B
+    method: UNIQUE
+    metric: User retention
+    result: +0.70%
+    versus: Previous production retrieval pipeline
+  - setting: One-week full A/B, new users
+    method: UNIQUE
+    metric: Watch time
+    result: +1.44%
+    versus: Previous production retrieval pipeline
+  offline:
+  - setting: KuaiRand-Pure
+    method: UNIQUE
+    metric: HR@10
+    result: '0.0575'
+    versus: UniGRF-HSTU 0.0511
+  - setting: KuaiRand-Pure
+    method: UNIQUE
+    metric: HR@50
+    result: '0.1510'
+    versus: UniGRF-HSTU 0.1453
+  - setting: KuaiRand-Pure
+    method: UNIQUE
+    metric: NDCG@10
+    result: '0.0310'
+    versus: UniGRF-HSTU 0.0298
+  - setting: KuaiRand-Pure
+    method: UNIQUE
+    metric: CTR-AUC
+    result: '0.7252'
+    versus: UniGRF-HSTU 0.7168
+deployment:
+  online_evidence: online_numbers
+  scenario: Mobile Baidu homepage feed, discovery page and short-video retrieval
+  ab_traffic: not_reported
+  ab_duration: One week, full A/B
+  baseline: Previous production retrieval pipeline
+  online_lifts:
+  - metric: Total watch duration
+    value: +0.96%
+  - metric: Total distribution volume
+    value: +1.08%
+  - metric: User retention
+    value: +0.70%
+  training_compute: not_reported
+  serving_latency: P80 35 ms and P99 89 ms; average 37 ms at peak
+  serving_qps: About 10,000 QPS at peak
+  inference_cost: About $0.0013 per 1,000 requests
+  hardware: About 400 NVIDIA L20 GPUs, one service instance per GPU, TensorRT FP16; online inference MFU 44.23%
+  notes:
+  - Traffic share is not reported; the paper calls it a full A/B.
+  basis: full_text
+  checked_on: '2026-10-31'

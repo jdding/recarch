@@ -1,0 +1,91 @@
+id: onerec-kuaishou-2025
+name: OneRec end-to-end generative recommender
+company: Kuaishou
+surface: Kuaishou / Kuaishou Lite feeds and Local Life Service
+year: 2025
+era: generative
+era_reason: End-to-end generative recommender with semantic IDs, RL alignment
+first_public: 2025-06
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/abs/2506.13695
+added_on: '2026-10-30'
+last_verified: '2026-10-30'
+system_type: recommendation
+evidence_level: production_described
+tldr: Single-stage encoder-decoder generative recommender with RQ-KMeans semantic IDs and RL post-training, replacing the retrieval, pre-rank, rank cascade at Kuaishou.
+summary: Single-stage encoder-decoder generative recommender replacing the retrieval -> pre-rank -> rank cascade, with RQ-KMeans Semantic IDs, MoE decoder, and RL post-training.
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+- llm-based
+- sequential-transformer
+stages:
+- stage: single-stage
+  model_family: Encoder-decoder with MoE decoder; next-token prediction; Pass@512 inference
+  details: 'Encoder pathways: static, short-term (20), positive-feedback (256), lifelong, with up to 100k reduced to 2000 by hierarchical k-means and then to 128 queries by QFormer. Post-training uses RSFT and RL with ECPO (early-clipped GRPO) and reward models (P-Score, format reward, industrial reward).'
+id_tokenization:
+  approach: Multimodal embeddings (miniCPM-V-8B + QFormer) aligned with collaborative item pairs, quantized with RQ-KMeans
+  details: 3 layers with codebook 8192 (32768 in ablation).
+features_signals:
+- User short-term / positive-feedback / lifelong behavior sequences
+- Multimodal item content
+training:
+  mode: Offline pre-training plus post-training with RL
+  objectives:
+  - Next-token prediction
+  - RSFT
+  - ECPO RL
+  notes: Model sizes 0.015B / 0.121B / 0.935B / 2.633B; training on 90 servers x 8 GPUs with a SKAI GPU parameter server.
+serving_infra: Inference on L20 GPUs with TensorRT.
+scale:
+- metric: MFU
+  value: 23.7% training, 28.8% inference
+  note: paper body; conclusion says 28.6%
+- metric: OPEX vs traditional pipeline
+  value: 10.6%
+  note: paper
+- metric: Traffic share
+  value: ~25% of total QPS in Kuaishou/Kuaishou Lite; 100% of QPS in Local Life Service
+  note: paper
+- metric: Online lift
+  value: App Stay Time +0.54% / +1.24%
+  note: paper
+results_reported: Paper reports online A/B stay-time gains in Kuaishou and Kuaishou Lite, App Stay Time +0.54% and +1.24% respectively, the same figures as in the scale field.
+caveats:
+- The paper has an internal inconsistency on inference MFU (28.8% vs 28.6%).
+unknown_fields: []
+sources:
+- title: OneRec Technical Report, arXiv 2506.13695
+  url: https://arxiv.org/abs/2506.13695
+  type: paper
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/Kuaishou-OneRec/OpenOneRec
+    owner: Kuaishou (OneRec team org)
+    official: true
+    note: 'The team''s open release: Qwen3-based OneRec-Foundation 1.7B/8B models, the RecIF-Bench benchmark and a training pipeline. Related to, but not the same as, the production OneRec in this paper.'
+core_idea: A single-stage encoder-decoder generator replaces the retrieval, pre-rank and rank cascade.
+deployed_in: Kuaishou and Kuaishou Lite feeds, and Local Life Service
+scale_short: About 25% of total QPS in Kuaishou and Kuaishou Lite, 100% in Local Life Service
+key_result: App Stay Time +0.54% on Kuaishou and +1.24% on Kuaishou Lite in online A/B tests
+results_table:
+  online:
+  - setting: Kuaishou A/B
+    method: OneRec
+    metric: App Stay Time
+    result: +0.54%
+    versus: Traditional pipeline
+  - setting: Kuaishou Lite A/B
+    method: OneRec
+    metric: App Stay Time
+    result: +1.24%
+    versus: Traditional pipeline
+status: superseded
+status_date: '2026-10-30'
+superseded_by: onerec-kuaishou
+status_reason: Merged into the OneRec card, one card per system, which presents OneRec-V2 as the main version.

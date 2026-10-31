@@ -1,0 +1,34 @@
+surface|大规模推荐排序，在内部数据集上评估
+era_reason|用堆叠的 factorization machine 做判别式排序的扩展定律，即 Wukong；主流范式是扩展判别式排序模型，而不是生成式或 Semantic ID 建模
+tldr|Wukong 堆叠 factorization machine 块，在约两个数量级的算力范围内持续提升排序质量，在全部六个公开数据集上优于之前的模型。
+summary|Meta AI 的 ICML 2024 论文：Wukong 是只由堆叠的 factorization machine 块和线性压缩块组成的排序架构，靠做深做宽来捕捉更高阶的特征交互，在内部数据集上，质量在约两个数量级的算力范围内持续提升，超过 100 GFLOP/example。
+core_idea|堆叠 factorization machine 块和线性压缩块，捕捉更高阶的交互。
+deployed_in|研究系统，在六个公开数据集和一个内部数据集上评估
+scale_short|模型复杂度跨越两个数量级，超过 100 GFLOP 每个样本
+key_result|离线：按表 2，在全部六个公开数据集上，AUC 优于所比较的最先进模型
+results_reported|按表 2，Wukong 在全部六个公开数据集上，AUC 优于所比较的最先进模型。在内部数据集上，复杂度相当时优于现有模型，并且在模型复杂度跨越两个数量级、超过 100 GFLOP/example 时仍持续提升，而基线在此处要么趋于平台，如 AFN+、DLRM、FinalMLP，要么不再提升，如 AutoInt+、DCNv2、MaskNet。
+status_reason|按入选标准已退役：这是架构和扩展定律研究，在所读章节中没有线上上线或线上 A/B 结果，且引用数低于可免除线上证据规则的 500。
+stages.0.model_family|Wukong：embedding 层，接着是由 Wukong 层组成的交互堆叠，每层为一个 Factorization Machine Block 加一个 Linear Compress Block，带残差和 Add & Norm，最后用 MLP 做预测
+stages.0.details|把每个 embedding 当作一个单元，即 embedding 级交互，论文称这相比 element 级交互的架构降低了计算量。对比了 AutoInt+、AFN+、DLRM、MaskNet、FinalMLP 和 DCNv2；DCNv2 是内部数据集上最强的基线，需要约 40x 的复杂度才能达到 Wukong 的质量。
+features_signals.0|公开数据集，六个，以及一个大型内部数据集
+training.mode|在大型点击数据集上离线单轮训练，即 Criteo Terabyte，24 天，最后一天做测试，另有五个公开数据集和一个大型内部数据集
+training.objectives.0|CTR 预测，AUC 和 LogLoss
+training.notes|分布式训练：来自 Neo 的按列分片的 embedding bag，调好分片因子的 FSDP，自动算子融合，FP16 embedding 表和激进的量化；在 Criteo 上做了近 3000 次超参搜索，以保证基线对比公平。
+scale.0.metric|模型复杂度范围
+scale.0.value|两个数量级，超过 100 GFLOP/example
+results_table.offline.0.setting|六个公开数据集，表 2
+results_table.offline.0.result|六个全部最优，没有数字
+results_table.offline.0.versus|所比较的最先进模型
+results_table.offline.1.setting|内部数据集
+results_table.offline.1.metric|每个样本超过 100 GFLOP 时的质量
+results_table.offline.1.result|持续提升
+results_table.offline.1.versus|AFN+、DLRM、FinalMLP 趋于平台
+caveats.0|论文是架构和扩展定律研究；所读章节没有说明线上上线或线上 A/B 结果，所以证据级别为 research_only。
+caveats.1|内部数据集没有命名，在所读章节中也没有给出确切规模。
+caveats.2|表 2 中每个数据集的数值这里未复现。
+unknown_fields.0|线上 A/B 结果
+unknown_fields.1|线上部署
+unknown_fields.2|内部数据集规模和产品场景
+updates.0.note|按站长的决定，时代从生成式改为深度：主流范式是扩展判别式的排序和序列模型，而不是生成式或 Semantic ID 建模。
+code.repos.0.owner|=
+code.repos.0.note|Wukong 论文的第三方实现。我没有找到 Meta 的对应仓库。

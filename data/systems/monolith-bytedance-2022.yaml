@@ -1,0 +1,73 @@
+id: monolith-bytedance-2022
+name: Monolith real-time recommendation system
+company: ByteDance
+surface: Recommendation training system, productized as BytePlus Recommend; the paper does not name TikTok
+year: 2022
+era: deep
+era_reason: "Real-time online training for embedding-table models"
+first_public: "2022-09"
+venue: "ORSUM @ RecSys 2022 (workshop, from arXiv comment; not verified in proceedings)"
+venue_year: 2022
+published_version_checked: false
+primary_source: "https://arxiv.org/abs/2209.07663"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: "ByteDance's training/serving system with a collisionless Cuckoo-HashMap embedding table and minute-level online parameter sync; online training beats batch training."
+summary: >-
+  Training/serving system with a collisionless Cuckoo-HashMap embedding table, frequency filtering and expiry, plus an online
+  training pipeline that syncs sparse parameters at minute granularity.
+paradigms: [online-training, dlrm]
+stages:
+  - stage: rank
+    model_family: Worker-PS TensorFlow training of embedding-heavy models (paper example uses DeepFM)
+    details: Focus is on infrastructure for sparse embeddings and real-time training rather than a specific funnel.
+id_tokenization:
+  approach: Collisionless embedding table (Cuckoo HashMap) with feature filtering and expiry
+  details: Avoids hash collisions of ID features.
+features_signals: [Real-time user feedback joined with features via Kafka + Flink]
+training:
+  mode: Online training (streaming) plus batch training from HDFS
+  objectives: [CTR-style prediction with log-odds correction for negative sampling]
+  notes: Sparse parameters synced minute-level, dense parameters daily; PS snapshots daily.
+serving_infra: TensorFlow Worker-PS architecture; training PS to serving PS parameter sync.
+scale: []
+results_reported: Paper reports that online training improves over batch training.
+caveats:
+  - The paper says the system landed in BytePlus Recommend; it does NOT say this is TikTok's production system. Do not claim TikTok from this source.
+unknown_fields: [model size, QPS, retrieval/ranking stage details]
+sources:
+  - {title: "Monolith: Real Time Recommendation System With Collisionless Embedding Table, arXiv 2209.07663", url: "https://arxiv.org/abs/2209.07663", type: paper}
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/bytedance/monolith
+    owner: ByteDance
+    official: true
+    note: TensorFlow-based framework with collisionless embedding tables and real-time training. The paper
+      said 'code to be released soon'. Repo is archived (read-only) since 2025-10-13.
+core_idea: A collisionless Cuckoo-HashMap embedding table with online training that syncs sparse parameters at minute granularity.
+deployed_in: Recommendation training system, productized as BytePlus Recommend
+scale_short: Not stated in the sources
+key_result: Online training improves over batch training, no figure reported
+results_table:
+  note: The paper reports that online training improves over batch training. The card sources give no figures.
+deployment:
+  online_evidence: deployed_only
+  scenario: Recommendation training system, productized as BytePlus Recommend
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Sparse parameters sync at minute level and dense parameters daily. The paper compares online and batch training
+    and gives no serving numbers.
+  basis: full_text
+  checked_on: '2026-10-31'

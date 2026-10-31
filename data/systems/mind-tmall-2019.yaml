@@ -1,0 +1,140 @@
+id: mind-tmall-2019
+name: "MIND"
+company: "Alibaba / Tmall"
+surface: Retrieval-stage matching on the Mobile Tmall homepage
+year: 2019
+era: deep
+era_reason: "Capsule-routing multi-interest retrieval"
+first_public: "2019-04"
+venue: "CIKM 2019"
+venue_year: 2019
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3357384.3357814"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "MIND gives each user several interest vectors via capsule-style dynamic routing; on TmallData HR@10 is 0.0972 vs 0.0589 for YouTube DNN."
+summary: 'CIKM 2019 paper from Alibaba and Tmall: Multi-Interest Network with Dynamic routing represents each user with several vectors
+  rather than one. A multi-interest extractor layer using capsule-style Behavior-to-Interest dynamic routing soft-clusters the user''s
+  behaviors into interest capsules; a label-aware attention layer is used in training; at serving each interest vector retrieves items
+  through approximate nearest neighbor search. Deployed to the matching stage of the Mobile Tmall App homepage.'
+paradigms:
+- two-tower
+- embedding-based-retrieval
+- sequential-transformer
+stages:
+- stage: retrieval
+  model_family: 'MIND: embedding and pooling layer, multi-interest extractor using B2I dynamic routing with a shared bilinear matrix, randomly initialized routing logits and a dynamic interest number K'' = max(1, min(K, log2|behaviors|)), ReLU layers over interests concatenated
+    with profile, label-aware attention during training'
+  details: Score for retrieval is the maximum over the user's interest vectors of the dot product with the item embedding; with K =
+    1 MIND reduces to YouTube DNN. Trained with sampled softmax and Adam.
+id_tokenization:
+  approach: Item ID embeddings
+  details: null
+features_signals:
+- User behavior sequence
+training:
+  mode: Offline training on a Model Training Platform using 100 GPUs, about 8 hours per run; the served network is updated every day
+  objectives:
+  - sampled-softmax next-item likelihood
+  notes: 'Offline TmallData: 2,014,865 users, 934,751 goods, 6,377 categories, 50.9M samples from 10 days of randomly sampled Tmall
+    users; Amazon Books: 351,356 users, 393,801 goods, 6.27M samples. Next-item prediction with HitRate@N.'
+serving_infra: Requests go to the Tmall Personality Platform, which fetches recent user behavior and calls a User Interest Extractor
+  (MIND); a Recall Engine does nearest-neighbor search per interest, merges candidates sorted by similarity; selecting thousands of
+  candidates from the billion-scale item pool takes less than 15 ms. The top 1000 candidates go to a Ranking Service that predicts CTR.
+  User behavior changes the interest vectors in real time.
+scale:
+- metric: Item pool
+  value: billion-scale
+  note: paper
+- metric: Candidates passed to ranking
+  value: 1000 per method in the A/B
+  note: paper
+- metric: Training GPUs
+  value: '100'
+  note: paper
+results_reported: 'Offline HitRate per Table 2, TmallData with K = 5, d = 64: MIND-K-interest HR@10 0.0972 vs YouTube DNN 0.0589 (+65.03%),
+  HR@50 0.2080 vs 0.1256, HR@100 0.2699 vs 0.1648; Amazon Books K = 3, d = 36: HR@10 0.0309 vs 0.0231 (+33.77%). Online: one-week A/B
+  on the Tmall homepage against item-based CF (which served the majority of traffic) and YouTube DNN; MIND beats both on CTR, with 5-7
+  interests best and 5 enough, while the dynamic interest number gives similar CTR to 7 interests and lowers serving cost. Exact CTR
+  deltas appear only in Figure 4, not in the text.'
+caveats:
+- Online CTR gains are shown only in a figure per Figure 4; no numeric lift is in the text.
+- The paper says the homepage of the Mobile Tmall App accounts for about half of Tmall traffic; this is context, not a statement about
+  MIND's share.
+- Matching and ranking were not trained jointly; ranking is a separate service.
+unknown_fields:
+- numeric online CTR lift
+- index type and size for nearest-neighbor search
+- share of traffic served by MIND
+sources:
+- title: "Multi-Interest Network with Dynamic Routing for Recommendation at Tmall, CIKM 2019"
+  url: https://doi.org/10.1145/3357384.3357814
+  type: paper
+- title: Multi-Interest Network with Dynamic Routing for Recommendation at Tmall, arXiv 1904.08030
+  url: https://arxiv.org/abs/1904.08030
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1904.08030
+  local_pdf: (read as text via arxiv.org/pdf/1904.08030; no local PDF)
+  sections_read: 'Entire paper: abstract, intro, Sec 3 (multi-interest extractor, B2I dynamic routing, label-aware attention, training
+    and serving), Sec 4 offline and online experiments, Sec 5 system deployment, conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/alibaba/EasyRec/blob/master/easy_rec/python/model/mind.py
+    owner: Alibaba (EasyRec / PAI team)
+    official: true
+    note: MIND model implementation inside Alibaba's EasyRec framework; not linked from the paper.
+core_idea: Represent each user with several interest vectors from capsule-style dynamic routing.
+deployed_in: Matching stage of the Mobile Tmall App homepage
+scale_short: Billion-scale item pool, trained on 100 GPUs
+key_result: Beat item-based CF and YouTube DNN on CTR in a one-week online A/B on the Tmall homepage, exact delta not given in the text
+results_table:
+  online:
+  - setting: Tmall homepage, one-week A/B
+    method: MIND
+    metric: CTR
+    result: Beats both, no figure in the text
+    versus: Item-based CF and YouTube DNN
+  offline:
+  - setting: TmallData, Table 2
+    method: MIND-K-interest
+    metric: HR@10
+    result: 0.0972, +65.03%
+    versus: YouTube DNN 0.0589
+  - setting: TmallData, Table 2
+    method: MIND-K-interest
+    metric: HR@50
+    result: '0.2080'
+    versus: YouTube DNN 0.1256
+  - setting: TmallData, Table 2
+    method: MIND-K-interest
+    metric: HR@100
+    result: '0.2699'
+    versus: YouTube DNN 0.1648
+  - setting: Amazon Books, Table 2
+    method: MIND-K-interest
+    metric: HR@10
+    result: 0.0309, +33.77%
+    versus: YouTube DNN 0.0231
+deployment:
+  online_evidence: online_qualitative
+  scenario: Matching stage of the Mobile Tmall App homepage
+  ab_traffic: not_reported
+  ab_duration: One week
+  baseline: Item-based CF and YouTube DNN
+  online_lifts: not_reported
+  training_compute: 100 GPUs, about 8 hours per run; the served network is updated every day
+  serving_latency: Under 15 ms to select thousands of candidates from a billion-scale item pool
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: 100 GPUs for training
+  notes:
+  - MIND beats both baselines on CTR in the one-week Tmall A/B. The text gives no figure for the deltas.
+  basis: full_text
+  checked_on: '2026-10-31'

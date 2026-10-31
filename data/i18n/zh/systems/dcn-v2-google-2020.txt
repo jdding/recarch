@@ -1,0 +1,38 @@
+surface|Google 的网络规模 learning-to-rank 系统
+era_reason|面向网络规模排序的改进版 cross network
+tldr|DCN-V2 把 cross 向量换成完整的权重矩阵，并增加一个叫 DCN-Mix 的低秩混合变体，成本低 30%；在 Criteo 上 AUC 为 0.8115，在 MovieLens-1M 上也最好。
+summary|Google 的 DCN-V2 改进了 Deep & Cross Network：把 cross 向量换成完整的权重矩阵，x_{l+1} = x_0 * [W_l x_l + b_l] + x_l，与 DNN 堆叠或并行，并增加了低秩专家混合的变体 DCN-Mix 来降低成本。在 Criteo 和 MovieLens-1M 上，它优于 DeepFM、DLRM、xDeepFM、AutoInt、PNN、DCN 和调优后的 DNN。论文称它已部署在 Google 的多个网络规模 learning-to-rank 系统中；案例研究显示，在用数千亿个样本训练的模型上，相比线上的 ReLU MLP，AUCLoss 提升 0.6%，没有说明具体产品。
+core_idea|把 cross 向量换成完整的权重矩阵，并加一个低秩混合变体来降低成本。
+deployed_in|Google 的多个网络规模 learning-to-rank 系统，产品未具名
+scale_short|超过 100B 个线上训练样本
+key_result|线上：相比线上的 MLP，AUCLoss 提升 0.6%，另有显著的线上业务指标提升，未具名
+results_reported|Criteo 测试集，见表 6，格式为 LogLoss / AUC：DCN-V2 0.4406 / 0.8115；DCN-Mix 0.4408 / 0.8112，成本低 30%，参数 2.4M 对比 3.5M；CrossNet 0.4413 / 0.8107；DCN 0.4420 / 0.8099；DNN 0.4421 / 0.8098；DeepFM 0.4420 / 0.8099；DLRM 0.4427 / 0.8092；AutoInt+ 0.4420 / 0.8101；xDeepFM 0.4421 / 0.8099，FLOPS 约为 10 倍。论文认为 Criteo 上 0.001 就算显著。MovieLens-1M：DCN-V2 0.3170 / 0.8950，DCN-Mix 0.3160 / 0.8964，DCN 0.3197 / 0.8935。合成多项式拟合，见表 1：在 f3 上，DCN-V2 的 RMSE 为 6.7E-07，DCN 为 2.6，大型 DNN 为 7.8E-02。固定内存的对比，见表 7：CrossNet 在每种规模下都优于 DNN，例如参数 2.6E+06 时 LogLoss 为 0.4415，对比 0.4423。线上结果，见第 8 节：相比线上的 MLP，AUCLoss 即 1 - AUC 提升 0.6%，其中 0.1% 就被视为显著，另有显著的线上业务指标提升，未具名；表 8 相对同样大小 ReLU 层的 AUCLoss：1 层 DCN-V2 为 -0.19%，2 层 DCN-V2 为 -0.45%，2 层 ReLU 为 -0.15%。
+serving_infra|除了延迟和成本方面的动机外没有更多描述：论文指出极高 QPS 下的延迟要求严格，并称秩为输入维度 / 4 的低秩 DCN 保持了满秩 DCN-V2 的精度。cross 层应插在输入和 DNN 隐层之间；1 到 2 个 cross 层带来稳定的提升，再多就趋于平稳。
+stages.0.model_family|DCN-V2 特征交互排序模型：每个特征可以有任意 embedding 大小的 embedding 层，cross 层 x_{l+1} = x_0 ⊙ [W_l x_l + b_l] + x_l，是 DCN 的严格超集，取 W = 1 w^T 即退化为 DCN；加上深度 ReLU 网络，可堆叠或并行组合，输出为带 log loss 和 L2 的 logistic 层。DCN-Mix：每个专家把 W 换成 U V^T，共 K 个带门控的专家，也可以加上非线性投影空间。
+stages.0.details|l 层 cross network 捕获的交互阶数最高为 l+1。cross network 的复杂度为 d^2 L_c 量级，DCN-Mix 为 2 d r K L_c 量级。论文称它与标签和损失无关，已用于点击标签。
+id_tokenization.approach|做过 embedding 的稀疏特征
+features_signals.0|稀疏和稠密的 LTR 特征
+training.mode|基准实验：TensorFlow v1，Adam，batch size 512，MovieLens 为 128，He normal 初始化，梯度裁剪范数 10，EMA 0.9999；每个最佳配置跑 5 次。线上：用户日志采样得到的数千亿个训练样本。
+training.objectives.0|点击上的 log loss
+training.notes|Criteo：45M 个样本，39 个特征，词表 2.3M，前 6 天训练，最后一天划分为验证集和测试集。MovieLens-1M：740k 个样本；评分 1 和 2 记为 0，4 和 5 记为 1，去掉 3。线上的词表大小从 2 到数百万不等。
+scale.0.metric|线上训练样本数
+scale.0.value|超过 100B，即数千亿
+results_table.online.0.setting|Google 线上系统，第 8 节
+results_table.offline.0.setting|Google 线上系统，第 8 节
+results_table.offline.1.setting|Criteo 测试集，表 6
+results_table.offline.2.setting|Criteo 测试集，表 6
+results_table.online.0.metric|线上业务指标
+results_table.online.0.result|显著提升，未具名
+results_table.online.0.versus|线上模型
+results_table.offline.0.result|提升 0.6%
+results_table.offline.2.versus|成本低 30%，参数 2.4M 对比 3.5M
+caveats.0|论文没有说明线上系统、产品和线上指标；没有给出线上数字，只有离线 AUCLoss 提升 0.6%。
+caveats.1|论文称调优之后，DNN 在 Criteo 上与多数基线不相上下，cross network 的优势在合成数据上比在 Criteo 上更明显。
+caveats.3|混合阶数的合成结果以及低秩的奇异值论证以图的形式给出；这里只引用表中的数值。
+unknown_fields.0|哪些 Google 产品部署了 DCN-V2
+unknown_fields.1|线上指标的变化量
+unknown_fields.2|在线延迟数字
+code.repos.0.note|official/recommendation/ranking：在 Criteo 上训练 DCN-v2，即「cross」交互，以及 DLRM。由 TF 团队维护；论文本身没有链接到仓库，我也没有找到。
+code.repos.1.note|DCN 教程和 tfrs.layers.dcn.Cross 层。
+caveats.2|会议年份 WWW 2021 没有在 arXiv 文本中说明；卡片年份按 arXiv 日期取 2020。
+status_reason|已合并进 DCN 卡片，每个系统一张卡片，该卡片展示最新版本 DCN V2。

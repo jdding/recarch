@@ -1,0 +1,55 @@
+surface|短视频召回阶段
+era_reason|用于召回的 Transformer 下一行为预测；序列生成式目标；处于边界
+tldr|面向短视频的纯 Transformer 实时召回：带多个兴趣 query token 的下一行为预测；离线 HR@500 为 15.61%，最好的其他方法为 11.31%。
+summary|快手发在 arXiv 的论文，时间为 Nov 2024，提出面向短视频推荐的纯 Transformer 实时召回模型。它把召回表述为下一行为预测，在用户看过的视频上用 Llama 风格的因果 Transformer，再加 k 个可学习的 query token 来表示多个兴趣，用自适应 item 压缩把 256 个 item 的历史缩成 55 个 token，并用带 logQ 校正和标签平滑的 batch 内 softmax。论文称自 May 2024 起，它作为一条额外的召回通路集成进快手 App 的短视频推荐，服务超过四亿日活用户。
+core_idea|纯 Transformer，用可学习的 query token 表示多个兴趣，并做自适应 item 压缩。
+deployed_in|快手短视频召回，自 May 2024 起作为一条额外通路
+scale_short|超过四亿日活用户，峰值 QPS 超过 100,000
+key_result|快手单列，一周线上 A/B 覆盖 10% 的用户，视频观看时长 +0.360%
+results_reported|在回放的线上请求上，用真实观看过的 item 计算离线命中率，见表 1，KuaiFormer 对比最好的其他方法：HR@50 为 4.21%，GNN 为 3.97%；HR@100 为 6.58%，GPRP 为 5.21%；HR@500 为 15.61%，GPRP 为 11.31%；HR@1000 为 19.88%，GPRP 为 15.70%。SASRec 得分为 1.17/2.51/5.37/7.22。线上 A/B，一周，三个场景各取 10% 的用户，见表 2：视频观看时长 +0.360%，快手单列；+0.126%，快手极速版单列；+0.411%，快手双列；表 2 中使用时长和互动列，包括点赞、关注、评论和 Novel Surprise 观看，也都为正；提取出的文本里列标题是乱码，所以这里没有引用观看时长以外的各项数值。论文称这是快手 2024 年最显著的召回实验之一。消融：准确率从 0.325，长度 8，升到 0.441，长度 256；1 到 5 层使准确率从 0.391 升到 0.435，4 层之后收益递减，为 0.433；query token 在 6 个左右饱和；压缩后的 256 为 0.445，未压缩为 0.441，长度 64 为 0.417。
+serving_infra|KuaiFormer 作为一条通路加在现有召回通路旁边，如 Swing、GNN、ComiRec、DimeRec 和 GPRP；所有通路的候选合并去重后，依次经过预排序、级联排序和全量排序。用户 embedding 在线计算；对 top-K，论文称实际使用 GPU 暴力搜索，也提到 Faiss 或 ScaNN 可作替代。每个 query token 各做一次召回，然后统一排序并截断到固定数量。
+stages.0.model_family|Llama 架构的因果 Transformer，带 RMSNorm、多头 masked self-attention 和 point-wise FFN，输入是 item token t_i = MLP[item ID embedding, 辅助特征 embedding]，约 10 多个属性，包括观看时长、点赞和评论等交互标签、分到 1000 个桶且最长 300 s 的视频时长、多模态类目标签 ID 等；序列之后附加 k 个可学习的 query token，用因果 mask，使后面的兴趣 token 能看到前面的。item 的得分是它与 k 个兴趣向量的点积的最大值。
+stages.0.details|自适应 item 压缩：对 256 个 item 的历史，较早的 item 按 64 个一组合并，中间的按 16 个一组合并，用单层双向 Transformer 加均值池化，最新的 item 不压缩；Transformer 的输入是 55 个 token。消融中的压缩窗口从最旧到最新依次为 64、64、16、16、16、16、16，最新的 48 个 item 不压缩。用普通 attention 把长度从 64 提高到 256，算力约增加到 6 倍，用压缩只增加约 +10%。损失：带 logQ 校正和标签平滑 alpha 的 batch 内 softmax，而不是 0/1 标签。
+features_signals.0|用户行为序列
+training.mode|在分布式训练框架上在线学习；模型持续消费新日志，并以分钟级频率把参数更新到在线服务。稀疏 embedding 放在专门的 embedding 服务器上，稠密参数定期下发。
+training.objectives.0|下一个 item 预测，使用平滑且经 logQ 校正的 batch 内 softmax
+training.notes|日志系统中的实时用户反馈包括观看时长等稠密信号，以及点赞、关注和分享等稀疏信号。
+scale.0.metric|日活用户
+scale.0.value|超过四亿
+scale.1.metric|日请求数
+scale.1.value|超过五百亿
+scale.2.value|每秒超过 100,000 个请求
+scale.3.metric|候选池
+scale.3.value|数十亿条短视频
+results_table.online.0.setting|快手单列，一周，10% 的用户，表 2
+results_table.online.1.setting|快手极速版单列，表 2
+results_table.online.2.setting|快手双列，表 2
+results_table.online.0.versus|线上召回
+results_table.online.1.versus|线上召回
+results_table.online.2.versus|线上召回
+results_table.online.0.metric|视频观看时长
+results_table.online.1.metric|视频观看时长
+results_table.online.2.metric|视频观看时长
+results_table.offline.0.setting|回放的线上请求，表 1
+results_table.offline.1.setting|回放的线上请求，表 1
+results_table.offline.2.setting|回放的线上请求，表 1
+results_table.offline.3.setting|回放的线上请求，表 1
+caveats.0|论文摘要称系统服务超过四亿日活用户；线上 A/B 是在 10% 的用户上做了一周。
+caveats.1|论文的表 3 在正文中写作「Table 3 [a]-[c]」，指画在图 3 中的超参数图；这里引用的数字来自正文和压缩表。
+caveats.2|论文称在 400M 日活用户下，视频观看时长约 0.1% 的变化就具有统计显著性，但没有报告置信区间。
+caveats.3|论文称「to our knowledge the first real-time retrieval model by the pure Transformer architecture in industrial-scale RecSys」，这是作者的说法。
+unknown_fields.0|参数量
+unknown_fields.1|embedding 维度
+unknown_fields.2|KuaiFormer 通路在所有召回通路中的流量占比
+unknown_fields.3|训练硬件
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|快手短视频召回，一条额外的通路
+deployment.ab_traffic|10% 的用户
+deployment.ab_duration|一周
+deployment.baseline|线上召回
+deployment.serving_latency|论文称召回必须在几毫秒内完成；没有实测数字
+deployment.serving_qps|峰值超过每秒 100,000 个请求
+deployment.hardware|实际使用 GPU 暴力 top-K 搜索；没有给出 GPU 型号和数量
+deployment.online_lifts.0.metric|视频观看时长，快手单列
+deployment.online_lifts.1.metric|视频观看时长，快手双列
+deployment.online_lifts.2.metric|视频观看时长，快手极速版单列

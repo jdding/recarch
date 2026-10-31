@@ -1,0 +1,48 @@
+id: facebook-gbdt-lr-2014
+name: 'Facebook Ads Click Prediction: GBDT + LR'
+company: "Facebook / Meta"
+surface: Ads click-through-rate prediction
+year: 2014
+system_type: ads
+evidence_level: production_described
+summary: Boosted decision trees transform features into leaf-index categorical inputs for an online-trained logistic regression; combined
+  model beats either alone by over 3% in normalized entropy.
+paradigms:
+- gbdt
+- online-training
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: GBDT feature transform -> online logistic regression
+  details: Trees retrained daily (per paper); LR updated online with per-coordinate learning rates.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Historical (counting) features dominate importance over contextual features
+training:
+  mode: 'Hybrid: batch trees, online LR'
+  objectives:
+  - Log-loss / normalized entropy
+  notes: More than ~500 trees gives diminishing returns.
+serving_infra: null
+scale:
+- metric: Facebook daily active users at time of writing
+  value: ~750 million
+  note: paper context
+- metric: Advertisers
+  value: over 1 million
+  note: paper context
+results_reported: 'Paper: combined model improves normalized entropy by over 3% relative vs either alone.'
+caveats:
+- Details here come from the ACM abstract and previously collected notes; the PDF mirror could not be fetched in this round.
+unknown_fields:
+- serving infra
+- absolute metrics
+sources:
+- title: Practical Lessons from Predicting Clicks on Ads at Facebook, ADKDD 2014
+  url: https://doi.org/10.1145/2648584.2648589
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"Practical Lessons from Predicting Clicks on Ads at Facebook\" (He, Xinran, 2014, ADKDD 2014) - https://doi.org/10.1145/2648584.2648589. Reason drafted: search-engine summary / publication record only."

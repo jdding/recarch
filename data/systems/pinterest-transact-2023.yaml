@@ -1,0 +1,154 @@
+id: pinterest-transact-2023
+name: "TransAct"
+company: Pinterest
+surface: Homefeed ranking, Related Pins, Notifications, Search
+year: 2023
+era: deep
+era_reason: "Transformer over recent actions as a ranking feature; discriminative CTR model"
+first_public: "2023-05"
+venue: "KDD 2023"
+venue_year: 2023
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3580305.3599918"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the KDD 2023-format PDF, arXiv v1 with the final DOI; all numbers confirmed."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Transformer over a user's last 100 realtime actions inside Pinnability for Homefeed; A/B: repin volume +11.0%, hide volume -10.0%."
+summary: 'Realtime-batch hybrid ranker for Pinterest Homefeed: a transformer encodes each user''s most recent 100 actions with candidate-pin early fusion and its output is combined with the batch PinnerFormer user embedding inside Pinnability, which uses DCN-V2 feature crossing and MLP multi-task heads. The paper reports production use in Homefeed, Related Pins, Notifications and Search.'
+paradigms:
+- sequential-transformer
+- dlrm
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: 'Pinnability ranker with TransAct: pointwise multi-task, realtime action sequence (last 100 actions, PinSage pin embeddings
+    + action-type embeddings), early fusion by concatenating the candidate pin''s embedding to each sequence step, transformer output
+    compressed with first K=10 columns + max pooling'
+  details: 'Baselines: Wide&Deep + sequence pooling, BST (all / positive actions). Table 4 ablation of output compression: first-K +
+    max-pool chosen for the performance/latency balance.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Realtime user actions
+- Batch user embeddings
+training:
+  mode: Offline training on a 2-week dataset; model retrained twice a week in production because TransAct is sensitive to behavior drift
+  objectives:
+  - Multi-task pointwise prediction (e.g. repin, hide heads)
+  notes: Without retraining, the first-day engagement gain decayed over two weeks; retraining on fresh data restored it, as shown in Fig 6. The
+    paper also discusses a recommendation diversity drop and mitigations where random time-window masking increased diversity at an engagement cost.
+serving_infra: Sequence length capped at 100 recent actions for infrastructure cost and latency; the paper describes optimizations that
+  enable GPU serving of the previously CPU-based ranking model.
+scale: []
+results_reported: 'Online A/B, with Pinnability without realtime sequence features as control and 1.5% of Homefeed users per group: Homefeed
+  repin volume +11.0% (all users) / +17.0% (non-core users); Homefeed hide volume -10.0% / -10.5%; overall time spent +2.0% / +1.5%.
+  Other surfaces: Related Pins repin +2.8%, Search repin +2.3%, Email CTR +1.4%, Notification push open rate +1.9%. Offline Table 1:
+  HIT@3/repin and /hide improvements vs WDL+seq and BST baselines.'
+caveats:
+- Online control group lacks all realtime sequence features, so the +11.0% is versus no-sequence Pinnability, not versus a strong sequence
+  baseline.
+- Several offline deltas in Table 1 are marked statistically insignificant by the authors.
+unknown_fields:
+- serving QPS
+- GPU type and count
+- model parameter count
+sources:
+- title: "TransAct: Transformer-based Realtime User Action Model for Recommendation at Pinterest, KDD 2023"
+  url: https://doi.org/10.1145/3580305.3599918
+  type: paper
+- title: TransAct, arXiv 2306.00248
+  url: https://arxiv.org/abs/2306.00248
+  type: paper
+- title: TransAct V2, arXiv 2506.02267
+  url: https://arxiv.org/abs/2506.02267
+  type: paper
+version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 31 May 2023 typeset in the KDD '23 ACM template with the final DOI and ACM reference format, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2306.00248
+  local_pdf: /workspace/recarch/zotero/pinterest-transact-2023.pdf
+  sections_read: Abstract, intro, methodology (Pinnability, TransAct, early fusion, aggregation), offline Tables 1/4, online Tables
+    5/6, discussion (retraining, diversity)
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/pinterest/transformer_user_action
+    owner: Pinterest
+    official: true
+    note: PyTorch TransAct module linked from the paper, with a test run. Not the full Homefeed ranking
+      model.
+core_idea: A transformer over the last 100 actions with candidate early fusion, combined with a batch user embedding.
+deployed_in: Pinterest Homefeed, Related Pins, Notifications and Search
+scale_short: Last 100 actions per user, A/B groups of 1.5% of Homefeed users
+key_result: Homefeed repin volume +11.0% for all users in an online A/B against Pinnability without realtime sequence features
+results_table:
+  online:
+  - setting: Homefeed A/B, all users / non-core users
+    method: TransAct
+    metric: Repin volume
+    result: +11.0% / +17.0%
+    versus: Pinnability without realtime sequence features
+  - setting: Homefeed A/B, all users / non-core users
+    method: TransAct
+    metric: Hide volume
+    result: -10.0% / -10.5%
+    versus: Pinnability without realtime sequence features
+  - setting: Homefeed A/B, all users / non-core users
+    method: TransAct
+    metric: Overall time spent
+    result: +2.0% / +1.5%
+    versus: Pinnability without realtime sequence features
+  - setting: Related Pins
+    method: TransAct
+    metric: Repin
+    result: +2.8%
+    versus: Pinnability without realtime sequence features
+  - setting: Search
+    method: TransAct
+    metric: Repin
+    result: +2.3%
+    versus: Pinnability without realtime sequence features
+  - setting: Email
+    method: TransAct
+    metric: CTR
+    result: +1.4%
+    versus: Pinnability without realtime sequence features
+  - setting: Notifications
+    method: TransAct
+    metric: Push open rate
+    result: +1.9%
+    versus: Pinnability without realtime sequence features
+  note: Offline Table 1 reports HIT@3 gains per repin and per hide against the WDL with sequence and BST baselines, with no figures here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Homefeed, Related Pins, Notifications and Search
+  ab_traffic: 1.5% of Homefeed users per group
+  ab_duration: not_reported
+  baseline: Pinnability without realtime sequence features
+  online_lifts:
+  - metric: Homefeed repin volume, all users
+    value: +11.0%
+  - metric: Homefeed hide volume, all users
+    value: -10.0%
+  - metric: Homefeed overall time spent, all users
+    value: +2.0%
+  training_compute: not_reported
+  serving_latency: 8 ms on GPU, against 22 ms for the old CPU model and 712 ms for TransAct on CPU
+  serving_qps: not_reported
+  inference_cost: Serving cost 1x on GPU, against 32x for TransAct on CPU, relative to the old CPU model
+  hardware: GPU serving for a previously CPU-based ranking model; GPU type and count not reported
+  notes:
+  - The model is retrained twice a week because it is sensitive to behavior drift.
+  fulltext_refs:
+  - 'Sec 3.4.2 and Table 9: latency 22 ms baseline CPU, 712 ms TransAct CPU, 8 ms TransAct GPU; serving cost 1x,
+    32x, 1x'
+  basis: full_text
+  checked_on: '2026-10-31'

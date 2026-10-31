@@ -1,0 +1,60 @@
+surface|Netflix 首页，分页展示的 row 和 entity
+era_reason|单个 decoder-only Transformer 根据 token 化的用户上下文，自回归地生成整个由 row 和 entity 构成的首页，先做 next-token 预训练，再做 WBC 或 RL 后训练。
+tldr|Netflix 用一个 decoder-only Transformer 取代多阶段首页链路，直接生成整个页面；对比线上系统的 A/B：核心互动指标 +0.24%，p<0.001，在线服务延迟降低 20%。
+summary|GenPage 把用户历史、画像和请求上下文当作 prompt，自回归地生成整个多 row 首页，每个 row 和每个 entity 在每日更新的词表中各占一个 token。模型先在有正向互动的线上页面上做 next-token 预测预训练，再做后训练：要么是带 token 级价值预测的加权二分类，价值来自 Netflix 的奖励系统，要么是对照学习得到的奖励模型、用 Dr. GRPO 做页面级 RL。生产环境中的补充设计包括：为冷启动做语义 embedding 融合和上下文注入、回退 token、多频率增量训练、满足业务规则的约束解码，以及混合 row 解码。目前只有 WBC 变体做过线上测试。
+core_idea|自回归地生成整个多 row 首页，每个 row 和 entity 各占一个 token。
+deployed_in|Netflix 首页，WBC 变体已做线上测试，未说明是否全量上线
+scale_short|线上约 200M 参数
+key_result|对比成熟的多阶段线上首页推荐系统，14 天线上 A/B：核心互动指标 +0.24%
+results_reported|线上 A/B，对比成熟的多阶段线上首页推荐系统，14 天，五个 WBC 变体，全部显著，p < 0.001：最佳变体在用于上线决策的核心互动指标上 +0.24%，95% 置信区间 [0.17%, 0.30%]；端到端在线服务延迟 -20%。离线结果见表 1，WBC 有预训练对比无预训练：loss 为 0.321 对 0.333，Row AUC 为 0.884 对 0.879，Entity AUC 为 0.920 对 0.910。模型规模从 120M 扩到 900M，WBC loss 约降低 1.3%，而累积加入上下文信息可降低约 6.9%。RL 后训练在离线提升了页面奖励和首页多样性。
+version_note|数字已对照站长 Zotero 中的 PDF 核对，为 1 Aug 2026 的 arXiv v2，采用 RecSys 2026 定稿版格式，ACM DOI 为 10.1145/3773078.3831915。16 Oct 2026 的 arXiv v3 对核心数字做了比对，即 +0.24%、置信区间、20% 延迟、表 1、6.9% 和 1.3%，均未变化；v3 新增了阿尔伯塔大学的作者 Fengdi Che。没有打开 ACM DL 页面。
+serving_infra|用单个 Transformer 实时生成页面；自定义 tokenization 和混合 row 解码减少了解码步数；推理引擎针对每个请求动态的 token 掩码做了定制；分页请求会把之前的 row 和会话内最新的互动追加到 prompt 中。
+stages.0.model_family|输入和输出 embedding 不共享的 decoder-only Transformer；线上测试约 200M 参数；离线在约 120M 到 900M 之间扫描。
+stages.0.details|解码按 token 值做贪心；混合 row 解码只自回归地生成一个 row 的前几个 entity，其余通过一次前向计算补齐；约束解码按每个请求的业务规则屏蔽 token。A/B 测试中，模型在现有线上的 row 和 entity 候选集上解码。
+id_tokenization.approach|领域专用词表，每个 entity 一个 token，每个 row 一个 token，不是 Semantic ID
+id_tokenization.details|一次观看事件压缩成 4 个 token：[Entity_ID]、[Action_Type]、[Action_Time_Bucket]、[Action_Duration_Bucket]，用 GPT-5 的 tokenizer 则是 16 个 token；entity 词表和 row 词表每天刷新；回退 token 和内容 embedding 融合用来处理词表外的 entity。
+features_signals.0|用户行为历史，包括播放、加入 My List、点赞、预告片观看和详情页访问，带有 entity、类型、时间和时长分桶
+features_signals.1|画像属性，如语言、儿童或成人，以及请求上下文，如一天中的时段、星期几和设备
+features_signals.2|汇总后的长曝光历史
+features_signals.3|来自简介、演员、字幕文本、类型和视频内容的 entity 内容 embedding
+training.mode|每周一次，频率可调，大窗口的预训练和后训练；每天用最新一天的数据加一部分历史数据做增量后训练
+training.objectives.0|在获得正向反馈的页面上做 next-token 预测，即预训练
+training.objectives.1|逐 token 的加权二元交叉熵，符号和大小来自奖励系统，外加随机负样本，即 WBC 后训练
+training.objectives.2|对页面级奖励模型做 Dr. GRPO，带 KL 惩罚和基于规则的奖励，即 RL 后训练，未部署
+training.notes|RL 使用 verl 库和 vLLM。奖励系统在 Netflix 此前的工作中有介绍，论文对其做了引用。
+scale.0.metric|线上模型规模
+scale.0.value|约 200M 参数
+scale.1.metric|离线规模扫描
+scale.1.value|约 120M 到 900M 参数
+results_table.online.0.setting|Netflix 首页，14 天 A/B，最佳 WBC 变体
+results_table.online.1.setting|Netflix 首页，14 天 A/B
+results_table.offline.0.setting|WBC 预训练，表 1
+results_table.offline.1.setting|WBC 预训练，表 1
+results_table.offline.2.setting|WBC 预训练，表 1
+results_table.online.0.metric|核心互动指标
+results_table.online.0.versus|线上首页推荐系统，95% 置信区间 0.17% 到 0.30%
+results_table.online.1.metric|端到端在线服务延迟
+results_table.online.1.versus|线上首页推荐系统
+results_table.offline.0.method|有预训练
+results_table.offline.1.method|有预训练
+results_table.offline.2.method|有预训练
+caveats.0|只有 WBC 变体上线；RL 变体尚未发布，它的离线评估是循环论证，因为奖励模型同时也是训练信号。
+caveats.1|A/B 测试是在现有线上的 row 和 entity 候选集上解码的，因此候选生成并没有被取代。
+caveats.2|长用户历史仍然使用手工设计的摘要。
+caveats.3|上线指标没有给出名称，只给出相对提升；论文指出曝光 entity 的构成出现了非预期的变化。
+caveats.4|离线消融使用了不同的数据快照，因此每项研究内部只报告相对比较。
+unknown_fields.0|核心互动指标的名称和绝对值
+unknown_fields.1|模型确切的深度和宽度
+unknown_fields.2|训练数据量
+unknown_fields.3|系统是否已全量上线
+code.note|Netflix 没有提供官方代码。
+code.repos.0.owner|daiwk，第三方
+code.repos.0.note|自动化的第三方复现；复现页面称截至 24 Aug 2026 没有官方代码。忠实度未经核实。
+deployment.scenario|Netflix 首页，WBC 变体已做线上测试
+deployment.ab_duration|14 天
+deployment.baseline|成熟的多阶段线上首页推荐系统
+deployment.serving_latency|端到端在线服务延迟比多阶段链路低 20%
+deployment.notes.0|线上模型约 200M 参数，这个规模是为了满足在线服务的延迟预算。
+deployment.notes.1|未说明是否全量上线。
+deployment.online_lifts.0.metric|核心互动指标，五个变体中的最佳
+deployment.online_lifts.1.metric|端到端在线服务延迟

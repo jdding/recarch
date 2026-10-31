@@ -1,0 +1,125 @@
+id: bytedance-rankmixer-2025
+name: RankMixer
+company: ByteDance
+surface: Ranking models for recommendation and advertising
+year: 2025
+era: deep
+era_reason: "Scaling of a discriminative ranking backbone, the token-mixing RankMixer; dominant paradigm is scaling discriminative ranking models, not generative or semantic-ID modeling"
+first_public: "2025-07"
+venue: "CIKM 2025"
+venue_year: 2025
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3746252.3761507"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Era moved from generative to deep by owner decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Ranking backbone with parameter-free token mixing and per-token FFNs instead of self-attention; Douyin Feed full launch gave active days +0.3%, in-app duration +1.08%."
+summary: Hardware-aware ranking architecture that turns feature groups into tokens, replaces quadratic self-attention with a parameter-free
+  multi-head token mixing, and gives each token its own FFN, optionally Sparse-MoE with dynamic routing. Deployed for full-traffic
+  ranking in Douyin feed recommendation.
+paradigms:
+- dlrm
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'RankMixer: stacked blocks of multi-head token mixing + per-token FFN (SMoE variant for ~1B parameters)'
+  details: 'Each block: S = LN(TokenMixing(X) + X); X'' = LN(PFFN(S) + S). Feature tokens are built by splitting concatenated embeddings
+    into T same-width tokens of feature groups.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Trillion-scale production dataset
+training:
+  mode: Offline then online
+  objectives: null
+  notes: null
+serving_infra: Hardware-aware design; same inference latency with 100x parameters
+scale:
+- metric: Model size
+  value: 1B dense-parameter RankMixer launched for full-traffic serving; paper states a 70x parameter scale-up without increasing inference
+    cost (contributions) and 'over 100x' / 'two orders of magnitude' elsewhere
+  note: paper
+- metric: MFU
+  value: 4.5% -> 45% by replacing handcrafted modules
+  note: paper
+- metric: Training data
+  value: '''trillion-scale'' production dataset'
+  note: paper
+results_reported: 'Full-traffic launch on Douyin Feed ranking: active days +0.3%, total in-app duration +1.08% (abstract); A/B tests
+  also in an advertisement scenario. Inference latency roughly unchanged while parameters scale by about two orders of magnitude.'
+caveats:
+- The paper gives different scale-up factors, namely 70x, over 100x and two orders of magnitude; the exact baseline used is not pinned in the
+  sections read.
+- Douyin is stated for the full-traffic launch; the second A/B scenario is advertising, details not reproduced here.
+- Absolute latency, QPS and GPU counts are not restated in the sections read.
+unknown_fields:
+- absolute latency / QPS
+- GPU types and counts
+- exact baseline parameter count
+sources:
+- title: "RankMixer: Scaling Up Ranking Models in Industrial Recommenders, CIKM 2025"
+  url: https://doi.org/10.1145/3746252.3761507
+  type: paper
+- title: RankMixer, arXiv 2507.15551
+  url: https://arxiv.org/abs/2507.15551
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2507.15551
+  local_pdf: /workspace/src/a_2507.15551.pdf
+  sections_read: Abstract, intro, related work, architecture (token mixing, per-token FFN, Sparse-MoE), deployment claims
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Turn feature groups into tokens, mix them without self-attention, and give each token its own FFN.
+deployed_in: Douyin feed ranking, full traffic
+scale_short: 1B dense parameter model launched for full-traffic serving
+key_result: Total in-app duration +1.08% after the full-traffic launch on Douyin Feed ranking
+results_table:
+  online:
+  - setting: Douyin Feed ranking, full-traffic launch
+    method: RankMixer
+    metric: Active days
+    result: +0.3%
+    versus: Previous ranking model
+  - setting: Douyin Feed ranking, full-traffic launch
+    method: RankMixer
+    metric: Total in-app duration
+    result: +1.08%
+    versus: Previous ranking model
+  offline:
+  - setting: Serving
+    method: RankMixer
+    metric: Inference latency
+    result: Roughly unchanged
+    versus: Parameters scaled by about two orders of magnitude
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin feed ranking, full traffic
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous ranking model
+  online_lifts:
+  - metric: Active days
+    value: +0.3%
+  - metric: Total in-app duration
+    value: +1.08%
+  training_compute: not_reported
+  serving_latency: Roughly unchanged while parameters grow by about two orders of magnitude; no absolute number
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Model FLOPs utilization rose from 4.5% to 45% after replacing handcrafted modules.
+  basis: full_text
+  checked_on: '2026-10-31'

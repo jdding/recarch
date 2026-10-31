@@ -1,0 +1,32 @@
+surface|五个应用的通用表示
+era_reason|多实体异构 GNN 表示学习；不是生成式
+tldr|Pinterest 对 PinSage 的继任者：通过三个对比任务，从图、内容和用户序列学习 pin 和 board 的 embedding；全站 repin 约 +2.5%。
+summary|Pinterest 在 KDD '25 上的通用表示框架，通过三个对比任务，即 entity-entity、entity-feature 和 user-entity，从异构图、内容，包括 ViT 图像和哈希 n-gram 文本，以及用户行为序列中学习 Pin 和 board 的 embedding。PinSage 的继任者；代码发布在 github.com/pinterest/atg-research/tree/main/omnisage。
+core_idea|通过三个对比任务，从图、内容和用户序列学习 Pin 和 board 的 embedding。
+deployed_in|Pinterest，五个应用
+scale_short|550M+ 月活用户，每周 1.5B+ 个 Pin 被互动
+key_result|线上，OmniSage 表示在五个应用上带来全站 repin 约 +2.5%
+results_reported|摘要：线上，OmniSage 表示在五个应用上带来全站 repin，即 save，约 +2.5%。相对 PinSage 和 PinnerFormer 的离线收益见第 4.2 节，表 5 等，这里未复现。
+version_note|对照站长的 Zotero 副本核对过，它是 12 Jun 2025 的 arXiv v3，用 KDD '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3711896.3737253，12 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+serving_infra|为十亿节点级的图定制的基础设施
+stages.0.model_family|面向召回和排序特征的表示学习：每种实体类型一个 transformer embedder，作用于节点的内容，加上按重要性采样、按邻近度排序的邻居；多任务对比训练，用 count-min sketch 做采样偏差校正
+stages.0.details|论文中的实体类型：Pin 和 board。离线对比的是 PinSage，以及在 PinSage embedding 上训练的 PinnerFormer，编码器和序列配置相匹配；board-Pin 的 recall 用 Board More Ideas 场景的未来互动来衡量。
+features_signals.0|图、用户序列、内容
+scale.0.metric|图规模
+scale.0.value|基础设施支持数十亿节点的图
+scale.1.value|550M+ 月活用户，每周 1.5B+ 个 Pin 被互动，来自论文引言
+results_table.note|相对 PinSage 和 PinnerFormer 的离线收益见论文第 4.2 节，这里未复现。
+results_table.online.0.setting|五个应用，摘要
+results_table.online.0.metric|全站 repin，也叫 save
+results_table.online.0.versus|之前的表示
+caveats.0|全站 repin +2.5% 的数字是作者在五个应用上汇总的；这里没有记录各应用的 A/B 数值。
+caveats.1|有开源代码，但没有 Pinterest 的图和训练数据。
+caveats.2|在所读章节中没有记录 GPU 和训练成本的数字。
+unknown_fields.0|各场景的 A/B 差异
+unknown_fields.1|训练硬件和成本
+unknown_fields.2|embedding 维度和模型规模
+updates.0.note|对照 arXiv 托管的、带最终 DOI 的 KDD '25 定稿 PDF 核对；所有卡片数字均已确认，没有改动。
+code.repos.0.note|README：「a minimal, open-source-friendly version of an internal project」；在合成数据上训练。
+deployment.scenario|Pinterest，五个应用
+deployment.baseline|之前的表示
+deployment.online_lifts.0.metric|全站 repin，也叫 save

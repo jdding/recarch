@@ -1,0 +1,24 @@
+surface|「为你推荐」信息流
+era_reason|基于 Grok 的 transformer 排序，移除了手工设计的特征；处于边界
+tldr|X 的「为你推荐」信息流的开放参考：双塔 Phoenix 召回，以及带候选隔离的 transformer 排序器，在加权打分器中合并多种行为的概率。
+summary|「为你推荐」信息流的开放仓库：双塔 Phoenix 召回，带候选隔离的 transformer Phoenix 排序器，用 JAX 编写、Rust 服务，多种行为的概率在加权打分器中合并，站内来源来自 Thunder，另有其他来源。
+core_idea|双塔 Phoenix 召回，以及带候选隔离的 transformer 排序器，用 JAX 编写、Rust 服务。
+deployed_in|X 的「为你推荐」信息流，开放仓库
+scale_short|来源中未说明
+key_result|开源的参考实现，没有报告指标
+results_reported|README 列出了截至 Oct 26, 2026 的带日期的更新；没有指标。
+serving_infra|JAX 模型；Rust 服务；Thunder 在内存中
+stages.0.model_family|Phoenix 双塔；Thunder 站内；SimClusters；热门帖子
+stages.1.model_family|带候选隔离的 Phoenix transformer
+stages.1.details|加权求和，带作者衰减、站外折扣和新作者加成
+stages.2.model_family|VMRanker 的 DPP 重排
+id_tokenization.approach|基于哈希的 embedding
+features_signals.0|用户行为
+results_table.note|README 列出了截至 Oct 26, 2026 的带日期的更新，没有报告指标。
+caveats.0|README 警告仓库的默认值可能与线上生产不同，且有些文件未发布。
+caveats.1|README 没有说排序由 Grok 驱动；Phoenix transformer 被描述为一个 transformer。以 Grok 命名的组件是内容理解的分类器。
+unknown_fields.0|指标
+unknown_fields.1|训练数据
+code.repos.0.note|「为你推荐」信息流的核心代码，涵盖召回、过滤和 transformer 排序器。README 列出了少量未发布的文件，例如 Grox LLM 的 prompt 和一些 botmaker 规则。
+deployment.scenario|X 的「为你推荐」信息流，开放仓库
+deployment.notes.0|仓库 README 列出了更新，没有指标。

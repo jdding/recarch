@@ -1,0 +1,45 @@
+surface|Related Pins 的 item-to-item 推荐
+era_reason|基于 board 共现的 item-CF，加 GBDT/LTR 排序；处于边界
+tldr|Related Pins 三年的演进：候选生成，首个学习式排序器带来超过 30% 的保存和点击增长，以及保存占比从约 10% 增长到超过 40%。
+summary|Pinterest 的 WWW 2017 Companion 论文，对 Related Pins 为期三年的纵向研究。系统有三个组成部分：候选生成，从数十亿个 pin 缩小到约 1,000 个，board 共现从 Hadoop 启发式演进到线上的 Pixie 随机游走，另有 Pin2Vec 会话 embedding，以及基于搜索、视觉和按地区划分的来源；Memboost，对每个 query-result 对过去互动做位置偏置校正的记忆；以及学习式排序器，从九个特征的线性 RankSVM 演进到 logistic GBDT。论文称 Related Pins 带来 Pinterest 上超过 40% 的保存和曝光，并给出关于反馈回路、离线评估和内容激活的经验。
+core_idea|候选生成、Memboost 记忆和学习式排序器，历时三年的研究。
+deployed_in|Pinterest 的 Related Pins item-to-item 推荐
+scale_short|占 Pinterest 上超过 40% 的保存和曝光，每个 query 约 1,000 个候选
+key_result|首个学习式排序器使用户保存和点击 Related Pins 结果的倾向提升超过 30%
+results_reported|首个学习式排序器使用户保存和点击 Related Pins 结果的倾向提升超过 30%。Related Pins 从 2014 年约占 10% 的 pin 保存量，增长到 2017 年超过 40% 的保存和曝光。在主要的国际市场中，本地语言曝光占比从 9% 提高到 54%。论文称 Memboost 显著提升了互动，但没有给出百分比。离线的 PR AUC 指标对 A/B 测试中的 closeup 和点击具有很强的预测性，但保存行为难以在离线预测。
+serving_infra|排序从离线 Hadoop 任务，经由 Terrapin 提供服务，这是一个不可变的键值存储，查询覆盖率只有约 50%，演进到线上排序：pin 原始数据存放在按图像签名为键的分片键值存储 RealPin 中，根节点把候选请求复制到各叶节点，每个叶节点在本地计算特征并打分，即数据本地性，用户原始数据来自 Terrapin，近期行为来自 UserContextService，Memboost 数据来自 Terrapin。候选生成用 Pixie，即在单台大内存机器上做随机游走。峰值负载为每秒数万个查询。
+stages.0.model_family|多个候选生成器：board 共现，起初是 v1 的 Hadoop map-reduce，取同一 board 上的 pin 对，加上两名工程师用三周做出的、手工调的文本和类目相关性分数，后来是 Pixie 线上随机游走，在裁剪后的 pin-board 图上带重启走约 100,000 步；Pin2Vec，类似 word2vec 的 N-way 分类 embedding，对象是同一用户会话中共同保存的 N 个最热门的 pin，用最近邻查找；基于 pin 标注的搜索候选，视觉相似的候选，即近重复查找加视觉 embedding 最近邻，以及这些候选按地区划分的变体
+stages.0.details|候选集从数十亿个缩小到约 1,000 个 pin。引入 Memboost 和排序之后，候选生成的目标从精度转向召回。本地化候选集，即采样前先按语言过滤 board-pin 图，是把主要国际市场中本地语言 Related Pins 曝光占比从 9% 提高到 54% 的一部分。
+stages.1.model_family|Memboost 打分加学习式排序器：V1 在 Memboost 派生的 pair 上训练线性 RankSVM；V2 在单个会话 pair 上训练线性模型，顺序为 save > long click > click > closeup > impression；V3 用 RankNet pairwise 损失的 GBDT；V4 用二元的「pin saved」标签并对正样本重新加权的 logistic GBDT
+stages.1.details|Memboost：分数 MB[q,r] = log[[actions + alpha] / [Eactions + alpha]]，即对加权的点击、长点击、closeup 和保存，计算点击相对期望点击的比值，期望点击来自按排名、按平台的全局点击率；起初以 gamma * MB 的形式加到分数上，后来作为特征输入排序器；Memboost 插入会把候选集中缺失的、被记忆的 top-n 结果重新插入。特征见表 1：pin 文本标注，CNN fc6/fc8 图像特征，词 embedding，类目和主题向量，Memboost 计数和期望计数，人口属性，长期用户行为，实时上下文，即流量来源、近期搜索和行为。第一个线性模型有九个特征。
+features_signals.0|互动日志
+training.mode|在记录下来的 Related Pins 会话上做 learning-to-rank，取每个被互动的 pin，加上排名中紧挨在它前面的两个 pin；V1 在单台机器上用 Memboost pair 几分钟就训练完。为避免之前模型造成的反馈回路，一小部分流量会拿到随机、未经排序的结果，以获得无偏的训练数据。
+training.objectives.0|pairwise RankSVM，V1 和 V2
+training.objectives.1|pairwise 的 RankNet，V3
+training.objectives.2|在已保存与未保存上的 pointwise logistic 损失，V4
+training.notes|Memboost pair：作者约 70% 的时间能猜中 Memboost 更高的 pin，所以数据相对干净；会话 pair 的噪声要大得多。超参数调优通过并行化系统自动完成，Memboost 权重联合重新训练，以减少手工调参的耦合。
+scale.0.metric|互动占比
+scale.0.value|占 Pinterest 上所有保存和曝光的 40% 以上
+scale.1.metric|每个 query 的候选数
+scale.1.value|候选生成后约 1,000 个
+scale.2.value|每秒数万个查询
+results_table.note|论文称 Memboost 显著提升了互动，没有给出百分比。
+results_table.online.0.method|首个学习式排序器
+results_table.online.0.metric|保存和点击的倾向
+results_table.online.0.versus|之前的排序
+results_table.online.1.setting|主要的国际市场
+results_table.online.1.method|按地区划分的来源
+results_table.online.1.metric|本地语言曝光占比
+caveats.0|论文报告的绝对数字很少：首个排序器的 30% 提升，以及本地占比从 9% 到 54%，是主要的两个；Memboost 的收益没有量化。
+caveats.1|训练细节，如 GBDT 的大小、V1 之后的特征数量和标签权重，没有公布。
+caveats.2|它描述的是 2013 到 2016 年的系统演进；之后 Pinterest 的系统发生了很大变化。
+caveats.3|论文把 Pixie 写成 超过十亿个 item 对超过 1.5 亿个用户，这是当时的预印本；RecArch 的 Pixie 卡片用的是后来的超过三十亿和超过两亿。
+unknown_fields.0|V4 中 GBDT 的超参数和特征数量
+unknown_fields.1|Pin2Vec 的 embedding 维度和 N
+unknown_fields.2|Memboost 的 alpha、beta、gamma 取值
+unknown_fields.3|延迟数字
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Pinterest 的 Related Pins item-to-item 推荐
+deployment.baseline|之前的排序
+deployment.serving_qps|峰值负载为每秒数万个查询
+deployment.online_lifts.0.metric|首个学习式排序器带来的保存和点击倾向

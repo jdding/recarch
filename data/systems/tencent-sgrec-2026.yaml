@@ -1,0 +1,164 @@
+id: tencent-sgrec-2026
+name: "S-GRec"
+company: Tencent
+surface: WeChat Channels advertising, generative ad recommendation
+year: 2026
+era: generative
+era_reason: "A Qwen2.5-1.5B generator over RQ-VAE semantic IDs produces ads end to end; the LLM only supplies train-time rewards, so generation stays the core serving mechanism."
+first_public: "2026-02"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3770855.3818473"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "Tencent's S-GRec trains a lightweight semantic-ID generator with an offline LLM judge and business-anchored RL; 5% WeChat Channels ad A/B: GMV +1.19%, CTR +1.16%."
+summary: 'S-GRec keeps the online model a small generative recommender over semantic IDs and moves the LLM offline as a Personalized Semantic Judge. The judge is a Qwen3-4B model trained in two stages: aspect-level scoring over four semantic dimensions with SFT and GRPO, then user-conditional aggregation from pairwise feedback. The generator is then trained with Asymmetric Advantage Policy Optimization, which anchors the advantage on a business reward such as eCPM and adds the semantic advantage only when it agrees with the business direction and within a bound. No LLM runs at serving time.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- llm-based
+stages:
+- stage: single-stage
+  model_family: 'Qwen2.5-1.5B generator over fixed-length RQ-VAE semantic IDs, initialized from the MiniOneRec SFT checkpoint on public data'
+  details: 'The generator takes user profile, behavior history and spatio-temporal context and generates an ad as a semantic-ID sequence. The paper describes online use as a lightweight generator and does not state the production model size.'
+id_tokenization:
+  approach: 'Fixed-length semantic ID token sequence per ad, RQ-VAE tokenization'
+  details: 'Each item or ad maps to a fixed-length SID sequence; the generator autoregressively produces it. Production codebook sizes are not stated.'
+features_signals:
+- User profile and long-term interests
+- Recent behavior sequence
+- Request-time context such as time and location
+- Ad exposure, click and conversion logs, used to build judge training data
+- eCPM as the business reward in the online deployment
+training:
+  mode: 'Offline policy optimization with an LLM-judged semantic reward and a business reward'
+  objectives:
+  - 'Judge stage one: SFT then GRPO on aspect-level scores'
+  - 'Judge stage two: user-conditional aggregation from pairwise preferences'
+  - 'Generator: GRPO-style clipped objective with the asymmetric advantage'
+  notes: 'About 20k human-verified point-wise samples and 40k pairwise samples from the production ad system train the judge; the generator uses group size 16 and KL coefficient 0.04 in the paper setup.'
+serving_infra: 'No LLM inference at serving time; the paper states only that the online generator is lightweight and gives no latency or hardware figures.'
+scale:
+- metric: Judge backbone
+  value: Qwen3-4B
+  note: Offline only
+- metric: Generator backbone
+  value: Qwen2.5-1.5B
+  note: Public-benchmark setup
+- metric: Judge training data
+  value: 20k point-wise and 40k pairwise samples
+  note: Human-verified, from the production ad system
+- metric: Online A/B traffic
+  value: 5%
+  note: Advertising traffic in WeChat Channels
+results_reported: 'Online A/B on 5% of WeChat Channels advertising traffic against the production baseline: GMV +1.19%, GMV-Normal +1.55%, CTR +1.16%, dislike rate -2.02%; a simulation environment first showed eCPM +5.5%. Offline on Amazon Industrial and Office against the MiniOneRec base model: Industrial HR@10 +2.9% and NDCG@10 +3.0%, Office HR@10 +3.4% and NDCG@10 +5.3%. Judge aspect scoring after GRPO reaches PairAUC 0.8116 and PointAcc 0.8687 on 1,000 held-out samples.'
+caveats:
+- 'The offline comparison uses the public Amazon Industrial and Office sets, not production data; the production A/B has no offline counterpart.'
+- 'The paper does not say the model was fully launched after the A/B.'
+- 'The generator in the A/B is called lightweight; its size, tokenizer and latency are not given.'
+- 'The Zotero PDF read is the arXiv v3 with the ACM template placeholder, not the KDD camera-ready.'
+unknown_fields:
+- production generator size
+- production semantic-ID codebook sizes
+- serving latency
+- whether the model was fully launched
+- A/B duration
+sources:
+- title: "S-GRec: Personalized Semantic-Aware Generative Recommendation with Asymmetric Advantage, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818473
+  type: paper
+- title: S-GRec, arXiv 2602.10606
+  url: https://arxiv.org/abs/2602.10606
+  type: paper
+version_note: 'Numbers checked against arXiv v3 of 25 Feb 2026, from the owner Zotero PDF; its ACM template still reads Conference 17, so it is not the KDD camera-ready, and the ACM page was not opened. KDD 2026 and the DOI come from the Zotero record.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.10606
+  local_pdf: /workspace/recarch/zotero/tencent-sgrec-2026.pdf
+  sections_read: 'Abstract, introduction, related work, methodology 3.1-3.3, experimental setup, RQ1-RQ6 including the online A/B, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no S-GRec repository. The public MiniOneRec base model has its own repo.'
+core_idea: An offline LLM judge supplies semantic rewards while business rewards steer a lightweight semantic-ID generator.
+deployed_in: WeChat Channels advertising, tested online on 5% of ad traffic
+scale_short: Qwen3-4B judge offline, Qwen2.5-1.5B public-benchmark generator, 5% A/B traffic
+key_result: GMV +1.19% in an online A/B on 5% of WeChat Channels ad traffic against the production baseline
+results_table:
+  online:
+  - setting: WeChat Channels ads, 5% traffic A/B
+    method: S-GRec
+    metric: GMV
+    result: +1.19%
+    versus: Production baseline
+  - setting: WeChat Channels ads, 5% traffic A/B
+    method: S-GRec
+    metric: GMV-Normal
+    result: +1.55%
+    versus: Production baseline
+  - setting: WeChat Channels ads, 5% traffic A/B
+    method: S-GRec
+    metric: CTR
+    result: +1.16%
+    versus: Production baseline
+  - setting: WeChat Channels ads, 5% traffic A/B
+    method: S-GRec
+    metric: Dislike rate
+    result: -2.02%
+    versus: Production baseline
+  offline:
+  - setting: Amazon Industrial
+    method: S-GRec
+    metric: HR@10
+    result: +2.9%
+    versus: MiniOneRec
+  - setting: Amazon Industrial
+    method: S-GRec
+    metric: NDCG@10
+    result: +3.0%
+    versus: MiniOneRec
+  - setting: Amazon Office
+    method: S-GRec
+    metric: HR@10
+    result: +3.4%
+    versus: MiniOneRec
+  - setting: Amazon Office
+    method: S-GRec
+    metric: NDCG@10
+    result: +5.3%
+    versus: MiniOneRec
+  other:
+  - setting: Simulation environment before the A/B
+    method: S-GRec
+    metric: eCPM
+    result: +5.5%
+    versus: Baseline in the simulator
+deployment:
+  online_evidence: online_numbers
+  scenario: WeChat Channels advertising, generative ad recommendation
+  ab_traffic: 5% of ad traffic
+  ab_duration: not_reported
+  baseline: Production baseline
+  online_lifts:
+  - metric: GMV
+    value: +1.19%
+  - metric: GMV-Normal
+    value: +1.55%
+  - metric: CTR
+    value: +1.16%
+  - metric: Dislike rate
+    value: -2.02%
+  training_compute: not_reported
+  serving_latency: No LLM inference at serving time; the online generator is lightweight, with no figures
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

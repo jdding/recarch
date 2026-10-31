@@ -1,0 +1,71 @@
+id: uber-eats-two-tower-2023
+name: Uber Eats two-tower embeddings
+company: Uber
+surface: Uber Eats home feed store recommendations
+year: 2023
+era: deep
+era_reason: "Two-tower retrieval with large-cardinality embeddings; not generative"
+first_public: "2023-07"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2401.09572"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Uber Eats retrieves with a two-tower model: store embeddings are precomputed and ANN-indexed, while the eater embedding is computed in real time per request."
+summary: >-
+  First-pass retrieval with a two-tower model: store embeddings precomputed offline and indexed for ANN, eater embedding computed in real time per request.
+paradigms: [two-tower, embedding-based-retrieval]
+stages:
+  - stage: retrieval
+    model_family: Two-tower (query tower for eater, item tower for stores/groceries/places) with ANN over an inverted index (SIA)
+    details: Retrieves top several hundred stores from several million; labels from past engagement between query and item.
+  - stage: rank
+    model_family: Second-pass ranker (SPR) consuming the embeddings
+    details: Embeddings are fed to rankers as features.
+id_tokenization: {approach: "Bag-of-words over high-cardinality UUID histories with layer sharing to cut model size (2024 Uber paper)", details: null}
+features_signals: [Eater profile and query, Store / grocery item / geo features, Past engagement]
+training: {mode: null, objectives: [Engagement between query and item], notes: null}
+serving_infra: Offline item-tower inference; real-time query-tower inference; SIA unified search platform ANN.
+scale:
+  - {metric: Stores per eater, value: "several million candidates narrowed to top several hundred", note: "blog"}
+results_reported: null
+caveats: [A separate 2025 Uber post describes an LLM-backbone (Qwen) two-tower semantic search model for delivery search; not covered in this card.]
+unknown_fields: [model size, latency numbers, A/B results]
+sources:
+  - {title: "Innovative Recommendation Applications Using Two Tower Embeddings at Uber, 2023", url: "https://www.uber.com/us/en/blog/innovative-recommendation-applications-using-two-tower-embeddings/", type: engineering_blog}
+  - {title: "Handling Large-Scale Cardinality in Building Recommendation Systems, arXiv 2401.09572", url: "https://arxiv.org/abs/2401.09572", type: paper}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A two-tower model with store embeddings precomputed offline and the eater embedding computed per request.
+deployed_in: Uber Eats home feed store recommendations
+scale_short: Several million candidate stores per eater, narrowed to the top several hundred
+key_result: No reported metrics in the sources
+results_table:
+  note: The sources describe the retrieval design and report no A/B results.
+deployment:
+  online_evidence: deployed_only
+  scenario: Uber Eats home feed store recommendations
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper reports that a bag-of-words item tower is 25x smaller and cuts training time from days to a few hours.
+    No A/B results are given.
+  fulltext_refs:
+  - 'Conclusion: model size reduced by 25x; training time reduced from days to a few hours'
+  basis: full_text
+  checked_on: '2026-10-31'

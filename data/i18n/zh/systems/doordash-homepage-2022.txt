@@ -1,0 +1,35 @@
+surface|DoorDash 首页的店铺、轮播和菜品
+era_reason|首页的多任务神经排序；不是生成式
+tldr|DoorDash 分三个阶段对首页排序；深度 learning-to-rank 的 Universal Ranker 对混合的实体类型打分，UCB 增加探索。没有公布头条数字。
+summary|三阶段流水线，即初排、二次排序和最终排序；其中深度 learning-to-rank 的 Universal Ranker 按转化概率对混合的实体类型排序，上置信界层增加探索。
+core_idea|Universal Ranker 按转化概率对混合的实体类型排序，并用上置信界层做探索。
+deployed_in|DoorDash 首页的店铺、轮播和菜品
+scale_short|召回之后最多 1,200 个候选
+key_result|线上实验持续有提升，没有报告头条数字
+results_reported|博客报告了线上实验持续有提升，没有给出单一的头条数字。
+serving_infra|批量特征 ETL，使用内部工具 Fabricator。
+stages.0.model_family|来自 ElasticSearch 的初排，带策略混合
+stages.0.details|选出不超过 1,200 个候选，使用热度和品类多样性策略。
+stages.1.model_family|二次排序过滤，即预排序
+stages.1.details|为第一页选出最多 50 家店铺，并在轮播内部排序。
+stages.2.model_family|Universal Ranker：受 DLRM 和 Wide & Deep 启发的深度 LTR 模型，用 PyTorch 实现
+stages.2.details|在统一的 pConv 即转化概率尺度上，对轮播、店铺和菜品排序；探索部分增加基于 UCB 的不确定性项。
+id_tokenization.approach|预训练 embedding，加模型内部训练的 embedding 层
+features_signals.0|实体特征：菜系
+features_signals.1|价格
+features_signals.2|热度
+features_signals.3|评分
+features_signals.4|消费者偏好特征
+features_signals.5|消费者与实体的互动历史
+features_signals.6|上下文：预计送达时间、费用、时段、天气
+training.mode|每天刷新驱动 UR 和不确定性的数据
+training.objectives.0|转化概率
+scale.0.metric|召回之后的候选数
+results_table.note|博客报告了线上实验持续有提升，没有给出单一的头条数字。
+caveats.0|这是 2022 年的文章；此后 DoorDash 又发布了较新的由 LLM 辅助的个性化文章，这里没有涵盖。
+unknown_fields.0|模型规模
+unknown_fields.1|延迟
+unknown_fields.2|头条提升数字
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|DoorDash 首页的店铺、轮播和菜品
+deployment.notes.0|卡片报告了线上实验中的持续提升，没有头条数字。

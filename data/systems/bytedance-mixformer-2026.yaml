@@ -1,0 +1,153 @@
+id: bytedance-mixformer-2026
+name: "MixFormer"
+company: ByteDance
+surface: Douyin and Douyin Lite feed ranking
+year: 2026
+era: deep
+era_reason: "Unified Transformer-style discriminative ranker for CTR and multi-task prediction; scaling of dense interaction plus sequence modeling, not generative or semantic-ID based."
+first_public: "2026-02"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818447"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Unified Transformer-style ranker co-scaling dense features and user sequences at Douyin; offline AUC above STCA to RankMixer; UI-decoupled variant cuts FLOPs ~36%; A/B on Douyin and Douyin Lite."
+summary: 'MixFormer replaces the usual two-module design, a sequence Transformer feeding a dense feature-interaction network, with one backbone and one parameter space. Non-sequential features are split into heads, a parameter-free HeadMixing Query Mixer with per-head SwiGLU FFNs builds high-order queries, cross-attention over the user behavior sequence is conditioned on those queries, and an Output Fusion layer applies per-head FFNs. A user-item decoupled variant, UI-MixFormer, masks item-to-user information flow so user-side computation can be shared across candidates in a request through request-level batching.'
+paradigms:
+- sequential-transformer
+- attention-ctr
+- multi-task
+- dlrm
+stages:
+- stage: rank
+  model_family: 'L stacked MixFormer blocks (Query Mixer, Cross Attention over the user sequence, Output Fusion) followed by multi-task TaskNets. Configs: N=16 heads, L=4, D=386 (small) and D=768 (medium).'
+  details: 'UI-MixFormer splits heads into user-side and item-side (about 1:1) and masks HeadMixing so user heads never see item signals; user-side heads and sequence cross-attention are computed once per request and shared across candidates.'
+id_tokenization:
+  approach: ID embeddings
+  details: 'Item IDs, action types, timestamps and side information are embedded per action; non-sequential features embedded per feature and split into heads. No semantic IDs.'
+features_signals:
+- 300+ features per instance (categorical, numerical, cross features from user profile, item attributes, context)
+- User behavior sequences (item id, action type, timestamp, side attributes); lengths 512 to 10,000 in scaling tests
+training:
+  mode: Offline training on Douyin logs in a hybrid framework, with the sparse part async on Adagrad and the dense part sync on RMSProp at lr 0.01
+  objectives:
+  - CTR-style binary classification for Finish and Skip tasks (AUC, UAUC)
+  notes: 'Batch size 1,500; hundreds of GPUs; 2-week dataset with trillions of user-item records.'
+serving_infra: 'Request-level batching with the user-item decoupled variant; Figure 6 reports serving latency vs candidate size and states over 30% serving speedup. Hardware not described.'
+scale:
+- metric: Offline training data
+  value: trillions of user-item records over two weeks
+  note: Douyin recommendation system
+- metric: Dense parameters (MixFormer-medium)
+  value: 1,226M
+  note: Table 1; the online baseline STCA to RankMixer has more than 1B parameters
+results_reported: 'Offline (Table 1, relative to TA to DLRM baseline AUC 0.8554 Finish / 0.8124 Skip): MixFormer-medium +1.28% Finish AUC, +1.60% Finish UAUC, +1.60% Skip AUC, +2.46% Skip UAUC with 1,226M dense params and 3,503 GFLOPs/batch; STCA to RankMixer +1.12% / +1.40% / +1.43% / +2.14% with 1,255M and 6,736 GFLOPs; UI-MixFormer-medium has the same accuracy at 2,242 GFLOPs (about 36% fewer FLOPs). Online A/B for two weeks vs the deployed STCA to RankMixer baseline per Table 2: Douyin overall Active Day +0.0415%, Duration +0.2799%, Like +0.1766%, Finish +0.3897%, Comment +0.7035%; Douyin Lite overall Active Day +0.0252%, Duration +0.4105%, Like +0.2125%, Finish +0.2924%, Comment +1.9097%. Paper states all are significant and not yet converged.'
+caveats:
+- 'Table 2 reports relative improvements only, with no confidence intervals, traffic share or launch status; the paper says A/B experiments were run, not that MixFormer replaced the production ranker.'
+- 'The offline dataset is Douyin-internal; the paper evaluates no public dataset.'
+- 'Table 1 has missing entries for MixFormer-small UAUC ("platform issues").'
+- 'Sequence-length scaling per Figure 5 shows MixFormer has a slope comparable to STCA, not better.'
+unknown_fields:
+- A/B traffic share and whether it launched
+- serving hardware and absolute latency numbers
+- dense and sparse parameter totals in production
+sources:
+- title: "MixFormer: Co-Scaling Up Dense and Sequence in Industrial Recommenders, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818447
+  type: paper
+- title: MixFormer, arXiv 2602.14110
+  url: https://arxiv.org/abs/2602.14110
+  type: paper
+- title: yyHaker/MixFormer, community PyTorch implementation
+  url: https://github.com/yyHaker/MixFormer
+  type: source_code
+version_note: 'Numbers checked against the owner Zotero copy, which is arXiv v2 of 2 Jul 2026 typeset in the KDD 2026 camera-ready format with the ACM DOI 10.1145/3770855.3818447; the ACM Digital Library page itself was not opened. arXiv v1 was 15 Feb 2026 (not compared).'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.14110
+  local_pdf: /workspace/recarch/zotero/bytedance-mixformer-2026.pdf
+  sections_read: 'Abstract, introduction, related work, methodology (3.1-3.4), experiments (4.1-4.6: Table 1, Table 2, ablation, scaling, latency, online A/B), conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'KDD 2026-format PDF (arXiv v2 with ACM DOI) read 2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/yyHaker/MixFormer
+    owner: yyHaker
+    official: false
+    note: 'Community PyTorch implementation with Alibaba UserBehavior tooling; its README credits the paper and lists the ByteDance authors. I found no ByteDance repo and the owner is not an author of the paper.'
+core_idea: One backbone mixes feature interaction and sequence modeling in a single parameter space.
+deployed_in: Douyin and Douyin Lite feed ranking, A/B tested
+scale_short: Trillions of training records, 1,226M dense parameters in the medium model
+key_result: Douyin overall Duration +0.2799% in a two-week online A/B against the deployed STCA to RankMixer baseline
+results_table:
+  online:
+  - setting: Douyin overall, two-week A/B, Table 2
+    method: MixFormer
+    metric: Active Day
+    result: +0.0415%
+    versus: Deployed STCA to RankMixer
+  - setting: Douyin overall, two-week A/B, Table 2
+    method: MixFormer
+    metric: Duration
+    result: +0.2799%
+    versus: Deployed STCA to RankMixer
+  - setting: Douyin overall, two-week A/B, Table 2
+    method: MixFormer
+    metric: Finish
+    result: +0.3897%
+    versus: Deployed STCA to RankMixer
+  - setting: Douyin Lite overall, two-week A/B, Table 2
+    method: MixFormer
+    metric: Duration
+    result: +0.4105%
+    versus: Deployed STCA to RankMixer
+  - setting: Douyin Lite overall, two-week A/B, Table 2
+    method: MixFormer
+    metric: Comment
+    result: +1.9097%
+    versus: Deployed STCA to RankMixer
+  offline:
+  - setting: Table 1, MixFormer-medium
+    method: MixFormer
+    metric: Finish AUC
+    result: +1.28%
+    versus: TA to DLRM baseline 0.8554
+  - setting: Table 1, MixFormer-medium
+    method: MixFormer
+    metric: Skip AUC
+    result: +1.60%
+    versus: TA to DLRM baseline 0.8124
+  - setting: Table 1, UI-MixFormer-medium
+    method: UI-MixFormer
+    metric: FLOPs at the same accuracy
+    result: about 36% fewer
+    versus: MixFormer-medium
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin and Douyin Lite feed ranking
+  ab_traffic: not_reported
+  ab_duration: Two weeks
+  baseline: Deployed STCA to RankMixer baseline
+  online_lifts:
+  - metric: Douyin duration
+    value: +0.2799%
+  - metric: Douyin Lite duration
+    value: +0.4105%
+  - metric: Douyin Active Day
+    value: +0.0415%
+  training_compute: Hundreds of GPUs; two-week dataset of trillions of user-item records
+  serving_latency: Serving latency against candidate size is plotted, with over 30% speedup claimed for the user-item
+    decoupled variant; no absolute numbers
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - 'Cost proxy: MixFormer-medium 3,503 GFLOPs per batch, against 6,736 for STCA to RankMixer.'
+  basis: full_text
+  checked_on: '2026-10-31'

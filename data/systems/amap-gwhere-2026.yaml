@@ -1,0 +1,149 @@
+id: amap-gwhere-2026
+name: "Gwhere"
+company: Alibaba Amap
+surface: Amap app homepage Guess Where You Go card
+year: 2026
+era: generative
+era_reason: "Next POI recommendation is cast as LLM generation of contrastively learned semantic IDs, replacing a cascade of recall, coarse ranking, fine ranking and re-ranking."
+first_public: "2026-07"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773078.3831863"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Amap's Gwhere has a Qwen LLM generate next-POI semantic IDs for the app homepage; one-month A/B vs the production cascade: P-CTR +5.83%, U-CTR +6.20%, negative feedback -11.11%. SID code released."
+summary: 'Gwhere has two parts. A contrastive residual-quantization tokenizer fuses text, image, spatial and collaborative views of each POI into a short tuple of semantic IDs. A Qwen2.5 LLM is then continually pre-trained on spatio-temporal POI sequences, fine-tuned with SFT, and aligned with Exposure-Aware Kahneman-Tversky Optimization, which treats clicked POIs as desirable and unclicked exposed POIs as undesirable while damping noisy negatives. At serving time a data service turns the user profile, recent check-ins, time, location and weather into a prompt, the LLM generates the next POI as semantic IDs, and these map back to a POI. The smallest 0.5B variant is the one deployed, behind continuous batching and PagedAttention.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- llm-based
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: 'Qwen2.5 LLM generating POI semantic IDs, replacing the recall, coarse-rank, fine-rank and cognitive re-rank cascade'
+  details: 'Predicts the next POI in semantic-ID form from an instruction prompt of profile, recent check-ins, time, location and weather, then maps it back to a readable location.'
+id_tokenization:
+  approach: 'Contrastive residual quantization with hierarchical identifier learning'
+  details: 'A 96-dimensional latent vector is quantized by three codebooks. Text, image, spatial and collaborative views are fused; public datasets use 48 codewords per codebook and Amap uses more.'
+features_signals:
+- POI title and description text
+- POI images
+- Spatial graph embeddings from distance and mobility flows
+- Collaborative signals from alternating least squares
+- User profile, recent 50 check-ins, time, location and weather
+training:
+  mode: 'Offline, three stages on 200 NVIDIA H20 GPUs'
+  objectives:
+  - 'Continued pre-training on enriched spatio-temporal POI corpora, about 10 billion tokens'
+  - 'Supervised fine-tuning'
+  - 'Exposure-Aware Kahneman-Tversky Optimization'
+  notes: 'Learning rate 1e-5 with 20 warm-up steps, sequence length 4096.'
+serving_infra: 'Model engine behind a data-service engine, with continuous batching, PagedAttention, prefill-decoding decoupling and multi-token prediction. A load test at 50 QPS on 2 H20 GPUs gives about 30 ms P99 for the deployed variant against about 20 ms for the cascade.'
+scale:
+- metric: Amap offline dataset
+  value: 10 million users, 83.1 million POIs, 380 million interactions
+  note: Desensitized sample
+- metric: Deployed model
+  value: 0.5B parameters
+  note: Qwen2.5 base; a 7B variant was best offline but too costly to serve
+- metric: Online A/B
+  value: One month
+  note: Short-term one week plus long-term one month on the homepage card
+results_reported: 'Offline Acc@1 on the Amap dataset is 0.2820 for the deployed 0.5B variant and 0.3071 for the 7B variant against 0.2675 for the production cascade, a 14.8% relative gain for the 7B model. On public Foursquare and Gowalla data the 7B model improves over GNPR-SID by 11.3%, 8.1% and 13.2%. Ablation of the semantic IDs drops Acc@1 by 16.01%, and SFT plus the new alignment reaches 0.2820 against 0.2759 for SFT plus GRPO and 0.2634 for SFT plus DPO. In a one-month A/B on the Amap homepage card against the production cascade, P-CTR rises 5.83%, U-CTR 6.20%, active rate 9.67% and negative feedback rate falls 11.11%. Without the alignment objective the negative feedback rate falls only 5.85%.'
+caveats:
+- 'The arXiv v1 PDF used here still shows placeholder ACM metadata, so it is not confirmed as the camera-ready text; the DOI is registered.'
+- 'The paper does not state the A/B traffic share or user counts beyond serving millions of active users.'
+- 'The deployed 0.5B model is slower than the cascade, about 30 ms against about 20 ms P99 in the load test.'
+- 'The online table layout is ambiguous in the PDF text; only the figures repeated in the running text are used.'
+- 'Gwhere builds on the authors earlier next-POI LLM paper, arXiv 2510.14702 from 2025; the 2026 paper adds the contrastive tokenizer and the deployment.'
+unknown_fields:
+- A/B traffic share
+- daily request volume
+- LLM training code
+sources:
+- title: "Guess Where You Go: Generative Next Point-of-Interest Recommendation in Amap, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831863
+  type: paper
+- title: "Guess Where You Go, arXiv 2607.26073"
+  url: https://arxiv.org/abs/2607.26073
+  type: paper
+- title: "alibaba/SimCIT, official repository"
+  url: https://github.com/alibaba/SimCIT
+  type: source_code
+version_note: 'Numbers checked against arXiv v1 of 13 July 2026, which carries RecSys 2026 formatting with placeholder DOI text. ACM lists the published version under DOI 10.1145/3773078.3831863, registered per a doi.org redirect check. The camera-ready PDF itself was not retrievable, so published_version_checked is false.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2607.26073v1
+  local_pdf: /workspace/recarch/zotero/amap-gwhere-2026.pdf
+  sections_read: 'Abstract, introduction, related work, method, experiments 4.1-4.5, online deployment, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/alibaba/SimCIT
+    owner: Alibaba
+    official: true
+    note: Linked from the paper abstract. Holds semantic ID training and inference scripts; the README marks LLM training as coming soon.
+core_idea: An LLM generates next-POI semantic IDs from a contrastively learned multimodal tokenizer, aligned to exposure feedback.
+deployed_in: Amap app homepage Guess Where You Go card, in place of a four-stage cascade
+scale_short: 10 million users and 380 million interactions offline, 0.5B model online, one-month A/B
+key_result: P-CTR +5.83% and U-CTR +6.20% in a one-month A/B against the production cascade
+results_table:
+  online:
+  - setting: Amap homepage card, one-month A/B
+    method: Gwhere deployed variant
+    metric: P-CTR
+    result: +5.83%
+    versus: Production cascade ranking
+  - setting: Amap homepage card, one-month A/B
+    method: Gwhere deployed variant
+    metric: U-CTR
+    result: +6.20%
+    versus: Production cascade ranking
+  - setting: Amap homepage card, one-month A/B
+    method: Gwhere deployed variant
+    metric: Negative feedback rate
+    result: -11.11%
+    versus: Production cascade ranking
+  offline:
+  - setting: Amap dataset
+    method: Gwhere deployed variant
+    metric: Acc@1
+    result: '0.2820'
+    versus: Production cascade 0.2675
+  - setting: Amap dataset
+    method: Gwhere largest variant
+    metric: Acc@1
+    result: '0.3071'
+    versus: Production cascade 0.2675
+deployment:
+  online_evidence: online_numbers
+  scenario: Amap app homepage Guess Where You Go card
+  ab_traffic: not_reported
+  ab_duration: One month, after a one-week short-term test
+  baseline: Production cascade ranking
+  online_lifts:
+  - metric: P-CTR
+    value: +5.83%
+  - metric: U-CTR
+    value: +6.20%
+  - metric: Active rate
+    value: +9.67%
+  - metric: Negative feedback rate
+    value: -11.11%
+  training_compute: Three training stages on 200 NVIDIA H20 GPUs
+  serving_latency: About 30 ms P99 for the deployed 0.5B model at 50 QPS on 2 H20 GPUs, against about 20 ms for
+    the cascade
+  serving_qps: 50 QPS load test; production QPS not reported
+  inference_cost: not_reported
+  hardware: 2 NVIDIA H20 GPUs in the load test
+  notes:
+  - The 7B variant was best offline and was not deployed because of serving cost.
+  basis: full_text
+  checked_on: '2026-10-31'

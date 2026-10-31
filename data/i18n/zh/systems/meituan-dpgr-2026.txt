@@ -1,0 +1,63 @@
+surface|大众点评首页信息流和沉浸式视频流，本地生活服务召回
+era_reason|基于 HSTU 的生成式召回模型根据用户序列预测离散意图码，每个意图码驱动一次并行 ANN 查询，取代双塔召回。
+tldr|美团 DPGR 是基于 HSTU 的生成式召回模型，覆盖大众点评内容和 POI 行为；对比双塔做 7 天 15% A/B：POI 收藏 +5.209%，内容浏览 +1.486%。
+summary|DPGR 把大众点评一次会话中的内容和 POI 交互放进同一条 HSTU 序列，每个交互是一个 item、action、context 三元组，并使用分域投影。时空状态条件模块把场景、时段、位置和出行状态在三处注入编码器：token 重加权、交互和聚合。模型不直接生成 item，而是由意图定义模块把双域行为量化成离散意图码；模型预测 top K 个意图，每个意图各自发起一次 ANN 查询，因此候选覆盖面扩大，且不增加额外延迟。该系统已作为召回阶段部署在大众点评首页的两个场景中。
+core_idea|HSTU 序列模型预测离散意图码，每个意图码各自发起一次 ANN 查询。
+deployed_in|大众点评首页信息流和沉浸式视频流，召回阶段，在 15% 流量上测试
+scale_short|6.88B 条训练交互，在 15% 分桶上做 7 天 A/B
+key_result|在 15% 分桶上对比双塔召回做 7 天 A/B：POI 收藏 +5.209%，内容浏览 +1.486%
+results_reported|线上 A/B：在 15% 随机分桶上对比线上判别式双塔召回，持续 7 天，三个上线阶段累计，全部 p < 0.05：内容浏览 +1.486%，内容观看时长 +1.015%，POI 点击 +0.527%，POI 收藏 +5.209%。第 1 阶段使用普通 HSTU 骨干，内容浏览 +0.493%，POI 收藏 +3.226%；第 2 阶段加入状态条件后，分别为 +1.103% 和 +3.314%。大众点评内部数据集上的离线结果：Recall@200，三意图的 DPGR 为 0.6594，单意图为 0.4777，TBGRecall 为 0.3517，HSTU 为 0.3206，DSSM 为 0.0415。公开数据集 KuaiRand-Pure 上，Recall@100，DPGR 为 0.3265，HSTU 为 0.3184。
+version_note|数字已对照 RecSys 2026 定稿版 PDF 核对，ACM DOI 为 10.1145/3773078.3831742，来自站长的 Zotero 副本。没有找到 arXiv 预印本，因此首次公开日期取会议所在月份。
+serving_infra|并行 ANN 召回，每个预测出的意图码一次查询；论文称没有增加延迟，并在表 5 中给出一个和三个意图的高峰时段延迟，但没有给出硬件型号。
+stages.0.model_family|HSTU 编码器，4 层 4 个头，隐层大小 256，序列长度 1,000
+stages.0.details|预测 top K 个离散意图码，多意图变体中 K=3；每个意图码独立查询一个 ANN 索引，K 乘 N 个候选再按内积重排，保留 N 个。下游排序和融合不变。
+id_tokenization.approach|通过量化双域行为学到的离散意图码，码本大小 256
+id_tokenization.details|生成的单位不是 item；模型生成意图码，每个意图码通过 ANN 召回 item。内容和 POI 的 token 通过分域投影共享同一条序列。
+features_signals.0|对笔记、视频和点评的内容交互
+features_signals.1|POI 交互，如收藏和打卡
+features_signals.2|每个交互的域类型和行为类型
+features_signals.3|由场景、时段、位置和出行状态构成的时空上下文
+training.mode|基于大众点评日志的离线训练
+training.objectives.0|InfoNCE 对比召回损失，温度 0.07
+training.objectives.1|对意图码做向量量化，commitment 系数为 0.25
+training.notes|Adam，学习率 1e-4，每批 256 个会话。Recall@100 随 GFLOPs 大致呈对数线性增长，把上下文从 200 个 token 扩展到 10k，Recall@100 累计提升 24.9%。
+scale.0.metric|内部数据集
+scale.0.value|56.9M 用户，69.6M item，6.88B 条交互
+scale.1.metric|日活用户
+scale.1.value|数千万
+scale.2.value|7 天，15% 随机流量分桶
+results_table.online.0.setting|大众点评 7 天 A/B，15% 分桶
+results_table.online.1.setting|大众点评 7 天 A/B，15% 分桶
+results_table.online.2.setting|大众点评 7 天 A/B，15% 分桶
+results_table.online.3.setting|大众点评 7 天 A/B，15% 分桶
+results_table.offline.0.setting|大众点评内部数据集
+results_table.offline.1.setting|大众点评内部数据集
+results_table.online.0.metric|内容浏览
+results_table.online.0.versus|线上双塔召回
+results_table.online.1.metric|内容观看时长
+results_table.online.1.versus|线上双塔召回
+results_table.online.2.metric|POI 点击
+results_table.online.2.versus|线上双塔召回
+results_table.online.3.metric|POI 收藏
+results_table.online.3.versus|线上双塔召回
+results_table.offline.0.method|三意图的 DPGR
+results_table.offline.1.method|单意图的 DPGR
+caveats.0|线上收益是对比双塔对照组、三个上线阶段累计的结果，因此混合了生成式骨干、状态条件和多意图生成的贡献。
+caveats.1|离线证据主要来自内部数据集；公开的 KuaiRand-Pure 数据集缺少内容、POI 和时空信号。
+caveats.2|延迟数据来自表 5，是一个和三个意图的高峰时段数值。
+unknown_fields.0|GPU 数量
+unknown_fields.1|每次实验在 15% 分桶之外的流量占比
+unknown_fields.2|A/B 之后是否全量上线
+code.note|论文没有给出代码链接。GitHub 上有一个名为 DPGR 的仓库，用户为 slggg，里面只有一个 README 和一个幻灯片文件，没有代码，它与作者的关系也未经证实，因此没有列出。
+deployment.scenario|大众点评首页信息流和沉浸式视频流，召回阶段
+deployment.ab_traffic|15% 随机流量分桶
+deployment.ab_duration|7 天
+deployment.baseline|线上判别式双塔召回
+deployment.serving_latency|三意图召回：平均 3.1 ms，P99 33.1 ms。单意图：平均 2.7 ms，P99 15.5 ms
+deployment.hardware|三意图时 CPU 使用率 55.7%，单意图时 30.9%，均在同一高峰时段的硬件上；硬件型号未报告
+deployment.notes.0|提升是三个上线阶段累计的结果。
+deployment.notes.1|延迟和 CPU 数据来自论文表 5。
+deployment.online_lifts.0.metric|内容浏览
+deployment.online_lifts.1.metric|内容观看时长
+deployment.online_lifts.2.metric|POI 点击
+deployment.online_lifts.3.metric|POI 收藏

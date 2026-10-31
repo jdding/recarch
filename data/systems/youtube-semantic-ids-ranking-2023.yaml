@@ -1,0 +1,99 @@
+id: youtube-semantic-ids-ranking-2023
+name: YouTube Semantic IDs for ranking
+company: Google / YouTube
+surface: Ranking model for YouTube recommendations
+year: 2023
+era: generative
+era_reason: "Semantic IDs as item tokenization in a ranker; borderline because the ranker is discriminative"
+first_public: "2023-06"
+venue: "RecSys 2024"
+venue_year: 2024
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3640457.3688190"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: research_only
+tldr: "Replaces random-hashed video-ID embeddings in a YouTube ranker with content-derived RQ-VAE Semantic IDs, improving generalization on new and long-tail items."
+summary: Replaces random-hashed video-ID embeddings in a YouTube ranking model with embeddings of content-derived Semantic IDs made by RQ-VAE over frozen content embeddings, adapted for ranking via n-gram or SentencePiece sub-pieces. Claims better generalization on
+  new and long-tail items without losing overall quality.
+paradigms:
+- semantic-id
+- dlrm
+stages:
+- stage: rank
+  model_family: Production-scale YouTube video ranking model (CTR) with Semantic-ID-derived item features in place of random-hash video
+    IDs; user history also expressed with SIDs
+  details: 'Findings: directly feeding dense content embeddings in place of video IDs is worse than random hashing (reduced memorization);
+    deeper models (1.5x-2x layers) partly recover. SPM over SID sequences beat hand-crafted N-grams.'
+id_tokenization:
+  approach: RQ-VAE residual quantization of frozen content embeddings into hierarchical Semantic IDs (originally from TIGER); then n-gram
+    or SentencePiece sub-pieces mapped to embedding tables
+  details: 'Table 1: videos sharing a SID prefix of length 1/2/3/4 have typical sub-trie sizes of 150,000-450,000 / 20-150 / 1-5 / 1
+    videos, with aggregate metrics 0.41 / 0.68 / 0.91 / 0.97 (see paper for the metric definition).'
+features_signals:
+- Content embeddings
+training:
+  mode: 'Daily-snapshot style evaluation: train through day N, evaluate CTR AUC on day N+1 and a cold-start slice (items introduced
+    on day N+1, ''CTR/1D'')'
+  objectives:
+  - CTR prediction
+  notes: Paper states a 0.1% change in CTR AUC is significant for this ranking model. Baseline is random hashing with an 8K-row embedding
+    table; with and without user-history features.
+serving_infra: null
+scale: []
+results_reported: 'Percent improvements in CTR AUC and CTR/1D AUC relative to the 8K random-hashing baseline are shown in Figures 2-3
+  (charts; exact values not extracted here). Text conclusion: Semantic IDs improve generalization on new and long-tail items without
+  sacrificing overall quality; dense content-embedding inputs underperform the video-ID baseline; video-encoder replacement (VideoRec,
+  Ni et al. 2023) is cited as costing 10-50x the ID baseline.'
+caveats:
+- This is a research paper evaluated on a YouTube ranking dataset; it does not state a production launch, so evidence stays research-level
+  in this card.
+- Exact AUC deltas are only in figures and are not reproduced.
+- Gains are offline AUC metrics, not online A/B results.
+unknown_fields:
+- online A/B results
+- absolute AUC values
+- serving latency
+- codebook sizes
+sources:
+- title: "Better Generalization with Semantic IDs: A Case Study in Ranking for Recommendations, RecSys 2024"
+  url: https://doi.org/10.1145/3640457.3688190
+  type: paper
+- title: Better Generalization with Semantic IDs, arXiv 2306.08121
+  url: https://arxiv.org/abs/2306.08121
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2306.08121
+  local_pdf: /workspace/src/a_2306.08121.pdf
+  sections_read: Abstract, intro, related work, Semantic-ID generation (RQ-VAE), n-gram/SPM adaptation, experimental setup and Sec 4.2
+    text, Table 1 (sub-trie stats); result figures are charts and were read from captions/text only
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Replace random-hashed video-ID embeddings with embeddings of content-derived semantic IDs made by RQ-VAE.
+deployed_in: Research on a YouTube ranking model, no launch stated
+scale_short: Not stated in the sources
+key_result: 'Offline: semantic IDs improve CTR AUC over the 8K random-hashing baseline, shown only in charts'
+results_table:
+  offline:
+  - setting: Figures 2-3, CTR AUC and CTR/1D AUC
+    method: Semantic IDs
+    metric: Percent improvement
+    result: Shown in charts, no exact value
+    versus: 8K random-hashing baseline
+  - setting: Text conclusion
+    method: Semantic IDs
+    metric: Generalization on new and long-tail items
+    result: Improved, quality not sacrificed
+    versus: Video-ID baseline
+  note: Dense content-embedding inputs underperform the video-ID baseline. Video-encoder replacement is cited as costing 10-50x the ID baseline.
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: offline AUC gains on a YouTube ranking dataset only, with no production launch or online A/B stated, and citations are below the 500 that exempt a card from the online evidence rule."

@@ -1,0 +1,29 @@
+surface|Airbnb 搜索排序
+era_reason|Airbnb 搜索排序从 GBDT 转向神经网络
+tldr|Airbnb 搜索排序如何从 GBDT 转向神经网络，在训练数据增加约 10x 之后，以 2 个隐层的 DNN 收尾，带来离线 NDCG 和线上预订的提升。
+summary|讲述搜索排序从 GBDT 转向神经网络的过程：先是简单的 NN，再到 pairwise 的 LambdaRank 风格 NN，再把 GBDT 和 FM 的输出作为特征，最后在训练数据扩大约 10x 之后，采用 2 个隐层的 DNN。
+core_idea|把搜索排序从 GBDT 转向神经网络，一步一步地推进。
+deployed_in|Airbnb 搜索排序
+scale_short|十七亿个训练样本对
+key_result|神经网络各阶段都报告了线上预订提升，卡片所依据的来源中没有给出数字
+results_reported|论文给出了神经网络各阶段带来的离线 NDCG 提升和线上预订提升。
+stages.0.model_family|演进路线：GBDT，到单隐层 NN，即 32 个 ReLU，到 pairwise 的 LambdaRank NN，再到 2 个隐层的 DNN
+stages.0.details|LambdaRank 风格的 NN 对已预订和未预订房源之间使用 pairwise 交叉熵，并按 NDCG 的差值加权。最终的 DNN：类别特征展开成 embedding 后共有 195 个输入特征，之后是 127 个和 83 个 ReLU 单元。
+id_tokenization.approach|尝试过房源 ID embedding，但大多过拟合，因为一个房源一年最多只能被预订 365 次；也尝试过预订加长浏览的多任务学习。
+features_signals.0|房源属性，如价格和设施
+features_signals.1|历史预订次数
+features_signals.2|Smart Pricing 的价格
+features_signals.3|与用户过去浏览过的房源的相似度，即共同浏览 embedding
+training.objectives.0|pairwise 的预订偏好，按 NDCG 差值加权
+training.notes|按论文所述，在十七亿个样本对上训练弥合了训练集与测试集之间的泛化差距。
+scale.0.metric|训练样本对
+scale.0.value|十七亿
+results_table.note|论文给出了神经网络各阶段带来的离线 NDCG 提升和线上预订提升。卡片所依据的来源中没有给出数字。
+caveats.0|论文明确记录了失败的做法，包括 listing ID embedding
+caveats.1|以及结合长浏览的多任务学习。
+unknown_fields.0|候选召回
+unknown_fields.1|延迟
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Airbnb 搜索排序
+deployment.hardware|Java 服务器负责召回和打分，运行在 AWS 实例上；没有说明实例类型或数量
+deployment.notes.0|论文称预订有提升，但没有给出幅度。

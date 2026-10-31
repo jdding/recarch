@@ -1,0 +1,49 @@
+surface|多任务学习；在 Google 的大规模内容推荐系统上评估，未说明具体产品
+era_reason|Mixture-of-experts 多任务网络
+tldr|Multi-gate Mixture-of-Experts 让每个任务在共享的 expert 上有自己的 gate，从数据中学习任务之间的关系；在 Google 测试，线上跑的是 shared-bottom。
+summary|Google 和密歇根大学的 KDD 2018 论文；第一作者是 Google 的实习生。MMoE 把多任务网络的 shared-bottom 层换成一组共享的 expert 网络，并为每个任务配一个作用在 expert 上的线性 softmax gate，因此任务之间的关系是从数据中学到的，只增加很少的参数。它在合成数据、UCI 人口普查收入基准，以及 Google 一个大规模内容推荐排序模型上做了评估，该模型有一个互动任务和一个满意度任务，并报告了线上实验。论文称那里已经有 shared-bottom 模型在线上跑，但没有说 MMoE 已经上线。
+core_idea|把 shared bottom 换成共享的 expert，并为每个任务配一个自己的 gate。
+deployed_in|在 Google 的一个大规模内容推荐排序模型上评估，未说明具体产品，也未说明是否上线
+scale_short|数亿个不同的 item，数千亿条训练样本
+key_result|线上实验：MMoE 相比 Shared-Bottom，互动 +0.25%，满意度 +2.65%
+results_reported|合成数据，每种设置跑 200 次，输入维度 100，8 个 expert，每个大小 16，tower 大小 8，共 13,056 个参数，结果显示：在不同任务相关性下，MMoE 的性能差距比 OMoE 和 Shared-Bottom 小得多，两种 MoE 模型平均都优于 Shared-Bottom，重复运行的损失方差 MoE 模型低得多。人口普查收入，400 次运行的平均 AUC：Group 1，主任务为收入，最佳 / 平均 AUC：Single-Task 0.9398 / 0.9337，Shared-Bottom 0.9361 / 0.9295，Cross-Stitch 0.9406 / 0.9361，OMoE 0.9387 / 0.9319，MMoE 0.9410 / 0.9359；Group 2，主任务为教育：Single-Task 0.8843 / 0.8792，Shared-Bottom 0.8836 / 0.8813，Cross-Stitch 0.8855 / 0.8819，OMoE 0.8852 / 0.8813，MMoE 0.8860 / 0.8826；Tensor-Factorization 在两组中都差得多，0.7460 / 0.6765 和 0.7367 / 0.7256。Google 内容推荐，离线互动，按表 3，在 2M / 4M / 6M 步时的 AUC：Shared-Bottom 0.6879 / 0.6888 / 0.6900，MMoE 0.6894 / 0.6897 / 0.6908；R-squared：Shared-Bottom 0.08812 / 0.09159 / 0.09287，MMoE 0.08978 / 0.09263 / 0.09362。线上实验，见表 4，两者线上流量占比相同：Shared-Bottom 对比 Single-Task：互动 -0.22%，90% 置信水平，满意度 +19.72%，95%；MMoE 对比 Shared-Bottom：互动 +0.25%，95%，满意度 +2.65%，95%。
+serving_infra|除了称 MMoE 相比 shared-bottom 模型不增加明显的计算成本，因为 gate 很轻、expert 是共享的之外，没有更多描述；L2-Constrained 和 Cross-Stitch 的参数和服务时间大约翻倍，所以没有上线跑。
+stages.0.model_family|Multi-gate Mixture-of-Experts：n 个共享的 expert MLP f_i，用 ReLU，每个任务的 gate g_k[x] = softmax[W_gk x]，任务输入 f_k[x] = sum_i g_k[x]_i f_i[x]，再接任务 tower h_k。在 Google 的系统中，shared-bottom 网络的顶层被换成输出维度相同的 MMoE 层。
+stages.0.details|推荐系统有一个候选生成器，后面接一个深度排序模型；排序模型预测两个二分类任务：互动子任务，即点击率和互动时长类的目标，以及满意度子任务，即点赞率类的目标。只用一个 gate 的变体 OMoE 是消融对照。论文提到，为了效率，gate 可以做成稀疏的 top-k gate，作为一个可能的扩展。
+id_tokenization.approach|稀疏特征用 embedding；稠密特征归一化到 [0, 1]
+id_tokenization.details|如 Google 推荐系统中所述；没有描述 Semantic ID 或哈希 ID 方案。
+features_signals.0|Google 内容推荐系统中带 embedding 的稀疏特征和归一化的稠密特征；没有给出特征列表
+features_signals.1|用户的隐式反馈，如点击和点赞，作为标签
+features_signals.2|UCI 人口普查收入的人口统计特征，共 40 个，当作标签使用时去掉教育和婚姻状况
+features_signals.3|任务相关性可控的合成回归数据
+training.mode|离线。Google 系统：mini-batch SGD，批大小 1024；离线对比在固定的三百亿条隐式反馈上训练，在 2M、4M 和 6M 步之后用一百万的留出集评估，其中 2M 步为一百亿条样本。引言称训练数据包含数千亿条样本。基准用 Adam；超参用 Gaussian-process 调参器调整，对所有方法都把每层的隐藏单元数上限设为 2048。
+training.objectives.0|两个二分类任务：互动和满意度，Google 系统
+training.objectives.1|人口普查收入上做二分类，合成数据上做回归
+training.notes|满意度标签比互动标签稀疏得多，所以它的离线结果噪声太大，离线只展示互动的 AUC 和 R-squared。
+scale.0.value|数亿个不同的 item
+scale.1.value|按第 6.4 节是数十亿用户；引言称是数亿用户和 item
+scale.2.metric|训练样本
+scale.2.value|数千亿条用户隐式反馈，见引言和第 6.4 节；离线对比用三百亿
+scale.3.metric|人口普查收入
+scale.3.value|199,523 条训练样本和 99,762 条测试样本，40 个特征
+results_table.online.0.setting|Google 内容推荐线上实验，表 4
+results_table.online.1.setting|Google 内容推荐线上实验，表 4
+results_table.online.2.setting|Google 内容推荐线上实验，表 4
+results_table.online.3.setting|Google 内容推荐线上实验，表 4
+results_table.offline.0.setting|Google 内容推荐，表 3，6M 步
+results_table.offline.1.setting|人口普查收入 Group 1
+results_table.offline.2.setting|人口普查收入 Group 2
+caveats.0|没有说明是否上线：论文称线上已经在用 shared-bottom 模型，并报告了 MMoE 的线上实验，但从未说 MMoE 已部署，所以 evidence_level 为 research_only。另一篇在排序系统中使用 MMoE 的论文见 youtube-multitask-ranking-2019，尚未对照全文验证。
+caveats.1|没有给出 Google 的产品、流量占比、实验时长和指标定义；线上指标只有相对变化和置信水平。
+caveats.2|离线 AUC 的提升很小，约 0.0009 到 0.0015 AUC；论文自己说满意度子任务的离线结果噪声太大，没有展示。
+caveats.3|用户和 item 的规模前后不一致，第 6.4 节说数十亿用户，引言说数亿用户和 item。
+caveats.4|在人口普查收入上，MMoE、Cross-Stitch 和单任务模型的 AUC 差异在第三位或第四位小数；多任务模型没有针对辅助任务调参。
+caveats.5|论文没有给出 Google 系统的 expert 数量、expert 大小和 tower 大小。
+unknown_fields.0|Google 系统中 expert 的数量和大小
+unknown_fields.1|服务延迟
+unknown_fields.2|线上实验的流量占比和时长
+unknown_fields.3|Google 产品的名称
+code.repos.0.note|MMoE 论文的 Keras 实现；非官方。
+deployment.scenario|Google 的大规模内容推荐排序，未说明具体产品
+deployment.baseline|Shared-Bottom 模型
+deployment.notes.0|没有说明是否上线。论文称 MMoE 相比 shared-bottom 模型没有增加明显的计算成本。

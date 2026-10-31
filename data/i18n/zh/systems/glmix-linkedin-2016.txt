@@ -1,0 +1,28 @@
+surface|职位推荐，如「你可能感兴趣的职位」等
+era_reason|广义线性混合模型，每个成员和每个条目有各自的线性系数；没有深度网络
+tldr|广义线性混合模型在全局模型之上加入每个成员和每个职位的系数；LinkedIn 职位推荐的职位申请数提升 20% 到 40%。
+summary|广义线性混合模型，在全局模型之上加入每个成员和每个职位的随机效应系数，用 Spark 上的并行块坐标下降拟合；已在 Photon ML 中开源。
+core_idea|在全局模型之上加入每个成员和每个职位的随机效应系数。
+deployed_in|LinkedIn 职位推荐，「你可能感兴趣的职位」
+scale_short|来源中没有说明
+key_result|LinkedIn 职位推荐中，活跃求职者的职位申请总数提升 20% 到 40%
+results_reported|论文：已部署在 LinkedIn 职位推荐中，使活跃求职者的职位申请总数提升 20% 到 40%。
+serving_infra|Spark；代码已作为 Photon ML 开源
+stages.0.model_family|全局加每个用户、每个条目的 logistic 回归系数
+stages.0.details|所报告的职位推荐实验中，约 2K 个成员特征和约 2K 个职位特征。
+id_tokenization.approach|成员和职位 ID 级别的随机效应
+features_signals.0|成员和职位特征
+features_signals.1|申请和点击的反馈
+training.mode|离线分布式
+training.objectives.0|Logistic 反馈预测
+training.notes|在 Apache Spark 和 YARN 上，按 BSP 并行化的 BCD。
+results_table.online.0.setting|LinkedIn 职位推荐
+results_table.online.0.metric|活跃求职者的职位申请总数
+results_table.online.0.versus|此前的推荐系统
+unknown_fields.0|延迟
+unknown_fields.1|成员规模
+code.repos.0.note|实现 GLMix 和 GAME 的 Spark 库。近期没有活动。后继项目：linkedin/gdmix。
+deployment.scenario|LinkedIn 职位推荐，「你可能感兴趣的职位」
+deployment.baseline|此前的推荐系统
+deployment.hardware|训练使用 Apache Spark on YARN；没有描述服务部分
+deployment.online_lifts.0.metric|活跃求职者的职位申请总数

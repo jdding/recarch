@@ -1,0 +1,43 @@
+surface|Meta 的五个核心广告模型的广告排序，以及 IFR 和 VDD 的短视频排序
+era_reason|判别式的 CTR 和互动排序器；在 DLRM 风格的骨干上加入了 masked-token 自监督预训练和隐式 tokenization，没有自回归或 Semantic ID 式的 item 生成。
+tldr|Meta 的排序方案：隐式事件 tokenization、Pollen Transformer 和 masked-token SSL；Pollen 的 A/B 中视频 WatchTime +2.76% 到 +3.68%；Unity Encoder 在五个广告模型上 NE -0.06% 到 -0.14%。
+summary|Unity 是 Meta 排序模型的三部分方案：第一，Unity tokenization 对 DLRM 底部编码器的输出做 patch 切分，并可选做残差量化，把每个互动事件变成一小段隐式 token 序列；第二，Pollen，一个 Transformer，其 attention 用加权几何平均，因此可以近似指数多项式的特征交互，推广了 DCN v2；第三，在隐式 token 上用 masked-autoencoder 风格的 SSL 损失，与有监督的 CTR 和 CVR 损失联合训练。论文按它们上线的顺序来报告。
+core_idea|把互动事件 tokenize 成隐式 token，再加一个推广了 DCN v2 的 Transformer 和 masked 自监督损失。
+deployed_in|Meta 的五个核心广告模型的广告排序，以及 IFR 和 VDD 的短视频排序
+scale_short|每天 10B+ 条线上训练样本
+key_result|Pollen，即 Unity 中的 Transformer 部分，在线上 A/B 中 VDD 的 WatchTime +2.76%，IFR +3.68%
+results_reported|Meta 线上：Pollen 于 April 2023 首次在短视频上线；A/B 中 VDD 的 WatchTime +2.76%，IFR 的 WatchTime +3.68%，均统计显著；按表 2，离线 VDD 的 NE 提升为 -0.34% 到 -0.49%，按表 3，IFR 点击 NE -0.66%，点赞 -0.97%。Pollen 在一个核心广告模型上：NE -0.15%。Unity tokenization：按表 4，相对 mid-2025 基线，广告 NE -0.15%，用 RQ；按表 5，VDD NE -0.38% 到 -0.58%。Unity Encoder 在五个核心广告模型上，相对 July 2025 基线：NE -0.06% 到 -0.14%，表 6；模型 A-E 为 -0.08、-0.1、-0.06、-0.14、-0.08。加入 SSL 平均再多带来约 -0.05% NE。按表 7 的扩展：Unity Tiny/XS/S/M 在 FLOPs +4/+14/+72/+260% 时达到 NE -0.05/-0.08/-0.10/-0.13%，声称相对现有扩展曲线的扩展效率为 2.3x-4.9x。按表 8 的公开数据集：在 KuaiVideo、AmazonElectronics、TaobaoAds 上，相对 DCNv2 和 Wukong 有小幅 AUC 提升。
+version_note|没有找到 arXiv 版本。数字对照站长 Zotero 副本中的 KDD 2026 定稿 PDF 核对，ACM DOI 10.1145/3770855.3818505。首次公开日期取 KDD 2026，即 August 2026，是我找到的最早公开版本。
+serving_infra|未描述；论文称 Pollen 在 IFR 上被剪枝并做了延迟优化，以适应更紧的服务预算。
+stages.0.model_family|特征编码器，即 DLRM 底部，例如 DCN、DHEN、Wukong，输出隐向量，切分成 16-64 个 patch，隐向量维度 1024-4096，再经 Pollen Transformer 编码器，然后接线上的任务头，目标包括点击、转化、点赞和观看时长。SSL 解码器，深度 1-4，只在训练时使用。
+stages.0.details|SSL 设置：mask 比例 0.3-0.5，编码器深度 4-12，在有监督损失之上的损失权重 lambda 为 0.1-1.0。
+id_tokenization.approach|对隐式事件 embedding 做残差量化，不是 item 的 Semantic ID
+id_tokenization.details|RQ 变体的码本大小为 1024-4096，深度 3-6；token 使用 prefix-gram embedding。用于在隐空间中对整个互动事件做 tokenize，Unity Encoder 则用恒等映射，即连续 token。
+features_signals.0|数万个异构的原始特征，例如 id、id 序列、数值统计和预训练的 id embedding
+training.mode|预训练式的 SSL 与有监督损失联合训练；线上模型以近实时的节奏在新数据上持续训练
+training.objectives.0|跨点击、转化、点赞和观看时长任务的有监督互动预测
+training.objectives.1|Masked 隐 token 重建，SSL
+training.notes|收益按时间顺序对照不断变化的线上基线来报告，所以越往后的数字所用的基线越强。
+scale.0.metric|每天的线上训练样本
+scale.1.metric|Unity 的扩展规模
+scale.1.value|Tiny 到 M，1.5M 到 85M 参数
+results_table.online.0.setting|短视频 VDD，线上 A/B
+results_table.online.1.setting|短视频 IFR，线上 A/B
+results_table.offline.0.versus|线上基线
+results_table.offline.1.versus|线上基线
+results_table.offline.2.setting|五个核心广告模型，表 6
+results_table.offline.2.versus|July 2025 基线
+results_table.offline.3.versus|Mid-2025 基线
+caveats.0|Unity Encoder 的若干广告配置被描述为「in the process of full-scale production launch」，并称「early online A/B」显示有收益，但没有给出它们的 A/B 数字；唯一引用的线上数字是 2023 年 Pollen 的 WatchTime 收益。
+caveats.1|广告结果只有离线 NE。NE 的差异是相对不断变化的线上基线；模型 A-E 已匿名。
+caveats.2|扩展实验规模很小，最多 85M 参数，作者称之为初步的。
+caveats.3|公开仓库对应表 8 中的公开数据集实验，不是 Meta 的线上代码。
+unknown_fields.0|Unity Encoder 和 SSL 在广告上的线上 A/B 结果
+unknown_fields.1|线上模型的绝对规模和服务延迟
+unknown_fields.2|模型 A-E 各是哪些广告场景
+code.repos.0.owner|=
+code.repos.0.note|论文的官方实验代码，是在公开数据集上、DCNv2 和 Wukong 骨干之上的即插即用 MAE 预训练模块；Meta 的线上模型未发布。
+deployment.scenario|Meta 的 IFR 和 VDD 短视频排序，以及五个核心广告模型
+deployment.notes.0|这些提升属于 Pollen，于 April 2023 在短视频上线。没有给出 Unity encoder 在广告上的 A/B 结果。
+deployment.online_lifts.0.metric|VDD 观看时长
+deployment.online_lifts.1.metric|IFR 观看时长

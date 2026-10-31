@@ -1,0 +1,74 @@
+id: tiger-google-2023
+name: "TIGER"
+company: "Google"
+surface: Research system on public Amazon Reviews datasets, not a described production surface
+year: 2023
+era: generative
+era_reason: "Generative retrieval with semantic IDs"
+first_public: "2023-05"
+venue: "NeurIPS 2023"
+venue_year: 2023
+published_version_checked: true
+primary_source: "https://proceedings.neurips.cc/paper_files/paper/2023/hash/20dcab0f14046a5c6b02b61da9f13229-Abstract-Conference.html"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: research
+evidence_level: research_only
+tldr: "Items get Semantic IDs via RQ-VAE and a Transformer decodes the next item's ID, replacing embedding-table ANN retrieval; helps cold-start items on public datasets."
+summary: >-
+  TIGER, the Transformer Index for GEnerative Recommenders, gives items Semantic IDs by quantizing content embeddings with RQ-VAE; a Transformer sequence-to-sequence model autoregressively
+  decodes the next item's Semantic ID, replacing embedding-table ANN retrieval.
+paradigms: [generative-retrieval, semantic-id, sequential-transformer]
+stages:
+  - stage: retrieval
+    model_family: T5X encoder-decoder (4+4 layers, ~13M parameters) generating Semantic ID tuples with beam search
+    details: Item content -> Sentence-T5 768-d embedding -> RQ-VAE with 3 levels of 256 codewords plus a collision-handling token.
+id_tokenization:
+  approach: RQ-VAE Semantic IDs
+  details: Encoder 512-256-128, latent 32; 3 levels x codebook 256 plus a 4th token to disambiguate collisions; 2000 hashed user-ID tokens.
+features_signals: [Item content text embeddings, User interaction sequence]
+training: {mode: Offline, objectives: [Next Semantic-ID prediction], notes: Evaluated on Amazon Beauty / Sports / Toys datasets.}
+serving_infra: Paper notes inference is costlier than ANN lookup.
+scale: []
+results_reported: Paper claims improved recall/NDCG over baselines on public datasets and benefits for cold-start items and diversity.
+caveats: [Not described as deployed in a Google product.]
+unknown_fields: [production deployment]
+sources:
+  - {title: "Recommender Systems with Generative Retrieval, NeurIPS 2023", url: "https://proceedings.neurips.cc/paper_files/paper/2023/hash/20dcab0f14046a5c6b02b61da9f13229-Abstract-Conference.html", type: paper}
+  - {title: "Recommender Systems with Generative Retrieval, arXiv 2305.05065, NeurIPS 2023", url: "https://arxiv.org/abs/2305.05065", type: paper}
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/XiaoLongtaoo/TIGER
+    owner: XiaoLongtaoo
+    official: false
+    note: PyTorch implementation, self-described as unofficial. The paper does not link code.
+core_idea: Quantize content embeddings into semantic IDs with RQ-VAE, then decode the next item's semantic ID with a Transformer.
+deployed_in: Research system on public Amazon Reviews datasets, no production surface described
+scale_short: Not stated in the sources
+key_result: 'Offline: improved recall and NDCG over baselines on public datasets, no figures reported'
+results_table:
+  offline:
+  - setting: Public Amazon Reviews datasets
+    method: TIGER
+    metric: Recall and NDCG
+    result: Improved, no figure
+    versus: Baselines
+  note: The paper also claims benefits for cold-start items and diversity. No production deployment is reported.
+deployment:
+  online_evidence: no_online_claim
+  scenario: Research system on public Amazon Reviews datasets
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper notes that inference costs more than an ANN lookup.
+  basis: card_content
+  checked_on: '2026-10-31'

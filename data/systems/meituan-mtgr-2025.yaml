@@ -1,0 +1,131 @@
+id: meituan-mtgr-2025
+name: "MTGR"
+company: Meituan
+surface: Food-delivery recommendation
+year: 2025
+era: generative
+era_reason: "Generative-recommendation ranking framework in the HSTU style at industrial scale"
+first_public: "2025-05"
+venue: "CIKM 2025"
+venue_year: 2025
+published_version_checked: true
+version_note: "Checked against the owner's Zotero copy, which is arXiv v4 of 22 Aug 2025 typeset in the CIKM '25 ACM template with the reference format and DOI 10.1145/3746252.3761565, 8 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+primary_source: "https://doi.org/10.1145/3746252.3761565"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the CIKM '25 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
+system_type: recommendation
+evidence_level: production_described
+tldr: "HSTU-based generative ranker that keeps DLRM cross features; vs a years-optimized DLRM, conversion volume +1.22% and CTR +1.31% with 12% cheaper inference."
+summary: 'CIKM ''25 paper: HSTU-based generative ranking model for Meituan food-delivery recommendation that keeps DLRM features including cross features such as candidate-side counters like ctr/pv, compresses samples per user for efficiency, adds Group-Layer Normalization and
+  a dynamic attention mask to prevent leakage, and runs on an optimized training framework. MTGR-large is deployed on Meituan take-away
+  recommendation.'
+paradigms:
+- sequential-transformer
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'MTGR: HSTU-style stack where tokens come from user features, real-time and historical behavior sequences, and candidate
+    items (with their cross features); logits read from candidate tokens via an MLP'
+  details: Group-Layer Normalization normalizes token groups from different semantic spaces separately; dynamic mask mixes full attention,
+    auto-regressive and self-only visibility so candidates cannot leak. User-level aggregation merges multiple exposure samples of one
+    user.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- DLRM features including cross features
+training:
+  mode: Offline training on about six months of data for three model sizes (scaling-law study); custom framework
+  objectives:
+  - CTR / conversion ranking
+  notes: 'Framework: dynamic hash tables for real-time insert/delete of sparse embeddings, dynamic sequence balancing across GPUs, embedding-ID
+    de-duplication and automatic table merging; throughput 1.6x-2.4x vs TorchRec with good scaling beyond 100 GPUs.'
+serving_infra: User-level compression for faster training/inference
+scale:
+- metric: Compute per sample
+  value: 65x FLOPs for single-sample forward vs the DLRM baseline (MTGR-large)
+  note: paper
+- metric: Users
+  value: deployed to hundreds of millions of users on the take-away recommendation system
+  note: paper
+- metric: Complexity range supported
+  value: 10-100x the computational complexity of the DLRM without significant cost increases
+  note: paper
+results_reported: 'MTGR-large vs a years-optimized DLRM baseline: online conversion volume +1.22%, CTR +1.31%; training cost unchanged
+  and inference cost -12%; described as the largest gain in nearly two years, handling the main traffic.'
+caveats:
+- Gains are against Meituan's own highly tuned DLRM baseline in specific scenarios; the scenarios are only described as 'our scenarios'.
+- The paper claims plain generative recommendation that drops cross features degrades quality, which is its own finding on its own data.
+- A/B duration is not stated in the sections read.
+unknown_fields:
+- A/B duration
+- absolute QPS / latency
+- parameter counts of the three model sizes
+sources:
+- title: "MTGR: Industrial-Scale Generative Recommendation Framework in Meituan, CIKM 2025"
+  url: https://doi.org/10.1145/3746252.3761565
+  type: paper
+- title: MTGR, arXiv 2505.18654
+  url: https://arxiv.org/abs/2505.18654
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2505.18654
+  local_pdf: /workspace/recarch/zotero/meituan-mtgr-2025.pdf
+  sections_read: Abstract, intro, related work, Sec 3 (problem, ranking, token construction, GLN, dynamic masking, user-level compression),
+    training-framework summary, headline results
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: An HSTU-based generative ranker that keeps DLRM features and compresses samples per user.
+deployed_in: Meituan take-away food-delivery recommendation, main traffic
+scale_short: Hundreds of millions of users, 65x FLOPs per sample against the DLRM baseline
+key_result: Online conversion volume +1.22% and CTR +1.31% against a years-optimized DLRM baseline
+results_table:
+  online:
+  - setting: Meituan take-away recommendation, MTGR-large
+    method: MTGR
+    metric: Conversion volume
+    result: +1.22%
+    versus: Years-optimized DLRM baseline
+  - setting: Meituan take-away recommendation, MTGR-large
+    method: MTGR
+    metric: CTR
+    result: +1.31%
+    versus: Years-optimized DLRM baseline
+  - setting: Meituan take-away recommendation, MTGR-large
+    method: MTGR
+    metric: Inference cost
+    result: -12%
+    versus: Years-optimized DLRM baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Meituan take-away food-delivery recommendation, main traffic
+  ab_traffic: 2% of traffic, millions of exposures per day
+  ab_duration: not_reported
+  baseline: Years-optimized DLRM baseline
+  online_lifts:
+  - metric: Conversion volume
+    value: +1.22%
+  - metric: CTR
+    value: +1.31%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Training cost unchanged and inference cost down 12% against the DLRM baseline, with 65x FLOPs
+    per sample
+  hardware: NVIDIA A100 GPUs for training; training scales across more than 100 GPUs
+  fulltext_refs:
+  - 'Sec 5: A/B testing with 2% of the traffic, covering millions of exposures per day'
+  - 'Sec 4: DLRM trained with 8 NVIDIA A100 GPUs; MTGR achieves good scalability running over 100 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

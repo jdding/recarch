@@ -1,0 +1,50 @@
+id: youtube-recsys-2010
+name: "YouTube video recommendation system"
+company: Google / YouTube
+surface: Related videos and personalized home recommendations
+year: 2010
+system_type: recommendation
+evidence_level: production_described
+summary: 'Early description of YouTube''s recommender: candidates come from co-visitation (association-rule style) counts between videos
+  watched in the same session, normalised for popularity and expanded over a video graph seeded from a user''s recent watches, likes
+  and favourites.'
+paradigms:
+- item-cf
+stages:
+- stage: retrieval
+  model_family: Item-to-item co-visitation counts over 24h session windows, normalised by item popularity
+  details: 'Relatedness r(vi,vj)=cij/f(vi,vj); top-N related videos above a threshold form a directed graph that is expanded from a
+    user''s seed videos. Source for these details: secondary summaries of the paper text, not the PDF.'
+id_tokenization:
+  approach: Raw video IDs
+  details: null
+features_signals:
+- Co-watch sessions
+- 'User activity: watched / liked / favourited videos'
+training:
+  mode: Offline batch
+  objectives:
+  - Co-visitation counting
+  notes: Batch computation over a 24-hour window per the paper summary.
+serving_infra: null
+scale: []
+results_reported: The ACM/Google Research records list the paper as the YouTube team's description of the production system; no metrics
+  were captured here.
+caveats:
+- The paper PDF could not be fetched (ACM blocks automated access); mechanics above come from a search-engine summary of the paper and
+  are lower confidence than other cards.
+- Predates deep learning at YouTube; see youtube-dnn-2016 for the successor.
+unknown_fields:
+- ranking stage details
+- metrics
+- scale
+sources:
+- title: The YouTube video recommendation system, RecSys 2010
+  url: https://research.google/pubs/the-youtube-video-recommendation-system/
+  type: paper
+- title: ACM DOI record
+  url: https://doi.org/10.1145/1864708.1864770
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"The YouTube Video Recommendation System\" (Davidson, James, 2010, RecSys 2010) - https://doi.org/10.1145/1864708.1864770. Reason drafted: search-engine summary / publication record only."

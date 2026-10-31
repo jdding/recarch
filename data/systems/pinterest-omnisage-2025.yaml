@@ -1,0 +1,115 @@
+id: pinterest-omnisage-2025
+name: "OmniSage"
+company: Pinterest
+surface: Universal representations for five applications
+year: 2025
+era: deep
+era_reason: "Multi-entity heterogeneous GNN representation learning; not generative"
+first_public: "2025-04"
+venue: "KDD 2025"
+venue_year: 2025
+published_version_checked: true
+version_note: "Checked against the owner's Zotero copy, which is arXiv v3 of 12 Jun 2025 typeset in the KDD '25 ACM template with the reference format and DOI 10.1145/3711896.3737253, 12 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+primary_source: "https://doi.org/10.1145/3711896.3737253"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the KDD '25 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Pinterest's successor to PinSage: pin and board embeddings from graph, content and user sequences via three contrastive tasks; about +2.5% sitewide repins."
+summary: Pinterest's universal representation framework from KDD '25 that learns Pin and board embeddings from a heterogeneous graph, content including ViT image and hashed n-gram text, and user activity sequences through three contrastive tasks, namely entity-entity, entity-feature and user-entity.
+  Successor to PinSage; code released at github.com/pinterest/atg-research/tree/main/omnisage.
+paradigms:
+- graph-neural-network
+- embedding-based-retrieval
+stages:
+- stage: other
+  model_family: 'Representation learning for retrieval/ranking features: per-entity-type transformer embedders over a node''s content
+    plus importance-sampled, proximity-ordered neighbors; multi-task contrastive training with sampling-bias correction (count-min sketch)'
+  details: 'Entity types in the paper: Pins and boards. Offline comparison is against PinSage (and PinnerFormer trained on PinSage embeddings)
+    with matched encoder/sequence configurations; board-Pin recall measured on future engagement from the Board More Ideas surface.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Graph, user sequences, content
+training:
+  mode: Contrastive
+  objectives: null
+  notes: null
+serving_infra: Custom infrastructure for billion-node graphs
+scale:
+- metric: Graph scale
+  value: infrastructure supports graphs with billions of nodes
+  note: paper
+- metric: Platform
+  value: 550M+ monthly active users, 1.5B+ Pins engaged weekly (paper intro)
+  note: paper
+results_reported: 'Abstract: approximately +2.5% sitewide repins (saves) across five applications from the OmniSage representations
+  (online). Offline gains vs PinSage / PinnerFormer reported in Sec 4.2 (Table 5 etc.; not reproduced).'
+caveats:
+- The +2.5% sitewide repin figure is aggregated by the authors across five applications; per-application A/B values were not captured
+  here.
+- Open-source code exists, but the Pinterest graph and training data do not.
+- GPU and training-cost numbers were not captured from the sections read.
+unknown_fields:
+- per-surface A/B deltas
+- training hardware and cost
+- embedding dimension and model size
+sources:
+- title: "OmniSage: Large Scale, Multi-Entity Heterogeneous Graph Representation Learning, KDD 2025"
+  url: https://doi.org/10.1145/3711896.3737253
+  type: paper
+- title: OmniSage, arXiv 2504.17811
+  url: https://arxiv.org/abs/2504.17811
+  type: paper
+- title: Code
+  url: https://github.com/pinterest/atg-research/tree/main/omnisage
+  type: source_code
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2504.17811
+  local_pdf: /workspace/recarch/zotero/pinterest-omnisage-2025.pdf
+  sections_read: Abstract, intro, Sec 3 (tasks, neighbor sampling, embedders), Sec 4 setup/offline comparison with PinSage/PinnerFormer,
+    online claims
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/pinterest/atg-research/tree/main/omnisage
+    owner: Pinterest
+    official: true
+    note: 'README: ''a minimal, open-source-friendly version of an internal project''; trains on synthetic
+      data.'
+core_idea: Learn Pin and board embeddings from a graph, content and user sequences with three contrastive tasks.
+deployed_in: Pinterest, five applications
+scale_short: 550M+ monthly active users, 1.5B+ Pins engaged weekly
+key_result: About +2.5% sitewide repins across five applications from the OmniSage representations, online
+results_table:
+  online:
+  - setting: Five applications, abstract
+    method: OmniSage
+    metric: Sitewide repins, also called saves
+    result: About +2.5%
+    versus: Previous representations
+  note: Offline gains against PinSage and PinnerFormer are in Sec 4.2 of the paper and are not reproduced here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest, five applications
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous representations
+  online_lifts:
+  - metric: Sitewide repins, also called saves
+    value: About +2.5%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

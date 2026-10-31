@@ -1,0 +1,135 @@
+id: bytedance-longer-2025
+name: "LONGER"
+company: ByteDance
+surface: Long-sequence user modeling in advertising and e-commerce
+year: 2025
+era: deep
+era_reason: "Scaling of a discriminative long-sequence transformer ranker, LONGER; dominant paradigm is scaling discriminative ranking/sequence models, not generative or semantic-ID modeling"
+first_public: "2025-05"
+venue: "RecSys 2025"
+venue_year: 2025
+published_version_checked: true
+version_note: "Checked against the owner's Zotero copy, which is arXiv v2 of 18 Jul 2025 typeset in the RecSys '25 ACM template with the header and DOI 10.1145/3705328.3748065, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+primary_source: "https://doi.org/10.1145/3705328.3748065"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Era moved from generative to deep by owner decision: dominant paradigm is scaling of discriminative ranking/sequence models, not generative or semantic-ID modeling."
+- date: "2026-10-30"
+  note: "Checked against the RecSys '25 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
+system_type: ads
+evidence_level: production_described
+tldr: "Long-sequence transformer ranker modeling histories of up to 10,000 items; deployed in Douyin Ads and E-Commerce, e.g. Short Video ADSS +2.097%."
+summary: Long-sequence transformer ranker from RecSys '25 that models user histories up to 10,000 items end-to-end using global tokens,
+  an InnerTransformer token-merge module and hybrid attention, which cuts FLOPs by about 50%, with GPU-synchronous training, mixed precision,
+  activation recomputation and KV-cache serving. Reported as fully deployed in dozens of ByteDance scenarios.
+paradigms:
+- sequential-transformer
+- attention-ctr
+stages:
+- stage: rank
+  model_family: 'LONGER: global tokens + raw long sequence, token merge with InnerTransformers, hybrid attention'
+  details: 'Offline task: CVR prediction in the Douyin Ads system; dataset of 5.2 billion samples over 130 days (16 Oct 2024 - 23 Feb
+    2025). Table 1: LONGER AUC 0.85290 / LogLoss 0.47103, +1.57% AUC over the base model (0.83968 / 0.48758); the paper states a 0.1%
+    gain is considered significant online.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Ultra-long user behavior sequences
+training:
+  mode: Mixed precision, activation recomputation, synchronous dense+sparse GPU training
+  objectives: null
+  notes: null
+serving_infra: KV-cache serving; unified GPU dense and sparse updates
+scale:
+- metric: Sequence length
+  value: up to 10,000 behaviors, end-to-end
+  note: paper
+- metric: Offline dataset
+  value: 5.2B samples, 130 days (Douyin Ads CVR)
+  note: paper
+- metric: Deployment
+  value: '''dozens'' of scenarios at ByteDance, billions of users (abstract)'
+  note: paper
+results_reported: 'Douyin Ads A/B (ADSS / ADVV): Live Streaming +1.063% / +1.168%, Short Video +2.097% / +2.151%, Mall +1.816% / +1.407%.
+  Douyin E-Commerce A/B also reported (Order/U etc.; not reproduced). Offline: +1.57% AUC over base on Douyin Ads CVR.'
+caveats:
+- Offline benchmark is the paper's own Douyin Ads CVR dataset; baselines include DIN, TWIN, HSTU and a vanilla Transformer.
+- The 'dozens of scenarios' deployment count is a paper claim without per-scenario breakdown.
+- ADSS/ADVV are advertiser-side internal metrics, not defined beyond the paper's text.
+unknown_fields:
+- serving latency / QPS
+- GPU counts
+- model parameter count for the deployed version
+sources:
+- title: "LONGER: Scaling Up Long Sequence Modeling in Industrial Recommenders, RecSys 2025"
+  url: https://doi.org/10.1145/3705328.3748065
+  type: paper
+- title: LONGER, arXiv 2505.04421
+  url: https://arxiv.org/abs/2505.04421
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2505.04421
+  local_pdf: /workspace/recarch/zotero/bytedance-longer-2025.pdf
+  sections_read: Abstract, intro, related work, experimental setting, Tables 1-3, online A/B text
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Model user histories up to 10,000 items end-to-end with global tokens and token merging.
+deployed_in: Dozens of ByteDance advertising and e-commerce scenarios
+scale_short: Sequences up to 10,000 behaviors, 5.2B offline samples
+key_result: Douyin Ads Short Video ADSS +2.097% and ADVV +2.151% in an online A/B
+results_table:
+  online:
+  - setting: Douyin Ads, Live Streaming
+    method: LONGER
+    metric: ADSS / ADVV
+    result: +1.063% / +1.168%
+    versus: Production baseline
+  - setting: Douyin Ads, Short Video
+    method: LONGER
+    metric: ADSS / ADVV
+    result: +2.097% / +2.151%
+    versus: Production baseline
+  - setting: Douyin Ads, Mall
+    method: LONGER
+    metric: ADSS / ADVV
+    result: +1.816% / +1.407%
+    versus: Production baseline
+  offline:
+  - setting: Douyin Ads CVR
+    method: LONGER
+    metric: AUC
+    result: +1.57%
+    versus: Base model
+deployment:
+  online_evidence: online_numbers
+  scenario: Douyin Ads, with other ByteDance advertising and e-commerce scenarios
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production baseline
+  online_lifts:
+  - metric: Live Streaming ADSS / ADVV
+    value: +1.063% / +1.168%
+  - metric: Short Video ADSS / ADVV
+    value: +2.097% / +2.151%
+  - metric: Mall ADSS / ADVV
+    value: +1.816% / +1.407%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says serving uses a KV cache and unified GPU dense and sparse updates, with no latency or QPS numbers.
+  basis: full_text
+  checked_on: '2026-10-31'

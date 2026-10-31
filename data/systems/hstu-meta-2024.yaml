@@ -1,0 +1,133 @@
+id: hstu-meta-2024
+name: Generative Recommenders / HSTU
+company: Meta
+surface: Ranking and retrieval on an unnamed "large internet platform"
+year: 2024
+era: generative
+era_reason: "Generative recommender: actions as tokens, trillion-parameter transducer with scaling laws"
+first_public: "2024-02"
+venue: "ICML 2024"
+venue_year: 2024
+published_version_checked: true
+primary_source: "https://proceedings.mlr.press/v235/zhai24a.html"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Recasts retrieval and ranking as sequence transduction with the HSTU attention encoder in place of DLRM interactions; reports +12.4% online on topline metrics."
+summary: Reformulates retrieval and ranking as sequential transduction over one merged time series of a user's actions and content as Generative Recommenders and replaces DLRM feature interaction with HSTU, a pointwise-aggregated-attention encoder; reports deployment on multiple
+  surfaces of an unnamed large internet platform.
+paradigms:
+- sequential-transformer
+- foundation-model
+- multi-task
+stages:
+- stage: retrieval
+  model_family: HSTU generative retrieval (user-sequence encoder)
+  details: 'Table 6 (industrial, vs DLRM): offline HR@100 36.9% and HR@500 62.4% for GR (new source) vs 29.0% and 55.5% for the DLRM;
+    online E-Task +6.2%, C-Task +5.0% (new source) and +5.1% / +1.9% (replace source). Content-only GR is much worse (11.6% / 18.8%);
+    interactions-only GR gets 35.6% / 61.7%.'
+- stage: rank
+  model_family: HSTU generative ranking, multi-task (engagement 'E-Task' and consumption 'C-Task'), evaluated with Normalized Entropy
+  details: Numerical aggregate features (counters, ratios) are dropped in GR because the categorical features they aggregate over are
+    already in the sequence; target-aware scoring of candidates uses M-FALCON.
+id_tokenization:
+  approach: Items and actions merged into a single time series; high-cardinality ids embedded directly (no Semantic-ID quantization)
+  details: Paper highlights a billion-scale, continuously changing vocabulary as a core difficulty.
+features_signals:
+- Merged main time series of user actions and items (categorical features sequentialized)
+- Content / categorical features as sequence tokens
+- Numerical aggregate features removed in GR; DLRM baseline described with ~1000 dense and ~50 sparse features
+training:
+  mode: Streaming / continuous training; generative training that samples users at rate ~1/n_i so encoder cost is amortized across targets
+    (O(N^2 d + N d^2))
+  objectives:
+  - 'Retrieval: sequential transduction (log-perplexity metric offline)'
+  - 'Ranking: multi-task E-Task / C-Task (NE metric)'
+  notes: 'Industrial ablations trained on 100B examples (DLRM-equivalent) with 64-256 H100s per job; 0.001 NE reduction is treated as
+    significant at about 0.5% topline per the paper. Stochastic Length: at alpha=1.6 a length-4096 sequence becomes ~776 most of the time
+    (>80% of tokens removed).'
+serving_infra: HSTU is 5.3x-15.2x faster than FlashAttention2-based Transformers at sequence length 8192 per the abstract; M-FALCON processes
+  b_m candidates in one forward pass with modified attention masks/biases and optional micro-batching with KV caching, so cross-attention
+  cost is O(n^2 d) instead of O(b_m n^2 d); paper states 285x more complex models served at 1.5x-3x QPS.
+scale:
+- metric: Largest GR
+  value: 1.5 trillion parameters per the abstract; DLRM quality saturates at about 200 billion parameters per the Fig 6 caption
+  note: paper
+- metric: Compute
+  value: '''three orders of magnitude more computationally complex'' than prior SOTA (intro)'
+  note: paper
+- metric: Scaling law
+  value: power-law in training compute across three orders of magnitude, up to GPT-3/LLaMa-2 scale (abstract)
+  note: paper
+results_reported: '+12.4% online A/B on topline metrics, deployed on multiple surfaces (abstract); per-task online deltas in Table 6
+  (retrieval, above). Public datasets: HSTU-large beats SASRec by up to +65.8% NDCG@10 (Amazon Books).'
+caveats:
+- Platform and surfaces are not named as a 'large internet platform with billions of users'; this card labels the company Meta from author
+  affiliation only.
+- The +12.4% is a topline figure; its metric definition is not given in the abstract/intro.
+- Table 7 (ranking online metrics) did not extract cleanly from the PDF, so per-task ranking deltas are not reproduced.
+- Industrial datasets are internal and not released.
+unknown_fields:
+- named product surface
+- absolute QPS / latency numbers
+- exact metric behind +12.4%
+sources:
+- title: "Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations, ICML 2024"
+  url: https://proceedings.mlr.press/v235/zhai24a.html
+  type: paper
+- title: 'Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations, arXiv 2402.17152,
+    ICML 2024'
+  url: https://arxiv.org/abs/2402.17152
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2402.17152
+  local_pdf: /workspace/src/fulltext/2402.17152.pdf
+  sections_read: Abstract, intro, method, experiments, Tables 4-7 and Fig 1/5 captions
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/meta-recsys/generative-recommenders
+    owner: Meta (meta-recsys)
+    official: true
+    note: 'Code for the paper: HSTU, M-FALCON, public-dataset configs, kernels. The paper''s link (facebookresearch/generative-recommenders)
+      redirects here. Production models and data are not included.'
+core_idea: Recast retrieval and ranking as sequential transduction with a pointwise-aggregated-attention encoder.
+deployed_in: Multiple surfaces of an unnamed large internet platform
+scale_short: Largest model 1.5 trillion parameters
+key_result: +12.4% on topline metrics in an online A/B, deployed on multiple surfaces
+results_table:
+  online:
+  - setting: Online A/B, multiple surfaces
+    method: HSTU
+    metric: Topline metrics, exact metric not named
+    result: +12.4%
+    versus: Production DLRM
+  offline:
+  - setting: Amazon Books
+    method: HSTU-large
+    metric: NDCG@10
+    result: Up to +65.8%
+    versus: SASRec
+deployment:
+  online_evidence: online_numbers
+  scenario: Multiple surfaces of an unnamed large internet platform
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production DLRM
+  online_lifts:
+  - metric: Topline metrics, exact metric not named
+    value: +12.4%
+  training_compute: 64 to 256 H100 GPUs per training job
+  serving_latency: not_reported
+  serving_qps: 'Relative only: a model 285x more complex served at 1.5x to 3x the QPS of the DLRM; no absolute QPS'
+  inference_cost: not_reported
+  hardware: NVIDIA H100 GPUs, bfloat16
+  fulltext_refs:
+  - 'Sec 5: 64-256 H100s used per job'
+  - 'Sec 5: performance in bfloat16 on NVIDIA H100 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

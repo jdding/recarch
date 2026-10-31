@@ -1,0 +1,40 @@
+surface|首页、大部分页面和搜索
+era_reason|MF、RBM、item-CF 和排序模型的集成，深度学习之前
+tldr|Netflix 的算法集成，如逐行的 Personalized Video Ranker、Top-N 和 Trending，用针对留存的 A/B 测试来评判；论文估计每年节省超过 $1B。
+summary|Netflix 算法集成的第一方综述：逐行的 Personalized Video Ranker，即 PVR，加上 Top-N、Trending、「继续观看」、被称为「因为你看过」的视频相似度、页面生成、证据选择和搜索，全部通过针对成员留存的 A/B 测试来评估。
+core_idea|算法集成，如逐行的 Personalized Video Ranker，全部由针对留存的 A/B 测试来评判。
+deployed_in|Netflix 首页、大部分页面和搜索
+scale_short|超过 6500 万成员，每天流媒体播放超过一亿小时
+key_result|个性化和推荐合在一起，估计每年因减少取消订阅而为 Netflix 节省超过 $1B
+results_reported|论文估计，个性化和推荐合在一起，每年因减少取消订阅而为 Netflix 节省超过 $1B。
+stages.0.model_family|行级算法：PVR，即类型和主题行，Top-N，即「为你精选」，Trending、「继续观看」，视频相似度，即 sims
+stages.0.details|每个首页约 40 行，每行最多 75 个视频，随设备而异。各行由不同的算法产生；页面生成算法负责挑选和排列行。
+stages.1.model_family|把搜索当作一个基于 IR 的独立问题，同时也借用推荐的思路
+stages.1.details|推荐影响了约 80% 的播放时长；另外约 20% 来自搜索。
+features_signals.0|观看历史
+features_signals.1|评分和其他成员交互，按一般性的讨论
+features_signals.2|一天中的时间和设备，上下文特征
+features_signals.3|视频热度
+training.mode|离线加 A/B 测试
+training.objectives.0|通过 A/B 测试衡量留存和中期互动
+training.notes|论文讨论了 A/B 测试的设计和解读。
+scale.0.metric|撰文时的成员数
+scale.0.value|超过 6500 万
+scale.1.metric|流媒体播放量
+scale.1.value|每天超过一亿小时的电影和电视剧
+scale.2.metric|受推荐影响的播放时长占比
+scale.2.value|约 80%
+results_table.other.0.setting|论文的估计
+results_table.other.0.method|个性化和推荐合在一起
+results_table.other.0.metric|减少取消订阅带来的节省
+results_table.other.0.result|每年超过 $1B
+results_table.other.0.versus|没有个性化
+caveats.0|2015 年的快照：该系统此后已经重建，见 netflix-foundation-model-2025。
+caveats.1|叙述性的系统论文；几乎没有架构或超参细节。
+unknown_fields.0|模型规模
+unknown_fields.1|延迟
+unknown_fields.2|服务基础设施
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Netflix 首页、大部分页面和搜索
+deployment.notes.0|个性化和推荐的估计价值为每年超过 $1B。这是估计，不是 A/B 结果。
+deployment.notes.1|论文讨论了 A/B 测试设计，没有给出模型指标。

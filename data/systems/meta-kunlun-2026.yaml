@@ -1,0 +1,135 @@
+id: meta-kunlun-2026
+name: "Kunlun"
+company: Meta
+surface: Meta Ads ranking models for CTR and conversion prediction
+year: 2026
+era: deep
+era_reason: "Scaling a discriminative CTR ranker built from sequence transformer blocks plus Wukong-style feature interaction; not autoregressive generation, semantic IDs or LLM-based."
+first_public: "2026-02"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818438"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Efficiency-first joint sequence plus feature-interaction ads ranker at Meta: MFU 17% to 37% on B200, 2x scaling efficiency over InterFormer; deployed with +1.2% topline."
+summary: 'Kunlun is a unified Meta Ads ranking architecture that processes user-history sequences and non-sequence features in the same stack of layers made of a Kunlun Transformer Block plus a Kunlun Interaction Block. It combines kernel-level changes such as Generalized Dot-Product Attention, Hierarchical Seed Pooling and sliding-window attention with compute reallocation through Computation Skip and event-level personalization to raise hardware utilization and obtain steeper power-law scaling. The paper says it is deployed in major Meta Ads models.'
+paradigms:
+- sequential-transformer
+- dlrm
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'Stacked Kunlun layers over (a) per-event-type sequence streams and (b) a non-sequence token bank. Transformer Block: GDPA-based Personalized FFN (weights generated from non-sequence context) + multi-head self-attention with sliding window and Rotary Temporal Embeddings. Interaction Block: weight generation, Hierarchical Seed Pooling (HSP) with SumKronLinear compression, and a Global Interaction module made of a mixture of Wukong experts. Sigmoid heads give click probability.'
+  details: 'Builds on InterFormer. Computation Skip alternates layers: even layers skip self-attention and compute fresh HSP summaries, while odd layers reuse summaries, skip PFFN and compute self-attention. Per-event configs (d_model, heads, tokens, layers, window) are larger for high-value events such as conversions than for impressions.'
+id_tokenization:
+  approach: ID embeddings
+  details: 'Dense features are linearly projected and each sparse feature is embedded to d dimensions; each interacted item is a d-dimensional embedding. No semantic IDs.'
+features_signals:
+- Hundreds to thousands of non-sequence dense and sparse features such as user demographics, ad metadata and context
+- 10+ user-history sequences of length hundreds to thousands, over event types (clicks, conversions, impressions)
+- Timestamp gaps (Rotary Temporal Embeddings, log-scaled)
+training:
+  mode: Offline training on internal Meta Ads data, one epoch per run
+  objectives:
+  - CTR prediction with a sigmoid output, evaluated by Normalized Entropy
+  notes: 'Offline data is 70B+ samples; PyTorch with custom Triton kernels (GDPA, HSP); runs on H100, B200 and GB200, comparisons use B200 with the same global batch size and optimizer.'
+serving_infra: 'Not described beyond the training-side kernels. The paper reports training MFU and QPS, not online serving latency.'
+scale:
+- metric: Offline training samples
+  value: 70B+
+  note: Internal Meta Ads dataset
+- metric: Compute scales compared
+  value: 6 / 60 / 180 GFLOPs per sample
+  note: Wukong, InterFormer and Kunlun compared at three budgets
+results_reported: 'Paper claims: MFU 17% to 37% on NVIDIA B200; 2x scaling efficiency over state-of-the-art (scaling coefficient about 2x InterFormer). NE gain over Wukong at 6/60/180 GFLOPs: Kunlun 0.31%/0.66%/0.79% vs InterFormer 0.31%/0.36%/0.50% (Figure 3; Kunlun uses 154.9 vs 172.3 GFLOPs at the 180 scale). Ablations per Table 1: w/o GDPA MFU 34.0%, QPS -8%, NE +0.04%; Computation Skip -43.1% FLOPs and +35% QPS at NE-neutral; sliding window +31.1% QPS and -29.5% FLOPs; event personalization +13% QPS and -11% FLOPs. Production: deployed across major Meta Ads models with a 1.2% improvement in topline metrics.'
+caveats:
+- 'The deployment claim is one sentence in the abstract, contribution list and Section 5.4: "1.2% improvement in topline metrics". The paper gives no A/B design, traffic share, surface breakdown or duration.'
+- 'All scaling and ablation numbers come from offline training on internal datasets; absolute NE values are not shown and NEs are not comparable across compute scales.'
+- 'HSTU is deliberately not compared, because the authors argue it is designed for sequence-dominated, request-level settings.'
+- 'Author affiliations in the PDF are Meta Platforms; two author lines in the extracted text are garbled.'
+unknown_fields:
+- online A/B design and per-surface results
+- serving latency and hardware
+- model parameter counts
+- which "major Meta Ads models" run Kunlun
+sources:
+- title: "Kunlun: Establishing Scaling Laws for Massive-Scale Recommendation Systems through Unified Architecture Design, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818438
+  type: paper
+- title: Kunlun, arXiv 2602.10016
+  url: https://arxiv.org/abs/2602.10016
+  type: paper
+- title: Meta ads_model_kernel_library, GDPA kernels
+  url: https://github.com/facebookresearch/ads_model_kernel_library
+  type: source_code
+version_note: 'Numbers checked against the KDD 2026 camera-ready PDF, from the owner Zotero copy, ACM DOI 10.1145/3770855.3818438. arXiv v1 was 10 Feb 2026; latest arXiv is v3 of 5 Jun 2026, which was not compared line by line.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.10016
+  local_pdf: /workspace/recarch/zotero/meta-kunlun-2026.pdf
+  sections_read: 'Abstract, introduction, problem/scaling-efficiency definition, method (architecture, GDPA, HSP, sliding window, CompSkip, event personalization, mixture of Wukong experts), experiments (setup, Fig 3, Table 1, Fig 4), production deployment, conclusion, appendices A-D'
+  verified_on: '2026-10-30'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/facebookresearch/ads_model_kernel_library
+    owner: Meta (facebookresearch)
+    official: true
+    note: 'GPU kernels only, such as GDPA and jagged flash attention; the GDPA README cites Kunlun and InterFormer. The paper links this repo for core kernel implementations. The Kunlun model, training code and data are not released.'
+core_idea: One stack of Transformer and interaction blocks handles sequence and non-sequence features.
+deployed_in: Major Meta Ads models for CTR and conversion prediction
+scale_short: 70B+ offline training samples, 6 to 180 GFLOPs per sample
+key_result: 1.2% improvement in topline metrics, deployed across major Meta Ads models
+results_table:
+  online:
+  - setting: Production, major Meta Ads models
+    method: Kunlun
+    metric: Topline metrics
+    result: +1.2%
+    versus: Previous production
+  offline:
+  - setting: Figure 3, 6 GFLOPs
+    method: Kunlun
+    metric: NE gain over Wukong
+    result: 0.31%
+    versus: InterFormer 0.31%
+  - setting: Figure 3, 60 GFLOPs
+    method: Kunlun
+    metric: NE gain over Wukong
+    result: 0.66%
+    versus: InterFormer 0.36%
+  - setting: Figure 3, 180 GFLOPs
+    method: Kunlun
+    metric: NE gain over Wukong
+    result: 0.79%
+    versus: InterFormer 0.50%
+  - setting: NVIDIA B200
+    method: Kunlun
+    metric: MFU
+    result: 17% to 37%
+    versus: Earlier utilization
+deployment:
+  online_evidence: online_numbers
+  scenario: Major Meta Ads models for CTR and conversion prediction
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous production
+  online_lifts:
+  - metric: Topline metrics
+    value: +1.2%
+  training_compute: Training model FLOPs utilization 17% to 37% on NVIDIA B200 GPUs
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: H100, B200 and GB200 GPUs in training experiments; serving hardware not reported
+  notes:
+  - The paper reports training QPS and utilization, not online serving latency.
+  - Computation Skip cuts FLOPs by 43.1% and raises training QPS by about 35% with neutral NE.
+  basis: full_text
+  checked_on: '2026-10-31'

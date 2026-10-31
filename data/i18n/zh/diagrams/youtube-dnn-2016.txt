@@ -1,0 +1,23 @@
+alt|从左到右：观看历史、搜索历史、地理位置和设备、年龄和性别特征先被 embed、拼接，再经全连接 ReLU 层得到用户向量；训练时在视频上用 softmax，服务时用最近邻查找。
+caption.fig|图 3
+caption.note|只画了候选生成网络；排序网络，即论文图 7，没有画出。
+columns.0.label|输入
+columns.0.boxes.0.text.0|观看历史
+columns.0.boxes.0.text.1|视频 ID -> embedding，取平均
+columns.0.boxes.1.text.0|搜索历史
+columns.0.boxes.1.text.1|query 的 unigram/bigram -> embedding，取平均
+columns.0.boxes.2.text.0|地理位置、设备
+columns.0.boxes.2.text.1|做 embedding
+columns.0.boxes.3.text.0|Example age、性别、登录状态、用户年龄
+columns.0.boxes.3.text.1|稠密值归一化到 0-1
+columns.1.label|核心模型
+columns.1.boxes.0.text.0|拼接 + 全连接 ReLU 层
+columns.1.boxes.0.text.1|embedding 与网络联合学习
+columns.2.label|表示
+columns.2.boxes.0.text.0|用户向量
+columns.2.boxes.0.text.1|最后一个隐藏层的输出
+columns.3.label|输出
+columns.3.boxes.0.text.0|训练
+columns.3.boxes.0.text.1|在数百万个视频类别上做 softmax，采样，交叉熵损失
+columns.3.boxes.1.text.0|服务
+columns.3.boxes.1.text.1|在视频向量中做近似最近邻查找 -> 数百个候选

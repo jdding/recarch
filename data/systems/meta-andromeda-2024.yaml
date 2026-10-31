@@ -1,0 +1,108 @@
+id: meta-andromeda-2024
+name: Meta Andromeda
+company: Meta
+surface: Ads retrieval on Facebook and Instagram
+year: 2024
+era: deep
+era_reason: "Neural retrieval engine plus hardware co-design; not generative"
+first_public: "2024-12"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://engineering.fb.com/2024/12/02/production-engineering/meta-andromeda-advantage-automation-next-gen-personalized-ads-retrieval-engine/"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "Meta's ads retrieval engine: a deep network co-designed with Grace Hopper hardware and a hierarchical index; the blog reports +6% recall and +8% ads quality."
+summary: 'Next-generation ads retrieval engine: a deep neural network co-designed with NVIDIA Grace Hopper hardware and a hierarchical
+  index, trained jointly with the retrieval model, to pick a few thousand ads from tens of millions of candidates.'
+paradigms:
+- embedding-based-retrieval
+- dlrm
+stages:
+- stage: retrieval
+  model_family: Deep NN with hierarchical index jointly trained with the retrieval model, served on Grace Hopper
+  details: Blog says it is expected to move to an autoregressive loss and integrate with MTIA; it is not described as a generative model
+    today.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Ads features (not enumerated in the blog)
+training:
+  mode: Offline, co-designed with hardware
+  objectives:
+  - Retrieval objective (details not given)
+  notes: null
+serving_infra: NVIDIA Grace Hopper Superchip; hierarchical index co-trained with retrieval model; MTIA integration planned
+scale:
+- metric: Candidate pool
+  value: tens of millions of ads
+  note: blog
+- metric: Candidates passed on
+  value: a few thousand
+  note: blog
+- metric: Model capacity increase
+  value: 10,000x
+  note: blog
+- metric: Feature extraction speedup
+  value: '>100x'
+  note: blog
+- metric: End-to-end QPS
+  value: '>3x'
+  note: blog
+results_reported: 'Blog: +6% recall improvement and +8% ads quality improvement on selected segments.'
+caveats:
+- Engineering blog; no paper, no ablations.
+unknown_fields:
+- architecture details
+- loss
+- feature list
+sources:
+- title: 'Meta Andromeda: Supercharging Advantage+ automation with the next-gen personalized ads retrieval engine'
+  url: https://engineering.fb.com/2024/12/02/production-engineering/meta-andromeda-advantage-automation-next-gen-personalized-ads-retrieval-engine/
+  type: engineering_blog
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A deep neural network co-designed with Grace Hopper hardware and a hierarchical index, trained jointly with retrieval.
+deployed_in: Ads retrieval on Facebook and Instagram
+scale_short: Picks a few thousand ads from tens of millions of candidates
+key_result: 'Blog: +6% recall and +8% ads quality on selected segments'
+results_table:
+  other:
+  - setting: Selected segments, per the blog
+    method: Andromeda
+    metric: Recall
+    result: +6%
+    versus: Previous retrieval
+  - setting: Selected segments, per the blog
+    method: Andromeda
+    metric: Ads quality
+    result: +8%
+    versus: Previous retrieval
+deployment:
+  online_evidence: online_numbers
+  scenario: Ads retrieval on Facebook and Instagram
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts:
+  - metric: Recall, selected segments
+    value: +6%
+  - metric: Ads quality, selected segments
+    value: +8%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: More than 3x end-to-end QPS improvement; absolute QPS not reported
+  inference_cost: Model capacity up 10,000x; feature extraction more than 100x faster
+  hardware: NVIDIA Grace Hopper Superchip; MTIA integration planned
+  notes:
+  - The blog does not describe the A/B setup behind the recall and ads quality figures.
+  basis: card_content
+  checked_on: '2026-10-31'

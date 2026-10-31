@@ -1,0 +1,29 @@
+surface|在 MovieLens 衍生数据集上的研究实验，不是 Spotify 的线上数据
+era_reason|用于联合生成式搜索和推荐的 Semantic ID
+tldr|研究用 Semantic ID 让一个生成式模型同时服务搜索和推荐；在两个任务上微调的 bi-encoder 取得最好的权衡。仅离线。
+summary|研究如何构建既能服务搜索又能服务推荐的 Semantic ID，放在一个生成式模型中；在两个任务上微调的 bi-encoder 取得最好的权衡。
+core_idea|构建既服务搜索又服务推荐的 Semantic ID，放在一个生成式模型中，使用在两个任务上微调的 bi-encoder。
+deployed_in|在 MovieLens 衍生数据集上的研究实验，不是 Spotify 的线上数据
+scale_short|来源中未说明
+key_result|离线：在两个任务上微调的 bi-encoder 取得最好的权衡，没有报告具体数字
+results_reported|只有离线指标。
+version_note|对照站长的 Zotero 副本核对过，它是 14 Aug 2025 的 arXiv v1，用 RecSys '25 的 ACM 模板排版，带引用格式和 DOI 10.1145/3705328.3759300，6 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+status_reason|按入选标准已退役：实验用的是公开的电影数据，不是 Spotify 的线上数据，所以没有线上证据，且引用数低于可免除线上证据规则的 500。
+stages.0.model_family|flan-t5-base 联合生成式模型，用于搜索和推荐
+stages.0.details|Semantic ID 来自 2 个大小为 256 的码本，用 RQ-KMeans 构建，使用 FAISS；在这些实验中 RQ-KMeans 优于 RQ-VAE。
+id_tokenization.approach|在多任务 bi-encoder embedding 上的 RQ-KMeans Semantic ID
+id_tokenization.details|针对单个任务的 ID 对自己的任务有帮助，但损害另一个任务；来自多任务 bi-encoder，即微调后的 all-mpnet-base-v2，的统一 ID 取得最好的权衡。
+features_signals.0|Item 文本
+features_signals.1|每个 item 有 20 条由 LLM 生成的 query
+training.objectives.0|联合的搜索和推荐生成
+training.notes|MovieLens25M 衍生：62,138 部电影，1.24M 条交互。
+results_table.note|只有离线指标。没有报告线上部署。
+results_table.offline.0.setting|MovieLens 衍生数据集
+results_table.offline.0.method|在两个任务上微调的 bi-encoder
+results_table.offline.0.metric|搜索和推荐之间的权衡
+results_table.offline.0.result|最好的权衡，没有数字
+results_table.offline.0.versus|其他 Semantic ID 构建方式
+caveats.0|不是 Spotify 的线上系统；实验使用公开的电影数据。
+unknown_fields.0|线上部署
+updates.0.note|对照 arXiv 托管的、带最终 DOI 的 RecSys '25 定稿 PDF 核对；所有卡片数字均已确认，没有改动。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。

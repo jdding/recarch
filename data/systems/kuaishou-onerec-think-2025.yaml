@@ -1,0 +1,98 @@
+id: kuaishou-onerec-think-2025
+name: OneRec-Think
+company: Kuaishou
+surface: Reasoning-enabled generative recommendation
+year: 2025
+era: generative
+era_reason: LLM reasoning plus generative recommendation
+first_public: 2025-10
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/abs/2510.11639
+added_on: '2026-10-29'
+last_verified: '2026-10-30'
+system_type: recommendation
+evidence_level: production_described
+tldr: A Qwen3-8B LLM that unifies dialogue, reasoning and recommendation over item tokens; online A/B gave App Stay Time +0.159%.
+summary: 'Unifies dialogue, text reasoning and recommendation in one LLM-based generative recommender: items are itemic tokens added to a Qwen3-8B vocabulary, trained in three stages, namely itemic alignment, reasoning activation and RL reasoning enhancement, and deployed through a two-stage ''Think-Ahead'' design that pre-generates reasoning-derived item-token prefixes for a real-time OneRec model.'
+paradigms:
+- llm-based
+- generative-retrieval
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: LLM on a Qwen-8B backbone whose vocabulary is extended by 24,576 itemic tokens, 3 levels x 8,192, generating reasoning text then itemic tokens
+  details: Stage 1 multi-task pretraining, which interleaves user-persona grounding, itemic dense captioning, general language modeling and more, aligns items with text; Stage 2 prompts the model to write preference rationales; Stage 3 refines reasoning with RL and a recommendation-specific reward.
+- stage: other
+  model_family: Think-Ahead deployment architecture
+  details: Stage one produces item-token prefixes ahead of time from reasoning on intent/general preference; stage two is a real-time updated OneRec model that uses those prefixes as a constrained prefix to generate the final item tokens (Appendix A.3.4).
+id_tokenization:
+  approach: Itemic tokens aligned with text
+  details: null
+features_signals:
+- Item text, user history
+training:
+  mode: 'Three-stage: multi-task alignment pretraining -> reasoning activation by prompting the model to generate preference rationales -> RL with recommendation-aware reward'
+  objectives:
+  - Next-token prediction over text and itemic tokens
+  - RL reward tailored for recommendation accuracy
+  notes: Offline benchmarks on Amazon Beauty, Toys, Sports against BERT4Rec, HGN, GRU4Rec, SASRec, TIGER, HSTU, ReaRec; ablation on Beauty shows Base+IA+R above Base+IA.
+serving_infra: null
+scale:
+- metric: Backbone
+  value: Qwen-8B initialised from public weights
+  note: paper
+- metric: Added vocabulary
+  value: 24,576 itemic tokens (3 x 8,192)
+  note: paper
+- metric: Online experiment
+  value: 1.29% traffic group for one week, platform with hundreds of millions of daily active users
+  note: paper
+results_reported: 'Online A/B vs the online model: APP Stay Time +0.159% (1.29% traffic, one week). Public benchmarks: state-of-the-art claimed on Amazon Beauty/Toys/Sports.'
+caveats:
+- +0.159% App Stay Time is small in absolute terms; the paper frames it as validating reasoning in production.
+- Reasoning generation is moved off the real-time path by Think-Ahead, so the online model still depends on the OneRec real-time model.
+- Full serving cost/latency of the reasoning stage is not stated in the sections read.
+unknown_fields:
+- reasoning-stage latency and GPU cost
+- rollout beyond the 1.29% experiment
+sources:
+- title: 'OneRec-Think: In-Text Reasoning for Generative Recommendation, arXiv 2510.11639'
+  url: https://arxiv.org/abs/2510.11639
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2510.11639
+  local_pdf: /workspace/src/a_2510.11639.pdf
+  sections_read: Abstract, intro, method (itemic alignment, reasoning activation, reasoning enhancement, Think-Ahead), experiments, industrial A/B paragraph
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/wangshy31/OneRec-Think
+    owner: Shiyao Wang (paper co-first author, Kuaishou); linked from the paper
+    official: true
+    note: 'Qwen3-1.7B pipeline on public Amazon data: itemic alignment, reasoning activation, evaluation. The deployed Think-Ahead production system is not included.'
+core_idea: One LLM unifies dialogue, reasoning and recommendation, with items as added itemic tokens.
+deployed_in: Kuaishou, tested on a 1.29% traffic group, wider rollout not stated
+scale_short: Qwen-8B backbone with 24,576 added itemic tokens
+key_result: App Stay Time +0.159% in a one-week online A/B on 1.29% of traffic
+results_table:
+  online:
+  - setting: Kuaishou A/B, 1.29% of traffic, one week
+    method: OneRec-Think
+    metric: App Stay Time
+    result: +0.159%
+    versus: Online model
+  offline:
+  - setting: Amazon Beauty, Toys, Sports
+    method: OneRec-Think
+    metric: Public benchmarks
+    result: State of the art claimed, no figure
+    versus: Prior methods
+status: superseded
+status_date: '2026-10-30'
+superseded_by: onerec-kuaishou
+status_reason: Merged into the OneRec card, one card per system, which presents OneRec-V2 as the main version.

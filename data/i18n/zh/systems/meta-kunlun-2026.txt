@@ -1,0 +1,48 @@
+surface|Meta 广告排序模型，用于 CTR 和转化预估
+era_reason|扩展一个判别式 CTR 排序模型，由序列 Transformer 模块加 Wukong 风格的特征交互构成；不是自回归生成，不使用 Semantic ID，也不基于大模型。
+tldr|Meta 以效率优先的序列加特征交互联合广告排序模型：B200 上 MFU 从 17% 提升到 37%，扩展效率是 InterFormer 的 2x；已上线，topline 提升 +1.2%。
+summary|Kunlun 是 Meta 统一的广告排序架构，把用户历史序列和非序列特征放在同一组层中处理，每层由 Kunlun Transformer Block 加 Kunlun Interaction Block 构成。它把 Generalized Dot-Product Attention、Hierarchical Seed Pooling 和滑动窗口注意力这类 kernel 级改动，与 Computation Skip 和事件级个性化带来的算力重分配结合起来，以提高硬件利用率，并获得更陡的幂律扩展曲线。论文称它已部署在 Meta 的主要广告模型中。
+core_idea|同一组 Transformer 和交互模块同时处理序列特征和非序列特征。
+deployed_in|Meta 主要的广告模型，用于 CTR 和转化预估
+scale_short|70B+ 条离线训练样本，每条样本 6 到 180 GFLOPs
+key_result|topline 指标提升 1.2%，已部署在 Meta 主要的广告模型中
+results_reported|论文声称：NVIDIA B200 上 MFU 为 17% 到 37%；扩展效率是当前最优方法的 2x，扩展系数约为 InterFormer 的 2x。相对 Wukong 的 NE 提升，在 6、60、180 GFLOPs 下：Kunlun 为 0.31%、0.66%、0.79%，InterFormer 为 0.31%、0.36%、0.50%，见图 3；在 180 这一档，Kunlun 用 154.9 GFLOPs，InterFormer 用 172.3。消融见表 1：去掉 GDPA 后 MFU 为 34.0%，QPS -8%，NE +0.04%；Computation Skip 在 NE 不变时 FLOPs -43.1%，QPS +35%；滑动窗口 QPS +31.1%，FLOPs -29.5%；事件个性化 QPS +13%，FLOPs -11%。线上：已部署在 Meta 主要的广告模型中，topline 指标提升 1.2%。
+version_note|数字已对照 KDD 2026 定稿版 PDF 核对，来自站长的 Zotero 副本，ACM DOI 为 10.1145/3770855.3818438。arXiv v1 为 10 Feb 2026；最新的 arXiv 是 5 Jun 2026 的 v3，未逐行比对。
+serving_infra|除训练侧的 kernel 之外未作说明。论文报告的是训练 MFU 和 QPS，不是在线服务延迟。
+stages.0.model_family|多层堆叠的 Kunlun 层，作用于两部分：一是按事件类型划分的序列流，二是非序列 token 库。Transformer Block：基于 GDPA 的 Personalized FFN，权重由非序列上下文生成，加上带滑动窗口和 Rotary Temporal Embeddings 的多头自注意力。Interaction Block：权重生成，带 SumKronLinear 压缩的 Hierarchical Seed Pooling，简称 HSP，以及由多个 Wukong expert 混合而成的 Global Interaction 模块。最后用 sigmoid 头给出点击概率。
+stages.0.details|建立在 InterFormer 之上。Computation Skip 交替使用不同的层：偶数层跳过自注意力，重新计算 HSP 摘要；奇数层复用摘要，跳过 PFFN，计算自注意力。每种事件各有自己的配置，包括 d_model、头数、token 数、层数和窗口，转化这类高价值事件的配置比曝光的更大。
+id_tokenization.approach|=
+id_tokenization.details|稠密特征做线性投影，每个稀疏特征 embed 成 d 维；每个交互的 item 是一个 d 维 embedding。不使用 Semantic ID。
+features_signals.0|数百到数千个非序列稠密和稀疏特征，如用户人口属性、广告元数据和上下文
+features_signals.1|10 条以上的用户历史序列，长度从数百到数千，覆盖点击、转化和曝光等事件类型
+features_signals.2|时间戳间隔，使用 Rotary Temporal Embeddings，取对数缩放
+training.mode|在 Meta 内部广告数据上离线训练，每次运行一个 epoch
+training.objectives.0|用 sigmoid 输出做 CTR 预估，以 Normalized Entropy 评估
+training.notes|离线数据为 70B+ 条样本；使用 PyTorch 和自定义的 Triton kernel，包括 GDPA 和 HSP；在 H100、B200 和 GB200 上运行，对比统一使用 B200，且全局 batch size 和优化器相同。
+scale.0.metric|离线训练样本
+scale.1.metric|对比的算力档位
+scale.1.value|每条样本 6 / 60 / 180 GFLOPs
+results_table.online.0.setting|线上，Meta 主要的广告模型
+results_table.online.0.metric|topline 指标
+results_table.online.0.versus|此前的线上版本
+results_table.offline.0.metric|相对 Wukong 的 NE 提升
+results_table.offline.1.metric|相对 Wukong 的 NE 提升
+results_table.offline.2.metric|相对 Wukong 的 NE 提升
+results_table.offline.3.versus|更早的利用率
+caveats.0|部署的说法只有一句，出现在摘要、贡献列表和第 5.4 节中：「topline 指标提升 1.2%」。论文没有给出 A/B 设计、流量占比、分场景拆解或时长。
+caveats.1|所有扩展和消融数字都来自内部数据集上的离线训练；没有展示绝对的 NE 值，且不同算力档位之间的 NE 不可比。
+caveats.2|有意没有与 HSTU 比较，因为作者认为 HSTU 是为序列主导、请求级的场景设计的。
+caveats.3|PDF 中作者单位为 Meta Platforms；提取出的文本中有两行作者信息出现乱码。
+unknown_fields.0|线上 A/B 设计和分场景结果
+unknown_fields.1|在线延迟和硬件
+unknown_fields.2|模型参数量
+unknown_fields.3|哪些「major Meta Ads models」在运行 Kunlun
+code.repos.0.owner|=
+code.repos.0.note|只有 GPU kernel，如 GDPA 和 jagged flash attention；GDPA 的 README 引用了 Kunlun 和 InterFormer。论文把这个仓库作为核心 kernel 实现的链接。Kunlun 模型、训练代码和数据均未发布。
+deployment.scenario|Meta 主要的广告模型，用于 CTR 和转化预估
+deployment.baseline|此前的线上版本
+deployment.training_compute|在 NVIDIA B200 GPU 上训练模型 FLOPs 利用率为 17% 到 37%
+deployment.hardware|训练实验使用 H100、B200 和 GB200 GPU；在线服务硬件未报告
+deployment.notes.0|论文报告的是训练 QPS 和利用率，不是在线服务延迟。
+deployment.notes.1|Computation Skip 使 FLOPs 降低 43.1%，训练 QPS 提升约 35%，NE 不变。
+deployment.online_lifts.0.metric|topline 指标

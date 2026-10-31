@@ -1,0 +1,70 @@
+id: spotify-joint-semantic-ids-2025
+name: Semantic IDs for Joint Generative Search and Recommendation
+company: Spotify
+surface: Research experiments on a MovieLens-derived dataset, not Spotify production data
+year: 2025
+era: generative
+era_reason: "Semantic IDs for joint generative search and recommendation"
+first_public: "2025-08"
+venue: "RecSys 2025 (late-breaking)"
+venue_year: 2025
+published_version_checked: true
+version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 14 Aug 2025 typeset in the RecSys '25 ACM template with the reference format and DOI 10.1145/3705328.3759300, 6 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+primary_source: "https://doi.org/10.1145/3705328.3759300"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the RecSys '25 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
+system_type: research
+evidence_level: research_only
+tldr: "Studies Semantic IDs for one generative model serving both search and recommendation; a bi-encoder fine-tuned on both tasks gives the best tradeoff. Offline only."
+summary: >-
+  Studies how to build Semantic IDs that serve both search and recommendation in one generative model; a bi-encoder fine-tuned on both tasks gives the best tradeoff.
+paradigms: [generative-retrieval, semantic-id, two-tower]
+stages:
+  - stage: single-stage
+    model_family: flan-t5-base joint generative model for search and recommendation
+    details: Semantic IDs from 2 codebooks of 256 built with RQ-KMeans (FAISS); RQ-KMeans beat RQ-VAE in these experiments.
+id_tokenization:
+  approach: RQ-KMeans Semantic IDs over multi-task bi-encoder embeddings
+  details: Task-specific IDs help their own task but hurt the other; unified IDs from a multi-task bi-encoder (all-mpnet-base-v2 fine-tuned) gave the best tradeoff.
+features_signals: [Item text, 20 LLM-generated queries per item]
+training: {mode: Offline, objectives: [Joint search and recommendation generation], notes: "MovieLens25M-derived: 62,138 movies, 1.24M interactions."}
+serving_infra: null
+scale: []
+results_reported: Offline metrics only.
+caveats: [Not Spotify production; experiments use public movie data.]
+unknown_fields: [production deployment]
+sources:
+  - {title: "Semantic IDs for Joint Generative Search and Recommendation, RecSys 2025, late-breaking", url: "https://doi.org/10.1145/3705328.3759300", type: paper}
+  - {title: "Semantic IDs for Joint Generative Search and Recommendation, arXiv 2508.10478, RecSys 2025", url: "https://arxiv.org/abs/2508.10478", type: paper}
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.10478
+  local_pdf: /workspace/recarch/zotero/spotify-joint-semantic-ids-2025.pdf
+  sections_read: Title page / ACM reference format; every number on the card diffed against the full text
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Build semantic IDs that serve both search and recommendation in one generative model, using a bi-encoder fine-tuned on both tasks.
+deployed_in: Research experiments on a MovieLens-derived dataset, not Spotify production data
+scale_short: Not stated in the sources
+key_result: 'Offline: a bi-encoder fine-tuned on both tasks gives the best tradeoff, no figures reported'
+results_table:
+  offline:
+  - setting: MovieLens-derived dataset
+    method: Bi-encoder fine-tuned on both tasks
+    metric: Search and recommendation tradeoff
+    result: Best tradeoff, no figure
+    versus: Other semantic ID constructions
+  note: Offline metrics only. No production deployment is reported.
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: the experiments use public movie data, not Spotify production, so there is no online evidence, and citations are below the 500 that exempt a card from the online evidence rule."

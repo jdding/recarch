@@ -1,0 +1,71 @@
+id: dlrm-meta-2019
+name: "DLRM"
+company: "Meta / Facebook"
+surface: Reference model for personalization and CTR, not tied to a single named product surface
+year: 2019
+era: deep
+era_reason: "Embedding tables + MLP reference model"
+first_public: "2019-05"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/1906.00091"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: reference_architecture
+evidence_level: open_source_reference
+tldr: "Open-source reference recommender: embeddings for sparse features, bottom MLP for dense, pairwise dot-product interactions, top MLP; the paper focuses on parallel training."
+summary: >-
+  Open-source reference architecture, the Deep Learning Recommendation Model: sparse features go through embedding tables, dense features through a bottom MLP,
+  second-order interactions via pairwise dot products, then a top MLP. Paper focuses on hybrid model/data-parallel training.
+paradigms: [dlrm, multi-task]
+stages:
+  - stage: rank
+    model_family: Embeddings + bottom MLP + pairwise dot-product interaction + top MLP
+    details: Designed for CTR-style prediction; benchmarked on Criteo data and implemented in PyTorch and Caffe2.
+id_tokenization: {approach: Per-categorical-feature embedding tables, details: null}
+features_signals: [Dense continuous features, Sparse categorical features]
+training:
+  mode: Offline, with hybrid parallelism of model-parallel embeddings and data-parallel MLPs
+  objectives: [CTR-style binary prediction]
+  notes: Open-sourced code and benchmark.
+serving_infra: Paper characterises memory-capacity/bandwidth-bound embedding lookups and system implications.
+scale: []
+results_reported: Public-benchmark/system performance characterisation, not a production A/B.
+caveats: [Reference model, not a description of one production surface's full funnel.]
+unknown_fields: [production surface, latency, production scale]
+sources:
+  - {title: "Deep Learning Recommendation Model for Personalization and Recommendation Systems, arXiv 1906.00091", url: "https://arxiv.org/abs/1906.00091", type: paper}
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/facebookresearch/dlrm
+    owner: Meta (facebookresearch)
+    official: true
+    note: Reference implementation of DLRM in PyTorch and Caffe2 with a benchmark harness; the paper itself
+      points to this repo. Not Meta's production training stack.
+core_idea: Embedding tables for sparse features, a bottom MLP for dense features, dot-product interactions, then a top MLP.
+deployed_in: Open-source reference, not tied to a named product surface
+scale_short: No production scale reported
+key_result: 'No reported metrics: a public benchmark and system performance characterization, not a production A/B'
+results_table:
+  note: The paper characterizes performance on public benchmarks and systems. It reports no production A/B.
+deployment:
+  online_evidence: no_online_claim
+  scenario: Open-source reference, not tied to a named product surface
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Characterization run on the Big Basin platform with dual-socket Intel Xeon 6138 CPUs and eight Nvidia
+    Tesla V100 16GB GPUs
+  fulltext_refs:
+  - 'Sec 5: experiments on the Big Basin platform with dual socket Intel Xeon 6138 CPU at 2.00GHz and eight Nvidia
+    Tesla V100 16GB GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

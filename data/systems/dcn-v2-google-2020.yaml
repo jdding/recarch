@@ -1,0 +1,111 @@
+id: dcn-v2-google-2020
+name: DCN V2
+company: Google
+surface: Web-scale learning-to-rank systems at Google
+year: 2020
+era: deep
+era_reason: Improved cross network for web-scale ranking
+first_public: 2020-08
+venue: WWW 2021
+venue_year: 2021
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3442381.3450078
+added_on: '2026-10-29'
+last_verified: '2026-10-30'
+system_type: recommendation
+evidence_level: production_described
+tldr: DCN-V2 replaces the cross vector with a full weight matrix and adds a low-rank mixture variant called DCN-Mix that is 30% cheaper; best on Criteo with AUC 0.8115 and on MovieLens-1M.
+summary: Google's DCN-V2 improves the Deep & Cross Network by replacing the cross vector with a full weight matrix, x_{l+1} = x_0 * (W_l x_l + b_l) + x_l, stacked or parallel with a DNN, and adds a mixture-of-low-rank-experts variant, DCN-Mix, that cuts cost. On Criteo and MovieLens-1M it beats DeepFM, DLRM, xDeepFM, AutoInt, PNN, DCN and a tuned DNN. The paper says it has been deployed in multiple web-scale learning-to-rank systems at Google; the case study gives a 0.6% AUCLoss gain over a production ReLU MLP on a model trained on hundreds of billions of examples, without naming the product.
+paradigms:
+- dlrm
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: 'DCN-V2 feature-interaction ranker: embedding layer with arbitrary embedding sizes per feature, cross layers x_{l+1} = x_0 ⊙ (W_l x_l + b_l) + x_l (a strict superset of DCN; W = 1 w^T recovers DCN), deep ReLU network, stacked or parallel combination, logistic output with log loss and L2. DCN-Mix: W replaced by U V^T per expert with K gated experts, optionally with nonlinear projection space.'
+  details: Cross network of l layers captures interactions up to order l+1. Complexity O(d^2 L_c) for the cross network, O(2 d r K L_c) for DCN-Mix. The paper says it is label and loss agnostic and has been used for click labels.
+id_tokenization:
+  approach: Embedded sparse features
+  details: null
+features_signals:
+- Sparse and dense LTR features
+training:
+  mode: 'Benchmarks: TensorFlow v1, Adam, batch size 512 (128 for MovieLens), He normal init, gradient clipping norm 10, EMA 0.9999; 5 runs per best configuration. Production: sampled user logs of hundreds of billions of training examples.'
+  objectives:
+  - log loss on clicks
+  notes: 'Criteo: 45M examples, 39 features, 2.3M vocab, first 6 days train, last day split into validation and test. MovieLens-1M: 740k examples; ratings 1 and 2 as 0, 4 and 5 as 1, 3 removed. Production vocab sizes vary from 2 to millions.'
+serving_infra: 'Not described beyond latency and cost motivation: the paper notes strict latency at extremely high QPS and says low-rank DCN with rank = input size / 4 preserved the accuracy of full-rank DCN-V2. Cross layers should be inserted between the input and the hidden layers of the DNN; 1 to 2 cross layers give consistent gains and beyond that plateau.'
+scale:
+- metric: Production training examples
+  value: more than 100B (hundreds of billions)
+  note: paper, Table 3 and Sec 8
+results_reported: 'Criteo test per Table 6, LogLoss / AUC: DCN-V2 0.4406 / 0.8115; DCN-Mix 0.4408 / 0.8112 with 30% lower cost (2.4M vs 3.5M params); CrossNet 0.4413 / 0.8107; DCN 0.4420 / 0.8099; DNN 0.4421 / 0.8098; DeepFM 0.4420 / 0.8099; DLRM 0.4427 / 0.8092; AutoInt+ 0.4420 / 0.8101; xDeepFM 0.4421 / 0.8099 (about 10 times the FLOPS). The paper treats 0.001 on Criteo as significant. MovieLens-1M: DCN-V2 0.3170 / 0.8950, DCN-Mix 0.3160 / 0.8964, DCN 0.3197 / 0.8935. Synthetic polynomial fitting per Table 1: on f3, DCN-V2 RMSE 6.7E-07 vs DCN 2.6 and a large DNN 7.8E-02. Fixed-memory comparison per Table 7: CrossNet beats DNN at every size, for example 2.6E+06 params LogLoss 0.4415 vs 0.4423. Production per Sec 8: 0.6% AUCLoss (1 - AUC) improvement over the production MLP, where 0.1% is considered significant, plus significant gains in online business metrics, unnamed; Table 8 relative AUCLoss vs same-sized ReLU layers: 1-layer DCN-V2 -0.19%, 2-layer DCN-V2 -0.45% (2-layer ReLU -0.15%).'
+caveats:
+- The production system, product and online metrics are not named; no online numbers are given, only a 0.6% offline AUCLoss gain.
+- The paper says DNN performance on Criteo is neck to neck with most baselines once tuned, and that the cross-network advantage is more pronounced on synthetic data than on Criteo.
+- The venue year, WWW 2021, is not stated in the arXiv text; the card year follows the arXiv date, 2020.
+- Mixed-order synthetic results and the singular-value argument for low rank are shown in figures; only table values are cited here.
+unknown_fields:
+- which Google product(s) deploy DCN-V2
+- online metric deltas
+- serving latency numbers
+sources:
+- title: 'DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems, WWW 2021'
+  url: https://doi.org/10.1145/3442381.3450078
+  type: paper
+- title: 'DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems, arXiv 2008.13535'
+  url: https://arxiv.org/abs/2008.13535
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2008.13535
+  local_pdf: (read as text via https://arxiv.org/pdf/2008.13535 (v2 HTML conversion); no local PDF)
+  sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (architecture, low-rank mixture, complexity), Sec 4 analysis, Sec 6 synthetic study per Tables 1-2, Sec 7 Criteo and MovieLens experiments (Tables 3-7, Figure 5-6), Sec 8 productionizing at Google per Table 8, conclusions, Table 9'
+  verified_on: '2026-10-30'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/tensorflow/models
+    owner: Google (TensorFlow Model Garden)
+    official: true
+    note: 'official/recommendation/ranking: DCN-v2 (''cross'' interaction) and DLRM training on Criteo. Maintained by the TF team; I did not find a repo linked from the paper itself.'
+  - url: https://github.com/tensorflow/recommenders
+    owner: Google (TensorFlow Recommenders)
+    official: true
+    note: DCN tutorial and the tfrs.layers.dcn.Cross layer.
+core_idea: Replace the cross vector with a full weight matrix, plus a low-rank mixture variant to cut cost.
+deployed_in: Multiple web-scale learning-to-rank systems at Google, product not named
+scale_short: More than 100B production training examples
+key_result: 'Production: 0.6% AUCLoss improvement over the production MLP, plus significant online business metric gains, unnamed'
+results_table:
+  online:
+  - setting: Google production, Sec 8
+    method: DCN-V2
+    metric: Online business metrics
+    result: Significant gains, unnamed
+    versus: Production model
+  offline:
+  - setting: Google production, Sec 8
+    method: DCN-V2
+    metric: AUCLoss
+    result: 0.6% improvement
+    versus: Production MLP
+  - setting: Criteo test, Table 6
+    method: DCN-V2
+    metric: LogLoss / AUC
+    result: 0.4406 / 0.8115
+    versus: DNN 0.4421 / 0.8098
+  - setting: Criteo test, Table 6
+    method: DCN-Mix
+    metric: LogLoss / AUC
+    result: 0.4408 / 0.8112
+    versus: 30% lower cost, 2.4M vs 3.5M params
+  - setting: MovieLens-1M
+    method: DCN-V2
+    metric: LogLoss / AUC
+    result: 0.3170 / 0.8950
+    versus: DCN 0.3197 / 0.8935
+status: superseded
+status_date: '2026-10-30'
+superseded_by: dcn-google
+status_reason: Merged into the DCN card, one card per system, which presents the latest version DCN V2.

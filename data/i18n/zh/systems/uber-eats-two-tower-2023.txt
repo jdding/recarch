@@ -1,0 +1,28 @@
+surface|Uber Eats 首页信息流的店铺推荐
+era_reason|带大基数 embedding 的双塔召回；不是生成式
+tldr|Uber Eats 用双塔模型召回：店铺 embedding 预先计算并建 ANN 索引，而 eater 的 embedding 在每次请求时实时计算。
+summary|用双塔模型做第一轮召回：店铺 embedding 离线预先计算并建 ANN 索引，eater 的 embedding 在每次请求时实时计算。
+core_idea|双塔模型，店铺 embedding 离线预先计算，eater 的 embedding 按请求计算。
+deployed_in|Uber Eats 首页信息流的店铺推荐
+scale_short|每个 eater 有数百万个候选店铺，缩小到前数百个
+key_result|来源中没有报告指标
+serving_infra|离线做 item 塔推理；实时做 query 塔推理；SIA 统一搜索平台的 ANN。
+stages.0.model_family|双塔，eater 的 query 塔，店铺、杂货、地点的 item 塔，在倒排索引上做 ANN，即 SIA
+stages.0.details|从数百万个中召回前数百个店铺；标签来自 query 和 item 之间过去的互动。
+stages.1.model_family|消费这些 embedding 的第二轮排序器，即 SPR
+stages.1.details|Embedding 作为特征输入排序器。
+id_tokenization.approach|对高基数 UUID 历史做词袋，并用层共享来缩小模型，来自 2024 年的 Uber 论文
+features_signals.0|Eater 画像和 query
+features_signals.1|店铺 / 杂货 item / 地理特征
+features_signals.2|过去的互动
+training.objectives.0|query 和 item 之间的互动
+scale.0.metric|每个 eater 的店铺数
+scale.0.value|数百万个候选缩小到前数百个
+results_table.note|来源描述了召回设计，没有报告 A/B 结果。
+caveats.0|2025 年另有一篇 Uber 文章，描述了用于配送搜索的、以 LLM 为骨干，Qwen，的双塔语义搜索模型；这张卡片不涉及它。
+unknown_fields.0|模型规模
+unknown_fields.1|延迟数字
+unknown_fields.2|A/B 结果
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Uber Eats 首页信息流的店铺推荐
+deployment.notes.0|论文报告词袋 item 塔小 25x，训练时间从数天降到数小时。没有给出 A/B 结果。

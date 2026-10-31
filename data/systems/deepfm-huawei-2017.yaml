@@ -1,0 +1,89 @@
+id: deepfm-huawei-2017
+name: DeepFM
+company: Huawei Noah's Ark Lab
+surface: CTR prediction, evaluated on a Huawei App Store game-center log, anonymised as "Company*")
+year: 2017
+era: deep
+era_reason: "FM plus DNN for CTR"
+first_public: "2017-03"
+venue: "IJCAI 2017"
+venue_year: 2017
+published_version_checked: true
+primary_source: "https://doi.org/10.24963/ijcai.2017/239"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: research
+evidence_level: research_only
+tldr: "DeepFM swaps Wide & Deep's hand-crafted wide part for a factorization machine sharing embeddings with the deep part, beating Wide&Deep, LR and FM on Criteo."
+summary: Replaces Wide & Deep's hand-crafted wide part with a factorization machine that shares embeddings with the deep part, learning
+  low- and high-order feature interactions end to end with no feature engineering.
+paradigms:
+- dlrm
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: FM component + deep component sharing one embedding layer
+  details: ''
+id_tokenization:
+  approach: Field-aware sparse embeddings shared by FM and DNN
+  details: null
+features_signals:
+- Categorical and continuous CTR features
+training:
+  mode: Offline
+  objectives:
+  - CTR prediction (log loss)
+  notes: One week of App Store game-center clicks for training, next day for test; ~1 billion records (PDF).
+serving_infra: null
+scale:
+- metric: Offline dataset
+  value: ~1 billion click records over 8 days
+  note: PDF
+results_reported: Paper reports outperforming Wide&Deep, LR, FM, FNN etc. in AUC/Logloss on a Criteo dataset and the company dataset.
+caveats:
+- Offline evaluation only; the PDF does not describe production deployment; the company is anonymised in the PDF and the authors are from Huawei.
+unknown_fields:
+- deployment
+- latency
+- online metrics
+sources:
+- title: "DeepFM: A Factorization-Machine based Neural Network for CTR Prediction, IJCAI 2017"
+  url: https://doi.org/10.24963/ijcai.2017/239
+  type: paper
+- title: 'DeepFM: A Factorization-Machine based Neural Network for CTR Prediction, arXiv 1703.04247'
+  url: https://arxiv.org/abs/1703.04247
+  type: paper
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/shenweichen/DeepCTR/blob/master/deepctr/models/deepfm.py
+    owner: Weichen Shen (DeepCTR)
+    official: false
+    note: Popular third-party DeepFM. FuxiCTR (github.com/reczoo/FuxiCTR) is another widely used benchmark
+      library. I found no repo released by the paper's authors.
+core_idea: Share embeddings between a factorization machine and a deep part, with no feature engineering.
+deployed_in: Evaluated offline on Criteo and a Huawei App Store game-center log
+scale_short: About 1 billion click records over 8 days, offline
+key_result: 'Offline: outperforms Wide&Deep, LR, FM and FNN in AUC and Logloss on Criteo and a company dataset, no figures in the card sources'
+results_table:
+  offline:
+  - setting: Criteo and the company dataset
+    method: DeepFM
+    metric: AUC and Logloss
+    result: Better than every listed model, no figure
+    versus: Wide&Deep, LR, FM, FNN
+deployment:
+  online_evidence: no_online_claim
+  scenario: Offline evaluation on Criteo and a Huawei App Store game-center log
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-10-31'

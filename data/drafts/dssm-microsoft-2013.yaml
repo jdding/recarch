@@ -1,0 +1,42 @@
+id: dssm-microsoft-2013
+name: "DSSM"
+company: Microsoft Research
+surface: Web search query-document relevance
+year: 2013
+system_type: research
+evidence_level: research_only
+summary: DSSM, the Deep Structured Semantic Model, maps query and document into a shared low-dimensional semantic space with deep networks over letter-trigram word hashing, ranking
+  by cosine similarity and trained on clickthrough data; the template for later two-tower retrieval models.
+paradigms:
+- two-tower
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: Two DNN towers over word-hashed text; cosine similarity
+  details: Word hashing lets the large vocabulary be handled at scale.
+id_tokenization:
+  approach: Letter-trigram word hashing
+  details: null
+features_signals:
+- Query-document clickthrough
+training:
+  mode: Offline
+  objectives:
+  - Clickthrough-based discriminative training
+  notes: null
+serving_infra: null
+scale: []
+results_reported: Paper reports outperforming prior semantic models on a real-world web search dataset.
+caveats:
+- Only the publication record/summary was read; PDF host returned an error.
+- No production deployment claim captured.
+unknown_fields:
+- deployment
+- metrics
+sources:
+- title: Learning Deep Structured Semantic Models for Web Search using Clickthrough Data, CIKM 2013
+  url: https://www.microsoft.com/en-us/research/publication/learning-deep-structured-semantic-models-for-web-search-using-clickthrough-data/
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"Learning Deep Structured Semantic Models for Web Search using Clickthrough Data\" (Huang, Po-Sen, 2013, CIKM 2013) - https://www.microsoft.com/en-us/research/publication/learning-deep-structured-semantic-models-for-web-search-using-clickthrough-data/. Reason drafted: search-engine summary / publication record only."

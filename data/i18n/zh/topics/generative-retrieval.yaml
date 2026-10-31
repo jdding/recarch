@@ -1,0 +1,49 @@
+title: 生成式召回
+summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十六张 RecArch 卡片之间做对比。
+framing:
+- 经典的召回栈通过对 embedding 做最近邻搜索来找到 item。生成式召回则让模型直接写出答案：它为每个 item 生成一段简短的编码，称为 Semantic ID，或者生成文本，再把输出映射回 item。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
+- 这个词涵盖了差别很大的设计。有的取代整个召回、预排序和排序的级联。有的只是多加一路召回通道。有的生成的不是 item ID。表格之后的各节解释了会改变成本和风险的那些差别。
+members:
+- id: tiger-google-2023
+  approach: 用 RQ-VAE 把 item 的内容 embedding 量化为 Semantic ID，由 Transformer 解码下一个 item 的 ID。
+- id: youtube-plum-2025
+  approach: 用 Semantic ID token、继续预训练和微调来适配预训练的 LLM。据称优于基于 embedding 表的线上模型。
+- id: snap-snaplgr-2026
+  approach: 基于多模态 Semantic ID 的 Qwen3-0.6B decoder。服务是离线的，每天批量做 beam search。
+- id: meituan-dpgr-2026
+  approach: 基于内容和 POI 行为的 HSTU 模型。它生成少量意图编码，每个编码执行一次 ANN 查询。
+- id: bytedance-gear-2026
+  approach: 作为额外的一路召回通道运行。用 beam search 解码 item 的 token 序列，再由重排头给共享同一 token 序列的 item 排序。
+- id: kuaishou-quasid-2026
+  approach: 是 tokenizer，不是生成器。它把 Semantic ID 发生冲突的 item 推开，这个 tokenizer 同时服务召回和排序。
+- id: amap-gwhere-2026
+  approach: 由 Qwen LLM 为应用首页生成下一个 POI 的 Semantic ID。与线上级联做过对比测试。
+- id: taobao-aigq-2026
+  approach: 没有 Semantic ID。由 LLM 为搜索框写出 query 文本，通过近线和每日索引提供服务。
+- id: alibaba-urm-2025
+  approach: Qwen-7B LLM 读取用户特征和对目标的文字描述，然后生成一组 item。异步提供服务。
+- id: netflix-genpage-2026
+  approach: decoder-only 的 Transformer 生成整个首页。行和实体都是单个 token，不是 Semantic ID。
+- id: onerec-kuaishou
+  approach: 一个生成器作用在 3 级 Semantic ID 上，用来自真实用户反馈的奖励做后训练。
+- id: tencent-gpr-2025
+  approach: 一个模型在多级 Semantic ID 上取代微信视频号广告的召回、预排序和排序级联。
+- id: tencent-sgrec-2026
+  approach: 基于 Semantic ID 的小型生成器。LLM 评判器只在训练期间离线使用，服务时不用。
+- id: kuaishou-onesearch-2025
+  approach: 一个 encoder-decoder 为商城搜索生成 item 的 Semantic ID，取代召回、预排序和排序的级联。
+- id: baidu-unique-2026
+  approach: 一个 Transformer 为召回预测单层的 Semantic 编码，并给召回的 item 打分。在手机百度中，它的编码提供约 22.5% 的候选池。
+- id: tencent-tgr-2026
+  approach: BARGE 模型用 beam search 生成 Semantic ID 路径，并把它们作为 embedding query 用在一路召回通道中。报告还涵盖排序和 slate 生成。
+differences:
+- heading: 模型写出的是什么
+  text: 大多数系统写出 Semantic ID。DPGR 写出少量意图编码，再让 ANN 搜索为每个编码找到 item。AIGQ 写出 query 文本。URM 让 LLM 根据对目标的文字描述给出一组 item。GenPage 写出整个页面，每一行和每个实体各用一个 token。先检查这一点，因为它决定了除模型之外你还必须构建什么。
+- heading: 取代级联，还是新增通道
+  text: GPR 和 OneSearch 取代召回、预排序和排序的级联。Gwhere 和 OneRec 是单阶段系统。GEAR、BARGE、DPGR、URM 和 AIGQ 加在现有召回来源旁边，SnapLGR 则作为一路召回来源上线。新增通道更容易回滚和衡量。取代级联则去掉了阶段，但把全部结果压在一个模型上。
+- heading: tokenizer 是难点
+  text: 有几张卡片把大部分精力花在 Semantic ID 本身。TIGER 加上第四个 token 来区分冲突的 item。QuaSID 把冲突的 item 推开。GEAR 使用旨在避免死码的残差量化器。SnapLGR 加入共同互动损失，提高码本利用率并减少冲突。UNIQUE 从 128 x 128 的分层结构，改成了 16,384 个编码的单层扁平码本。
+- heading: 如何让服务成本可承受
+  text: TIGER 指出推理比 ANN 查找更贵。线上系统用不同的办法避免每次请求都做生成。SnapLGR 每天离线批量做 beam search。AIGQ 通过缓存列表和每日索引做近线服务。URM 异步运行。S-GRec 让 LLM 留在离线，服务时用小型生成器。OneRec 报告在 beam 大小为 512 时线上延迟为 36 ms。Gwhere 在压测中报告 2 块 GPU 上 P99 约 30 ms，而级联约 20 ms。UNIQUE 运行在约 400 块 GPU 上。
+- heading: 线上数字能说明什么，不能说明什么
+  text: 每个提升都是相对公司自己的基线，而且基线各不相同。OneRec-V2 是相对 OneRec-V1 衡量的，不是相对旧的多阶段栈。GEAR 是相对没有它那一路通道的线上系统衡量的。TIGER 没有线上结果。不要按百分比给这些系统排名。请在每张卡片上看基线和流量占比。

@@ -1,0 +1,122 @@
+id: esmm-alibaba-2018
+name: "ESMM"
+company: Alibaba
+surface: Post-click CVR estimation on Taobao recommender data
+year: 2018
+era: deep
+era_reason: "Entire-space multi-task neural CVR model"
+first_public: "2018-04"
+venue: "SIGIR 2018"
+venue_year: 2018
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3209978.3210104"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: research_only
+tldr: "ESMM trains CTR and CTCVR over the entire impression space so conversion rate is estimated without sample-selection bias; public-data CVR AUC 68.56 vs 66.00 baseline."
+summary: 'SIGIR 2018 paper from Alibaba: Entire Space Multi-Task Model estimates post-click conversion rate over all impressions by
+  training CTR and CTCVR tasks over the entire space with a shared embedding table, and deriving pCVR = pCTCVR / pCTR implicitly, since pCTCVR = pCTR x pCVR, which addresses sample selection bias and data sparsity. Evaluated offline on Taobao recommender logs; the paper does
+  not state a production launch of ESMM itself.'
+paradigms:
+- multi-task
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: 'ESMM: shared embedding layer feeding a CVR tower and a CTR tower (both Embedding&MLP); loss = CTR loss + CTCVR loss
+    over all impressions, no direct CVR loss'
+  details: Parameter sharing of embeddings transfers feature representation from the richer CTR task to the sparse CVR task; multiplication
+    form avoids the numerical instability of dividing pCTCVR by pCTR (the DIVISION baseline).
+id_tokenization:
+  approach: Shared embedding tables
+  details: null
+features_signals:
+- Impression -> click -> conversion sequence labels
+training:
+  mode: Offline on Taobao recommender traffic logs; first half of the time-ordered data for training, second half for testing; AUC averaged
+    over 10 repeats
+  objectives:
+  - CTR (click labels)
+  - CTCVR (click-and-conversion labels)
+  notes: 'Public Dataset (the paper releases a 1% sample): 84M impressions, 3.4M clicks, 18k conversions. Product Dataset: 8,950M impressions,
+    324M clicks, 1,774k conversions. Embedding size 18 in the reported setup. Paper notes CVR training samples are about 4% of CTR samples.'
+serving_infra: null
+scale: []
+results_reported: 'Public Dataset AUC (CVR / CTCVR): BASE 66.00 / 62.07; OVERSAMPLING 67.18 / 63.05; UNBIAS 66.65 / 63.56; DIVISION
+  67.56 / 63.62; ESMM-NS 68.25 / 64.44; ESMM 68.56 / 65.32 (+2.56 and +3.25 absolute over BASE). Product Dataset trained on the whole
+  data: ESMM +2.18% absolute AUC on CVR and +2.32% on CTCVR over BASE, which the paper says is the latest model serving the main traffic
+  in its real system; the paper calls a 0.1% AUC gain remarkable.'
+caveats:
+- Offline AUC only; the paper does not report an online A/B test or state that ESMM was deployed, so evidence stays research_only here.
+- The paper says the BASE model serves main traffic; it is the baseline, not ESMM.
+- Attribution of the experiments to Taobao recommender traffic is from the paper's dataset description.
+unknown_fields:
+- online A/B results
+- production deployment
+- serving latency
+sources:
+- title: "Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate, SIGIR 2018"
+  url: https://doi.org/10.1145/3209978.3210104
+  type: paper
+- title: Entire Space Multi-Task Model, arXiv 1804.07931
+  url: https://arxiv.org/abs/1804.07931
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1804.07931
+  local_pdf: /workspace/src/a_1804.07931.pdf
+  sections_read: 'Full 4-page paper: abstract, intro, Sec 2 (problem, SSB and data sparsity, ESMM), Sec 3 experiments (Tables 1-2, Product
+    Dataset results), conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/alibaba/x-deeplearning/tree/master/xdl-algorithm-solution/ESMM
+    owner: Alibaba
+    official: true
+    note: ESMM example inside Alibaba's XDL framework; not linked from the paper, and a framework example
+      rather than the ad-system code.
+core_idea: Train CTR and CTCVR over the entire space with a shared embedding table, and derive CVR from them.
+deployed_in: Post-click CVR estimation on Taobao recommender data, evaluated offline
+scale_short: No scale reported
+key_result: 'Offline: +2.18% absolute AUC on CVR and +2.32% on CTCVR over BASE on the Product Dataset'
+results_table:
+  offline:
+  - setting: Product Dataset, whole data
+    method: ESMM
+    metric: CVR AUC
+    result: +2.18% absolute
+    versus: BASE
+  - setting: Product Dataset, whole data
+    method: ESMM
+    metric: CTCVR AUC
+    result: +2.32% absolute
+    versus: BASE
+  - setting: Public Dataset
+    method: ESMM
+    metric: CVR / CTCVR AUC
+    result: 68.56 / 65.32
+    versus: BASE 66.00 / 62.07
+  - setting: Public Dataset
+    method: ESMM
+    metric: Gain over BASE
+    result: +2.56 and +3.25 absolute
+    versus: BASE
+deployment:
+  online_evidence: deployed_only
+  scenario: Post-click CVR estimation on Taobao recommender data
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The paper says the Product Dataset model is the latest one serving the main traffic. It reports offline AUC
+    only.
+  basis: full_text
+  checked_on: '2026-10-31'

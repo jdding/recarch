@@ -1,0 +1,136 @@
+id: meta-unity-2026
+name: "Unity"
+company: Meta
+surface: Meta ads ranking across five core ads models and short-form video ranking for IFR and VDD
+year: 2026
+era: deep
+era_reason: "Discriminative CTR/engagement ranker; masked-token self-supervised pretraining and latent tokenization are added to a DLRM-style backbone, with no autoregressive or semantic-ID generation of items."
+first_public: "2026-08"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818505"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Meta ranking recipe of latent event tokenization, Pollen Transformer and masked-token SSL; Pollen A/B +2.76% to +3.68% WatchTime on video; Unity Encoder -0.06% to -0.14% NE on five ads models."
+summary: 'Unity is a three-part recipe for Meta ranking models: first, Unity tokenization turns each engagement event into a short sequence of latent tokens by patching, and optionally residual-quantizing, the output of a DLRM bottom encoder; second, Pollen, a Transformer whose attention uses a weighted geometric mean so it can approximate exponential-polynomial feature interactions, which generalizes DCN v2; third, a masked-autoencoder style SSL loss on the latent tokens, trained jointly with the supervised CTR/CVR loss. The paper reports them in the order they were productionized.'
+paradigms:
+- dlrm
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Feature encoder (DLRM bottom, e.g. DCN/DHEN/Wukong) to latent vector, split into 16-64 patches (latent dim 1024-4096), Pollen Transformer encoder, then the production task heads for click, conversion, like, watch-time objectives. SSL decoder (depth 1-4) is used only in training.'
+  details: 'SSL setting: mask ratio 0.3-0.5, encoder depth 4-12, loss weight lambda 0.1-1.0 on top of the supervised loss.'
+id_tokenization:
+  approach: Residual quantization of latent event embeddings (not item semantic IDs)
+  details: 'Codebook size 1024-4096 and depth 3-6 for the RQ variant; tokens use prefix-gram embeddings. Used to tokenize the whole engagement event in a latent space, with identity (continuous tokens) for the Unity Encoder.'
+features_signals:
+- Tens of thousands of heterogeneous raw features such as ids, id sequences, numeric statistics and pretrained id embeddings
+training:
+  mode: Pretrain-style joint SSL plus supervised loss; production models are recurrently trained on fresh data at near-real-time cadence
+  objectives:
+  - Supervised engagement prediction across click, conversion, like and watch-time tasks
+  - Masked latent-token reconstruction (SSL)
+  notes: 'Gains are reported chronologically against moving production baselines, so later numbers use stronger baselines.'
+serving_infra: 'Not described; paper says Pollen was pruned and latency-optimized for tighter serving budgets on IFR.'
+scale:
+- metric: Production training examples per day
+  value: 10B+
+  note: Stated in Section 4.2 for production systems
+- metric: Unity scaling sizes
+  value: Tiny to M, 1.5M to 85M params
+  note: Table 7; sequence length 72-96, embed 128-768, layers 8-12
+results_reported: 'Production (Meta): Pollen first launched April 2023 on short-form video; A/B +2.76% WatchTime on VDD and +3.68% WatchTime on IFR (statistically significant); offline VDD NE gains -0.34% to -0.49% per Table 2 and IFR click NE -0.66%, like -0.97% per Table 3. Pollen on one core ads model: -0.15% NE. Unity tokenization: ads -0.15% NE (RQ) vs mid-2025 baseline per Table 4; VDD -0.38% to -0.58% NE per Table 5. Unity Encoder on five core ads models (vs July 2025 baselines): -0.06% to -0.14% NE (Table 6; models A-E -0.08, -0.1, -0.06, -0.14, -0.08). Adding SSL gives about -0.05% NE more on average. Scaling per Table 7: Unity Tiny/XS/S/M reach -0.05/-0.08/-0.10/-0.13% NE at +4/+14/+72/+260% FLOPs, claimed 2.3x-4.9x scaling efficiency vs the existing scaling curve. Public datasets per Table 8: small AUC gains over DCNv2 and Wukong on KuaiVideo, AmazonElectronics, TaobaoAds.'
+caveats:
+- 'Several Unity Encoder ads configurations are described as "in the process of full-scale production launch" with "early online A/B" showing gains, but no A/B figures are given for them; the only quoted online numbers are the 2023 Pollen WatchTime gains.'
+- 'Ads results are offline NE only. NE differences are relative to moving production baselines; models A-E are anonymized.'
+- 'The scaling experiments are small (up to 85M params) and the authors call them preliminary.'
+- 'The public repo covers the public-dataset experiments per Table 8, not the Meta production code.'
+unknown_fields:
+- online A/B results for Unity Encoder and SSL on ads
+- absolute model sizes and serving latency in production
+- which ads surfaces are models A-E
+sources:
+- title: "Unity: Fully Self-Supervised Pretraining with Transformers for Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818505
+  type: paper
+- title: facebookresearch/unity
+  url: https://github.com/facebookresearch/unity
+  type: source_code
+version_note: 'No arXiv version found. Numbers checked against the KDD 2026 camera-ready PDF from the owner Zotero copy, ACM DOI 10.1145/3770855.3818505. First public date taken as KDD 2026 (August 2026), the earliest public version I found.'
+needs_fulltext: false
+fulltext:
+  pdf_url: null
+  local_pdf: /workspace/recarch/zotero/meta-unity-2026.pdf
+  sections_read: 'Abstract, introduction, approach (tokenization, Pollen, SSL), related work, experiments 4.1.1-4.1.5, public datasets 4.2, summary'
+  verified_on: '2026-10-30'
+  published_pdf: 'Verified 2026-10-30 against the KDD 2026 PDF (owner Zotero copy)'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/facebookresearch/unity
+    owner: Meta (facebookresearch)
+    official: true
+    note: 'Official experiment code for the paper, a plug-in MAE pretraining module over DCNv2 and Wukong backbones on public datasets; the production Meta models are not released.'
+core_idea: Tokenize engagement events into latent tokens, then add a Transformer that generalizes DCN v2 and a masked self-supervised loss.
+deployed_in: Meta ads ranking across five core ads models, and short-form video ranking for IFR and VDD
+scale_short: 10B+ production training examples per day
+key_result: WatchTime +2.76% on VDD and +3.68% on IFR in a production A/B for Pollen, the Transformer part of Unity
+results_table:
+  online:
+  - setting: Short-form video VDD, production A/B
+    method: Pollen
+    metric: WatchTime
+    result: +2.76%
+    versus: Production
+  - setting: Short-form video IFR, production A/B
+    method: Pollen
+    metric: WatchTime
+    result: +3.68%
+    versus: Production
+  offline:
+  - setting: VDD, Table 2
+    method: Pollen
+    metric: NE
+    result: -0.34% to -0.49%
+    versus: Production baseline
+  - setting: IFR, Table 3
+    method: Pollen
+    metric: Click NE
+    result: -0.66%
+    versus: Production baseline
+  - setting: Five core ads models, Table 6
+    method: Unity Encoder
+    metric: NE
+    result: -0.06% to -0.14%
+    versus: July 2025 baselines
+  - setting: Ads, Table 4
+    method: Unity tokenization
+    metric: NE
+    result: -0.15%
+    versus: Mid-2025 baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Meta short-form video ranking for IFR and VDD, and five core ads models
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production
+  online_lifts:
+  - metric: VDD watch time
+    value: +2.76%
+  - metric: IFR watch time
+    value: +3.68%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - These lifts are for Pollen, launched April 2023 on short-form video. No A/B results are given for the Unity
+    encoder on ads.
+  basis: full_text
+  checked_on: '2026-10-31'

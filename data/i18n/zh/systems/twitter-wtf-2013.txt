@@ -1,0 +1,28 @@
+surface|用户推荐，「推荐关注」
+era_reason|基于 SALSA 和随机游走的图推荐，运行在单台机器上，没有神经网络模型
+tldr|Twitter 的 Who-To-Follow 运行在一台内存服务器 Cassovary 上，使用个性化 PageRank 和 SALSA 随机游走；自 2010 年起上线。
+summary|在单台服务器 Cassovary 上、整张图放在内存里的推荐器，使用个性化 PageRank 的 circle of trust 和 SALSA 随机游走，生成「interested in」和「similar to」推荐。
+core_idea|在单台服务器 Cassovary 上、整张图放在内存里的推荐器，使用个性化 PageRank 和 SALSA 随机游走。
+deployed_in|Twitter 的「推荐关注」用户推荐
+scale_short|活跃用户的关注图，超过两百亿条边
+key_result|自 2010 年夏起上线，每天建立数百万个连接
+results_reported|论文：服务自 2010 年夏起上线，每天建立数百万个连接。
+serving_infra|每个副本一台大内存服务器，装下整张图，提到 72-144 GB 内存
+stages.0.model_family|Cassovary 内存图引擎；个性化 PageRank + SALSA
+stages.0.details|不是学习的神经网络模型；发表时第二代系统正在开发中。
+features_signals.0|关注图
+training.mode|离线加载图；实时游走
+scale.0.metric|活跃用户的关注图
+scale.0.value|超过两百亿条边
+results_table.online.0.setting|自 2010 年夏起上线
+results_table.online.0.metric|建立的连接数
+results_table.online.0.result|每天数百万个
+results_table.online.0.versus|未说明
+caveats.0|论文明确的目的是分享设计，而不是新的研究；没有记录 A/B 数字。
+unknown_fields.0|CTR 和关注指标
+updates.0.note|范式标签已更正：random-walk 取代 graph-neural-network，因为 WTF 使用个性化 PageRank 和 SALSA 随机游走，不是 GNN。
+code.repos.0.note|Cassovary，即论文称为 WTF 核心、并说在 March 2012 开源的内存图引擎。WTF 服务及其推荐流水线没有发布。
+deployment.scenario|Twitter 的「推荐关注」用户推荐，自 2010 年夏起上线
+deployment.hardware|每个副本一台大内存服务器，装下整张关注图
+deployment.notes.0|报告每天建立数百万个连接。这是量，不是相对基线的提升。
+results_table.online.0.method|推荐关注

@@ -1,0 +1,37 @@
+id: amazon-cosmo-2024
+name: "COSMO"
+company: Amazon
+surface: Search navigation knowledge graph
+year: 2024
+system_type: search
+evidence_level: production_described
+summary: LLM-generated commonsense knowledge graph from behavior data with instruction-tuned COSMO-LM, deployed for search navigation.
+paradigms:
+- llm-based
+stages:
+- stage: other
+  model_family: Knowledge-graph generation and filtering
+  details: ''
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Behavior data
+training:
+  mode: Offline
+  objectives: null
+  notes: null
+serving_infra: null
+scale: []
+results_reported: 'Paper: deployed in search navigation.'
+caveats:
+- Paper says deployment used part of the outcomes and was limited to search navigation.
+unknown_fields:
+- effect sizes
+sources:
+- title: COSMO, SIGMOD 2024 Companion
+  url: https://doi.org/10.1145/3626246.3653398
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"COSMO: A Large-Scale E-commerce Common Sense Knowledge Generation and Serving System at Amazon\" (Yu, Changlong, 2024, SIGMOD-Companion 2024) - https://doi.org/10.1145/3626246.3653398. Reason drafted: no body-level detail captured; provenance of facts not recorded."

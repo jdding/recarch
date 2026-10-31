@@ -1,0 +1,47 @@
+id: youtube-multitask-ranking-2019
+name: "YouTube Multitask Ranking"
+company: Google / YouTube
+surface: Watch-next video ranking
+year: 2019
+system_type: recommendation
+evidence_level: production_described
+summary: Ranking model that optimizes several engagement and satisfaction objectives with MMoE and removes position/selection bias with
+  a Wide&Deep-style shallow tower trained jointly and dropped at serving.
+paradigms:
+- multi-task
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: MMoE (e.g. 8 experts) with task-specific towers plus a shallow bias tower
+  details: Shallow tower models position/device selection bias; its output is added to the main logit in training and omitted at serving
+    (per search summary of the paper).
+id_tokenization:
+  approach: Video / user features
+  details: null
+features_signals:
+- Engagement and satisfaction signals
+- Position and device context (for the bias tower)
+training:
+  mode: Offline plus live experiments
+  objectives:
+  - Multiple engagement and satisfaction objectives
+  notes: Soft-parameter sharing compared with shared-bottom.
+serving_infra: null
+scale: []
+results_reported: 'Abstract: substantial improvements on one of the world''s largest video platforms. A summary of the paper reports
+  8 experts improving engagement by 0.45% and satisfaction by 3.07% versus shared-bottom in live tests.'
+caveats:
+- Specific live numbers come from a search summary of the PDF (ACM blocked); abstract page was read directly.
+unknown_fields:
+- serving latency
+- traffic share
+sources:
+- title: 'Recommending What Video to Watch Next: A Multitask Ranking System, RecSys 2019'
+  url: https://research.google/pubs/recommending-what-video-to-watch-next-a-multitask-ranking-system/
+  type: paper
+- title: ACM DOI
+  url: https://doi.org/10.1145/3298689.3346997
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"Recommending What Video to Watch Next: A Multitask Ranking System\" (Zhao, Zhe, 2019, RecSys 2019) - https://doi.org/10.1145/3298689.3346997. Reason drafted: search-engine summary / publication record only."

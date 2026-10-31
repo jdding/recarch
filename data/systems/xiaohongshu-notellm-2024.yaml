@@ -1,0 +1,111 @@
+id: xiaohongshu-notellm-2024
+name: "NoteLLM"
+company: Xiaohongshu
+surface: Item-to-item note recommendation
+year: 2024
+era: generative
+era_reason: "LLM compresses notes into embeddings; LLM-based but borderline, since the LLM is used for embeddings"
+first_public: "2024-03"
+venue: "WWW 2024 (Companion)"
+venue_year: 2024
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3589335.3648314"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: research_only
+tldr: "Fine-tunes a 7B LLM to embed notes for item-to-item recommendation while generating hashtags; week-long online test: click-through rate +16.20%."
+summary: 'WWW ''24 Companion paper: fine-tunes a 7B LLM based on LLaMA 2 to embed notes for item-to-item recommendation by compressing a note
+  into a special token using Generative-Contrastive Learning on co-occurrence-mined related pairs while jointly generating hashtags and categories through Collaborative SFT. Evaluated offline and in a week-long online I2I experiment on Xiaohongshu.'
+paradigms:
+- llm-based
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'NoteLLM: LLaMA-2 7B with a unified Note Compression Prompt; compression-token embedding for I2I retrieval, trained
+    with in-batch-negative contrastive loss plus hashtag/category generation (CSFT)'
+  details: 'Related pairs come from co-occurrence scores of note pairs in user behavior (top co-occurring notes per note). Table 2 (Recall@100
+    / @1k / @10k / @100k / avg): SentenceBERT online baseline (110M) 70.72 / 87.88 / 96.29 / 99.62 / 88.63; NoteLLM 84.02 / 95.23 /
+    99.23 / 99.96 / 94.66; PromptEOL+CSE 83.28 / 95.26 / 99.20 / 99.96 / 94.43; RepLLaMA 83.63 / 95.10 / 99.27 / 99.94 / 94.49 (7B models).'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Note text, hashtags, categories, co-occurrence
+training:
+  mode: Offline fine-tuning of LLaMA-2 7B
+  objectives:
+  - Generative-Contrastive Learning for note embeddings (in-batch negatives)
+  - Collaborative SFT for hashtag / category generation
+  notes: Distributed Data Parallel on 8 x 80GB A100 GPUs, per-GPU batch size 8 (paper footnote). Low-exposure vs high-exposure note
+    analysis in Table 3.
+serving_infra: null
+scale: []
+results_reported: 'Week-long online I2I experiment vs the previous SentenceBERT-based method: click-through rate +16.20%, comments +1.10%,
+  average weekly publishers (WAP) +0.41%, and comments on new notes +3.58%. Offline: avg recall 94.66 vs 88.63 for the online SentenceBERT
+  baseline.'
+caveats:
+- Online experiment is described as week-long, with traffic share not stated in the sections read.
+- Serving cost of a 7B embedding model versus the 110M SentenceBERT baseline is not quantified in the sections read.
+- Research paper by Xiaohongshu with university coauthors; production adoption beyond the experiment is not stated.
+unknown_fields:
+- online serving latency / cost
+- A/B traffic share
+- index / ANN infrastructure details
+sources:
+- title: "NoteLLM: A Retrievable Large Language Model for Note Recommendation, WWW 2024, Companion"
+  url: https://doi.org/10.1145/3589335.3648314
+  type: paper
+- title: NoteLLM, arXiv 2403.01744
+  url: https://arxiv.org/abs/2403.01744
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2403.01744
+  local_pdf: /workspace/src/a_2403.01744.pdf
+  sections_read: Intro, related work, method summary, Tables 2-3, Sec 5.8 online experiments, training-setup footnote
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/Applied-Machine-Learning-Lab/NoteLLM
+    owner: Applied Machine Learning Lab (academic lab of a paper co-author, Xiangyu Zhao)
+    official: true
+    note: Source code for NoteLLM and NoteLLM-2; released by the authors' academic lab, not the Xiaohongshu
+      org.
+core_idea: Fine-tune a 7B LLM to compress a note into one special token, using contrastive learning on co-occurrence pairs.
+deployed_in: Xiaohongshu item-to-item note recommendation
+scale_short: 7B parameter LLM
+key_result: Click-through rate +16.20% in a week-long online I2I experiment against the SentenceBERT-based method
+results_table:
+  online:
+  - setting: Week-long online I2I experiment
+    method: NoteLLM
+    metric: Click-through rate
+    result: +16.20%
+    versus: SentenceBERT-based method
+  - setting: Week-long online I2I experiment
+    method: NoteLLM
+    metric: Comments
+    result: +1.10%
+    versus: SentenceBERT-based method
+  - setting: Week-long online I2I experiment
+    method: NoteLLM
+    metric: Average weekly publishers
+    result: +0.41%
+    versus: SentenceBERT-based method
+  - setting: Week-long online I2I experiment
+    method: NoteLLM
+    metric: Comments on new notes
+    result: +3.58%
+    versus: SentenceBERT-based method
+  offline:
+  - setting: Offline evaluation
+    method: NoteLLM
+    metric: Average recall
+    result: '94.66'
+    versus: Online SentenceBERT baseline 88.63
+status: retired
+status_date: "2026-10-30"
+status_reason: "Retired under the admission standard: a research paper whose week-long online test states no traffic share and no production adoption beyond the experiment, so evidence stays research_only, and citations are below the 500 exemption."

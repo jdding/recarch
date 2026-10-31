@@ -1,0 +1,144 @@
+id: meta-rankgraph2-2026
+name: "RankGraph-2"
+company: Meta
+surface: Retrieval sources (U2I2I and U2U2I) on two unnamed major content recommendation surfaces, 20+ retrieval launches
+year: 2026
+era: deep
+era_reason: "Heterogeneous graph neural network embeddings with PPR pre-computed neighbors and a residual-quantization cluster index, trained with contrastive link prediction. It is a graph retrieval system and not semantic-ID or LLM-based generation."
+first_public: "2026-06"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773078.3831843"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Meta graph retrieval co-designing graph construction, GNN training and a learned cluster index; up to +0.96% CTR and +2.75% CVR in 14-day A/B tests, serving cost -83%, 20+ retrieval launches."
+summary: 'RankGraph-2 builds a heterogeneous co-engagement graph with user-user, item-item and user-item edges from engagement data every 3 hours, subsamples hundreds of trillions of edges to hundreds of billions with popularity bias correction, and pre-computes multi-hop neighbors with personalized PageRank so training needs no online graph infrastructure. A multi-head heterogeneous aggregator is trained with margin plus InfoNCE contrastive link prediction while co-learning a two-layer residual-quantization cluster index. At serving, U2U2I reads items from the user cluster queue instead of doing online KNN, and U2I2I uses offline pre-computed item KNN. The embeddings are added as a retrieval source next to the existing production pipeline.'
+paradigms:
+- graph-neural-network
+- random-walk
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Multi-head heterogeneous GNN aggregator (self, user-neighbor and item-neighbor embeddings), 256-d embeddings, trained inductively on node features'
+  details: 'U2I2I: engaged items then pre-computed item KNN. U2U2I: similar users restricted to those active in about the past 15 minutes, via cluster queues of recently engaged items (5,000 x 50 = 250,000 clusters).'
+id_tokenization:
+  approach: 'Two-layer residual-quantization cluster index co-learned with the embeddings, used as a serving index rather than as item tokens for generation'
+  details: 'Codebook 5,000 x 50; code-imbalance regularization over a 1000-batch window plus biased code selection prevent codebook collapse.'
+features_signals:
+- User features including demographics and a sequence of recently engaged items
+- Item content-type and ID-based features
+- Co-engagement edges from clicks, likes, shares and purchases with engagement-type weights
+training:
+  mode: 'Continuous training on edge-centric data from a graph rebuilt every 3 hours from 24 hours of engagement'
+  objectives:
+  - 'Margin ranking loss plus InfoNCE (tau 0.06) per edge type, weighted by uncertainty weighting'
+  - 'Reconstruction loss, contrastive loss on reconstructed embeddings and code-imbalance regularization for the cluster index'
+  notes: 'Batch size 32,768, AdaGrad lr 0.02 for sparse and AdamW lr 0.004 for dense parameters, 100 negatives per positive edge from in-batch, out-of-batch and multi-head augmentation sources; 50 PPR neighbors per node with 10 sampled per training edge.'
+serving_infra: 'Graph rebuild takes about 1 hour on a 3-hour cycle; end-to-end latency from engagement data to refreshed embeddings is about 2 hours. The cluster index replaces online approximate KNN, which would need thousands of machines, for U2U2I.'
+scale:
+- metric: Graph size
+  value: billions of nodes, hundreds of billions of edges after subsampling
+  note: Raw co-engagement graph has hundreds of trillions of edges
+- metric: Cluster index
+  value: 250,000 clusters
+  note: 5,000 x 50 two-layer codebook
+results_reported: 'Online, from a 14-day A/B on two surfaces with RankGraph-2 added as a retrieval source and all results significant at p < 0.05: U2I2I CTR +0.96% / +0.33% and CVR +2.75% / +0.76% on Surface 1 / Surface 2; U2U2I CTR +0.40% / +0.20% and CVR +1.01% / +0.17%. Cluster index serving cost -83% vs online KNN at comparable CTR and CVR; 20+ retrieval launches. Offline (100K users, Table 2) Recall@5 0.143 vs 0.038 for GAT-DGI (3.8x) and 0.013 for HSTU; item embeddings per Table 3 Recall@100 0.775 vs 0.374 for PBG (2.1x) and 0.434 for HSTU. Index hitrate@1 0.846 vs 0.871 for original embeddings, 0.717 without regularization.'
+caveats:
+- 'Surfaces are anonymized as Surface 1 and Surface 2; absolute metric values are not given.'
+- 'Offline baselines are GAT-DGI, PyTorch-BigGraph and HSTU, evaluated on Meta internal data with samples of 100K users or 1,000 edges.'
+- 'The 83% cost reduction is stated without absolute machine counts, only that online KNN needs thousands of machines.'
+- 'Scope is similarity-based retrieval (U2U2I, U2I2I); the paper says direct user-to-item retrieval may be better served by ranking models with real-time features.'
+- 'The 3-hour refresh cycle may be insufficient for extremely time-sensitive scenarios.'
+unknown_fields:
+- names of the two surfaces
+- absolute CTR and CVR values
+- model depth and parameter count
+- number of machines for serving
+sources:
+- title: "RankGraph-2: Lifecycle Co-Design for Billion-Node Graph Learning in Recommendation, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831843
+  type: paper
+- title: RankGraph-2, arXiv 2606.18379
+  url: https://arxiv.org/abs/2606.18379
+  type: paper
+version_note: 'RecSys 2026 DOI confirmed via Crossref but the ACM version was not read. Numbers are from the owner Zotero PDF (arXiv v2, 26 Jun 2026, Meta format) and were compared against the latest arXiv versions v3 of 11 Jul and v4 of 24 Jul 2026: all headline numbers and Tables 2, 3 and 8 are identical. v3 and v4 only change affiliation footnotes naming Meta MRS, Meta Training Data Infra and FB Monetization.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2606.18379
+  local_pdf: /workspace/recarch/zotero/meta-rankgraph2-2026.pdf
+  sections_read: 'Abstract, introduction, related work, problem setup, method (construction, training, learned index), experiments 5.1-5.4 with Tables 2-8, discussion, limitations, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found; a community reproduction exists in daiwk/auto-research but was not verified here and is not listed as a repo.'
+core_idea: A heterogeneous co-engagement graph with a co-learned cluster index replaces online KNN.
+deployed_in: U2I2I and U2U2I retrieval sources on two unnamed content recommendation surfaces
+scale_short: Billions of nodes, hundreds of billions of edges, 250,000 clusters
+key_result: U2I2I CVR +2.75% on Surface 1 in a 14-day A/B with RankGraph-2 added as a retrieval source
+results_table:
+  online:
+  - setting: U2I2I, 14-day A/B, Surface 1 / Surface 2
+    method: RankGraph-2
+    metric: CTR
+    result: +0.96% / +0.33%
+    versus: Production without it
+  - setting: U2I2I, 14-day A/B, Surface 1 / Surface 2
+    method: RankGraph-2
+    metric: CVR
+    result: +2.75% / +0.76%
+    versus: Production without it
+  - setting: U2U2I, 14-day A/B, Surface 1 / Surface 2
+    method: RankGraph-2
+    metric: CTR
+    result: +0.40% / +0.20%
+    versus: Production without it
+  - setting: U2U2I, 14-day A/B, Surface 1 / Surface 2
+    method: RankGraph-2
+    metric: CVR
+    result: +1.01% / +0.17%
+    versus: Production without it
+  - setting: Cluster index serving
+    method: RankGraph-2
+    metric: Serving cost
+    result: -83%
+    versus: Online KNN
+  offline:
+  - setting: 100K users, Table 2
+    method: RankGraph-2
+    metric: Recall@5
+    result: '0.143'
+    versus: GAT-DGI 0.038, HSTU 0.013
+  - setting: Item embeddings, Table 3
+    method: RankGraph-2
+    metric: Recall@100
+    result: '0.775'
+    versus: PBG 0.374, HSTU 0.434
+deployment:
+  online_evidence: online_numbers
+  scenario: Retrieval sources on two unnamed content recommendation surfaces
+  ab_traffic: not_reported
+  ab_duration: 14 days
+  baseline: Production without RankGraph-2 as a retrieval source
+  online_lifts:
+  - metric: U2I2I CTR, Surface 1 / Surface 2
+    value: +0.96% / +0.33%
+  - metric: U2I2I CVR, Surface 1 / Surface 2
+    value: +2.75% / +0.76%
+  - metric: U2U2I CTR, Surface 1 / Surface 2
+    value: +0.40% / +0.20%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Cluster index cuts serving cost by 83% against online KNN at comparable CTR and CVR
+  hardware: not_reported
+  notes:
+  - Graph rebuild takes about 1 hour on a 3-hour cycle, and embeddings refresh about 2 hours after engagement.
+  basis: full_text
+  checked_on: '2026-10-31'

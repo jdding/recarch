@@ -1,0 +1,54 @@
+surface|快手电商搜索
+era_reason|带 Semantic ID 的生成式搜索
+tldr|一个 encoder-decoder 为快手商城搜索生成 item Semantic ID，取代召回、预排序和排序的级联；选用奖励模型后，线上订单 +3.22%。
+summary|面向快手电商商城搜索的端到端生成式框架，用一个生成 item Semantic ID 的 encoder-decoder，取代召回、预排序、排序的级联；使用关键词增强的层级量化 KHQE、多视角用户行为序列注入，以及感知偏好的奖励系统 PARS。论文称这是首个工业部署的端到端生成式电商搜索框架。
+core_idea|一个 encoder-decoder 生成 item Semantic ID，取代召回、预排序和排序的级联。
+deployed_in|快手电商搜索，商城搜索和详情页搜索
+scale_short|详情页搜索全量，商城搜索 50%，首页搜索 20%
+key_result|在快手商城搜索的线上 A/B 中，选用奖励模型后，相比线上级联，订单 +3.22%
+results_reported|快手商城搜索的线上 A/B，即额外选用奖励模型的 OneSearch 对比线上级联：搜索 PV +1.10%，item CTR +1.67%，PV CTR +3.14%，PV CVR +1.78%，买家数 +2.40%，订单 +3.22%。纯 OneSearch，不选用奖励模型，与线上级联相当。只有召回加预排序、没有排序的级联，item CTR 下降 9.97%，订单下降 39.14%。
+stages.0.model_family|在 KHQE Semantic ID 上的 encoder-decoder 生成式模型，以 query、由行为驱动的用户 ID、以及短期和长期行为序列为条件
+stages.0.details|取代多阶段级联；图 1 中级联的候选空间为约 10^9 -> 10^4 -> 10^2。论文认为这种量化在保留 item 的区分性属性方面优于普通 VQ-VAE、RQ-VAE 和 RQ-Kmeans。
+stages.1.details|多阶段 SFT，先语义对齐，再个性化，加上带混合排序的自适应奖励模型，混合排序结合了奖励模型的指导和用户的直接交互反馈，即在 6 级用户行为层级上做 list-wise 偏好优化。
+id_tokenization.approach|带关键词的 KHQE 层级量化
+features_signals.1|用户的短期和长期序列
+training.mode|SFT 加奖励加权排序
+scale.0.value|详情页搜索全量，商城搜索 50%，首页搜索 20%，来自论文的结尾陈述
+scale.1.value|OPEX -75.40%；MFU 从 3.26%，级联，提高到 27.32%
+results_table.online.0.setting|快手商城搜索 A/B
+results_table.online.1.setting|快手商城搜索 A/B
+results_table.online.2.setting|快手商城搜索 A/B
+results_table.online.3.setting|快手商城搜索 A/B
+results_table.online.4.setting|快手商城搜索 A/B
+results_table.online.5.setting|快手商城搜索 A/B
+results_table.online.0.method|选用奖励模型的 OneSearch
+results_table.online.1.method|选用奖励模型的 OneSearch
+results_table.online.2.method|选用奖励模型的 OneSearch
+results_table.online.3.method|选用奖励模型的 OneSearch
+results_table.online.4.method|选用奖励模型的 OneSearch
+results_table.online.5.method|选用奖励模型的 OneSearch
+results_table.online.0.versus|线上级联
+results_table.online.1.versus|线上级联
+results_table.online.2.versus|线上级联
+results_table.online.3.versus|线上级联
+results_table.online.4.versus|线上级联
+results_table.online.5.versus|线上级联
+caveats.0|标题称这是「preliminary exploration」；部署是部分的，三个场景上分别为 100%、50% 和 20%。
+caveats.1|最好的线上收益需要额外选用奖励模型；纯生成式模型只能与级联持平。
+caveats.2|成本节省 75.40% OPEX 和 MFU 数字是论文自己与级联的对比；在所读章节中没有逐项列出硬件和基线的成本口径。
+unknown_fields.0|在线延迟和 QPS
+unknown_fields.1|模型参数量
+unknown_fields.2|除图 1 中约 10^9 的候选池外的商品库规模
+code.repos.0.owner|Ben Chen，第一作者兼通讯作者，快手
+code.repos.0.note|RQ-OPQ Semantic ID 构建、自蒸馏 SFT、RLHF 组件和数据示例。论文 PDF 中没有链接；README 写了论文名和同一位通讯作者。不包含线上服务部分。
+code.repos.1.owner|Ben Chen，同一位作者
+code.repos.1.note|OneSearch 的 README 引用的 KuaiSearch 数据集仓库。
+deployment.scenario|快手电商商城搜索
+deployment.baseline|线上级联
+deployment.inference_cost|运营支出降低 75.40%
+deployment.notes.0|不选用奖励模型的纯 OneSearch 与线上级联相当。
+deployment.notes.1|上线范围：详情页搜索全量，商城搜索 50%，首页搜索 20%。
+deployment.notes.2|模型 FLOPs 利用率从 3.26% 提高到 27.32%。
+deployment.online_lifts.0.metric|订单，选用奖励模型
+deployment.online_lifts.1.metric|买家数，选用奖励模型
+deployment.online_lifts.2.metric|item CTR，选用奖励模型

@@ -1,0 +1,102 @@
+id: linkedin-ligr-2025
+name: LiGR transformer ranking framework
+company: LinkedIn
+surface: LinkedIn ranking (the paper describes a large-scale ranking framework; see paper for surfaces)
+year: 2025
+system_type: recommendation
+evidence_level: production_described
+summary: LinkedIn's 2025 arXiv paper on LiGR, a transformer-based generative-recommender ranking framework for the LinkedIn Feed. A causal transformer
+  reads the member's interleaved item-action history with gated residual outputs (h + F(h) * sigmoid(hW)), and an added in-session setwise attention
+  layer re-ranks the top posts, replacing rule-based diversity re-rankers. It uses 7 features instead of hundreds, shows scaling with sequence
+  length, data and size, outperforms HSTU and Wukong in the authors' tests, and its setwise layer is described as fully deployed in Feed ranking
+  with +0.27% DAU engaging with professional content in the online ramp.
+paradigms:
+- sequential-transformer
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: 'Generative-recommender-style transformer: member history X_0..X_n as tokens (concatenated embeddings of item, creator and content
+    embeddings) interleaved with action outputs (multi-hot of click, like, comment, share and so on), causal attention, pre-norm transformer blocks
+    with sigmoid gating on attention and FFN outputs, ID embeddings (for example Actor ID, Post ID; 64-d with a 33M vocabulary for the largest
+    model), optional Semantic IDs from an RQ-VAE (3 codebooks of 1,000 vectors, latent dimension 8) with prefix encoding. A setwise layer adds
+    in-session attention (SetRank-style, masks via FlexAttention) with Attention Rank loss on top of binary cross-entropy.'
+  details: Baseline is a pointwise multi-task two-tower DNN (Click Tower and Contributions Tower) with several hundred features. LiGR uses 7 features.
+    Setwise scoring is applied only to the top 10 posts after pointwise scoring; set scores are added to point scores for items 1 to 10; the rule-based
+    diversity re-rankers (minimum gap of two items between out-of-network content and between posts by the same actor) are disabled.
+- stage: retrieval
+  model_family: 'LiGR member tower plus item tower in the LiNR GPU retrieval system (experiment only): the member''s profile FFN output is a virtual
+    token with history activities into a transformer; item features are tokens in an item transformer; a shared action head predicts the next
+    action; loss is two-tower softmax plus action prediction softmax.'
+  details: Video retrieval experiment on 2 weeks of data; recall@400 improves from 0.0799 (baseline) to 0.4435 with LiGR, shared layers, MLP scoring
+    and video ID. The paper does not say this retrieval variant is deployed.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- User history sequence
+- Few features versus hundreds in the baseline
+training:
+  mode: 'Offline training on GPUs with column-wise splitting of ID embedding tables across devices, Flash Attention and mixed precision; sequences
+    up to 2048 for the largest model. Scaling experiment: 5.4B sparse ID embedding parameters (64-d, 33M vocabulary), 10M dense parameters across
+    16 transformer layers, up to 1,024 feed interactions per member over six months, 8 A100 GPUs, 110 million training sequences from January
+    to August 2024, evaluation on about 4 million samples from the following 6 hours.'
+  objectives:
+  - binary cross-entropy per action (click, long dwell, contribution and so on)
+  - Attention Rank loss at session level for the setwise part
+  notes: Different learning rates for embeddings (0.01) and dense layers (0.001); dense gating on residual connections for stability. Semantic
+    IDs reduced model size from 5.4B to 1.3B parameters without a quality loss; Post ID can be removed and replaced by SID (+0.4% Long Dwell AUC,
+    +0.11% Contribution AUC).
+serving_infra: 'The system retrieves top candidates with a model-based retrieval system (LiNR), then LiGR scores the top K. It stores near-line
+  member and item activity and uses item and member embeddings from the GNN (LiGNN), LLM content embeddings and in-model ID embeddings. History
+  attention only lets items attend to items from earlier sessions, so all candidates are inferred at once and the history computation is amortized.
+  Latency measures: split scoring (setwise for the top 10 posts), score combination, diversity rerankers disabled, unified inference through a
+  graph rewriter, items packed along the batch dimension; incremental latency 10 ms at p90.'
+scale:
+- metric: Users
+  value: over a billion members
+  note: paper intro
+- metric: Training data
+  value: 110 million training sequences (January to August 2024) for the scaling run
+  note: paper
+- metric: Parameters
+  value: 5.4B sparse ID embedding plus 10M dense (largest scaling run); 1.3B with Semantic IDs
+  note: paper
+results_reported: 'Offline (Table 1): Long Dwell AUC 0.755 to 0.773 (+2.4%) and Contributions AUC 0.903 to 0.914 (+1.2%) vs the baseline with
+  hundreds of features. Scaling: each 10x of training FLOPs adds about 0.015 Long Dwell AUC; at 1e17 FLOPs Long Dwell AUC is 76.03 for LiGR vs
+  75.87 for HSTU layers; Wukong gave no AUC gain on Feed even with 8 layers. In-session attention adds 0.2% Long Dwell AUC (+0.5% Click, -0.04%
+  Contribution). Online (Table 7): setwise part with diversity rules disabled: +0.27% DAU engaging with professional content and +0.28% time spent
+  on feed; the paper notes that removing all diversity rules drops DAU by 0.18%. Retrieval (Table 6): recall@400 0.0799 to 0.4435 across the stacked
+  changes. Lessons: with too few features the model suffers item cold start; most architecture changes had little AUC impact apart from stability,
+  performance was driven by features and scale.'
+caveats:
+- The only online A/B reported is for the setwise layer (ramp, DAU +0.27%, time spent +0.28%); the full transformer ranker's online effect is
+  not given as a number.
+- The introduction says the inference optimizations are 'fully deployed in a real-world feed ranking system'; the paper does not state traffic
+  shares.
+- The scaling numbers come from an 8-GPU, 6-hour evaluation window experiment; the scaling-law figures are read from text, not from the plots.
+- The paper text says 10 million dense parameters across 16 layers with 5.4B sparse parameters; this is quoted as stated.
+- The conference field in the arXiv text is an unfilled ACM template, so no venue is recorded.
+unknown_fields:
+- share of Feed traffic served by the transformer ranker
+- production model size and QPS
+- retrieval variant deployment status
+- online metrics beyond the setwise ramp
+sources:
+- title: 'From Features to Transformers: Redefining Ranking for Scalable Impact (arXiv 2502.03417)'
+  url: https://arxiv.org/abs/2502.03417
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2502.03417
+  local_pdf: (read as text via https://arxiv.org/pdf/2502.03417; no local PDF)
+  sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (baseline, LiGR transformer with gated normalization, setwise layer, semantic
+    IDs, retrieval variant), Sec 4 (system, training, inference optimizations), Sec 5 (experiments, Tables 1-7), Sec 6 lessons, appendix A.1 and
+    A.2'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'

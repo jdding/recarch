@@ -1,0 +1,134 @@
+id: alibaba-urm-2025
+name: "URM"
+company: "Alibaba"
+surface: Retrieval for an online advertising platform
+year: 2025
+era: generative
+era_reason: "LLM used as a generative retriever"
+first_public: "2025-02"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2502.03041"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "A Qwen-7B LLM generates retrieval results from user features plus a text description of the objective; Alibaba ads saw a core metric up over 3% online."
+summary: 'Universal Retrieval Model: a fully fine-tuned LLM based on Qwen-7B by default that takes user features plus a text description of
+  the retrieval objective and generates a set of items from a candidate pool of roughly 10^7, using multi-query representation, matrix
+  decomposition of the item mapping into discriminative and transferable parts and probabilistic sampling. Served asynchronously and reported
+  to lift a core advertising-platform metric by over 3% online.'
+paradigms:
+- llm-based
+- generative-retrieval
+stages:
+- stage: retrieval
+  model_family: 'URM: LLM with multi-query representation (M=128 query tokens in the reported setup), item mapping W = U (V_dis + V_trans)^T
+    with |C| ~ 10^7, H=128, D=4096; objectives expressed as natural-language instructions (multi-scenario, multi-behavior, long-tail,
+    serendipity)'
+  details: 'Matrix decomposition plus sampling cuts the candidate-mapping cost from about 5000 GFLOPs to about 2 GFLOPs (paper''s setting:
+    tau=0.07, M=128, T=4, K=1000, up to 32 neighbors). A single forward pass of a 1.5B model at sequence length 1024 reaches 50 ms,
+    the paper''s stated limit for online retrieval.'
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Item/user text features
+training:
+  mode: Offline
+  objectives: null
+  notes: null
+serving_infra: 'Asynchronous workflow: user behavior aggregated over a configurable window (ten minutes online) triggers one URM inference;
+  the engine service concatenates user features with the objective text, calls the inference service, samples the final items and stores
+  results persistently for use in the later online retrieval phase. Paper states retrieval output within tens of milliseconds.'
+scale:
+- metric: Candidate set
+  value: about 10^7 items
+  note: paper
+- metric: Backbone
+  value: Qwen-7B (default feature generator); 1.5B forward pass at length 1024 = 50 ms
+  note: paper
+results_reported: 'Online A/B on the Alibaba advertising platform: core metric +3%. The abstract does not name the metric, the full text gives advertising revenue. Public datasets
+  (Sports, Beauty, Toys, Yelp): URM beats the strongest baseline by an average of 46% HR@5 and 29% NDCG@5 per Table 1. Offline industrial
+  experiments outperform task-specific expert retrieval models.'
+caveats:
+- Retrieval results are precomputed asynchronously per ten-minute window, so this is not per-request LLM inference.
+- The abstract and intro do not define the core metric behind the +3%. The full text names it as advertising revenue.
+- Company attribution to Alibaba is from authorship/affiliation; the platform is described only as 'our advertising platform'.
+unknown_fields:
+- A/B traffic share
+- GPU fleet size for the asynchronous inference
+sources:
+- title: URM, arXiv 2502.03041
+  url: https://arxiv.org/abs/2502.03041
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2502.03041
+  local_pdf: /workspace/src/a_2502.03041.pdf
+  sections_read: Abstract, intro, retrieval formulation, Sec 3 (multi-query representation, large-candidate mapping, matrix decomposition,
+    sampling), Sec 4 system implementation, Sec 5 public-dataset result text
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A fine-tuned LLM generates a set of items for a text retrieval objective and user features.
+deployed_in: Retrieval on the Alibaba advertising platform
+scale_short: Candidate pool of about 10^7 items
+key_result: Core metric +3% in an online A/B on the Alibaba advertising platform, metric not named
+results_table:
+  online:
+  - setting: Alibaba advertising platform A/B
+    method: URM
+    metric: Core metric, not named
+    result: +3%
+    versus: Production retrieval
+  offline:
+  - setting: Sports, Beauty, Toys, Yelp, per Table 1
+    method: URM
+    metric: HR@5
+    result: +46% on average
+    versus: Strongest baseline
+  - setting: Sports, Beauty, Toys, Yelp, per Table 1
+    method: URM
+    metric: NDCG@5
+    result: +29% on average
+    versus: Strongest baseline
+deployment:
+  online_evidence: online_numbers
+  scenario: Retrieval on the Alibaba advertising platform
+  ab_traffic: not_reported
+  ab_duration: 28 April to 14 May 2025
+  baseline: Production retrieval
+  online_lifts:
+  - metric: Advertising revenue, the core metric
+    value: +3.01%
+  - metric: CTR
+    value: +0.78%
+  - metric: CVR
+    value: +1.24%
+  - metric: Long-tail items
+    value: +2.23%
+  training_compute: 'Qwen-7B on 64 NVIDIA H20 GPUs: 25 hours for 50 million training examples, after 5% sampling
+    of the data'
+  serving_latency: Latency within tens of milliseconds; 1.5B model at sequence length 1024 reaches 50 ms, the online
+    limit
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: NVIDIA H20 GPUs for training and latency tests
+  notes:
+  - The abstract does not name the core metric. The full text names it as advertising revenue.
+  - The 50 ms figure is a benchmark for a 1.5B model, not the deployed 7B model.
+  fulltext_refs:
+  - 'Sec 5.5, Table 6: online results 28 April 2025 to 14 May 2025: revenue +3.01%, CTR +0.78%, CVR +1.24%, long-tail
+    items +2.23%'
+  - 'Sec 5.1: Qwen-7B on 64 NVIDIA H20 GPUs takes 25 hours to process 50 million training examples; 5% sampling
+    of the data'
+  - 'Sec 4: 1.5B model, sequence length 1024, single forward pass 50 ms, the limit for online retrieval'
+  basis: full_text
+  checked_on: '2026-10-31'

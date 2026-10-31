@@ -1,0 +1,140 @@
+id: alibaba-lum-2025
+name: "LUM"
+company: Alibaba
+surface: Industrial recommendation
+year: 2025
+era: generative
+era_reason: "Large user model with a three-step pretrain/scale paradigm; scaling-law claim"
+first_public: "2025-02"
+venue: "WSDM 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773966.3777970"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the published WSDM 2026 PDF; all numbers confirmed, Table 2 AUCs verified."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Large User Model: a generatively pre-trained transformer of up to 7B params whose outputs feed classic DLRMs; Taobao sponsored search ranking saw CTR +2.9%, RPM +1.2%."
+summary: 'WSDM ''26 paper: LUM, the Large User Model, a transformer pre-trained generatively on user behavior and used in three steps: knowledge construction, knowledge querying with condition tokens, and knowledge utilization as extra features for traditional DLRMs. Scales to
+  7B parameters offline and is deployed in the ranking stage of Taobao sponsored search.'
+paradigms:
+- foundation-model
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: LUM pre-trained with next-condition-item prediction; outputs from queried condition tokens are fed as features to the
+    existing DLRM ranker in Taobao sponsored search
+  details: Step 2 (knowledge querying) runs in real time early in request handling, in parallel with retrieval and pre-ranking, so LUM
+    latency is decoupled from the final ranking stage. A centralized cache stores real-time results and preloaded offline-inferred user
+    interests as fallback for tight response-time budgets.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Not enumerated
+training:
+  mode: Three-step
+  objectives: null
+  notes: null
+serving_infra: Centralized cache for real-time LUM query results plus offline-inferred fallback interests; LUM inference runs in parallel
+  with retrieval/pre-ranking rather than inside the ranker per Sec 4.4.
+scale:
+- metric: Model size
+  value: performance improves consistently up to 7 billion parameters (offline scaling study)
+  note: paper
+- metric: Industrial dataset
+  value: about 4 billion interactions per Table 1
+  note: paper
+results_reported: 'Online A/B in Taobao sponsored search ranking: CTR +2.9%, RPM +1.2%. Public datasets (Table 2, AUC): ML-1M LUM 0.7615
+  vs best listed baseline 0.7579 (SIM); ML-20M LUM 0.7483 vs best baseline 0.7463 (HSTU); Amazon Books LUM 0.6727 vs best baseline 0.6712
+  (HSTU).'
+caveats:
+- Table 2 numbers were checked against the published WSDM 2026 PDF, and all three LUM and best-baseline AUCs match.
+- Online result is for the ranking task in sponsored search only (per Sec 5.6).
+- Author affiliation Alibaba Group; deployment named as Taobao sponsored search.
+unknown_fields:
+- A/B traffic share and duration
+- serving GPU footprint
+- exact LUM input sequence length online
+sources:
+- title: "Unlocking Scaling Law in Industrial Recommendation Systems with a Three-step Paradigm based Large User Model, WSDM 2026"
+  url: https://doi.org/10.1145/3773966.3777970
+  type: paper
+- title: LUM, arXiv 2502.08309
+  url: https://arxiv.org/abs/2502.08309
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2502.08309
+  local_pdf: /workspace/recarch/zotero/alibaba-lum-2025.pdf
+  sections_read: Abstract, intro, three-step paradigm, Sec 4.4 industrial deployment, Tables 1-2 text, Sec 5.6 online results
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the published PDF (owner's Zotero copy)"
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Pre-train a transformer on user behavior, then feed its output as features to existing ranking models.
+deployed_in: Taobao sponsored search ranking
+scale_short: Scales to 7 billion parameters offline, about 4 billion industrial interactions
+key_result: CTR +2.9% and RPM +1.2% in an online A/B in Taobao sponsored search ranking
+results_table:
+  online:
+  - setting: Taobao sponsored search ranking A/B
+    method: LUM
+    metric: CTR
+    result: +2.9%
+    versus: Production ranking
+  - setting: Taobao sponsored search ranking A/B
+    method: LUM
+    metric: RPM
+    result: +1.2%
+    versus: Production ranking
+  offline:
+  - setting: ML-1M, Table 2
+    method: LUM
+    metric: AUC
+    result: '0.7615'
+    versus: Best listed baseline SIM 0.7579
+  - setting: ML-20M, Table 2
+    method: LUM
+    metric: AUC
+    result: '0.7483'
+    versus: Best baseline HSTU 0.7463
+  - setting: Amazon Books, Table 2
+    method: LUM
+    metric: AUC
+    result: '0.6727'
+    versus: Best baseline HSTU 0.6712
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao sponsored search ranking
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production ranking
+  online_lifts:
+  - metric: CTR
+    value: +2.9%
+  - metric: RPM
+    value: +1.2%
+  training_compute: 128 GPUs for the industrial dataset and 32 GPUs for public datasets; scaling study from 0.5B
+    to 14B parameters on 128 GPUs
+  serving_latency: Experiment budget of under 30 ms per request with 100 candidates ranked; a budget, not a measured
+    production latency
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - LUM inference runs in parallel with retrieval and pre-ranking, so it is not on the ranker critical path.
+  fulltext_refs:
+  - 'Sec 5.3: training uses 32 GPUs for public datasets and 128 GPUs for the industrial dataset'
+  - 'Sec 5.4: strict inference latency budget of under 30 ms per request, with 100 candidates ranked'
+  - 'Sec 5.5: model scale 0.5B to 14B trained on 128 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

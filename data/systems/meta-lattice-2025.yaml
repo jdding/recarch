@@ -1,0 +1,125 @@
+id: meta-lattice-2025
+name: Meta Lattice
+company: Meta
+surface: Ads recommendation model-space redesign
+year: 2023
+era: deep
+era_reason: "Multi-domain multi-objective model consolidation; not generative; borderline"
+first_public: "2023-05"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3770854.3783952"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "First-public year corrected from 2025 to 2023 based on the arXiv preprint of 2023-05."
+system_type: ads
+evidence_level: production_described
+tldr: "Lattice consolidates thousands of Meta Ads domain-objective models with data, feature and network unification; reported +10% top-line metrics and 20% capacity saving."
+summary: 'Meta paper on Meta Ads recommendation: Lattice redesigns the model space across thousands of domain-objective pairs, called portfolios, by consolidating data with Lattice Zipper, selecting Pareto-optimal features with Lattice Filter, unifying models with Multi-Domain Multi-Objective Lattice Networks that use interleaved learning and parameter untying, and transferring knowledge to serving models with Lattice KTAP and asynchronous precompute.'
+paradigms:
+- multi-task
+- foundation-model
+stages:
+- stage: rank
+  model_family: 'Lattice Networks: MDMO ranking models over consolidated datasets and features, with objectives spanning click, conversion
+    and ads quality'
+  details: Lattice Zipper links each ad impression to a randomly selected attribution window to balance freshness and correctness. Lattice
+    Networks outperform Wukong on every task at comparable complexity per Table 3.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Cross-domain ads data
+training:
+  mode: Offline with distillation
+  objectives: null
+  notes: null
+serving_infra: null
+scale: []
+results_reported: 'Deployment at Meta (abstract): +10% revenue-driving top-line metrics, +11.5% user satisfaction, +6% conversion rate,
+  20% capacity saving. Per-task offline results are in Table 3 (not reproduced).'
+caveats:
+- Headline numbers are from the abstract and are the combined effect of the whole redesign.
+- Baselines and surfaces behind each percentage are not defined in the abstract.
+- Offline tables and figures were read only through surrounding text.
+unknown_fields:
+- A/B design and traffic share
+- absolute baselines for each percentage
+- number of portfolios consolidated in production
+sources:
+- title: "Meta Lattice: Model Space Redesign for Cost-Effective Industry-Scale Ads Recommendations, KDD 2026"
+  url: https://doi.org/10.1145/3770854.3783952
+  type: paper
+- title: "New AI advancements drive Meta's ads system performance and efficiency, Meta AI blog, 11 May 2023; first public disclosure of Lattice"
+  url: https://ai.meta.com/blog/ai-ads-performance-efficiency-meta-lattice/
+  type: engineering_blog
+- title: Meta Lattice, arXiv 2512.09200
+  url: https://arxiv.org/abs/2512.09200
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2512.09200
+  local_pdf: /workspace/src/a_2512.09200.pdf
+  sections_read: Abstract, intro, overview, Zipper/Filter/Networks/KTAP descriptions, Sec 4 text around Table 3 and Fig 5
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Redesign the model space across thousands of domain-objective pairs by consolidating data and unifying models.
+deployed_in: Meta Ads recommendation
+scale_short: Thousands of domain-objective pairs, called portfolios
+key_result: +10% on revenue-driving top-line metrics in deployment at Meta
+results_table:
+  online:
+  - setting: Deployment at Meta, abstract
+    method: Lattice
+    metric: Revenue-driving top-line metrics
+    result: +10%
+    versus: Previous models
+  - setting: Deployment at Meta, abstract
+    method: Lattice
+    metric: User satisfaction
+    result: +11.5%
+    versus: Previous models
+  - setting: Deployment at Meta, abstract
+    method: Lattice
+    metric: Conversion rate
+    result: +6%
+    versus: Previous models
+  - setting: Deployment at Meta, abstract
+    method: Lattice
+    metric: Capacity
+    result: 20% saving
+    versus: Previous models
+  note: Per-task offline results are in Table 3 of the paper and are not reproduced here.
+deployment:
+  online_evidence: online_numbers
+  scenario: Meta Ads recommendation
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous models
+  online_lifts:
+  - metric: Revenue-driving top-line metrics
+    value: +10%
+  - metric: User satisfaction
+    value: +11.5%
+  - metric: Conversion rate
+    value: +6%
+  training_compute: An 8-layer Lattice network was parallelized on 128 NVIDIA A100 GPUs; hardware efficiency gains
+    reported on 1024 GPUs
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: 20% capacity saving
+  hardware: NVIDIA A100 GPUs for training
+  fulltext_refs:
+  - 'Sec 3: parallelization strategy on 128 Nvidia A100 GPUs for an 8-layer Lattice Network; hardware efficiency
+    gains on 1024 GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

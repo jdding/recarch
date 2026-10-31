@@ -1,0 +1,56 @@
+surface|淘宝闪购首页推荐，重排阶段
+era_reason|轻量生成器一次贪心遍历、逐个挑选列表中的 item，训练时蒸馏自离线前瞻评估器给出的稠密逐步价值，取代规则标注或 point-wise 的重排。
+tldr|淘宝闪购 DeGRe 把离线前瞻搜索蒸馏进贪心式生成式重排模型；闪购上对比基础策略做 8 天 2% A/B：GMV +3.75%，订单 +2.14%。
+summary|DeGRe 把生成式重排拆成离线和在线两部分。离线部分，用累计回归训练的 Lookahead Evaluator 估计每个部分列表的价值，并在未曝光的排列上做 beam search，挖掘高价值序列。训练时，评估器的逐步价值成为稠密监督，包括来自挖掘序列的硬标签和覆盖候选的软标签，并被蒸馏进一个小型的 Online Generator。在线只运行生成器，用一次贪心解码选出 item，因此评估器不增加在线服务成本。该系统已部署在淘宝闪购首页，也在支付宝流量上做过测试。
+core_idea|把离线前瞻搜索蒸馏进小型生成器，一次贪心遍历完成重排。
+deployed_in|淘宝闪购首页重排，在 2% 流量上测试
+scale_short|从 12 个候选中选 6 个，在 2% 流量上做 8 天 A/B，增加延迟 14.8 ms
+key_result|对比基础策略，在 2% 流量上做 8 天线上 A/B：GMV +3.75%，订单 +2.14%，增加延迟 14.8 ms
+results_reported|在淘宝闪购首页 2% 流量上做 8 天线上 A/B，对比多目标 point-wise 基础策略：CTR +2.85%，订单 +2.14%，GMV +3.75%，PRM 分别为 +0.73%、+1.14% 和 +0.76%。增加的延迟：DeGRe 为 14.8 ms，PRM 为 6.2 ms。在支付宝流量上，GMV 提升 4.14%，订单提升 3.39%。新用户 GMV 提升 2.72%，老用户提升 3.73%。离线生成器在 beam size 为 8 时的 HR@1%：闪购为 88.72%，Taobao Ad 为 71.06%，ML-1M 为 89.10%，相比最强基线的绝对提升分别为 53.19%、28.95% 和 29.90%。
+version_note|数字已对照 25 May 2026 的 arXiv v1 核对，该版本已按 KDD 2026 最终 ACM 格式排版，带有 DOI 和 KDD 论文集信息；没有另外打开 ACM 页面。
+serving_infra|只部署生成器。平均增加延迟 14.8 ms，PRM 基线为 6.2 ms。
+stages.0.model_family|4 层 Transformer 生成器，蒸馏自 6 层评估器
+stages.0.details|在线生成器通过贪心自回归解码，从 12 个候选中选出 6 个 item。评估器用累计回归训练，只在离线阶段用于 beam search 以及产出逐步的软标签和硬标签。
+id_tokenization.approach|不使用 Semantic ID；按位置逐步从候选集中选择 item
+id_tokenization.details|每一步从剩余候选中选择一个；报告的设置中 embedding 维度为 16。
+features_signals.0|重排候选的用户和 item 特征
+features_signals.1|带有点击、订单和 GMV 反馈的曝光序列日志
+features_signals.2|评估器对部分列表和完整列表的价值估计
+training.mode|离线训练，以用户最后一次会话做 leave-one-out 划分
+training.objectives.0|Lookahead Evaluator 的累计回归
+training.objectives.1|对挖掘序列的硬标签模仿，加上权重为 0.01 的软标签蒸馏
+training.notes|离线搜索的 beam size B 从 1 调到 8，离线搜索越充分，生成器越好；在 A100 GPU 上用 Adam，学习率 5e-4，batch size 1,024，使用五个随机种子。
+scale.0.metric|闪购离线数据集
+scale.0.value|3,511,657 个用户，1,753,654 个 item，167,911,273 条记录
+scale.1.metric|重排设置
+scale.1.value|从 12 个候选中选 6 个 item
+scale.2.value|在 2% 线上流量上做 8 天
+results_table.online.0.setting|闪购 8 天 A/B，2% 流量
+results_table.online.1.setting|闪购 8 天 A/B，2% 流量
+results_table.online.2.setting|闪购 8 天 A/B，2% 流量
+results_table.online.3.setting|闪购 8 天 A/B，2% 流量
+results_table.offline.0.setting|闪购，beam size 为 8
+results_table.offline.1.setting|Taobao Ad，beam size 为 8
+results_table.online.0.versus|基础 point-wise 策略
+results_table.online.1.versus|基础 point-wise 策略
+results_table.online.2.versus|基础 point-wise 策略
+results_table.online.3.versus|基础 point-wise 策略
+results_table.offline.0.method|DeGRe 生成器
+results_table.offline.0.versus|最强基线，低 53.19 个点
+results_table.offline.1.method|DeGRe 生成器
+results_table.offline.1.versus|最强基线，低 28.95 个点
+caveats.0|线上对照组是基础 point-wise 策略，而线上唯一的生成式或 list-wise 基线是判别式重排模型 PRM；没有在线上测试其他生成式重排模型。
+caveats.1|离线命中率由一个学习得到的外部评估器在采样排列上测得，因此是基于模型的代理指标，不是真实的用户行为日志。
+caveats.2|离线设置是从 12 个候选中重排 6 个 item，列表较小，论文没有给出更长列表的结果。
+caveats.3|这项工作由浙江大学的作者在淘宝闪购实习期间完成。
+unknown_fields.0|线上流量规模
+unknown_fields.1|在线服务的 GPU 数量
+unknown_fields.2|A/B 之后是否全量上线
+code.note|论文没有给出代码链接；2026-10-30 在 GitHub 上搜索，没有找到 DeGRe 仓库。
+deployment.scenario|淘宝闪购首页重排
+deployment.ab_traffic|2% 线上流量
+deployment.ab_duration|8 天
+deployment.baseline|多目标 point-wise 基础策略
+deployment.serving_latency|平均增加延迟 14.8 ms，PRM 基线为 6.2 ms
+deployment.hardware|模型在 NVIDIA A100 80GB GPU 上实现；在线服务硬件未报告
+deployment.notes.0|只部署生成器。

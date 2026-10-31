@@ -1,0 +1,159 @@
+id: facebook-search-ebr-2020
+name: Embedding-based Retrieval in Facebook Search
+company: "Meta / Facebook"
+surface: Facebook Search
+year: 2020
+era: deep
+era_reason: "Two-tower embedding-based retrieval for search"
+first_public: "2020-06"
+venue: "KDD 2020"
+venue_year: 2020
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3394486.3403305"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: search
+evidence_level: production_described
+tldr: "Facebook Search retrieves with a unified two-tower embedding that matches searcher, query and context against the document, trained with triplet loss and hard negatives."
+summary: KDD 2020 paper from Facebook on embedding-based retrieval in Facebook Search. A two-tower 'unified embedding' encodes the searcher,
+  query text and context on one side and the document, such as a person, group, page or event, on the other, trained with a triplet loss on cosine
+  distance, random negatives and later hard-negative mining and ensembles. Serving integrates Faiss-style coarse plus product quantization
+  into the Unicorn inverted-index engine through an nn operator so embeddings and Boolean term matching run as one hybrid retrieval.
+  The paper reports deployment and significant online A/B gains on verticals, but gives the online numbers only qualitatively.
+paradigms:
+- two-tower
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Two-tower unified embedding model: query tower takes query text, searcher and context features (city, region, country,
+    language, social embeddings); document tower takes document text and metadata (for example group location, social clusters). Categorical
+    features go through embedding lookups (weighted combination for multi-hot) into the encoders. Similarity is cosine; training uses
+    triplet loss max(0, D(q,d+) - D(q,d-) + m) with cosine distance.'
+  details: 'Text features use character n-grams plus hashed word n-grams (query trigram cardinality 352M). Social embedding features
+    come from a separately trained graph embedding model. Training positives: clicks (impressions perform similarly); negatives: random
+    documents (non-click impressions regress recall by an absolute 55% for people). Margin matters: 5 to 10% recall variance. Hard negative
+    mining: online (in-batch, at most two hard negatives per positive) and offline, sampling ranks 101 to 500, mixing easy and hard up to 100:1 and transferring from hard to easy. Hard positives mined from failed sessions reach click-level recall with 4% of the data. Ensembles:
+    weighted concatenation and cascade.'
+- stage: rank
+  model_family: Embedding cosine-similarity feature and a relevance model retrained on human ratings of embedding-retrieved results
+  details: 'Later-stage optimization: cosine similarity between query and result embeddings added as a ranking feature (better than
+    Hadamard product or raw embeddings), and a human-rating feedback loop retrains a relevance model to filter irrelevant EBR results.'
+id_tokenization:
+  approach: Dense embeddings
+  details: null
+features_signals:
+- Query text
+- Searcher context
+- Social graph context
+training:
+  mode: Offline training on search logs; offline hard-negative mining with ANN-generated top-K lists, running ANN on one random shard
+    is sufficient.
+  objectives:
+  - triplet loss with cosine distance
+  - recall@K as the offline evaluation metric (10,000 sampled sessions)
+  notes: Recall is the offline metric, defined as the fraction of the target set found in the top K of exact KNN over the whole index.
+serving_infra: 'Query embedding served by an online embedding inference service; document embeddings computed in batch with Spark and
+  published into the forward index and, quantized (coarse cluster term plus PQ payload), into the inverted index. NN search is a first-class
+  (nn :radius) operator in Unicorn, Facebook''s retrieval engine, so it composes with Boolean terms (hybrid retrieval) and inherits
+  real-time updates and query planning; radius mode is used in production rather than top-K because it gave a better performance and
+  quality trade-off. ANN tuning with Faiss: IVF vs IMI coarse quantization, OPQ is generally better than PCA, pq_bytes about d/4, tune
+  nprobe and cluster counts online as well as offline. Query selection avoids triggering EBR on easy queries; index selection keeps
+  monthly active users, recent events, popular pages and groups.'
+scale:
+- metric: Retrieval layer scale
+  value: billions or trillions of documents in a search index (generic statement)
+  note: paper intro; no Facebook-specific numbers
+- metric: Evaluation set
+  value: 10,000 sampled search sessions
+  note: paper
+results_reported: 'Offline recall gains: unified vs text embeddings +18% for events and +16% for groups; for the group model (Table
+  1) location features +2.20% absolute recall and social embedding features +1.77%; word n-grams on top of character trigrams +1.5%;
+  online hard negative mining +8.38% (people), +7% (groups), +5.33% (events); offline HNM ensemble and cascade give up to about 3.4%
+  to 4.39% recall over the baseline. ANN (Table 3, 128-d): 1-recall@10 with PQ16 67.54%, OPQ16,PQ16 70.51% to 74.29%, PQ64 74.81% equal
+  to flat 74.81%. Online: the paper says EBR on verticals gave significant metrics gains in A/B experiments but reports no online numbers.'
+caveats:
+- No online A/B numbers appear in the paper; the A/B statement is qualitative.
+- Offline recall gains are relative or absolute points on different verticals and are not additive.
+- The paper warns that the best offline model (non-click-impression ensemble) lost accuracy after quantization, so its online benefit
+  diminished.
+- Facebook-specific index sizes, QPS and latency are not published.
+unknown_fields:
+- online metric deltas
+- QPS and latency
+- embedding dimension in production; 128 is used in the Table 3 example only
+- index size
+sources:
+- title: "Embedding-based Retrieval in Facebook Search, KDD 2020"
+  url: https://doi.org/10.1145/3394486.3403305
+  type: paper
+- title: Embedding-based Retrieval in Facebook Search, arXiv 2006.11632, KDD 2020
+  url: https://arxiv.org/abs/2006.11632
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2006.11632
+  local_pdf: (read as text via https://arxiv.org/pdf/2006.11632 (v2 HTML conversion); no local PDF)
+  sections_read: 'Entire paper: abstract, intro, Sec 2 model (loss, unified embedding, training data mining), Sec 3 features (Tables
+    1-2), Sec 4 serving (ANN tuning, Table 3, Unicorn integration, hybrid retrieval), Sec 5 later-stage optimization, Sec 6 hard mining
+    and ensembles, conclusions'
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A two-tower unified embedding for searcher and document, served inside the Unicorn inverted index.
+deployed_in: Facebook Search retrieval, including people, groups, pages and events
+scale_short: Index of billions or trillions of documents, a generic statement
+key_result: Significant gains in online A/B experiments on verticals, with no online numbers reported
+results_table:
+  online:
+  - setting: A/B experiments on verticals
+    method: Embedding-based retrieval
+    metric: Online metrics
+    result: Significant gains, no numbers
+    versus: Production search
+  offline:
+  - setting: Events
+    method: Unified embeddings
+    metric: Recall
+    result: +18%
+    versus: Text embeddings
+  - setting: Groups
+    method: Unified embeddings
+    metric: Recall
+    result: +16%
+    versus: Text embeddings
+  - setting: Group model, Table 1
+    method: Location features
+    metric: Absolute recall
+    result: +2.20%
+    versus: Model without them
+  - setting: Group model, Table 1
+    method: Social embedding features
+    metric: Absolute recall
+    result: +1.77%
+    versus: Model without them
+  - setting: 128-d, Table 3
+    method: PQ64
+    metric: 1-recall@10
+    result: 74.81%
+    versus: Flat index 74.81%
+deployment:
+  online_evidence: online_qualitative
+  scenario: Facebook Search retrieval, including people, groups, pages and events
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production search
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Significant metric gains from A/B experiments on verticals, with no numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

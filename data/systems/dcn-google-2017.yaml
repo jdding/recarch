@@ -1,0 +1,107 @@
+id: dcn-google-2017
+name: DCN
+company: Google
+surface: CTR and feature-interaction modeling on public benchmarks
+year: 2017
+era: deep
+era_reason: Deep and cross network for CTR
+first_public: 2017-08
+venue: AdKDD 2017
+venue_year: 2017
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3124749.3124754
+added_on: '2026-10-29'
+last_verified: '2026-10-30'
+system_type: research
+evidence_level: research_only
+tldr: Deep & Cross Network adds an explicit feature-crossing network next to a deep MLP; on Criteo it beats DNN at about 40% lower memory. Offline only.
+summary: 'ADKDD 2017 paper from Stanford and Google: Deep & Cross Network, a model that runs a cross network with explicit feature crossing and one residual cross layer per degree in parallel with a deep MLP over a shared embedding-and-stacking layer. Evaluated offline on the Criteo display-ads dataset and two non-CTR UCI datasets; no online deployment is described.'
+paradigms:
+- dlrm
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: 'DCN: embedding and stacking layer, cross network x_{l+1} = x0 x_l^T w_l + b_l + x_l in parallel with a ReLU deep network, concatenated into a logits layer'
+  details: Highest polynomial degree of an l-layer cross network is l+1; cross network adds d x L_c x 2 parameters, linear in input dimension.
+id_tokenization:
+  approach: Embedded sparse features
+  details: null
+features_signals:
+- Sparse and dense CTR features
+training:
+  mode: 'Offline on Criteo Display Ads: 11 GB of logs over 7 days (~41 million records), first 6 days for training, day 7 split into validation and test'
+  objectives:
+  - CTR logloss with L2 term
+  notes: TensorFlow; Adam, batch size 512, batch norm on the deep part, gradient clip norm 100, early stopping at step 150,000; categorical embeddings of dimension 6 x cardinality^(1/4), concatenated vector of dimension 1026; grid search over 2-5 hidden layers, sizes 32-1024, 1-6 cross layers.
+serving_infra: null
+scale: []
+results_reported: 'Criteo test logloss per Table 1: DCN 0.4419, DC 0.4425, DNN 0.4428, FM 0.4464, LR 0.4474; best DCN setting was 2 deep layers of 1024 and 6 cross layers. Over 10 runs DCN 0.4422 +/- 9e-5 vs DNN 0.4430 +/- 3.7e-4. DCN uses about 40% of the DNN''s memory at best performance and, per Table 2, needs 7.9e5 parameters to reach logloss 0.4430 where the DNN needs 3.2e6. Non-CTR: forest covertype accuracy 0.9740 (DNN 0.9737); Higgs logloss 0.4494 vs DNN 0.4506. The paper treats a 0.001 logloss gain as practically significant on Criteo.'
+caveats:
+- Public-dataset experiments only; no production or A/B result is reported in the paper.
+- Wide & Deep was not compared because no method is known to choose its cross features; the FM baseline is described as 'proprietary details'.
+- Authors use Google's Sibyl for the LR baseline; baselines were tuned by the authors.
+unknown_fields:
+- production deployment
+- online metrics
+- serving latency
+sources:
+- title: Deep & Cross Network for Ad Click Predictions, AdKDD 2017
+  url: https://doi.org/10.1145/3124749.3124754
+  type: paper
+- title: Deep & Cross Network for Ad Click Predictions, arXiv 1708.05123
+  url: https://arxiv.org/abs/1708.05123
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1708.05123
+  local_pdf: (fetched as text via arxiv.org/pdf/1708.05123; no local PDF)
+  sections_read: 'Full paper: abstract, intro, Sec 2 architecture, Sec 3 analysis, Sec 4 experiments (Criteo, implementation, Tables 1-4, non-CTR datasets), conclusion'
+  verified_on: '2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/shenweichen/DeepCTR/blob/master/deepctr/models/dcn.py
+    owner: Weichen Shen (DeepCTR)
+    official: false
+    note: Popular third-party Keras implementation of DCN. TensorFlow Recommenders' Cross layer implements DCN-v2, not the original.
+core_idea: Add a cross network for explicit feature crossing, in parallel with a deep MLP.
+deployed_in: Not deployed, evaluated offline on Criteo and two UCI datasets
+scale_short: No production scale reported
+key_result: 'Offline: Criteo test logloss 0.4419 for DCN against 0.4428 for the DNN'
+results_table:
+  offline:
+  - setting: Criteo test, Table 1
+    method: DCN
+    metric: Logloss
+    result: '0.4419'
+    versus: DNN 0.4428
+  - setting: Criteo, over 10 runs
+    method: DCN
+    metric: Logloss
+    result: '0.4422'
+    versus: DNN 0.4430
+  - setting: Criteo, Table 2
+    method: DCN
+    metric: Parameters to reach logloss 0.4430
+    result: 7.9e5
+    versus: DNN 3.2e6
+  - setting: Criteo
+    method: DCN
+    metric: Memory at best performance
+    result: About 40%
+    versus: DNN memory
+  - setting: Forest covertype
+    method: DCN
+    metric: Accuracy
+    result: '0.9740'
+    versus: DNN 0.9737
+  - setting: Higgs
+    method: DCN
+    metric: Logloss
+    result: '0.4494'
+    versus: DNN 0.4506
+status: superseded
+status_date: '2026-10-30'
+superseded_by: dcn-google
+status_reason: Merged into the DCN card, one card per system, which presents the latest version DCN V2.

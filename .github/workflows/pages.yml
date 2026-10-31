@@ -1,0 +1,47 @@
+name: Build and deploy to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Build site
+        env:
+          SITE_URL: https://jdding.github.io/recarch
+        run: python3 build.py && touch dist/.nojekyll
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Tests
+        env:
+          SITE_URL: https://jdding.github.io/recarch
+        run: |
+          npm install --no-save --prefix /tmp/jt jsdom
+          python3 tests/carousel_fixture.py /tmp/car-fixtures
+          for t in tests/*.test.js; do NODE_PATH=/tmp/jt/node_modules node "$t"; done
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

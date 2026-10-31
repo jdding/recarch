@@ -1,0 +1,152 @@
+id: onerec-kuaishou
+name: OneRec
+company: Kuaishou
+surface: Short-video recommendation in the Kuaishou app
+year: 2025
+era: generative
+era_reason: End-to-end generative recommender with semantic IDs
+first_public: 2025-06
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/abs/2508.20900
+added_on: '2026-10-29'
+last_verified: '2026-10-30'
+system_type: recommendation
+evidence_level: production_described
+tldr: 'OneRec-V2: a lazy decoder-only generator over semantic IDs with real-feedback RL; A/B vs OneRec-V1 gave App Stay Time +0.467% (Kuaishou), +0.741% (Lite).'
+summary: 'Technical report on OneRec-V2: replaces OneRec-V1''s encoder-decoder with a ''lazy'' decoder-only generator over 3-level semantic IDs, where context is processed once into shared KV and cross-attention skips KV projections and uses GQA, and post-trains with real user-feedback rewards, using duration-aware reward shaping and adaptive ratio clipping in GBPO. Evaluated by A/B tests on Kuaishou and Kuaishou Lite.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: Lazy decoder-only generative recommender (end-to-end generation of semantic IDs)
+  details: 'Paper''s motivation: in V1''s encoder-decoder, 97.66% of compute went to context encoding rather than target generation. Item = 3 semantic IDs from the OneRec-V1 tokenizer; training input is [BOS, s1, s2]; loss averages over 3 tokens (V1 summed). Context = static user features + short- and long-term behavior sequences; online model uses 1B parameters and a context length (N_s + T_short + T_long) of about 3000 (about 512 in the architecture ablations).'
+id_tokenization:
+  approach: Semantic IDs (from OneRec-V1)
+  details: null
+features_signals:
+- User behavior sequences
+- Real-world user interactions as reward
+training:
+  mode: Pretraining of the generator, then post-training with preference alignment on real user interaction signals
+  objectives:
+  - Next semantic-ID token prediction
+  - Duration-Aware Reward Shaping to reduce video-duration bias
+  - Adaptive Ratio Clipping / GBPO (Gradient-Bounded Policy Optimization) for stable policy updates
+  notes: Scaling curves from 0.1B to 8B parameters; lazy decoder-only reaches similar loss to classic architectures with about 10x fewer FLOPs per Fig 5 caption and the loss follows a scaling-law fit.
+serving_infra: Online A/B model on L20 GPUs with 36 ms latency and 62% MFU, beam size 512 (Sec 4); QPS not stated.
+scale:
+- metric: Online model size
+  value: 1B parameters per Sec 2.3
+  note: paper
+- metric: Scaled-up experiment
+  value: up to 8B parameters
+  note: paper
+- metric: Online context length
+  value: about 3000 tokens (N_s+T_short+T_long)
+  note: paper
+- metric: Online experiment
+  value: 5% traffic group for one week on the Kuaishou and Kuaishou Lite feeds, platform with 400 million daily active users
+  note: paper, Sec 4
+results_reported: 'A/B of OneRec-V2 on the Kuaishou and Kuaishou Lite feeds versus OneRec-V1 (5% traffic group, one week, 1B model, user-feedback signals only): App Stay Time +0.467% / +0.741%, LT7 +0.069% / +0.034% (Table 8). Platform with 400 million daily active users. Compared with OneRec-V1 at 1B parameters in Fig 1 right and Table 7.'
+caveats:
+- Gains are relative to OneRec-V1, not to a non-OneRec baseline; the A/B used only user-feedback reward signals, to reduce system complexity.
+- In a separate 1% experiment with caching disabled (Appendix D), the paper reports cold-start video views down 44.7% on Kuaishou and 36.7% on Kuaishou Lite, an ecosystem-level cost.
+- Serving QPS and cost are not given in the sections read.
+- Scaling-law claims are on Kuaishou internal data.
+unknown_fields:
+- serving QPS
+- item tokenizer details beyond reference to V1
+sources:
+- title: OneRec-V2 Technical Report, arXiv 2508.20900
+  url: https://arxiv.org/abs/2508.20900
+  type: paper
+- title: OneRec Technical Report, arXiv 2506.13695
+  url: https://arxiv.org/abs/2506.13695
+  type: paper
+- title: 'OneRec-Think: In-Text Reasoning for Generative Recommendation, arXiv 2510.11639'
+  url: https://arxiv.org/abs/2510.11639
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.20900
+  local_pdf: /workspace/src/a_2508.20900.pdf
+  sections_read: Abstract, intro, Sec 2 (lazy decoder-only architecture, scaling), Sec 3 (preference alignment, GBPO), Sec 4 online A/B test, Table 8, Appendix D
+  verified_on: '2026-10-30'
+code:
+  status: official_partial
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/Kuaishou-OneRec/OpenOneRec
+    owner: Kuaishou (OneRec team org)
+    official: true
+    note: 'The team''s open release: Qwen3-based OneRec-Foundation 1.7B/8B models, the RecIF-Bench benchmark and a training pipeline. Related to, but not the same as, the production OneRec in this paper.'
+  - url: https://github.com/wangshy31/OneRec-Think
+    owner: Shiyao Wang (paper co-first author, Kuaishou); linked from the paper
+    official: true
+    note: 'Qwen3-1.7B pipeline on public Amazon data: itemic alignment, reasoning activation, evaluation. The deployed Think-Ahead production system is not included.'
+core_idea: A lazy decoder-only generator over 3-level semantic IDs, post-trained with real user-feedback rewards.
+deployed_in: Kuaishou and Kuaishou Lite short-video feeds, A/B on a 5% traffic group
+scale_short: 1B parameter online model, scaled up to 8B in experiments
+key_result: App Stay Time +0.467% on Kuaishou and +0.741% on Kuaishou Lite versus OneRec-V1, in a one-week A/B on 5% of traffic
+results_table:
+  online:
+  - setting: Kuaishou feed A/B, 5% of traffic, one week
+    method: OneRec-V2
+    metric: App Stay Time
+    result: +0.467%
+    versus: OneRec-V1
+  - setting: Kuaishou Lite feed A/B, 5% of traffic, one week
+    method: OneRec-V2
+    metric: App Stay Time
+    result: +0.741%
+    versus: OneRec-V1
+  - setting: Kuaishou feed A/B, 5% of traffic, one week
+    method: OneRec-V2
+    metric: LT7
+    result: +0.069%
+    versus: OneRec-V1
+  - setting: Kuaishou Lite feed A/B, 5% of traffic, one week
+    method: OneRec-V2
+    metric: LT7
+    result: +0.034%
+    versus: OneRec-V1
+version: OneRec-V2
+versions:
+- name: OneRec
+  first_public: 2025-06
+  source: https://arxiv.org/abs/2506.13695
+  note: 'Technical report: single-stage encoder-decoder generative recommender with RQ-KMeans semantic IDs and RL post-training.'
+- name: OneRec-V2
+  first_public: 2025-08
+  source: https://arxiv.org/abs/2508.20900
+  note: Lazy decoder-only generator over semantic IDs with real-feedback RL post-training. Presented on this card.
+- name: OneRec-Think
+  first_public: 2025-10
+  source: https://arxiv.org/abs/2510.11639
+  note: 'In-text reasoning: an LLM that unifies dialogue, reasoning and recommendation over item tokens.'
+updates:
+- date: '2026-10-30'
+  note: Merged OneRec, OneRec-V2 and OneRec-Think into one card presenting OneRec-V2, the version chosen as the main one. OneRec-Think is the latest version and OneRec the first; both stay in the version list and sources.
+version_note: This card presents OneRec-V2, one of 3 versions of one system. OneRec-V1 is the first version and OneRec-Think the latest; they are kept only as sources and in the version list.
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou and Kuaishou Lite short-video feeds
+  ab_traffic: 5% traffic group
+  ab_duration: One week
+  baseline: OneRec-V1
+  online_lifts:
+  - metric: App Stay Time, Kuaishou / Kuaishou Lite
+    value: +0.467% / +0.741%
+  - metric: LT7, Kuaishou / Kuaishou Lite
+    value: +0.069% / +0.034%
+  training_compute: not_reported
+  serving_latency: 36 ms online latency with context length 3000 and beam size 512
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: L20 GPUs with 62% model FLOPs utilization
+  basis: full_text
+  checked_on: '2026-10-31'

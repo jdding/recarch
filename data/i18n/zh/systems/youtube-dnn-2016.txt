@@ -1,0 +1,37 @@
+surface|YouTube 首页推荐
+era_reason|两阶段的深度候选生成和排序
+tldr|经典的两阶段漏斗：深度候选生成器被表述为极端多分类，然后由深度排序器预测期望的观看时长。
+summary|两阶段漏斗：深度候选生成网络被表述为对数百万个视频的极端多分类，之后是单独的、训练来预测期望观看时长的深度排序网络。
+core_idea|深度候选生成网络被表述为极端多分类，然后是为期望观看时长训练的深度排序器。
+deployed_in|YouTube 首页推荐
+scale_short|约十亿个参数，数千亿个训练样本
+key_result|离线：报告 MAP 和按观看时长加权的指标，没有线上 A/B 数字
+results_reported|论文报告离线的 MAP 和按观看时长加权的指标，并指出线上 A/B 结果并不总与离线结果相关。
+serving_infra|候选生成使用近似最近邻查找；对数百个候选做排序。
+stages.0.model_family|深度候选生成网络，带平均的 embedding bag、ReLU MLP、sampled softmax，服务时用 ANN 查找
+stages.0.details|推荐被表述为对数百万个视频的极端多分类。训练使用候选采样，数千个负样本，并对采样做校正。服务时，打分归结为在点积空间中做近似最近邻搜索，返回数百个候选。
+stages.1.model_family|深度排序网络，架构与候选生成相似，带加权 logistic 回归
+stages.1.details|独立地为每个视频曝光打分，使用多得多的视频 / 用户特征。目标通常是每次曝光的期望观看时长的一个简单函数，用加权 logistic 回归训练，而不是点击率。
+id_tokenization.approach|视频 ID 和搜索 query token 的学习式 embedding，bag-of-IDs 取平均；没有 Semantic ID 的 tokenization。
+id_tokenization.details|实验使用 1M 个视频的词表和 1M 个搜索 token 的词表。
+features_signals.0|观看历史，表示为近期视频 ID 的 bag；实验使用最近 50 次观看
+features_signals.1|搜索历史，表示为分词后的 query；实验使用最近 50 次搜索
+features_signals.2|人口属性特征，包括地理位置、设备、性别、年龄和登录状态
+features_signals.3|用于刻画新鲜度偏置的「Example age」特征
+features_signals.4|排序使用数百个关于视频、用户及二者关系的类别特征和连续特征
+training.mode|离线；论文描述了基于 TensorFlow 的大规模分布式训练
+training.objectives.0|带 sampled softmax 的交叉熵，召回
+training.objectives.1|通过加权 logistic 回归得到的期望观看时长，排序
+training.notes|模型在数千亿个样本上学习约十亿个参数。
+scale.0.metric|模型规模
+scale.0.value|约十亿个参数
+scale.1.metric|训练数据
+scale.1.value|数千亿个样本
+results_table.note|论文报告离线的 MAP 和按观看时长加权的指标，并指出线上 A/B 结果并不总与离线结果相关。
+caveats.0|这是 2016 年的论文；这份来源没有描述当前的 YouTube 系统。
+unknown_fields.0|延迟
+unknown_fields.1|当前的架构
+code.repos.0.note|第三方的 YouTubeDNN 实现；Google 没有发布代码。
+deployment.scenario|YouTube 首页推荐
+deployment.training_compute|在数千亿个样本上训练约十亿个参数
+deployment.notes.0|论文指出线上 A/B 结果并不总与离线指标相关。

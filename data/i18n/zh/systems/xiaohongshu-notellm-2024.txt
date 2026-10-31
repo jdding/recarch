@@ -1,0 +1,39 @@
+surface|笔记的 item-to-item 推荐
+era_reason|LLM 把笔记压缩成 embedding；基于 LLM 但处于边界，因为 LLM 只用于 embedding
+tldr|微调一个 7B 的 LLM 来给笔记做 embedding，用于 item-to-item 推荐，同时生成话题标签；为期一周的线上测试：点击率 +16.20%。
+summary|WWW '24 Companion 论文：微调一个基于 LLaMA 2 的 7B LLM，来给笔记做 embedding，用于 item-to-item 推荐，做法是对从共现中挖出的相关 pair 用 Generative-Contrastive Learning，把笔记压缩成一个特殊 token，同时通过 Collaborative SFT 联合生成话题标签和类目。在小红书上做了离线评估，以及为期一周的线上 I2I 实验。
+core_idea|微调一个 7B 的 LLM，对共现 pair 用对比学习，把笔记压缩成一个特殊 token。
+deployed_in|小红书的笔记 item-to-item 推荐
+scale_short|7B 参数的 LLM
+key_result|在为期一周的线上 I2I 实验中，相对基于 SentenceBERT 的方法，点击率 +16.20%
+results_reported|为期一周的线上 I2I 实验，相对之前基于 SentenceBERT 的方法：点击率 +16.20%，评论 +1.10%，平均每周发布者，WAP，+0.41%，新笔记的评论 +3.58%。离线：平均召回 94.66，线上 SentenceBERT 基线为 88.63。
+status_reason|按入选标准已退役：这是一篇研究论文，其为期一周的线上测试没有说明流量占比，也没有说明实验之外的线上采用，所以证据仍为 research_only，且引用数低于 500 的豁免线。
+stages.0.model_family|NoteLLM：LLaMA-2 7B，带统一的 Note Compression Prompt；用压缩 token 的 embedding 做 I2I 召回，用 in-batch 负样本的对比损失加话题标签 / 类目生成，即 CSFT，来训练
+stages.0.details|相关 pair 来自用户行为中笔记 pair 的共现分数，即每篇笔记的 top 共现笔记。表 2，Recall@100 / @1k / @10k / @100k / 平均：SentenceBERT 线上基线，110M，70.72 / 87.88 / 96.29 / 99.62 / 88.63；NoteLLM 84.02 / 95.23 / 99.23 / 99.96 / 94.66；PromptEOL+CSE 83.28 / 95.26 / 99.20 / 99.96 / 94.43；RepLLaMA 83.63 / 95.10 / 99.27 / 99.94 / 94.49，均为 7B 模型。
+features_signals.0|笔记文本、话题标签、类目、共现
+training.mode|离线微调 LLaMA-2 7B
+training.objectives.0|用于笔记 embedding 的 Generative-Contrastive Learning，in-batch 负样本
+training.objectives.1|用于话题标签 / 类目生成的 Collaborative SFT
+training.notes|在 8 x 80GB A100 GPU 上用 Distributed Data Parallel，每块 GPU 的 batch size 为 8，来自论文脚注。低曝光与高曝光笔记的分析见表 3。
+results_table.online.0.setting|为期一周的线上 I2I 实验
+results_table.online.1.setting|为期一周的线上 I2I 实验
+results_table.online.2.setting|为期一周的线上 I2I 实验
+results_table.online.3.setting|为期一周的线上 I2I 实验
+results_table.online.0.metric|点击率
+results_table.online.0.versus|基于 SentenceBERT 的方法
+results_table.online.1.versus|基于 SentenceBERT 的方法
+results_table.online.2.versus|基于 SentenceBERT 的方法
+results_table.online.3.versus|基于 SentenceBERT 的方法
+results_table.online.2.metric|平均每周发布者
+results_table.online.3.metric|新笔记的评论
+results_table.offline.0.setting|离线评估
+results_table.offline.0.metric|平均召回
+results_table.offline.0.versus|线上 SentenceBERT 基线 88.63
+caveats.0|线上实验被描述为为期一周，在已读的章节中没有说明流量占比。
+caveats.1|在已读的章节中没有量化 7B embedding 模型相对 110M 的 SentenceBERT 基线的服务成本。
+caveats.2|这是小红书与高校合著者的研究论文；没有说明实验之外的线上采用。
+unknown_fields.0|线上服务延迟 / 成本
+unknown_fields.1|A/B 流量占比
+unknown_fields.2|索引 / ANN 基础设施的细节
+code.repos.0.owner|Applied Machine Learning Lab，论文共同作者 Xiangyu Zhao 所在的学术实验室
+code.repos.0.note|NoteLLM 和 NoteLLM-2 的源码；由作者所在的学术实验室发布，不是小红书的组织。

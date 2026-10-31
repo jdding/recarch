@@ -1,0 +1,142 @@
+id: netflix-genpage-2026
+name: "GenPage"
+company: Netflix
+surface: Netflix homepage with paginated rows and entities
+year: 2026
+era: generative
+era_reason: "A single decoder-only Transformer autoregressively generates the whole row-and-entity homepage from tokenized user context, trained with next-token pretraining then WBC or RL post-training."
+first_public: "2026-06"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831915"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Netflix replaces the multi-stage homepage stack with one decoder-only Transformer that generates the whole page; A/B vs production: +0.24% core engagement at p<0.001 and 20% lower serving latency."
+summary: 'GenPage treats user history, profile and request context as a prompt and autoregressively generates the entire multi-row homepage, with each row and each entity as a single token in a daily-updated vocabulary. It is pretrained with next-token prediction on positively engaged production pages, then post-trained either with weighted binary classification with token-level value prediction from the Netflix reward system or with page-level RL using Dr. GRPO against a learned reward model. Production additions are semantic embedding fusion and context injection for cold start, fallback tokens, multi-cadence incremental training, constrained decoding for business rules and hybrid row decoding. Only the WBC variant has been tested online.'
+paradigms:
+- generative-retrieval
+- sequential-transformer
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: 'Decoder-only Transformer with untied input and output embeddings; about 200M parameters in the online test; sweeps from about 120M to 900M offline.'
+  details: 'Decoding is greedy over token values; hybrid row decoding generates only the first few entities of a row autoregressively and fills the rest from one forward pass; constrained decoding masks tokens by per-request business rules. In the A/B test it decoded over the existing production row and entity candidate sets.'
+id_tokenization:
+  approach: Domain-specific vocabulary with one token per entity and one token per row (not semantic IDs)
+  details: 'A watch event compresses to 4 tokens [Entity_ID], [Action_Type], [Action_Time_Bucket], [Action_Duration_Bucket] (16 tokens with a GPT-5 tokenizer); entity and row vocabularies refresh daily; fallback tokens and content-embedding fusion handle out-of-vocabulary entities.'
+features_signals:
+- User action history, including play, add to My List, thumbs-up, trailer views and details page visits, with entity, type, time and duration buckets
+- Profile attributes such as language and kids or adult, and request context such as time of day, day of week and device
+- Summarized long impression history
+- Entity content embeddings from synopsis, cast, transcripts, genres and video content
+training:
+  mode: 'Weekly (tunable) large-window pretraining and post-training, with daily incremental post-training on the latest day plus a sample of past data'
+  objectives:
+  - Next-token prediction on pages that received positive feedback (pretraining)
+  - Weighted binary cross-entropy per token with sign and magnitude from the reward system, plus random negatives (WBC post-training)
+  - Dr. GRPO against a page-level reward model with KL penalty and rule-based rewards (RL post-training, not deployed)
+  notes: 'RL uses the verl library with vLLM. Reward system is described in prior Netflix work cited by the paper.'
+serving_infra: 'Real-time page generation with a single Transformer; custom tokenization and hybrid row decoding cut decoding steps; the inference engine was customized for dynamic per-request token masks; paginated requests append earlier rows and latest in-session engagements to the prompt.'
+scale:
+- metric: Online model size
+  value: about 200M parameters
+  note: Chosen to fit the serving latency budget
+- metric: Offline scaling sweep
+  value: about 120M to 900M parameters
+  note: Figure 3
+results_reported: 'Online A/B vs mature multi-stage production homepage recommender (14 days, five WBC variants, all significant with p < 0.001): best variant +0.24% on the core engagement metric used for launch decisions (95% CI [0.17%, 0.30%]); end-to-end serving latency -20%. Offline per Table 1 pretraining vs none for WBC: loss 0.321 vs 0.333, Row AUC 0.884 vs 0.879, Entity AUC 0.920 vs 0.910. Scaling 120M to 900M reduces WBC loss by about 1.3%, while cumulative context enrichment reduces it by about 6.9%. RL post-training raises page reward and homepage diversity offline.'
+caveats:
+- 'Only the WBC variant is online; the RL variant has not shipped and its offline evaluation is circular, since the reward model is also the training signal.'
+- 'The A/B test decoded over the existing production row and entity candidate sets, so candidate generation was not replaced.'
+- 'Long user history still uses handcrafted summaries.'
+- 'The launch metric is unnamed and only relative gains are given; the paper notes unintended shifts in the impressed-entity mix.'
+- 'Offline ablations use different data snapshots, so only relative comparisons within each study are reported.'
+unknown_fields:
+- name and absolute value of the core engagement metric
+- exact model depth and width
+- training data volume
+- whether the system has fully launched
+sources:
+- title: "GenPage: Towards End-to-End Generative Homepage Construction at Netflix, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831915
+  type: paper
+- title: GenPage, arXiv 2606.31031
+  url: https://arxiv.org/abs/2606.31031
+  type: paper
+- title: daiwk/auto-research GenPage reproduction, third-party
+  url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/genpage/
+  type: source_code
+version_note: 'Numbers checked against the owner Zotero PDF, arXiv v2 of 1 Aug 2026, in the RecSys 2026 camera-ready format with the ACM DOI 10.1145/3773078.3831915. arXiv v3 of 16 Oct 2026 was compared on the headline numbers, namely +0.24%, CI, 20% latency, Table 1, 6.9% and 1.3%, which are unchanged; v3 adds University of Alberta author Fengdi Che. The ACM DL page was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2606.31031
+  local_pdf: /workspace/recarch/zotero/netflix-genpage-2026.pdf
+  sections_read: 'Abstract, introduction, data and tokenization, reward system, architecture, training recipe (pretraining, WBC, RL), production challenges, offline experiments 7.1-7.4, online evaluation, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'RecSys 2026-format PDF (arXiv v2 with ACM DOI) read 2026-10-30'
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/daiwk/auto-research/tree/main/src/auto_research/reproductions/genpage/
+    owner: daiwk (third party)
+    official: false
+    note: 'Automated third-party reproduction; the reproduction page states no official code was provided as of 24 Aug 2026. Fidelity unverified.'
+  note: 'No official code from Netflix.'
+core_idea: Generate the whole multi-row homepage autoregressively, with each row and entity as one token.
+deployed_in: Netflix homepage, the WBC variant tested online, full launch not stated
+scale_short: About 200M parameters online
+key_result: Core engagement metric +0.24% in a 14-day online A/B against the mature multi-stage production homepage recommender
+results_table:
+  online:
+  - setting: Netflix homepage, 14-day A/B, best WBC variant
+    method: GenPage
+    metric: Core engagement metric
+    result: +0.24%
+    versus: Production homepage recommender, 95% CI 0.17% to 0.30%
+  - setting: Netflix homepage, 14-day A/B
+    method: GenPage
+    metric: End-to-end serving latency
+    result: -20%
+    versus: Production homepage recommender
+  offline:
+  - setting: WBC pretraining, Table 1
+    method: With pretraining
+    metric: Loss
+    result: '0.321'
+    versus: Without 0.333
+  - setting: WBC pretraining, Table 1
+    method: With pretraining
+    metric: Row AUC
+    result: '0.884'
+    versus: Without 0.879
+  - setting: WBC pretraining, Table 1
+    method: With pretraining
+    metric: Entity AUC
+    result: '0.920'
+    versus: Without 0.910
+deployment:
+  online_evidence: online_numbers
+  scenario: Netflix homepage, WBC variant tested online
+  ab_traffic: not_reported
+  ab_duration: 14 days
+  baseline: Mature multi-stage production homepage recommender
+  online_lifts:
+  - metric: Core engagement metric, best of five variants
+    value: +0.24%
+  - metric: End-to-end serving latency
+    value: -20%
+  training_compute: not_reported
+  serving_latency: End-to-end serving latency 20% lower than the multi-stage stack
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The online model has about 200M parameters, chosen to fit the serving latency budget.
+  - Full launch is not stated.
+  basis: full_text
+  checked_on: '2026-10-31'

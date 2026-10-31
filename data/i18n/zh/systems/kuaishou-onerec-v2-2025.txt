@@ -1,0 +1,38 @@
+surface|快手 App 中的短视频推荐
+era_reason|带 Semantic ID 的端到端生成式推荐模型
+tldr|OneRec-V2 在 3 层 Semantic ID 上使用 lazy decoder-only 生成器，并用真实反馈做强化学习后训练；A/B 中快手 App 停留时长 +0.467%。
+summary|OneRec-V2 的技术报告：把 OneRec-V1 的 encoder-decoder 换成在 3 层 Semantic ID 上的「lazy」decoder-only 生成器，上下文只处理一次并共享 KV，cross-attention 跳过 KV 投影并使用 GQA；后训练使用真实用户反馈的奖励，在 GBPO 中采用感知时长的奖励塑形和自适应比率裁剪。通过快手和快手极速版上的 A/B 测试评估。
+core_idea|在 3 层 Semantic ID 上的 lazy decoder-only 生成器，用真实用户反馈的奖励做后训练。
+deployed_in|快手和快手极速版的短视频推荐
+scale_short|线上模型 1B 参数，实验中扩展到 8B
+key_result|A/B 测试中，快手 App 停留时长 +0.467%，快手极速版 +0.741%
+results_reported|快手 / 快手极速版上的 A/B：App 停留时长 +0.467% / +0.741%，同时平衡多个目标，来自摘要。在 1B 参数下与 OneRec-V1 的对比见图 1 右侧和表 7。
+status_reason|已合并进 OneRec 卡片，每个系统一张卡片，该卡片以 OneRec-V2 作为主版本。
+stages.0.model_family|Lazy decoder-only 生成式推荐模型，端到端生成 Semantic ID
+stages.0.details|论文的动机：在 V1 的 encoder-decoder 中，97.66% 的算力花在上下文编码上，而不是目标生成上。Item 对应 OneRec-V1 tokenizer 给出的 3 个 Semantic ID；训练输入是 [BOS, s1, s2]；损失对 3 个 token 取平均，V1 是求和。上下文包括静态用户特征加短期和长期行为序列；线上模型使用 1B 参数，上下文长度即 N_s + T_short + T_long 约为 3000，架构消融中约为 512。
+id_tokenization.approach|Semantic ID，来自 OneRec-V1
+features_signals.0|用户行为序列
+features_signals.1|作为奖励的真实用户交互
+training.mode|先预训练生成器，再用真实用户交互信号做偏好对齐的后训练
+training.objectives.0|下一个 Semantic ID token 预测
+training.objectives.1|感知时长的奖励塑形，用来降低视频时长偏差
+training.objectives.2|自适应比率裁剪和 GBPO，即 Gradient-Bounded Policy Optimization，用于稳定策略更新
+training.notes|参数量从 0.1B 到 8B 的 scaling 曲线；按图 5 的说明，lazy decoder-only 达到与经典架构相近的损失，FLOPs 约少 10x，且损失符合 scaling-law 拟合。
+scale.0.metric|线上模型规模
+scale.0.value|1B 参数，见第 2.3 节
+scale.1.metric|扩展实验
+scale.1.value|最多 8B 参数
+scale.2.metric|线上上下文长度
+scale.2.value|约 3000 个 token，即 N_s+T_short+T_long
+results_table.online.0.method|本文提出的模型
+results_table.online.1.method|本文提出的模型
+results_table.online.0.versus|线上系统
+results_table.online.1.versus|线上系统
+caveats.0|提升是相对于所报告的基线，即 V1 和此前的线上系统；在所读章节中没有重述 V2 A/B 的流量占比和测试时长。
+caveats.1|在所读章节中没有给出线上服务架构、延迟和 QPS。
+caveats.2|Scaling-law 的结论基于快手内部数据。
+unknown_fields.0|在线延迟和 QPS
+unknown_fields.1|V2 A/B 的流量占比和时长
+unknown_fields.2|除引用 V1 之外的 item tokenizer 细节
+code.repos.0.owner|快手，OneRec 团队的组织
+code.repos.0.note|OneRec 团队的开源发布，含基于 Qwen3 的模型、一个基准和一条流水线。我没有找到 V2 lazy decoder-only 架构本身的代码；它的 README 也没有提到 V2。

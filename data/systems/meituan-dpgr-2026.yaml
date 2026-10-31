@@ -1,0 +1,149 @@
+id: meituan-dpgr-2026
+name: "DPGR"
+company: Meituan
+surface: Dianping homepage feed and immersive video stream, local life service retrieval
+year: 2026
+era: generative
+era_reason: "An HSTU-based generative retrieval model predicts discrete intent codes from user sequences and each code drives a parallel ANN query, replacing the two-tower retriever."
+first_public: "2026-09"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831742"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Meituan's DPGR is an HSTU-based generative retriever over Dianping content and POI actions; 7-day 15% A/B vs the two-tower: POI collects +5.209%, content views +1.486%."
+summary: 'DPGR models content and POI interactions of one Dianping session in a single HSTU sequence, each as an item, action and context triple with domain-specific projections. A spatiotemporal state-conditioned module injects scene, time slot, location and travel state into the encoder at three points: token reweighting, interaction and aggregation. Instead of generating items, an intent definition module quantizes dual-domain behaviors into discrete intent codes; the model predicts the top K intents and each one runs its own ANN query, so candidate coverage grows with no extra latency. The system is deployed as the retrieval stage in two Dianping homepage scenarios.'
+paradigms:
+- generative-retrieval
+- sequential-transformer
+- semantic-id
+stages:
+- stage: retrieval
+  model_family: 'HSTU encoder, 4 layers and 4 heads, hidden size 256, sequence length 1,000'
+  details: 'Predicts top K discrete intent codes, K=3 in the multi-intent variant; each code independently queries an ANN index and the K times N candidates are re-ranked by inner product to keep N. Downstream ranking and fusion are unchanged.'
+id_tokenization:
+  approach: 'Discrete intent codes learned by quantizing dual-domain behaviors, codebook size 256'
+  details: 'Items are not the generation unit; the model generates intent codes and each code retrieves items by ANN. Content and POI tokens share the sequence through domain-specific projections.'
+features_signals:
+- Content interactions on notes, videos and reviews
+- POI interactions such as collects and check-ins
+- Domain type and action type per interaction
+- Spatiotemporal context of scene, time slot, location and travel state
+training:
+  mode: 'Offline training on Dianping logs'
+  objectives:
+  - 'InfoNCE contrastive retrieval loss, temperature 0.07'
+  - 'Vector quantization with commitment coefficient 0.25 for the intent codes'
+  notes: 'Adam with learning rate 1e-4, batch of 256 sessions. Recall@100 grows approximately log-linearly with GFLOPs, and extending the context from 200 to 10k tokens gives a cumulative 24.9% gain in Recall@100.'
+serving_infra: 'Parallel ANN retrieval, one query per predicted intent code; the paper states no added latency and gives peak-hour latency for one and three intents in Table 5, but no hardware type.'
+scale:
+- metric: Internal dataset
+  value: 56.9M users, 69.6M items, 6.88B interactions
+  note: Dianping logs
+- metric: Daily active users
+  value: Tens of millions
+  note: Two homepage scenarios
+- metric: Online A/B
+  value: 7 days, 15% random traffic bucket
+  note: Control is the production two-tower retriever
+results_reported: 'Online A/B, 7 days on a 15% random bucket against the production discriminative two-tower retriever, cumulative over three rollout stages, all p < 0.05: content views +1.486%, content watch time +1.015%, POI clicks +0.527%, POI collects +5.209%. Stage 1 with the plain HSTU backbone gave +0.493% content views and +3.226% POI collects; stage 2 with state conditioning gave +1.103% and +3.314%. Offline on the internal Dianping set, Recall@200 is 0.6594 for DPGR with three intents, 0.4777 for one intent, 0.3517 for TBGRecall, 0.3206 for HSTU and 0.0415 for DSSM. On public KuaiRand-Pure, Recall@100 is 0.3265 for DPGR against 0.3184 for HSTU.'
+caveats:
+- 'The online gains are cumulative over three rollout stages against a two-tower control, so they mix the generative backbone, state conditioning and multi-intent generation.'
+- 'The offline evidence is mainly an internal dataset; the public KuaiRand-Pure set lacks content, POI and spatiotemporal signals.'
+- 'Latency figures come from Table 5 and are peak-hour values for one and three intents.'
+unknown_fields:
+- GPU count
+- traffic share beyond the 15% bucket per experiment
+- whether the A/B led to full launch
+sources:
+- title: "DPGR: Dual-Domain Spatiotemporal Generative Retrieval for Intent-Aware Local Life Service Recommendation, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831742
+  type: paper
+version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831742, from the owner Zotero copy. No arXiv preprint was found, so the first public date is the conference month.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3773078.3831742
+  local_pdf: /workspace/recarch/zotero/meituan-dpgr-2026.pdf
+  sections_read: 'Abstract, introduction, related work, methodology, experiments 4.1-4.5 including Tables 1-4 and the online A/B, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'RecSys 2026 camera-ready PDF read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper. A GitHub repository named DPGR by user slggg holds only a README and a slide file, no code, and its link to the authors is unverified, so it is not listed.'
+core_idea: An HSTU sequence model predicts discrete intent codes, and each code issues its own ANN query.
+deployed_in: Dianping homepage feed and immersive video stream, retrieval stage, tested on 15% of traffic
+scale_short: 6.88B training interactions, 7-day A/B on a 15% bucket
+key_result: POI collects +5.209% and content views +1.486% in a 7-day A/B on a 15% bucket against the two-tower retriever
+results_table:
+  online:
+  - setting: Dianping 7-day A/B, 15% bucket
+    method: DPGR
+    metric: Content views
+    result: +1.486%
+    versus: Production two-tower retriever
+  - setting: Dianping 7-day A/B, 15% bucket
+    method: DPGR
+    metric: Content watch time
+    result: +1.015%
+    versus: Production two-tower retriever
+  - setting: Dianping 7-day A/B, 15% bucket
+    method: DPGR
+    metric: POI clicks
+    result: +0.527%
+    versus: Production two-tower retriever
+  - setting: Dianping 7-day A/B, 15% bucket
+    method: DPGR
+    metric: POI collects
+    result: +5.209%
+    versus: Production two-tower retriever
+  offline:
+  - setting: Internal Dianping set
+    method: DPGR with three intents
+    metric: Recall@200
+    result: '0.6594'
+    versus: TBGRecall 0.3517
+  - setting: Internal Dianping set
+    method: DPGR with one intent
+    metric: Recall@200
+    result: '0.4777'
+    versus: HSTU 0.3206
+  - setting: KuaiRand-Pure
+    method: DPGR
+    metric: Recall@100
+    result: '0.3265'
+    versus: HSTU 0.3184
+deployment:
+  online_evidence: online_numbers
+  scenario: Dianping homepage feed and immersive video stream, retrieval stage
+  ab_traffic: 15% random traffic bucket
+  ab_duration: 7 days
+  baseline: Production discriminative two-tower retriever
+  online_lifts:
+  - metric: Content views
+    value: +1.486%
+  - metric: Content watch time
+    value: +1.015%
+  - metric: POI clicks
+    value: +0.527%
+  - metric: POI collects
+    value: +5.209%
+  training_compute: not_reported
+  serving_latency: 'Three-intent retrieval: average 3.1 ms and P99 33.1 ms. One intent: average 2.7 ms and P99 15.5
+    ms'
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: CPU utilization 55.7% for three intents and 30.9% for one intent, on the same peak-hour hardware; hardware
+    type not reported
+  notes:
+  - Lifts are cumulative over three rollout stages.
+  - Latency and CPU figures come from Table 5 of the paper.
+  fulltext_refs:
+  - 'Sec 5, Table 5: peak-hour latency K=1 avg/P99 2.7/15.5 ms at 30.9% CPU; K=3 3.1/33.1 ms at 55.7% CPU'
+  basis: full_text
+  checked_on: '2026-10-31'

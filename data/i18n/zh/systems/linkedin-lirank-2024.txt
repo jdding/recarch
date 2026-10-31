@@ -1,0 +1,37 @@
+surface|Feed、职位和广告 CTR 排序
+era_reason|大型 DCN-V2 风格的排序栈；不是生成式
+tldr|LinkedIn 如何用 Residual DCN、校准和 transformer 历史建模，把大型排序模型落地生产；A/B：Feed 会话数 +0.5%，合格职位申请 +1.76%，广告 CTR +4.3%。
+summary|KDD '24 论文，介绍 LinkedIn 如何把大型排序模型落地到 Feed、职位推荐和广告 CTR：Residual DCN 结合了 DCNv2、attention 和残差连接，另有联合训练的 isotonic 校准层、dense gating、基于 transformer 的历史建模、深度 explore/exploit、多任务学习、停留时长建模、增量训练，以及用于服务的量化和词表压缩。
+core_idea|用 Residual DCN、联合训练的校准和历史建模，把大型排序模型落地生产。
+deployed_in|LinkedIn Feed、职位和广告 CTR 排序
+scale_short|来源中未说明
+key_result|广告 CTR +4.3%，是摘要中给出的相对 A/B 提升
+results_reported|摘要中给出的相对 A/B 提升：Feed 成员会话数 +0.5%，职位的合格职位申请 +1.76%，广告 CTR +4.3%。
+version_note|对照站长的 Zotero 副本核对过，它是 7 Aug 2024 的 arXiv v2，用 KDD '24 的 ACM 模板排版，带引用格式和 DOI 10.1145/3637528.3671561，13 页，即已接收的定稿文本。没有单独对比 ACM-DL 的副本；其中的数字与之前使用的 arXiv 文本一致。
+serving_infra|用于服务的量化和词表压缩
+stages.0.model_family|Feed 排序器：对每个成员与帖子的组合，做 point-wise 多任务预测，包括点赞、评论、分享、投票、长停留和点击；广告 CTR 模型；职位推荐排序器
+stages.0.details|两层 DCNv2 就够了，更多层收益递减，训练和服务时间更高；低秩混合，以及把稀疏 one-hot 输入换成 embedding 查表，使输入维度降低近 30%，所以模型可以在 CPU 上服务。表 1：MTL 参数共享对比，基线 / MMoE +0.75% / PLE +1.19% / 分组 +1.34%，按表格文本读取。
+features_signals.0|摘要中未列举
+training.mode|先冷启动模型，再增量训练；按表 3，Feed 用 21 天冷启动，之后每次增量 1 天，共 x6，广告 CTR 用 14 天冷启动，每次增量 0.5 天，共 x4
+training.objectives.0|多任务互动预测，用于 Feed
+training.objectives.2|在网络中联合训练的 isotonic 校准层
+training.notes|用 TensorFlow 模型并行处理大型 embedding 表，与 DLRM 论文类似；训练提速技术见第 4 节。
+results_table.online.0.versus|之前的排序
+results_table.online.1.versus|之前的排序
+results_table.online.2.versus|之前的排序
+results_table.online.1.metric|合格职位申请
+results_table.online.2.metric|成员会话数
+caveats.0|头条数字是长期以来部署的多项技术的累计，不是单个组件的效果。
+caveats.1|在所读章节中没有给出绝对基线、流量占比和 A/B 时长。
+caveats.2|表 1 的数值是从提取的文本中读出的；PDF 中的列对齐是判断哪个策略对应哪个数值的唯一依据。
+unknown_fields.0|总参数量
+unknown_fields.1|服务的 QPS 和延迟数字
+unknown_fields.2|A/B 流量占比
+updates.0.note|对照 arXiv 托管的、带最终 DOI 的 KDD '24 定稿 PDF 核对；所有卡片数字均已确认，没有改动。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|LinkedIn Feed、职位和广告 CTR 排序
+deployment.baseline|之前的排序
+deployment.training_compute|4D 模型并行把训练时间从 70 小时缩短到 20 小时，减少 71%
+deployment.notes.0|服务时使用量化和词表压缩；没有延迟或 QPS 数字。
+deployment.online_lifts.1.metric|职位的合格职位申请
+deployment.online_lifts.2.metric|Feed 成员会话数

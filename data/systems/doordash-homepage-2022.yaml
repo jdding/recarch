@@ -1,0 +1,71 @@
+id: doordash-homepage-2022
+name: "DoorDash homepage ranking"
+company: DoorDash
+surface: DoorDash homepage of stores, carousels and items
+year: 2022
+era: deep
+era_reason: "Multi-task neural ranking for the homepage; not generative"
+first_public: "2022-10"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://careersatdoordash.com/blog/homepage-recommendation-with-exploitation-and-exploration/"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "DoorDash ranks its homepage in three stages; a deep learning-to-rank Universal Ranker scores mixed entity types and UCB adds exploration. No headline number published."
+summary: >-
+  Three-stage pipeline (first-pass, second-pass, final ranking) where a deep learning-to-rank Universal Ranker ranks mixed entity types by conversion probability,
+  with an upper-confidence-bound layer adding exploration.
+paradigms: [learning-to-rank, multi-task]
+stages:
+  - stage: retrieval
+    model_family: First-pass ranking from ElasticSearch with strategy mixing
+    details: Selects no more than 1,200 candidates, with popularity and vertical diversity strategies.
+  - stage: pre-rank
+    model_family: Second-pass ranking filter / pre-rank
+    details: Chooses up to 50 stores for the first page and ranks within carousels.
+  - stage: rank
+    model_family: Universal Ranker - deep LTR model inspired by DLRM and Wide & Deep, implemented in PyTorch
+    details: Ranks carousels, stores and items on a common pConv (probability of conversion) scale; exploration adds a UCB-based uncertainty term.
+id_tokenization: {approach: Pre-trained embeddings plus embedding layers trained inside the model, details: null}
+features_signals: [Entity features (cuisine, price, popularity, rating), Consumer preference features, Consumer-entity engagement history, "Context (ETA, fee, day part, weather)"]
+training: {mode: "Daily refresh of data driving UR and uncertainty", objectives: [Conversion probability], notes: null}
+serving_infra: Batch feature ETL with internal tool Fabricator.
+scale:
+  - {metric: Candidates after retrieval, value: "<= 1,200", note: "blog"}
+results_reported: "Blog reports consistent online experiment improvements without a single headline number."
+caveats: [2022 post; DoorDash has since published newer LLM-assisted personalization posts not covered here.]
+unknown_fields: [model size, latency, headline lift numbers]
+sources:
+  - {title: "Homepage Recommendation with Exploitation and Exploration, DoorDash, 2022", url: "https://careersatdoordash.com/blog/homepage-recommendation-with-exploitation-and-exploration/", type: engineering_blog}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A Universal Ranker ranks mixed entity types by conversion probability, with an upper-confidence-bound layer for exploration.
+deployed_in: DoorDash homepage of stores, carousels and items
+scale_short: At most 1,200 candidates after retrieval
+key_result: Consistent online experiment improvements, no headline number reported
+results_table:
+  note: The blog reports consistent online experiment improvements without a single headline number.
+deployment:
+  online_evidence: online_qualitative
+  scenario: DoorDash homepage of stores, carousels and items
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The card reports consistent improvements in online experiments, with no headline number.
+  basis: card_content
+  checked_on: '2026-10-31'

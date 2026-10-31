@@ -1,0 +1,150 @@
+id: snap-snaplgr-2026
+name: "SnapLGR"
+company: Snap
+surface: Snapchat short-form video recommendation, as a retrieval source
+year: 2026
+era: generative
+era_reason: "A pretrained decoder-only Qwen3-0.6B LLM generates multimodal semantic-ID tokens as the core retrieval mechanism, after continued pretraining and SFT."
+first_public: "2026-07"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://arxiv.org/abs/2607.28895"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Snap's LLM-based generative retriever, a Qwen3-0.6B LLM over multimodal semantic IDs, launched as a retrieval source; 7-day A/B vs a TIGER-style baseline: View Time +0.37%, Time Spent +0.09%."
+summary: 'SnapLGR builds semantic IDs by residually quantizing Qwen3-VL multimodal video embeddings with an RQ-VAE plus a Personalized PageRank co-engagement contrastive loss that raises codebook utilization and reduces collisions. A Qwen3-0.6B decoder-only LLM gets the new SID tokens in a continued-pretraining stage that trains only the SID embeddings to generate video descriptions, then is fully fine-tuned on user SID interaction histories, with hourly incremental SFT. Serving is offline: daily TensorRT-LLM batch beam search with width 32 generates each user top-k SIDs, which are materialized to videos via a value-weighted SID-to-video table and written to a serving index used as a retrieval source before ranking.'
+paradigms:
+- semantic-id
+- generative-retrieval
+- llm-based
+stages:
+- stage: retrieval
+  model_family: 'Qwen3-0.6B decoder-only LLM, ChatML prompt of SID history and future events, loss on assistant tokens'
+  details: 'Offline daily batch generation of top-k SIDs per user with beam width 32; value-weighted materialization maps SIDs to candidate videos; the online request only reads the pre-materialized list from a serving index, then ranking runs downstream.'
+id_tokenization:
+  approach: 'RQ-VAE residual quantization of Qwen3-VL-Embedding-8B multimodal embeddings (first 1024 of 4096 dims) with PPR co-engagement contrastive loss'
+  details: 'Three-level codebooks (1024, 512, 256); video text descriptions come from Gemini 2.5 Flash; LayerNorm and full-codebook straight-through estimator limit codebook collapse; P75 PPR score threshold selects positive pairs.'
+features_signals:
+- Video multimodal embeddings (video plus text description)
+- User interaction histories as chronological SID sequences
+- Bipartite user-video engagement graph for PPR co-engagement pairs
+- Engagement rates used by the value-weighted SID-to-video materialization
+training:
+  mode: 'CPT once at initial base-model training, then hourly incremental SFT on fresh interaction sequences'
+  objectives:
+  - 'RQ-VAE reconstruction, commitment and co-engagement contrastive losses (tokenizer)'
+  - 'Continued pretraining: generate video descriptions from SIDs, training only SID embeddings (frozen LLM)'
+  - 'SFT: next-SID prediction over user histories, all weights trained'
+  notes: 'Offline setup uses a 1-day SFT window, 1-month CPT window ending 1 week before; training throughput 3.63x via torch.compile, FlashAttention-2 variable length, sequence packing and A100 to H100.'
+serving_infra: 'TensorRT-LLM CUDA-backed beam search with 9.3x throughput on one A100, decentralized worker-loop architecture for 30.7x cumulative, and asynchronous I/O for 45.7x cumulative per-GPU throughput over the legacy centralized Python baseline.'
+scale:
+- metric: Backbone LLM
+  value: Qwen3-0.6B
+  note: Scaling study 13M to 600M offline
+- metric: Beam width
+  value: 32
+  note: Same as production
+- metric: Codebook sizes
+  value: 1024 x 512 x 256
+  note: Three SID levels
+results_reported: 'Online 7-day A/B vs the legacy TIGER-style T5 generative retrieval, where the launched system changes tokenizer, backbone and serving stack together: View Time +0.37% (+/-0.27%, p=0.007), Time Spent +0.09% (p=0.048), Deep Sessions +0.18% (p=0.027), Deep Sessions Unique User +0.11% (p=0.017). Offline SID retrieval vs a 13M T5 on the same Qwen3-VL SIDs: Pass@10 21.78% vs 8.685% (2.51x), Pass@32 2.27x, Recall@32 11.11% vs 4.624% (2.40x). Decoder-only architecture is the largest offline gain; CPT adds +0.83% Pass@10 and +1.51% Recall@10 over pretrained+SFT. SID uniqueness 32.1% vs 16.8% without co-engagement; training +3.63x, inference +45.7x per-GPU throughput.'
+caveats:
+- 'The A/B compares the whole launched system against a T5 TIGER-style baseline with CLIP-based SIDs, so it does not isolate the LLM, tokenizer or serving contributions.'
+- 'Lifts are small in relative terms and absolute metric values are not given.'
+- 'Candidates are generated offline in daily batches and cached per user, not generated in real time per request.'
+- 'The grounding gain from CPT is small and the RSA text alignment is largely lost after SFT (0.322 to 0.167).'
+- 'No venue or published version found as of the check; the arXiv PDF still has the ACM template placeholders (Conference 17).'
+unknown_fields:
+- absolute engagement values
+- traffic share of the A/B test
+- number of production GPUs
+- latency of the online request path
+sources:
+- title: LLM-Based Generative Retrieval for Snapchat Content Recommendation, arXiv 2607.28895 v4
+  url: https://arxiv.org/abs/2607.28895
+  type: paper
+version_note: 'Preprint with no venue found. Numbers checked against the latest arXiv version read, v4 of 25 Sep 2026; the arXiv abstract page listed v1 30 Jul, v2 13 Aug and v3 18 Aug at fetch time and v4 appeared only on the PDF, so a newer version may exist.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2607.28895
+  local_pdf: /workspace/recarch/zotero/snap-snaplgr-2026.pdf
+  sections_read: 'Abstract, introduction, system design (SIDs, CPT, SFT, inference, throughput), SID quality and grounding, retrieval evaluation RQ1-RQ4, online A/B, related work, conclusion, appendices A and B'
+  verified_on: '2026-10-30'
+  published_pdf: null
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code release found.'
+core_idea: Residual-quantized multimodal semantic IDs and a decoder-only LLM generate videos through daily batch beam search.
+deployed_in: Snapchat short-form video recommendation, as a retrieval source
+scale_short: Qwen3-0.6B backbone, beam width 32, codebooks of 1024 x 512 x 256
+key_result: View Time +0.37% in a 7-day online A/B against the legacy TIGER-style T5 generative retrieval
+results_table:
+  online:
+  - setting: Snapchat 7-day A/B
+    method: SnapLGR
+    metric: View Time
+    result: +0.37%, p=0.007
+    versus: Legacy T5 generative retrieval
+  - setting: Snapchat 7-day A/B
+    method: SnapLGR
+    metric: Time Spent
+    result: +0.09%, p=0.048
+    versus: Legacy T5 generative retrieval
+  - setting: Snapchat 7-day A/B
+    method: SnapLGR
+    metric: Deep Sessions
+    result: +0.18%, p=0.027
+    versus: Legacy T5 generative retrieval
+  - setting: Snapchat 7-day A/B
+    method: SnapLGR
+    metric: Deep Sessions Unique User
+    result: +0.11%, p=0.017
+    versus: Legacy T5 generative retrieval
+  offline:
+  - setting: Same Qwen3-VL SIDs
+    method: Decoder-only LLM
+    metric: Pass@10
+    result: 21.78%
+    versus: 13M T5 8.685%
+  - setting: Same Qwen3-VL SIDs
+    method: Decoder-only LLM
+    metric: Recall@32
+    result: 11.11%
+    versus: 13M T5 4.624%
+  - setting: SID construction
+    method: With co-engagement loss
+    metric: SID uniqueness
+    result: 32.1%
+    versus: Without co-engagement 16.8%
+deployment:
+  online_evidence: online_numbers
+  scenario: Snapchat short-form video recommendation, as a retrieval source
+  ab_traffic: not_reported
+  ab_duration: 7 days
+  baseline: Legacy TIGER-style T5 generative retrieval
+  online_lifts:
+  - metric: View Time
+    value: +0.37%
+  - metric: Time Spent
+    value: +0.09%
+  - metric: Deep Sessions
+    value: +0.18%
+  training_compute: Training throughput up 3.63x cumulative on a single node of 8 GPUs, including a move from A100
+    to H100
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: Per-GPU inference throughput up 45.7x against the legacy centralized Python baseline
+  hardware: NVIDIA A100 and H100 GPUs; production GPU count not reported
+  notes:
+  - The launched system changes tokenizer, backbone and serving stack together, so the lift is not for one change.
+  fulltext_refs:
+  - 'Sec 4.4: all experiments use a single node with 8 A100 GPUs, besides the last row which uses a single node
+    of 8 H100 GPUs; speedups cumulative, H100 GPUs 3.63x'
+  basis: full_text
+  checked_on: '2026-10-31'

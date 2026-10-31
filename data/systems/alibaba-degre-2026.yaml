@@ -1,0 +1,141 @@
+id: alibaba-degre-2026
+name: "DeGRe"
+company: Alibaba Taobao Shangou
+surface: Taobao Flash Shopping homepage recommendation, re-ranking stage
+year: 2026
+era: generative
+era_reason: "A lightweight generator picks the list item by item in one greedy pass, trained by distilling dense step-wise values from an offline lookahead evaluator, and replaces rule-labelled or point-wise reranking."
+first_public: "2026-05"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818363"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Taobao Shangou's DeGRe distills offline lookahead search into a greedy generative re-ranker; 8-day 2% A/B on Flash Shopping vs the base strategy: GMV +3.75%, orders +2.14%."
+summary: 'DeGRe splits generative re-ranking into an offline and an online part. Offline, a Lookahead Evaluator trained with cumulative regression estimates the value of each partial list, and beam search over unexposed permutations mines high-value sequences. At training time the evaluator step values become dense supervision, as hard labels from the mined sequence and soft labels over the candidates, and are distilled into a small Online Generator. Online, only the generator runs, selecting items by a single greedy decoding pass, so the evaluator adds no serving cost. It is deployed in the Taobao Flash Shopping homepage and also tested on Alipay traffic.'
+paradigms:
+- learning-to-rank
+- sequential-transformer
+stages:
+- stage: re-rank
+  model_family: 'Transformer generator with 4 layers, distilled from a 6-layer evaluator'
+  details: 'The online generator selects 6 items from 12 candidates by greedy autoregressive decoding. The evaluator, trained by cumulative regression, is used only offline for beam search and for step-wise soft and hard labels.'
+id_tokenization:
+  approach: 'No semantic IDs; items are chosen from the candidate set by position-wise selection'
+  details: 'Each step selects one remaining candidate; embedding size is 16 in the reported setup.'
+features_signals:
+- User and item features of the reranking candidates
+- Logged exposure sequences with click, order and GMV feedback
+- Evaluator value estimates for partial and full lists
+training:
+  mode: 'Offline training with leave-one-out split on the last user session'
+  objectives:
+  - 'Cumulative regression for the Lookahead Evaluator'
+  - 'Hard-label imitation of mined sequences plus soft-label distillation weighted 0.01'
+  notes: 'Beam size B for offline search was varied from 1 to 8 and more offline search gave better generators; Adam with learning rate 5e-4 and batch size 1,024 on A100 GPUs, five seeds.'
+serving_infra: 'Only the generator is deployed. Mean added latency is 14.8 ms against 6.2 ms for the PRM baseline.'
+scale:
+- metric: Flash Shopping offline dataset
+  value: 3,511,657 users, 1,753,654 items, 167,911,273 records
+  note: Industrial dataset
+- metric: Reranking setting
+  value: 6 items from 12 candidates
+  note: About 6.6e5 permutations
+- metric: Online A/B
+  value: 8 days on 2% of live traffic
+  note: Taobao Flash Shopping homepage
+results_reported: 'Online 8-day A/B on 2% of Taobao Flash Shopping homepage traffic against the base multi-objective point-wise strategy: CTR +2.85%, orders +2.14%, GMV +3.75%, with PRM at +0.73%, +1.14% and +0.76%. Added latency is 14.8 ms for DeGRe and 6.2 ms for PRM. On Alipay traffic, GMV rises 4.14% and orders 3.39%. For new users GMV rises 2.72% and for existing users 3.73%. Offline generator HR@1% with beam size 8 is 88.72% on Flash Shopping, 71.06% on Taobao Ad and 89.10% on ML-1M, absolute gains of 53.19%, 28.95% and 29.90% over the best baseline.'
+caveats:
+- 'The online control is a base point-wise strategy, and the only generative or list-wise online baseline is PRM, a discriminative reranker; no other generative reranker was tested online.'
+- 'Offline hit rate is measured by a learned external evaluator on sampled permutations, so it is a model-based proxy, not logged user behavior.'
+- 'The offline setup reranks 6 items from 12 candidates, a small list, and the paper gives no results for larger lists.'
+- 'Work was done by Zhejiang University authors during an internship at Taobao Shangou.'
+unknown_fields:
+- production traffic scale
+- GPU count in serving
+- whether the A/B led to full launch
+sources:
+- title: "DeGRe: Dense-supervised Generative Reranking for Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818363
+  type: paper
+- title: DeGRe, arXiv 2605.25749
+  url: https://arxiv.org/abs/2605.25749
+  type: paper
+version_note: 'Numbers checked against arXiv v1 of 25 May 2026, which is typeset in the final ACM KDD 2026 format with the DOI and KDD proceedings reference; no separate ACM page was opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2605.25749
+  local_pdf: /workspace/recarch/zotero/alibaba-degre-2026.pdf
+  sections_read: 'Abstract, introduction, method, experimental setup, offline generator and evaluator results, ablation, hyperparameters, online A/B including robustness, conclusion'
+  verified_on: '2026-10-30'
+  published_pdf: 'arXiv v1 in final ACM KDD 2026 format, read 2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No code link in the paper; GitHub searches on 2026-10-30 found no DeGRe repository.'
+core_idea: Offline lookahead search is distilled into a small generator that re-ranks in one greedy pass.
+deployed_in: Taobao Flash Shopping homepage re-ranking, tested on 2% of traffic
+scale_short: 6 of 12 candidates, 8-day A/B on 2% of traffic, 14.8 ms added latency
+key_result: GMV +3.75% and orders +2.14% in an 8-day 2% online A/B against the base strategy, at 14.8 ms added latency
+results_table:
+  online:
+  - setting: Flash Shopping 8-day A/B, 2% traffic
+    method: DeGRe
+    metric: GMV
+    result: +3.75%
+    versus: Base point-wise strategy
+  - setting: Flash Shopping 8-day A/B, 2% traffic
+    method: DeGRe
+    metric: Orders
+    result: +2.14%
+    versus: Base point-wise strategy
+  - setting: Flash Shopping 8-day A/B, 2% traffic
+    method: DeGRe
+    metric: CTR
+    result: +2.85%
+    versus: Base point-wise strategy
+  - setting: Flash Shopping 8-day A/B, 2% traffic
+    method: PRM
+    metric: GMV
+    result: +0.76%
+    versus: Base point-wise strategy
+  offline:
+  - setting: Flash Shopping, beam size 8
+    method: DeGRe generator
+    metric: HR@1%
+    result: 88.72%
+    versus: Best baseline, 53.19 points lower
+  - setting: Taobao Ad, beam size 8
+    method: DeGRe generator
+    metric: HR@1%
+    result: 71.06%
+    versus: Best baseline, 28.95 points lower
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao Flash Shopping homepage re-ranking
+  ab_traffic: 2% of live traffic
+  ab_duration: 8 days
+  baseline: Base multi-objective point-wise strategy
+  online_lifts:
+  - metric: GMV
+    value: +3.75%
+  - metric: Orders
+    value: +2.14%
+  - metric: CTR
+    value: +2.85%
+  training_compute: not_reported
+  serving_latency: Mean added latency of 14.8 ms, against 6.2 ms for the PRM baseline
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Models implemented on NVIDIA A100 80GB GPUs; serving hardware not reported
+  notes:
+  - Only the generator is deployed.
+  fulltext_refs:
+  - 'Sec 5.1.4: models implemented in PyTorch on NVIDIA A100 (80GB) GPUs'
+  basis: full_text
+  checked_on: '2026-10-31'

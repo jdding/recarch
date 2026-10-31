@@ -1,0 +1,140 @@
+id: youtube-reinforce-topk-2019
+name: YouTube REINFORCE Top-K recommender
+company: Google / YouTube
+surface: Production top-K recommender trained with policy gradient
+year: 2018
+era: deep
+era_reason: "REINFORCE policy-gradient deep recommender with off-policy correction"
+first_public: "2018-12"
+venue: "WSDM 2019"
+venue_year: 2019
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3289600.3290999"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "REINFORCE policy-gradient candidate generator with off-policy and top-K correction; live A/B shows ViewTime gains, +0.07% for the stochastic-policy bucket."
+summary: 'WSDM 2019 paper from YouTube at Google: a REINFORCE policy-gradient candidate generator for a recommendation action space of
+  millions of items. It adds an off-policy correction using a learned model of the logging policy, also called the behavior policy, a top-K correction for
+  recommending a set of K items, and variance reduction by weight capping. Reported as running in the live YouTube production system,
+  with live A/B experiments.'
+paradigms:
+- rl-alignment
+stages:
+- stage: retrieval
+  model_family: RNN (Chaos Free RNN cell) user-state model with a softmax policy head over millions of items, trained with REINFORCE
+    and a separate behavior-policy head with blocked gradient; approximate nearest-neighbor lookup of the top M items to normalize the
+    softmax
+  details: The model is one of many candidate generators; its output is scored and ranked by a separate ranking model before showing
+    on the YouTube Homepage or the watch-page side panel. Long-term reward aggregated over a 4-10 hour horizon.
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Logged implicit feedback (clicks, dwell time)
+training:
+  mode: Continuous training on logged feedback collected with a periodicity of several hours, with many parameter updates before a new
+    policy is deployed; new events used as training data with a lag under 24 hours
+  objectives:
+  - Policy-gradient reward from user activities, with zero reward for non-clicked recommendations
+  - Behavior-policy estimation head that is separate, with gradient blocked into the user state
+  notes: Off-policy-correction weight pi/beta, top-K multiplier lambda_K, weight capping c = e^3 in production (c = e^5 tested), K =
+    16 in production. At serving time exploration is done by returning the top K' most probable items and sampling the remaining K -
+    K' from the rest of the top M.
+serving_infra: Candidate generation uses efficient approximate nearest-neighbor lookup of the top M items from the softmax rather than
+  a full softmax over millions of items.
+scale:
+- metric: Action space
+  value: order of millions of items
+  note: abstract
+results_reported: 'Live A/B experiments on the production candidate generator (multi-day runs): stochastic policy with exploration data
+  (buckets 90/5/5 of users, 5% on the stochastic policy) ViewTime +0.07% (statistically significant); standard off-policy correction
+  showed no significant ViewTime change but +0.53% videos viewed; top-K off-policy correction (K = 16, cap e^3) ViewTime +0.85% with
+  videos viewed -0.16%; K sweep over a 5-day run: K = 1 -0.66% ViewTime, K = 2 -0.35%, K = 32 similar to K = 16, K = 8 +0.15% in a follow-up;
+  lifting the weight cap from e^3 to e^5 dropped ViewTime by 0.52%.'
+caveats:
+- Experiments were run sequentially, each building on the previously launched production model, so effects are per-component and not
+  additive (the paper says this).
+- Absolute reward definitions and scale (users, items, QPS) are not given.
+- The +0.85% top-K gain is relative to the previous off-policy-corrected production model.
+unknown_fields:
+- catalog size
+- number of users
+- serving latency
+- hardware
+sources:
+- title: "Top-K Off-Policy Correction for a REINFORCE Recommender System, WSDM 2019"
+  url: https://doi.org/10.1145/3289600.3290999
+  type: paper
+- title: Top-K Off-Policy Correction for a REINFORCE Recommender System, arXiv 1812.02353
+  url: https://arxiv.org/abs/1812.02353
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1812.02353
+  local_pdf: /workspace/src/fulltext/1812.02353.pdf
+  sections_read: Abstract, intro, related work, REINFORCE recommender setup, off-policy correction, top-K correction, variance reduction,
+    simulations per Sec 6.1, live experiments per Sec 6.2, conclusion
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A REINFORCE candidate generator with off-policy and top-K corrections and weight capping.
+deployed_in: YouTube production candidate generation
+scale_short: Action space of millions of items
+key_result: ViewTime +0.85% from the top-K off-policy correction in a live A/B on the production candidate generator
+results_table:
+  online:
+  - setting: Live A/B, K=16, weight cap e^3
+    method: Top-K off-policy correction
+    metric: ViewTime
+    result: +0.85%, videos viewed -0.16%
+    versus: Production candidate generator
+  - setting: Live A/B, 5% of users
+    method: Stochastic policy with exploration data
+    metric: ViewTime
+    result: +0.07%
+    versus: Production candidate generator
+  - setting: Live A/B
+    method: Standard off-policy correction
+    metric: Videos viewed
+    result: +0.53%, no significant ViewTime change
+    versus: Production candidate generator
+  - setting: Live A/B, 5-day run
+    method: K=1
+    metric: ViewTime
+    result: -0.66%
+    versus: Production candidate generator
+  - setting: Live A/B, 5-day run
+    method: K=2
+    metric: ViewTime
+    result: -0.35%
+    versus: Production candidate generator
+  - setting: Live A/B
+    method: Weight cap raised from e^3 to e^5
+    metric: ViewTime
+    result: -0.52%
+    versus: Weight cap e^3
+deployment:
+  online_evidence: online_numbers
+  scenario: YouTube production candidate generation
+  ab_traffic: Users split 90%, 5% and 5%; the stochastic policy served 5%
+  ab_duration: Multi-day runs; 5 days for the K sweep
+  baseline: Production candidate generator
+  online_lifts:
+  - metric: ViewTime, top-K correction with K=16
+    value: +0.85%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Videos viewed fell 0.16% in the same test. Other settings in the card show smaller or negative ViewTime changes.
+  basis: full_text
+  checked_on: '2026-10-31'

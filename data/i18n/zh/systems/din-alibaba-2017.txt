@@ -1,0 +1,61 @@
+surface|线上展示广告 CTR 预估
+era_reason|在用户行为上做目标注意力，用于 CTR 预估
+tldr|DIN 通过局部激活单元，按每个历史行为与候选广告的相关性加权；已部署在阿里巴巴展示广告中，线上 A/B 里 CTR 最高提升 +10.0%。
+summary|阿里巴巴的 KDD 2018 论文：Deep Interest Network 不再对用户行为 embedding 做定长池化，而是用局部激活单元，按每个历史行为与候选广告的相关性加权；同时提出 mini-batch aware 正则和数据自适应激活函数 Dice。已部署在阿里巴巴线上展示广告系统的主流量上。
+core_idea|按每个历史行为与候选广告的相关性加权。
+deployed_in|阿里巴巴线上展示广告，主流量
+scale_short|在线服务每秒超过一百万名用户
+key_result|线上 A/B 从 2017-05 到 2017-06，相比此前的线上模型 BaseModel，CTR 最高提升 +10.0%
+results_reported|阿里巴巴展示广告线上 A/B，2017-05 到 2017-06，约一个月：采用所提正则和激活函数的 DIN，相比此前的线上模型 BaseModel，CTR 最高提升 +10.0%，RPM 最高提升 +3.8%；DIN 现已承接主流量。离线结果见阿里巴巴数据集上的表 5：DIN 的 AUC 为 0.6029，相对 BaseModel 的 RelaImpr 为 +6.08%；加上 MBA 正则和 Dice 后 AUC 为 0.6083，RelaImpr 为 +11.65%，绝对 AUC 提升 +0.0113；相比 DeepFM，绝对 AUC 约高 0.009。Amazon Electro 见表 3：DIN 为 0.8818，加 Dice 后为 0.8871，BaseModel 为 0.8624。
+serving_infra|CPU-GPU 在线服务架构：请求合批、GPU 显存访问优化和 kernel 并发计算；三者合计让单机 QPS 大致翻倍。系统每秒服务超过一百万名用户，并且要在 10 ms 内为每位访客预测数百个广告。
+stages.0.model_family|DIN：Embedding & MLP，加上作用于用户行为序列的局部激活单元，即随候选变化的注意力权重，再加 mini-batch aware 正则和 Dice 激活函数
+stages.0.details|论文设计的激活单元没有用 softmax 对权重归一化，论文强调要保留兴趣的强度。在阿里巴巴数据集上，Goods_ids 特征维度达到六亿。
+id_tokenization.approach|稀疏 ID 特征映射为低维 embedding
+features_signals.0|用户行为历史
+features_signals.1|候选广告特征
+training.mode|离线：用两周的展示广告流量日志训练，用随后一天的日志测试
+training.objectives.0|CTR 预估
+training.notes|阿里巴巴数据集：约二十亿条训练样本和 1.4 亿条测试样本；embedding 维度为 12，共 16 个特征组。指标为按用户加权的 AUC 以及 RelaImpr。mini-batch aware 正则只更新当前 mini-batch 中出现的特征对应的参数，论文称这让 L2 正则在数亿参数的规模上变得可行。
+scale.0.metric|训练样本
+scale.0.value|约 21.4 亿，阿里巴巴数据集，见表 2
+scale.1.metric|=
+scale.1.value|约六亿
+scale.2.metric|在线服务吞吐
+scale.2.value|每秒超过一百万名用户
+results_table.online.0.setting|阿里巴巴展示广告 A/B，2017-05 到 2017-06
+results_table.online.1.setting|阿里巴巴展示广告 A/B，2017-05 到 2017-06
+results_table.offline.0.setting|阿里巴巴数据集，见表 5
+results_table.offline.1.setting|阿里巴巴数据集，见表 5
+results_table.offline.2.setting|阿里巴巴数据集
+results_table.offline.3.setting|Amazon Electro，见表 3
+results_table.offline.4.setting|Amazon Electro，见表 3
+caveats.0|「CTR 最高提升 10.0%」是论文原话；论文脚注说明，广告按 CTR^alpha x 出价排序，其中 alpha > 1.0。
+caveats.1|阿里巴巴数据集上的绝对 AUC 偏低，约 0.60，因为该指标按用户加权，而且有大量几乎相同的曝光。
+caveats.2|离线表格取自提取出的文本；行对齐已对照分析文本核对过。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|GPU 数量
+updates.0.note|已对照已发布的 KDD 2018 PDF 核对，所有数字均已确认。
+code.repos.0.owner|Guorui Zhou，论文第一作者
+code.repos.0.note|论文中给出的链接：在两个公开数据集 Amazon 和 MovieLens 上的实验代码，并非阿里巴巴广告系统的代码。
+deployment.scenario|阿里巴巴线上展示广告，主流量
+deployment.ab_duration|2017-05 到 2017-06，约一个月
+deployment.baseline|BaseModel，此前的线上模型
+deployment.serving_latency|每位访客预测数百个广告，耗时在 10 ms 以内
+deployment.serving_qps|峰值每秒超过一百万名用户；在线服务优化让单机 QPS 大致翻倍
+deployment.hardware|CPU-GPU 在线服务架构；GPU 型号和数量未给出
+results_table.online.0.method|采用所提正则和激活函数的 DIN
+results_table.online.0.result|最高 +10.0%
+results_table.online.0.versus|BaseModel，此前的线上模型
+results_table.online.1.method|采用所提正则和激活函数的 DIN
+results_table.online.1.result|最高 +3.8%
+results_table.online.1.versus|BaseModel，此前的线上模型
+results_table.offline.1.method|采用 MBA 正则和 Dice 的 DIN
+results_table.offline.1.versus|相对 BaseModel 的 RelaImpr +11.65%，绝对 AUC +0.0113
+results_table.offline.0.versus|相对 BaseModel 的 RelaImpr +6.08%
+results_table.offline.2.metric|绝对 AUC 提升
+results_table.offline.2.result|约 0.009
+results_table.offline.4.method|采用 Dice 的 DIN
+results_table.offline.3.versus|BaseModel 0.8624
+results_table.offline.4.versus|BaseModel 0.8624
+deployment.online_lifts.0.value|最高 +10.0%
+deployment.online_lifts.1.value|最高 +3.8%

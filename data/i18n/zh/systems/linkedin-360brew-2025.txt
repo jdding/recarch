@@ -1,0 +1,38 @@
+surface|用于排序和推荐的 decoder-only 基础模型
+era_reason|150B 的 decoder-only LLM 通过文本接口取代排序模型
+tldr|一个 150B 参数的 decoder-only 模型，基于 Mixtral 8x22 MoE，根据对成员画像和历史的文字描述来排序，而不用 ID 和人工特征。
+summary|来自 LinkedIn 基础 AI 技术团队的技术报告：360Brew V1.0 是一个 150B 参数的 decoder-only 模型，基于开源的 Mixtral 8x22 MoE 架构，用 LinkedIn 的第一方数据训练；它用文本接口取代基于 ID 和人工特征的排序：成员画像、过去的 item 交互和任务指令被改写成一个 prompt，模型回答一个二分类问题，用回答 token 的 logit 作为得分。报告把它定位为尚未上线的模型，不做任务特定的微调，就覆盖 8+ 个场景的 30+ 个排序任务。
+core_idea|把画像、交互和任务指令改写成 prompt，用回答的 logit 打分。
+deployed_in|尚未上线的研究模型，覆盖 8+ 个场景的 30+ 个排序任务
+scale_short|150B 参数
+key_result|离线：在 30+ 个任务上与线上模型相当或更好，没有数值差异，也没有线上结果
+results_reported|只有定性描述和图表：不做任务特定的微调，离线指标在 30+ 个任务上与线上模型相当或更好；随着数据规模、模型规模和历史长度增加而提升，上下文长度归一化到 8K；在 4 个场景的 4 个域外 T2 任务上，与线上模型相近或更好；对交互很少的冷启动成员优势更大；测试数据离训练时间段越远，退化越少。正文没有给出数值差异或线上结果。
+version_note|这份报告的 arXiv v1-v3 已被 arXiv 管理员移除；23 Aug 2025 的 v4 是唯一可用的版本，这张卡片已在 2026-10-30 对照它重新核实。
+status_reason|按入选标准已退役：这是仅发布在 arXiv 的报告，称该模型尚未上线，没有描述部署或线上实验，没有官方代码，引用数低于 50，且已超过 12 个月的观察期。
+stages.0.model_family|Decoder-only LLM，Mixtral 8x22 MoE 基座，150B 参数，输入任务指令、成员画像文本和交互历史，用回答 token 的 logit 打分
+stages.0.details|重点是排序；报告称基于 embedding 的召回计划在之后的 360Brew 版本中推出。对成员历史的 in-context learning 取代了人工设计的时间窗口特征。
+features_signals.0|改写成文字的成员行为和社交关系
+training.mode|在 LinkedIn 的原始实体数据上继续训练一个预训练的开源 LLM，数据包括成员画像、职位描述和帖子，以及 5+ 个场景的交互数据；使用欧盟以外用户的第一方数据
+training.objectives.0|在改写后的交互上做下一个 token 预测，以 logit 上的二分类预测来评估
+training.notes|由一个小团队在 9 个月内迭代，共五次发布。这些发布中数据量增加了超过 3x，域内 T1 任务的表现有提升；T1 基准与训练数据之间至少相隔一个月。许多细节，如 token 数、硬件和训练配方，标注为「more details to come soon」。
+scale.0.value|150B，所报告的研究模型
+results_table.offline.0.setting|30+ 个任务，仅图表
+results_table.offline.1.setting|4 个场景的 4 个域外任务
+results_table.offline.0.method|本文提出的模型
+results_table.offline.1.method|本文提出的模型
+results_table.offline.0.metric|离线指标
+results_table.offline.1.metric|离线指标
+results_table.offline.0.result|相当或更好，没有数字
+results_table.offline.1.result|相近或更好，没有数字
+results_table.offline.0.versus|线上模型
+results_table.offline.1.versus|线上模型
+caveats.0|报告称 360Brew V1.0 是尚未上线的模型；它没有描述部署或线上实验，所以证据仍为 research_only。
+caveats.1|所有定量结果都在图中；正文没有给出 AUC 或提升数字。
+caveats.2|LinkedIn 之后同名的系统，例如 LiGR 或服务方面的工作，是单独的来源；这张卡片只反映 January 2025 的报告。
+caveats.3|没有描述 150B 参数模型的在线延迟或成本。
+unknown_fields.0|服务架构和延迟
+unknown_fields.1|训练算力
+unknown_fields.2|确切的 AUC 数值
+unknown_fields.3|线上 A/B 结果
+updates.0.note|在 arXiv 移除 v1-v3 之后，对照 arXiv v4 重新核实；见版本说明。
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。

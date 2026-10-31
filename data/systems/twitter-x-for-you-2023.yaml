@@ -1,0 +1,83 @@
+id: twitter-x-for-you-2023
+name: "Twitter For You timeline algorithm"
+company: "X / Twitter"
+surface: For You home timeline
+year: 2023
+era: deep
+era_reason: "Embedding retrieval plus heavy-ranker neural network; not generative"
+first_public: "2023-03"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: "https://github.com/twitter/the-algorithm"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: open_source_reference
+tldr: "Open-sourced For You pipeline of candidate sources from the search index, graph, SimClusters and TwHIN, then a neural heavy ranker, filters and mixing with ads."
+summary: >-
+  Open-sourced pipeline: multiple candidate sources, namely the in-network search index, graph traversal, SimClusters and TwHIN embeddings, and follow recommendations, then feature hydration, neural heavy ranker, then filters and heuristics and mixing with ads and other modules.
+paradigms: [embedding-based-retrieval, multi-task, dlrm]
+stages:
+  - stage: retrieval
+    model_family: In-network Earlybird search index + UTEG graph traversal + tweet-mixer (SimClusters / TwHIN embeddings) + follow recommendations
+    details: Home-mixer README lists candidate sources; the repo says ~50% of posts come from the in-network search index. Engineering blog (via press coverage) says ~1,500 candidates are extracted.
+  - stage: pre-rank
+    model_family: Light ranker used by Earlybird search index
+    details: Ranks in-network posts inside the search index.
+  - stage: rank
+    model_family: Heavy ranker - parallel MaskNet producing probabilities for several engagement types
+    details: Home-mixer README says ~6000 features are hydrated for ranking; blog (via TechCrunch) says ~48M-parameter network continuously trained on interactions.
+  - stage: re-rank
+    model_family: Heuristics and filters for author diversity, content balance, feedback fatigue, dedup and visibility filtering, and mixing with ads / who-to-follow
+    details: See home-mixer README.
+id_tokenization: {approach: "Sparse community embeddings from SimClusters and dense knowledge-graph embeddings from TwHIN", details: null}
+features_signals: [Unified user actions stream, Explicit and implicit user signals, Real-graph interaction predictions, ~6000 ranking features]
+training: {mode: "Heavy ranker described as continuously trained (per blog quote)", objectives: [Multiple engagement probabilities], notes: null}
+serving_infra: Product Mixer (Scala) framework, Navi model serving in Rust, home-mixer service.
+scale:
+  - {metric: Candidates, value: "~1,500", note: "engineering blog quoted by TechCrunch"}
+  - {metric: Heavy ranker size, value: "~48M parameters", note: "engineering blog quoted by TechCrunch"}
+results_reported: null
+caveats: [Snapshot from 2023 open-source release; the live system has changed since then.]
+unknown_fields: [current architecture, A/B results]
+sources:
+  - {title: "twitter/the-algorithm, GitHub README", url: "https://github.com/twitter/the-algorithm", type: source_code}
+  - {title: "Home Mixer README", url: "https://github.com/twitter/the-algorithm/blob/main/home-mixer/README.md", type: source_code}
+  - {title: "Heavy Ranker README, the-algorithm-ml", url: "https://github.com/twitter/the-algorithm-ml/blob/main/projects/home/recap/README.md", type: source_code}
+  - {title: "TechCrunch: Twitter reveals some of its source code, quotes engineering blog", url: "https://techcrunch.com/2023/03/31/twitter-reveals-some-of-its-source-code-including-its-recommendation-algorithm/", type: press}
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/twitter/the-algorithm
+    owner: X (Twitter)
+    official: true
+    note: Source snapshot of the For You Timeline / notifications services (Scala, Rust, Python). I did
+      not build or run it, and it may differ from live production.
+  - url: https://github.com/twitter/the-algorithm-ml
+    owner: X (Twitter)
+    official: true
+    note: Companion repo with the ML models, including the Home 'recap' ranker.
+core_idea: Multiple candidate sources feed a neural heavy ranker, followed by filters, heuristics and mixing with ads.
+deployed_in: X For You home timeline, open-sourced pipeline
+scale_short: About 1,500 candidates, heavy ranker of about 48M parameters
+key_result: Open-source reference, no reported metrics
+results_table:
+  note: The open-sourced code and documentation report no online or offline metrics.
+deployment:
+  online_evidence: deployed_only
+  scenario: X For You home timeline, open-sourced pipeline
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - No A/B results are published.
+  basis: card_content
+  checked_on: '2026-10-31'

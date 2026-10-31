@@ -1,0 +1,147 @@
+id: dien-taobao-2018
+name: "DIEN"
+company: "Alibaba / Taobao"
+surface: Taobao display advertising CTR prediction
+year: 2018
+era: deep
+era_reason: "Attention + GRU interest evolution for CTR"
+first_public: "2018-09"
+venue: "AAAI 2019"
+venue_year: 2019
+published_version_checked: true
+primary_source: "https://doi.org/10.1609/aaai.v33i01.33015941"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "DIEN models how user interest evolves over the behavior sequence with an auxiliary-loss GRU; Taobao display ads A/B: CTR +20.7%, eCPM +17.1% over the base model."
+summary: 'AAAI 2019 paper from Alibaba: Deep Interest Evolution Network models how user interest evolves over the behavior sequence.
+  An interest extractor GRU is supervised by an auxiliary loss at every step, with the next clicked item as positive and sampled non-clicked items as negatives, and an interest evolving layer uses a GRU with an attentional update gate, AUGRU, driven by the target item. Deployed
+  in Taobao''s display advertising system.'
+paradigms:
+- attention-ctr
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: 'DIEN: embedding layer, interest extractor GRU + auxiliary loss, interest evolving layer with attention-gated GRU (AUGRU),
+    final MLP; industrial model uses 6 FCN layers (600, 400, 300, 200, 80, 2)'
+  details: AUGRU scales the update gate by the attention score so that interests unrelated to the target item are weakened while the
+    update gate's dimensional information is kept; AIGRU and AGRU are compared as alternatives.
+id_tokenization:
+  approach: Embedded behavior sequence
+  details: null
+features_signals:
+- User behavior sequence
+- Target item
+training:
+  mode: 'Offline. Industrial dataset: clicked ads from the last 49 days as target items; for each target, the user''s behaviors from
+    the previous 14 days form the history; test targets come from the following day'
+  objectives:
+  - CTR with an auxiliary next-behavior loss weighted by alpha (alpha=1 in the learning-curve figure)
+  notes: 'Industrial dataset size per Table 1: 0.8 billion users, 0.82 billion goods, 18,006 categories, 7.0 billion samples. Public
+    datasets: Amazon Electronics and Books subsets.'
+serving_infra: 'Online system serves more than 1 million users per second at peak. Serving techniques: element-parallel GRU with kernel
+  fusion, request batching across users on GPU, and model compression via Rocket Launching that shrinks the GRU hidden dimension from 108 to 32.
+  Reported effect: latency from 38.2 ms to 6.6 ms and 360 QPS per worker.'
+scale:
+- metric: Industrial training samples
+  value: 7.0 billion
+  note: Table 1
+- metric: Peak traffic
+  value: more than 1 million users per second
+  note: paper
+results_reported: 'Online A/B in Taobao display advertising from 2018-06-07 to 2018-07-12 (Table 5, vs BaseModel): DIEN CTR +20.7%,
+  PPC -3.0%, eCPM +17.1%; DIN in the same table +8.9% CTR, -2.0% PPC, +6.7% eCPM. Offline AUC on the industrial dataset per Table 3: BaseModel
+  0.6350, Wide&Deep 0.6362, PNN 0.6353, DIN 0.6428, two-layer GRU attention 0.6457, BaseModel+GRU+AUGRU 0.6493, DIEN 0.6541. Public
+  sets (Table 2, Electronics / Books): DIEN 0.7792 / 0.8453 vs DIN 0.7603 / 0.7880.'
+caveats:
+- The online DIN number here (+8.9% CTR) differs from the DIN paper's 'up to 10.0%' because baselines and periods differ.
+- Alibaba authors; the paper names Taobao display advertising as the deployment.
+- Table rows were read from extracted text; each row's numbers were checked against the paper's discussion.
+unknown_fields:
+- A/B traffic share
+- hardware per worker
+sources:
+- title: "Deep Interest Evolution Network for Click-Through Rate Prediction, AAAI 2019"
+  url: https://doi.org/10.1609/aaai.v33i01.33015941
+  type: paper
+- title: Deep Interest Evolution Network for Click-Through Rate Prediction, arXiv 1809.03672
+  url: https://arxiv.org/abs/1809.03672
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1809.03672
+  local_pdf: /workspace/src/fulltext/1809.03672.pdf
+  sections_read: Abstract, intro, model (interest extractor with auxiliary loss, interest evolving layer with AUGRU), datasets, Tables
+    1-5, online serving and A/B text
+  verified_on: '2026-10-30'
+code:
+  status: official_full
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/mouna99/dien
+    owner: DIEN authors (linked from the paper)
+    official: true
+    note: Source code linked from the paper; runs on public Amazon data. Not the Alibaba production system.
+core_idea: Model how user interest evolves with an auxiliary loss and an attentional GRU.
+deployed_in: Taobao display advertising
+scale_short: 7.0 billion industrial training samples, more than 1 million users per second at peak
+key_result: CTR +20.7% over BaseModel in an online A/B on Taobao display advertising from 2018-06-07 to 2018-07-12
+results_table:
+  online:
+  - setting: Taobao display advertising A/B, Table 5
+    method: DIEN
+    metric: CTR
+    result: +20.7%
+    versus: BaseModel
+  - setting: Taobao display advertising A/B, Table 5
+    method: DIEN
+    metric: PPC
+    result: -3.0%
+    versus: BaseModel
+  - setting: Taobao display advertising A/B, Table 5
+    method: DIEN
+    metric: eCPM
+    result: +17.1%
+    versus: BaseModel
+  - setting: Taobao display advertising A/B, Table 5
+    method: DIN
+    metric: CTR
+    result: +8.9%
+    versus: BaseModel
+  offline:
+  - setting: Industrial dataset, Table 3
+    method: DIEN
+    metric: AUC
+    result: '0.6541'
+    versus: BaseModel 0.6350, DIN 0.6428
+  - setting: Electronics, Table 2
+    method: DIEN
+    metric: AUC
+    result: '0.7792'
+    versus: DIN 0.7603
+  - setting: Books, Table 2
+    method: DIEN
+    metric: AUC
+    result: '0.8453'
+    versus: DIN 0.7880
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao display advertising CTR prediction
+  ab_traffic: not_reported
+  ab_duration: 2018-06-07 to 2018-07-12
+  baseline: BaseModel
+  online_lifts:
+  - metric: CTR
+    value: +20.7%
+  - metric: eCPM
+    value: +17.1%
+  - metric: PPC
+    value: -3.0%
+  training_compute: not_reported
+  serving_latency: Reduced from 38.2 ms to 6.6 ms by serving optimizations
+  serving_qps: 360 QPS per worker after optimization; system peak above 1 million users per second
+  inference_cost: not_reported
+  hardware: GPU serving with request batching across users; GPU type and count not given
+  basis: full_text
+  checked_on: '2026-10-31'

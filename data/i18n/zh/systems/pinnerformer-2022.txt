@@ -1,0 +1,26 @@
+surface|Homefeed 和广告排序，作为用户 embedding 特征，以及召回
+era_reason|Transformer 用户 embedding，离线训练；不是生成式
+tldr|在用户最近 256 个行为上做因果 transformer，得到 256 维、按天批量的用户 embedding；报告 Homefeed 的 Repin +7.5%，Time Spent +1%。
+summary|在用户最近最多 256 个行为上做因果 transformer，产出 256 维的用户 embedding，用稠密的全行为损失来训练，以预测未来一段窗口内的互动，并按天批量计算。
+core_idea|在近期行为上做因果 transformer，按天批量产出用户 embedding。
+deployed_in|Pinterest 的 Homefeed 和广告排序，作为用户 embedding 特征，以及召回
+scale_short|每个用户最多 256 个行为，256 维的用户 embedding
+key_result|论文报告 Homefeed 的 Repin +7.5%，Time Spent +1%
+results_reported|报告 Homefeed 的 Repin +7.5%，Time Spent +1%，来自论文。
+serving_infra|KV 存储 + HNSW 索引；每天增量推理。
+stages.0.model_family|Transformer 用户 embedding，通过 HNSW 索引提供服务
+stages.0.details|每天增量批量推理；embedding 存在 KV 存储和 HNSW 索引中。
+stages.1.model_family|用户 embedding 作为 Homefeed 和广告排序的特征
+stages.1.details|自 Fall 2021 起在线上取代了 PinnerSage，来自论文。
+id_tokenization.approach|输入行为用 PinSage 的 256 维 embedding 加行为类型来表示
+features_signals.0|最多 256 个近期用户行为的序列
+features_signals.1|PinSage 的 item embedding
+features_signals.2|行为类型、场景、时长和时间戳
+training.mode|离线训练，按天批量推理，不是实时
+training.objectives.0|在 28 天窗口上的稠密全行为损失
+training.objectives.1|带 logQ 校正和混合负样本的 sampled softmax
+unknown_fields.0|模型规模
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|Pinterest 的 Homefeed 和广告排序，以及召回
+deployment.training_compute|序列长度 512 时在 2 台机器的 16 块 GPU 上训练，长度 1024 时在 4 台机器的 32 块 GPU 上训练
+deployment.notes.0|Embedding 按天批量推理，不是实时，并从带 HNSW 索引的 KV 存储中提供服务。

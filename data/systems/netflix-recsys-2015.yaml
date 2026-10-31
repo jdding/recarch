@@ -1,0 +1,109 @@
+id: netflix-recsys-2015
+name: "Netflix Recommender System"
+company: Netflix
+surface: Homepage, most screens, and search
+year: 2015
+era: classic
+era_reason: "Ensemble of MF / RBM / item-CF / ranking models, pre-deep"
+first_public: "2015-12"
+venue: "ACM TMIS 2015"
+venue_year: 2015
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2843948"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "Netflix's ensemble of algorithms such as the per-row Personalized Video Ranker, Top-N and Trending, judged by A/B tests on retention; the paper estimates over $1B a year saved."
+summary: 'First-party overview of Netflix''s ensemble of algorithms: a per-row Personalized Video Ranker, PVR, Top-N, Trending, Continue Watching, video-video similarity known as "Because You Watched", page generation, evidence selection and search, all evaluated through A/B
+  tests aimed at member retention.'
+paradigms:
+- learning-to-rank
+- item-cf
+- multi-task
+- online-training
+stages:
+- stage: rank
+  model_family: 'Row-level algorithms: PVR (genre/theme rows), Top-N (Top Picks), Trending, Continue Watching, video-video similarity
+    (sims)'
+  details: About 40 rows per homepage and up to 75 videos per row (varies by device). Rows are produced by different algorithms; a page-generation
+    algorithm picks and orders rows.
+- stage: single-stage
+  model_family: Search treated as a separate IR-based problem that also uses recommendation ideas
+  details: Recommendations influence about 80% of hours streamed; the other ~20% comes from search.
+id_tokenization:
+  approach: Video IDs
+  details: null
+features_signals:
+- Viewing history
+- Ratings and other member interactions (as discussed generally)
+- Time of day / device (contextual)
+- Video popularity
+training:
+  mode: Offline plus A/B testing
+  objectives:
+  - Retention and medium-term engagement via A/B tests
+  notes: Paper discusses design and interpretation of A/B tests.
+serving_infra: null
+scale:
+- metric: Members at time of writing
+  value: more than 65 million
+  note: paper text
+- metric: Streaming volume
+  value: more than 100 million hours of movies and TV per day
+  note: paper text
+- metric: Share of streamed hours influenced by recommendations
+  value: about 80%
+  note: paper text
+results_reported: The paper estimates that personalisation and recommendations together save Netflix more than $1B per year (reduced
+  cancellations).
+caveats:
+- '2015 snapshot: the system has been rebuilt since (see netflix-foundation-model-2025).'
+- Narrative systems paper; little architecture or hyper-parameter detail.
+unknown_fields:
+- model sizes
+- latency
+- serving infra
+sources:
+- title: "The Netflix Recommender System: Algorithms, Business Value, and Innovation, ACM TMIS 2015"
+  url: https://doi.org/10.1145/2843948
+  type: paper
+- title: 'The Netflix Recommender System: Algorithms, Business Value, and Innovation, ACM TMIS 6(4)'
+  url: https://dl.acm.org/doi/10.1145/2843948
+  type: paper
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: An ensemble of algorithms, such as a per-row Personalized Video Ranker, all judged by A/B tests aimed at retention.
+deployed_in: Netflix homepage, most screens and search
+scale_short: More than 65 million members, more than 100 million hours streamed per day
+key_result: Personalisation and recommendations together estimated to save Netflix more than $1B per year in reduced cancellations
+results_table:
+  other:
+  - setting: Paper estimate
+    method: Personalisation and recommendations together
+    metric: Savings from reduced cancellations
+    result: More than $1B per year
+    versus: No personalisation
+deployment:
+  online_evidence: deployed_only
+  scenario: Netflix homepage, most screens and search
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Estimated value of personalization and recommendations is more than $1B per year. This is an estimate, not an
+    A/B result.
+  - The paper discusses A/B test design and gives no model metrics.
+  basis: card_content
+  checked_on: '2026-10-31'

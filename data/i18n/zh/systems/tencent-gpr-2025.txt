@@ -1,0 +1,38 @@
+surface|广告推荐
+era_reason|面向广告的生成式预训练 one-model 范式
+tldr|一个生成式模型取代微信视频号广告的召回、预排序和排序级联，使用多级 Semantic ID；五次线上上线都提升了 GMV，其中 v0.1 为 +2.11%。
+summary|Generative Pre-trained Recommender：面向广告推荐的 one-model 生成式框架，取代召回-预排序-排序级联。它使用统一的 U/O/E/I token 模式和多级 Semantic ID，使用 RQ-Kmeans+；Heterogeneous Hierarchical Decoder 由用户意图 decoder 和广告生成 decoder 组成；并采用多阶段训练，包括 Multi-Token Prediction、Value-Aware Fine-Tuning 和 HEPO。据称已在腾讯微信视频号广告系统中全量部署。
+core_idea|一个生成式模型，带统一的 token 模式和层次化 decoder，取代召回、预排序和排序的级联。
+deployed_in|腾讯微信视频号广告系统，据称已全量部署
+scale_short|来源中未说明
+key_result|在首次线上 A/B 上线，即 v0.1，相对成熟的级联，GMV +2.11%
+results_reported|相对成熟级联的五次连续线上 A/B 上线，GMV，主要 KPI，提升：v0.1 HSD+NTP+DPO +2.11%；v0.2 加 HEPO，不带 ARR，+0.70%；v0.3 加 MTP+Thinking +0.63%；v0.4 加 PTD +0.71%；v0.5 加 HEPO，带 ARR，+0.58%，均为增量改动；摘要只说 GMV 和 CTCVR 有显著提升。表 5 给出按用户群以及新广告与非新广告分层的 GMV/CTR/CVR/CTCVR。
+stages.0.model_family|GPR：统一的生成式模型，直接输出带价值的 top-K 广告；U-Token，用户，O-Token，自然内容，E-Token，环境，I-Token，item 序列；双 decoder 的 HHD
+stages.0.details|离线架构研究，见表 2，以 HSTU decoder-only 的 18.98 为基线：OneRec 式 encoder-decoder +4.6%；混合 attention +8.3%；token-aware FFN +15.8%；完整 GPR 27.32，即 +43.9%。对齐研究见表 3：MTP 基础 平均 final_value 0.3868；+VAFT 0.3925；+DPO 0.4383；+HEPO 0.4413，模拟环境。
+id_tokenization.approach|面向广告和自然内容的多级 Semantic ID
+features_signals.0|统一的输入模式
+training.mode|多阶段：用 Multi-Token Prediction 预训练，Value-Aware Fine-Tuning，然后用 DPO / HEPO，即 Hierarchy Enhanced Policy Optimization，做后训练
+training.objectives.0|对 Semantic ID 的下一个或多个 token 的 item 预测
+training.objectives.1|价值对齐的微调，面向 eCPM
+training.objectives.2|针对模拟环境的策略优化
+training.notes|离线实验使用腾讯的大型广告数据集；一年的匿名交互用于训练，次日用于验证。
+results_table.online.0.versus|成熟的级联
+results_table.online.1.method|加 HEPO，不带 ARR
+results_table.online.1.versus|上一版本
+results_table.online.2.versus|上一版本
+results_table.online.3.versus|上一版本
+results_table.online.4.versus|上一版本
+results_table.online.2.method|加 MTP 和 Thinking
+results_table.online.4.method|加 HEPO，带 ARR
+caveats.0|表 4 还有其他列，GMV-Normal 和 Costs；数字与列的对应关系是从提取的文本中读出的，在引用 GMV 之外的内容之前应在 PDF 中确认。
+caveats.1|离线的 final_value 来自作者的模拟环境，不是线上真实流量。
+caveats.2|各版本的提升是增量上线，在这张卡片中没有相加。
+caveats.3|在已读的章节中没有说明线上流量占比和时长。
+unknown_fields.0|A/B 流量占比和时长
+unknown_fields.1|服务延迟和 GPU 数量
+unknown_fields.2|已部署模型的总参数量
+code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
+deployment.scenario|腾讯微信视频号广告系统
+deployment.baseline|成熟的级联
+deployment.notes.0|之后四次上线分别再增加 GMV +0.70%、+0.63%、+0.71% 和 +0.58%，每次都相对上一版本。
+deployment.online_lifts.0.metric|GMV，首次上线 v0.1

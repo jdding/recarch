@@ -1,0 +1,129 @@
+id: tencent-gpr-2025
+name: "GPR"
+company: Tencent
+surface: Advertising recommendation
+year: 2025
+era: generative
+era_reason: "Generative pre-trained one-model paradigm for ads"
+first_public: "2025-11"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3770855.3818425"
+added_on: "2026-10-29"
+last_verified: "2026-10-30"
+system_type: ads
+evidence_level: production_described
+tldr: "One generative model replaces Weixin Channels ads' retrieval, pre-rank and rank cascade, using multi-level semantic IDs; five online launches each lifted GMV, with +2.11% for v0.1."
+summary: 'Generative Pre-trained Recommender: a one-model generative framework for advertising recommendation that replaces the retrieval-pre-rank-rank
+  cascade. It uses a unified U/O/E/I token schema with multi-level semantic IDs (RQ-Kmeans+), a Heterogeneous Hierarchical Decoder made of a user-intent decoder and an ad-generation decoder, and multi-stage training with Multi-Token Prediction, Value-Aware Fine-Tuning and HEPO. Reported as fully
+  deployed in the Tencent Weixin Channels advertising system.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: 'GPR: unified generative model that outputs top-K ads with values directly; U-Token (user), O-Token (organic), E-Token
+    (environment), I-Token (item) sequences; dual-decoder HHD'
+  details: 'Offline architecture study (Table 2, relative to HSTU decoder-only 18.98): OneRec-style encoder-decoder +4.6%; hybrid attention
+    +8.3%; token-aware FFN +15.8%; full GPR 27.32 = +43.9%. Alignment study per Table 3: MTP base avg final_value 0.3868; +VAFT 0.3925;
+    +DPO 0.4383; +HEPO 0.4413 (simulated environment).'
+id_tokenization:
+  approach: Multi-level Semantic IDs for ads and organic content
+  details: null
+features_signals:
+- Unified input schema
+training:
+  mode: 'Multi-stage: pre-training with Multi-Token Prediction, Value-Aware Fine-Tuning, then post-training with DPO / HEPO (Hierarchy
+    Enhanced Policy Optimization)'
+  objectives:
+  - Next/multi-token item prediction over semantic IDs
+  - Value-aligned (eCPM-oriented) fine-tuning
+  - Policy optimization against a simulation environment
+  notes: Offline experiments use a large Tencent advertising dataset; one year of anonymized interactions for training and the next
+    calendar day for validation.
+serving_infra: null
+scale: []
+results_reported: 'Five sequential online A/B launches against the mature cascade, GMV (primary KPI) lifts: v0.1 HSD+NTP+DPO +2.11%;
+  v0.2 +HEPO w/o ARR +0.70%; v0.3 +MTP+Thinking +0.63%; v0.4 +PTD +0.71%; v0.5 +HEPO w/ ARR +0.58%, as incremental changes; the abstract only says significant GMV and CTCVR gains. Table 5 gives stratified GMV/CTR/CVR/CTCVR by user group and new vs non-new ads.'
+caveats:
+- Table 4 has additional columns (GMV-Normal, Costs); the mapping of numbers to columns was read from extracted text and should be confirmed
+  in the PDF before quoting beyond GMV.
+- Offline final_value comes from the authors' simulation environment, not live traffic.
+- Per-version lifts are incremental launches and are not summed in this card.
+- Online traffic share and duration not stated in the sections read.
+unknown_fields:
+- A/B traffic share and duration
+- serving latency and GPU count
+- total parameter count of the deployed model
+sources:
+- title: "GPR: Towards a Generative Pre-trained One-Model Paradigm for Large-Scale Advertising Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818425
+  type: paper
+- title: GPR, arXiv 2511.10138
+  url: https://arxiv.org/abs/2511.10138
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2511.10138
+  local_pdf: /workspace/src/a_2511.10138.pdf
+  sections_read: Abstract, intro, input schema/tokenization, HHD architecture summary, Table 2 (architecture study), Table 3 (training
+    and alignment), Tables 4-5 (online A/B) text
+  verified_on: '2026-10-30'
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: One generative model with a unified token schema and a hierarchical decoder replaces the retrieval, pre-rank and rank cascade.
+deployed_in: Tencent Weixin Channels advertising system, reported as fully deployed
+scale_short: Not stated in the sources
+key_result: GMV +2.11% in the first online A/B launch, v0.1, against the mature cascade
+results_table:
+  online:
+  - setting: Online A/B, v0.1
+    method: HSD+NTP+DPO
+    metric: GMV
+    result: +2.11%
+    versus: Mature cascade
+  - setting: Online A/B, v0.2
+    method: Add HEPO without ARR
+    metric: GMV
+    result: +0.70%
+    versus: Previous version
+  - setting: Online A/B, v0.3
+    method: Add MTP and Thinking
+    metric: GMV
+    result: +0.63%
+    versus: Previous version
+  - setting: Online A/B, v0.4
+    method: Add PTD
+    metric: GMV
+    result: +0.71%
+    versus: Previous version
+  - setting: Online A/B, v0.5
+    method: Add HEPO with ARR
+    metric: GMV
+    result: +0.58%
+    versus: Previous version
+deployment:
+  online_evidence: online_numbers
+  scenario: Tencent Weixin Channels advertising system
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Mature cascade
+  online_lifts:
+  - metric: GMV, first launch v0.1
+    value: +2.11%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Four later launches add +0.70%, +0.63%, +0.71% and +0.58% GMV, each against the previous version.
+  basis: full_text
+  checked_on: '2026-10-31'

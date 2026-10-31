@@ -1,0 +1,38 @@
+surface|淘宝展示广告 CTR 预估
+era_reason|用于 CTR 的 attention 加 GRU 兴趣演化
+tldr|DIEN 用带辅助损失的 GRU 建模用户兴趣在行为序列上如何演化；淘宝展示广告 A/B：相比基础模型，CTR +20.7%，eCPM +17.1%。
+summary|来自阿里巴巴的 AAAI 2019 论文：Deep Interest Evolution Network 建模用户兴趣在行为序列上如何演化。兴趣抽取 GRU 在每一步都由辅助损失监督，下一个被点击的 item 作正例，采样的未点击 item 作负例；兴趣演化层使用带注意力更新门的 GRU，即 AUGRU，由目标 item 驱动。已部署在淘宝的展示广告系统中。
+core_idea|用辅助损失和带注意力的 GRU 建模用户兴趣如何演化。
+deployed_in|淘宝展示广告
+scale_short|七十亿个工业训练样本，峰值每秒超过一百万个用户
+key_result|2018-06-07 至 2018-07-12，在淘宝展示广告的线上 A/B 中，相比 BaseModel，CTR +20.7%
+results_reported|2018-06-07 至 2018-07-12，淘宝展示广告的线上 A/B，见表 5，对比 BaseModel：DIEN 的 CTR +20.7%，PPC -3.0%，eCPM +17.1%；同一张表中的 DIN 为 CTR +8.9%，PPC -2.0%，eCPM +6.7%。工业数据集上的离线 AUC，见表 3：BaseModel 0.6350，Wide&Deep 0.6362，PNN 0.6353，DIN 0.6428，两层 GRU attention 0.6457，BaseModel+GRU+AUGRU 0.6493，DIEN 0.6541。公开数据集，见表 2，Electronics / Books：DIEN 为 0.7792 / 0.8453，DIN 为 0.7603 / 0.7880。
+serving_infra|在线系统峰值每秒服务超过一百万个用户。服务优化技术：按元素并行并做 kernel fusion 的 GRU，在 GPU 上跨用户做请求批处理，以及用 Rocket Launching 做模型压缩，把 GRU 隐层维度从 108 缩小到 32。报告的效果：延迟从 38.2 ms 降到 6.6 ms，每个 worker 360 QPS。
+stages.0.model_family|DIEN：embedding 层，带辅助损失的兴趣抽取 GRU，带注意力门控 GRU 即 AUGRU 的兴趣演化层，最后是 MLP；工业模型使用 6 层 FCN，维度为 600、400、300、200、80、2
+stages.0.details|AUGRU 用注意力分数缩放更新门，使与目标 item 无关的兴趣被削弱，同时保留更新门的维度信息；论文还对比了 AIGRU 和 AGRU 两种替代方案。
+id_tokenization.approach|做过 embedding 的行为序列
+features_signals.0|用户行为序列
+features_signals.1|目标 item
+training.mode|离线。工业数据集：取最近 49 天被点击的广告作为目标 item；对每个目标，用户之前 14 天的行为构成历史；测试目标来自次日
+training.objectives.0|CTR 加上下一行为的辅助损失，按 alpha 加权，学习曲线图中 alpha=1
+training.notes|工业数据集规模，见表 1：八亿个用户，8.2 亿个商品，18,006 个类目，七十亿个样本。公开数据集：Amazon Electronics 和 Books 的子集。
+scale.0.metric|工业训练样本
+scale.0.value|七十亿
+scale.1.metric|峰值流量
+scale.1.value|每秒超过一百万个用户
+results_table.online.0.setting|淘宝展示广告 A/B，表 5
+results_table.online.1.setting|淘宝展示广告 A/B，表 5
+results_table.online.2.setting|淘宝展示广告 A/B，表 5
+results_table.online.3.setting|淘宝展示广告 A/B，表 5
+results_table.offline.0.setting|工业数据集，表 3
+caveats.0|这里的线上 DIN 数字 +8.9% CTR，与 DIN 论文的「up to 10.0%」不同，因为基线和时间段不同。
+caveats.1|作者来自阿里巴巴；论文把淘宝展示广告作为部署场景。
+caveats.2|表格各行是从提取的文本中读出的；每行的数字都对照论文的讨论核对过。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|每个 worker 的硬件
+code.repos.0.owner|DIEN 作者，论文中有链接
+code.repos.0.note|论文中链接的源代码；在公开的 Amazon 数据上运行。不是阿里巴巴的线上系统。
+deployment.scenario|淘宝展示广告 CTR 预估
+deployment.serving_latency|经服务优化，从 38.2 ms 降到 6.6 ms
+deployment.serving_qps|优化后每个 worker 360 QPS；系统峰值每秒超过一百万个用户
+deployment.hardware|GPU 服务，跨用户做请求批处理；没有给出 GPU 型号和数量

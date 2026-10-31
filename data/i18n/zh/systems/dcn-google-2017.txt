@@ -1,0 +1,30 @@
+surface|公开基准上的 CTR 和特征交互建模
+era_reason|用于 CTR 的 Deep and Cross Network
+tldr|Deep & Cross Network 在深度 MLP 旁边加了一个显式特征交叉网络；在 Criteo 上优于 DNN，内存约少 40%。仅有离线结果。
+summary|ADKDD 2017 论文，来自 Stanford 和 Google：Deep & Cross Network 在共享的 embedding 与 stacking 层之上，让显式特征交叉的 cross network 与深度 MLP 并行运行，cross network 每个阶数有一个残差 cross 层。在 Criteo 展示广告数据集和两个非 CTR 的 UCI 数据集上做了离线评估；论文没有描述线上部署。
+core_idea|加入一个做显式特征交叉的 cross network，与深度 MLP 并行。
+deployed_in|未部署，在 Criteo 和两个 UCI 数据集上做离线评估
+scale_short|没有报告线上规模
+key_result|离线：Criteo 测试集 logloss，DCN 为 0.4419，DNN 为 0.4428
+results_reported|Criteo 测试集 logloss，见表 1：DCN 0.4419，DC 0.4425，DNN 0.4428，FM 0.4464，LR 0.4474；DCN 的最佳设置是 2 层 1024 的深度层加 6 个 cross 层。10 次运行下，DCN 为 0.4422 +/- 9e-5，DNN 为 0.4430 +/- 3.7e-4。DCN 在最佳性能时用的内存约为 DNN 的 40%，按表 2，达到 logloss 0.4430 需要 7.9e5 个参数，DNN 需要 3.2e6。非 CTR 任务：forest covertype 的准确率为 0.9740，DNN 为 0.9737；Higgs 的 logloss 为 0.4494，DNN 为 0.4506。论文认为在 Criteo 上，0.001 的 logloss 提升具有实际意义。
+status_reason|已合并进 DCN 卡片，每个系统一张卡片，该卡片展示最新版本 DCN V2。
+stages.0.model_family|DCN：embedding 与 stacking 层，cross network x_{l+1} = x0 x_l^T w_l + b_l + x_l 与 ReLU 深度网络并行，拼接后进入 logits 层
+stages.0.details|l 层 cross network 的最高多项式阶数是 l+1；cross network 增加 d x L_c x 2 个参数，随输入维度线性增长。
+id_tokenization.approach|做过 embedding 的稀疏特征
+features_signals.0|稀疏和稠密的 CTR 特征
+training.mode|在 Criteo Display Ads 上离线训练：7 天共 11 GB 日志，约 4100 万条记录，前 6 天用于训练，第 7 天划分为验证集和测试集
+training.objectives.0|带 L2 项的 CTR logloss
+training.notes|TensorFlow；Adam，batch size 512，深度部分用 batch norm，梯度裁剪范数 100，在第 150,000 步提前停止；类别特征 embedding 的维度为 6 x cardinality 的 1/4 次方，拼接后的向量维度为 1026；网格搜索 2 到 5 个隐层，大小 32 到 1024，1 到 6 个 cross 层。
+results_table.offline.0.setting|Criteo 测试集，表 1
+results_table.offline.1.setting|Criteo，10 次运行
+results_table.offline.4.setting|=
+results_table.offline.2.metric|达到 logloss 0.4430 所需的参数量
+results_table.offline.3.metric|最佳性能时的内存
+results_table.offline.3.versus|DNN 的内存
+caveats.0|只有公开数据集上的实验；论文没有报告线上或 A/B 结果。
+caveats.1|没有与 Wide & Deep 对比，因为没有已知的方法来选择它的交叉特征；FM 基线被描述为「proprietary details」。
+caveats.2|作者用 Google 的 Sibyl 来实现 LR 基线；基线由作者自己调参。
+unknown_fields.0|线上部署
+unknown_fields.1|线上指标
+unknown_fields.2|在线延迟
+code.repos.0.note|流行的第三方 Keras 版 DCN 实现。TensorFlow Recommenders 的 Cross 层实现的是 DCN-v2，不是最初的版本。

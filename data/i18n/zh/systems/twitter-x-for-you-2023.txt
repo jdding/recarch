@@ -1,0 +1,34 @@
+surface|「为你推荐」首页时间线
+era_reason|Embedding 召回加重排序神经网络；不是生成式
+tldr|开源的「为你推荐」流水线：候选来自搜索索引、图、SimClusters 和 TwHIN，然后是神经网络 heavy ranker、过滤，以及与广告的混排。
+summary|开源的流水线：多个候选来源，即站内搜索索引、图遍历、SimClusters 和 TwHIN embedding，以及关注推荐，然后做特征填充、神经网络 heavy ranker，再做过滤和启发式规则，并与广告和其他模块混排。
+core_idea|多个候选来源输入神经网络 heavy ranker，之后是过滤、启发式规则以及与广告的混排。
+deployed_in|X 的「为你推荐」首页时间线，开源的流水线
+scale_short|约 1,500 个候选，heavy ranker 约 48M 参数
+key_result|开源的参考实现，没有报告指标
+serving_infra|Product Mixer 框架，Scala，Navi 模型服务，Rust，以及 home-mixer 服务。
+stages.0.model_family|站内 Earlybird 搜索索引 + UTEG 图遍历 + tweet-mixer，SimClusters / TwHIN embedding，+ 关注推荐
+stages.0.details|home-mixer 的 README 列出了候选来源；仓库称约 50% 的帖子来自站内搜索索引。工程博客，来自媒体报道，称提取约 1,500 个候选。
+stages.1.model_family|Earlybird 搜索索引使用的 light ranker
+stages.1.details|在搜索索引内对站内帖子排序。
+stages.2.model_family|Heavy ranker：并行的 MaskNet，输出多种互动类型的概率
+stages.2.details|home-mixer 的 README 称排序时填充约 6000 个特征；博客，来自 TechCrunch，称约 48M 参数的网络基于互动持续训练。
+stages.3.model_family|针对作者多样性、内容平衡、反馈疲劳、去重和可见性过滤的启发式规则和过滤，以及与广告 / who-to-follow 的混排
+stages.3.details|见 home-mixer 的 README。
+id_tokenization.approach|来自 SimClusters 的稀疏社区 embedding，以及来自 TwHIN 的稠密知识图 embedding
+features_signals.0|统一的用户行为流
+features_signals.1|显式和隐式的用户信号
+features_signals.2|Real-graph 的交互预测
+features_signals.3|约 6000 个排序特征
+training.mode|Heavy ranker 被描述为持续训练，来自博客引文
+training.objectives.0|多种互动概率
+scale.1.metric|Heavy ranker 的规模
+scale.1.value|约 48M 参数
+results_table.note|开源的代码和文档没有报告线上或离线指标。
+caveats.0|来自 2023 年开源发布的快照；线上系统此后已有变化。
+unknown_fields.0|当前的架构
+unknown_fields.1|A/B 结果
+code.repos.0.note|「为你推荐」时间线 和通知服务的源码快照，Scala、Rust、Python。我没有构建或运行过它，它可能与线上生产不同。
+code.repos.1.note|配套仓库，含 ML 模型，包括 Home 的「recap」排序器。
+deployment.scenario|X 的「为你推荐」首页时间线，开源的流水线
+deployment.notes.0|没有公布 A/B 结果。

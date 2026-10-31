@@ -1,0 +1,105 @@
+id: airbnb-listing-embeddings-2018
+name: Airbnb Listing & User-Type Embeddings for Search Ranking
+company: Airbnb
+surface: Search ranking and Similar Listings
+year: 2018
+era: deep
+era_reason: "Skip-gram style neural embeddings feeding a ranker in 2018; neural but shallow"
+first_public: "2018-07"
+venue: "KDD 2018"
+venue_year: 2018
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3219819.3219885"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: search
+evidence_level: production_described
+tldr: "Skip-gram listing embeddings trained on click sessions, with booking as global context, feed Airbnb search ranking; Similar Listings CTR rose 20% over the prior algorithm."
+summary: Skip-gram-style listing embeddings trained on click sessions with booking-as-global-context and market-aware negatives, plus
+  user-type/listing-type embeddings for long-term interest; used as similarity features in the ranking model.
+paradigms:
+- embedding-based-retrieval
+- learning-to-rank
+stages:
+- stage: rank
+  model_family: Embedding-similarity features (to recently clicked/skipped/booked listings) fed into the search ranker
+  details: Similarity, not raw vectors, is used as a ranking feature (per secondary summary of the paper).
+- stage: retrieval
+  model_family: Similar Listings via embedding nearest neighbours
+  details: ''
+id_tokenization:
+  approach: Listing IDs / listing types / user types
+  details: null
+features_signals:
+- Click sessions
+- Bookings
+- Skips (negative signal)
+- Listing attributes bucketed into types
+training:
+  mode: Offline, retrained daily
+  objectives:
+  - Skip-gram with booked listing as global context
+  notes: 32-d embeddings.
+serving_infra: null
+scale:
+- metric: Training sessions
+  value: more than 800 million search click sessions
+  note: PDF
+- metric: Embedding dimension
+  value: '32'
+  note: PDF
+- metric: Share of bookings from the two channels
+  value: 99% (Search Ranking and Similar Listings)
+  note: PDF
+results_reported: 'PDF: embedding features gave significant booking gains in search ranking (A/B); Similar Listings CTR improved by
+  20% over the previous algorithm.'
+caveats:
+- Absolute booking-lift numbers not captured here.
+unknown_fields:
+- serving latency
+- absolute booking lift
+sources:
+- title: Real-time Personalization using Embeddings for Search Ranking at Airbnb, KDD 2018
+  url: https://doi.org/10.1145/3219819.3219885
+  type: paper
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: Learn listing embeddings from click sessions and use them as similarity features.
+deployed_in: Airbnb Search Ranking and Similar Listings
+scale_short: More than 800 million search click sessions for training
+key_result: Similar Listings CTR improved by 20% over the previous algorithm
+results_table:
+  online:
+  - setting: Similar Listings
+    method: Listing embeddings
+    metric: CTR
+    result: +20%
+    versus: Previous algorithm
+  - setting: Search ranking A/B
+    method: Embedding features as ranking features
+    metric: Bookings
+    result: Significant gain, size not given
+    versus: Ranking without them
+deployment:
+  online_evidence: online_numbers
+  scenario: Airbnb Search Ranking and Similar Listings
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous algorithm for Similar Listings; ranking without the embedding features
+  online_lifts:
+  - metric: Similar Listings click-through rate
+    value: +20%
+  - metric: Search ranking bookings
+    value: Significant gain, size not given
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: card_content
+  checked_on: '2026-10-31'

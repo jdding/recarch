@@ -1,0 +1,89 @@
+id: pinsage-2018
+name: PinSage graph convolutional network
+company: Pinterest
+surface: Related Pins and Homefeed candidate generation
+year: 2018
+era: deep
+era_reason: "Web-scale graph convolutional network"
+first_public: "2018-06"
+venue: "KDD 2018"
+venue_year: 2018
+published_version_checked: true
+version_note: "Checked against the owner's Zotero copy, which is arXiv v1 of 6 Jun 2018 typeset in the KDD '18 ACM template with the reference format and DOI 10.1145/3219819.3219890, 10 pages, i.e. the accepted camera-ready text. No separate ACM-DL copy was compared; its numbers are identical to the arXiv text used before."
+primary_source: "https://doi.org/10.1145/3219819.3219890"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+updates:
+- date: "2026-10-30"
+  note: "Checked against the KDD '18 camera-ready PDF arXiv-hosted with the final DOI; all card numbers confirmed, no changes."
+system_type: recommendation
+evidence_level: production_described
+tldr: "Random-walk based graph convolutional network that builds pin embeddings from the pin-board graph plus visual and text features; A/B repin rate up 10-30%."
+summary: >-
+  Random-walk based graph convolutional network that produces pin embeddings from the pin-board graph plus visual and text features;
+  used for nearest-neighbor candidate generation.
+paradigms: [graph-neural-network, embedding-based-retrieval]
+stages:
+  - stage: retrieval
+    model_family: Graph convolutional network (random-walk neighborhoods with importance pooling) + nearest-neighbor lookup
+    details: >-
+      Embeddings are used for nearest-neighbor lookup (LSH + Weak AND per paper) for Related Pins and in Homefeed.
+      Trained with max-margin loss and a hard-negative curriculum.
+id_tokenization: {approach: Node embeddings (1024-d) from graph + content features; no semantic-ID tokenization, details: null}
+features_signals: ["Visual features (VGG-16, 4096-d)", "Text annotation features (256-d)", Log-degree, Pin-board graph structure]
+training:
+  mode: Offline; MapReduce inference for embeddings
+  objectives: [Max-margin ranking loss with hard negatives]
+  notes: Trained with 16 K80 GPUs in TensorFlow (per paper).
+serving_infra: MapReduce inference on 378 d2.8xlarge AWS nodes; nearest-neighbor lookup for candidates.
+scale:
+  - {metric: Graph size, value: "3B nodes, 18B edges (2B pins, 1B boards)", note: "paper"}
+  - {metric: Training examples, value: "7.5B", note: "paper"}
+results_reported: "A/B tests report 10-30% repin-rate lift (per paper)."
+caveats: []
+unknown_fields: [current-day use at Pinterest]
+sources:
+  - {title: "Graph Convolutional Neural Networks for Web-Scale Recommender Systems, KDD 2018", url: "https://doi.org/10.1145/3219819.3219890", type: paper}
+  - {title: "Graph Convolutional Neural Networks for Web-Scale Recommender Systems, arXiv 1806.01973, KDD 2018", url: "https://arxiv.org/abs/1806.01973", type: paper}
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/1806.01973
+  local_pdf: /workspace/recarch/zotero/pinsage-2018.pdf
+  sections_read: Title page / ACM reference format; every number on the card diffed against the full text
+  verified_on: '2026-10-30'
+  published_pdf: "Verified 2026-10-30 against the camera-ready PDF (owner's Zotero copy)"
+code:
+  status: third_party_only
+  checked_on: '2026-10-30'
+  repos:
+  - url: https://github.com/dmlc/dgl/tree/master/examples/pytorch/pinsage
+    owner: DGL team
+    official: false
+    note: PinSage example in DGL; not released by Pinterest (pinterest/pinsage does not exist).
+core_idea: A random-walk graph convolutional network builds pin embeddings from the pin-board graph plus visual and text features.
+deployed_in: Pinterest Related Pins and Homefeed candidate generation
+scale_short: 3B nodes and 18B edges, 7.5B training examples
+key_result: 10-30% repin-rate lift in online A/B tests, as reported in the paper
+results_table:
+  online:
+  - setting: A/B tests
+    method: PinSage
+    metric: Repin rate
+    result: +10% to +30%
+    versus: Previous candidate generation
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Related Pins and Homefeed candidate generation
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Previous candidate generation
+  online_lifts:
+  - metric: Repin rate
+    value: +10% to +30%
+  training_compute: Trained with 16 Tesla K80 GPUs in TensorFlow
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: MapReduce inference on 378 d2.8xlarge AWS nodes; training on 16 Tesla K80 GPUs
+  basis: full_text
+  checked_on: '2026-10-31'

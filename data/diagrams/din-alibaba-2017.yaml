@@ -1,0 +1,33 @@
+# Redrawn, simplified diagram. Source: Zhou et al., "Deep Interest Network for Click-Through Rate Prediction" (KDD 2018), DIN part of paper Fig. 2 (Sec. 4.3).
+alt: "Left to right: user behaviors and the candidate ad feed a local activation unit that weights each behavior by relevance to the ad and sums them; this joins profile, ad and context embeddings in a concatenation plus MLP that outputs click probability."
+caption:
+  fig: "Fig. 2, right part"
+  work: "Deep Interest Network for Click-Through Rate Prediction, KDD 2018"
+  url: "https://doi.org/10.1145/3219819.3219823"
+  note: "Embedding layers are shown as one box; the base Embedding&MLP model on the left of the paper figure is not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: behav,   kind: input, text: ["User behaviors", "visited goods, shops, categories"]}
+      - {id: ad,      kind: input, text: ["Candidate ad", "goods, shop, category IDs"]}
+      - {id: profile, kind: input, text: ["User profile", "gender, age level, ..."]}
+      - {id: ctx,     kind: input, text: ["Context", "time, ad position, ..."]}
+  - label: Core model
+    boxes:
+      - {id: lau, kind: module, text: ["Local activation unit", "weights each behavior by its relevance to the candidate ad, then weighted-sum pooling (weights not softmax-normalized)"]}
+      - {id: emb, kind: module, text: ["Embedding lookup", "pooling for the other features"]}
+  - label: Prediction
+    boxes:
+      - {id: mlp, kind: module, text: ["Concatenate + MLP", "Dice activation"]}
+  - label: Output
+    boxes:
+      - {id: ctr, kind: output, text: ["Click probability", "trained with log loss"]}
+edges:
+  - [behav, lau]
+  - [ad, lau]
+  - [ad, emb]
+  - [profile, emb]
+  - [ctx, emb]
+  - [lau, mlp]
+  - [emb, mlp]
+  - [mlp, ctr]

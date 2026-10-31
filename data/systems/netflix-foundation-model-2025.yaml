@@ -1,0 +1,72 @@
+id: netflix-foundation-model-2025
+name: Netflix Foundation Model for Personalized Recommendation
+company: Netflix
+surface: Netflix personalization, including the homepage and other applications
+year: 2025
+era: generative
+era_reason: "Foundation model with next-token style objective over member interactions"
+first_public: "2025-03"
+venue: "RecSys 2024 (Sliding Window Training paper, related)"
+venue_year: 2024
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3640457.3688051"
+added_on: "2026-10-30"
+last_verified: "2026-10-30"
+system_type: recommendation
+evidence_level: production_described
+tldr: "A large Transformer trained on hundreds of billions of member interactions with next-token objectives; downstream models reuse it via embeddings or fine-tuning."
+summary: >-
+  A large Transformer trained on hundreds of billions of member interactions with next-token style objectives, consumed by downstream
+  models through embeddings, subgraph reuse or fine-tuning.
+paradigms: [foundation-model, sequential-transformer, llm-based]
+stages:
+  - stage: other
+    model_family: Shared foundation model feeding downstream application models
+    details: Replaces many independently trained models with centralized preference learning; applications can use the model directly, take embeddings, or fine-tune.
+id_tokenization: {approach: "Interaction tokenization merges/filters events into meaningful tokens; cold start via learnable item-ID embeddings blended with metadata embeddings", details: null}
+features_signals: [Member interaction history (plays and actions), Content metadata]
+training:
+  mode: Offline with incremental training / warm start for new titles
+  objectives: [Next-token / multi-token prediction with task heads]
+  notes: Sparse attention to extend context to several hundred events; overlapping sliding-window sampling over full history.
+serving_infra: KV caching for multi-step decoding at inference.
+scale:
+  - {metric: Interactions, value: "hundreds of billions", note: "blog"}
+  - {metric: Members, value: "over 300 million at end of 2024", note: "blog"}
+results_reported: null
+caveats: [Blog is explicit that context windows at inference are limited to hundreds of events by latency.]
+unknown_fields: [parameter count, A/B results]
+sources:
+  - {title: "Sliding Window Training - Utilizing Historical Recommender Systems Data for Foundation Models, RecSys 2024, Sliding Window Training paper, related", url: "https://doi.org/10.1145/3640457.3688051", type: paper}
+  - {title: "Foundation Model for Personalized Recommendation, Netflix TechBlog, 2025-03-21", url: "https://netflixtechblog.com/foundation-model-for-personalized-recommendation-1a0bd8e02d39", type: engineering_blog}
+  - {title: "Sliding Window Training - Utilizing Historical Recommender Systems Data for Foundation Models, arXiv 2409.14517", url: "https://arxiv.org/abs/2409.14517", type: paper}
+  - {title: "Integrating Netflix's Foundation Model into Personalization applications, Netflix Research", url: "https://research.netflix.com/publication/integrating-netflixs-foundation-model-into-personalization-applications", type: engineering_blog}
+code:
+  status: none
+  checked_on: '2026-10-30'
+  repos: []
+  note: 'No official code found: no code link in the paper or blog text, no matching repo in the
+      company''s GitHub org, GitHub search or web search on 2026-10-30. This records a search result,
+      not proof that no code exists.'
+core_idea: A large Transformer trained on member interactions, consumed downstream through embeddings, subgraph reuse or fine-tuning.
+deployed_in: Netflix personalization, including the homepage and other applications
+scale_short: Hundreds of billions of interactions, over 300 million members at the end of 2024
+key_result: No reported metrics in the sources
+results_table:
+  note: The sources describe the approach and report no A/B results.
+deployment:
+  online_evidence: deployed_only
+  scenario: Netflix personalization, including the homepage and other applications
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - KV caching is used for multi-step decoding at inference. The blog gives no numbers.
+  basis: card_content
+  checked_on: '2026-10-31'

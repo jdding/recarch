@@ -1,0 +1,43 @@
+id: ple-tencent-2020
+name: "PLE"
+company: Tencent
+surface: Video recommendation (Tencent Video)
+year: 2020
+system_type: recommendation
+evidence_level: production_described
+summary: Progressive Layered Extraction, a multi-task model with task-specific and shared experts, using Customized Gate Control, stacked progressively to cut negative transfer
+  and the seesaw effect.
+paradigms:
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Stacked CGC layers: shared experts + task-specific experts with per-task gates'
+  details: ''
+id_tokenization:
+  approach: null
+  details: null
+features_signals:
+- Multiple user feedback signals
+training:
+  mode: Offline then online
+  objectives:
+  - View count
+  - Watch time
+  notes: Evaluated on a ~1-billion-sample Tencent video dataset.
+serving_infra: null
+scale:
+- metric: Offline dataset
+  value: ~1 billion samples
+  note: search summary
+results_reported: 'Per summary of the paper: deployed online, +2.23% view count and +1.84% watch time vs SOTA MTL baselines.'
+caveats:
+- Only a search-engine summary of the paper was read (ACM blocked); numbers lower confidence.
+unknown_fields:
+- serving details
+sources:
+- title: Progressive Layered Extraction (PLE), RecSys 2020
+  url: https://doi.org/10.1145/3383313.3412236
+  type: paper
+
+needs_fulltext: true
+fulltext_note: "Need full text: \"Progressive Layered Extraction (PLE): A Novel Multi-Task Learning (MTL) Model for Personalized Recommendations\" (Tang, Hongyan, 2020, RecSys 2020) - https://doi.org/10.1145/3383313.3412236. Reason drafted: search-engine summary / publication record only."
