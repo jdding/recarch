@@ -1,5 +1,5 @@
 title: Long user-sequence modeling
-summary: How production recommenders read very long user histories under a latency budget, compared across ten RecArch cards.
+summary: How production recommenders read very long user histories under a latency budget, compared across eleven RecArch cards.
 framing:
   - A user's history can run to tens of thousands of events, but a ranker has a few tens of milliseconds per request. Every system on this page answers the same two questions. How much of the history do you read, and when do you pay for reading it?
   - The answers differ a lot. Some systems read only the latest few hundred actions in real time. Some search or compress the full history. Some move the heavy model out of the request path and serve a cached result. The table lists what each card reports. The sections after it explain the differences that matter when you pick an approach.
@@ -42,6 +42,8 @@ members:
     approach: A generatively pretrained user model whose outputs become extra features for the existing ranker. Query results are cached.
   - id: hstu-meta-2024
     approach: Treats retrieval and ranking as sequence prediction over the user's actions and replaces the usual feature interaction layers with the HSTU encoder.
+  - id: yandex-argus-2025
+    approach: Pre-trains a transformer on histories of up to 8192 events, then serves a daily user embedding that the production ranker takes as a feature.
 differences:
   - heading: How much history goes in
     text: Two systems read a short window. TransAct reads the last 100 actions and PinnerFormer up to 256. Two compress. KuaiFormer shrinks 256 items to 55 tokens, and SequenceO1 turns 100K events into a sketch while still reading the latest 10K directly. Two read a long raw sequence, LONGER up to 10,000 behaviors and PinFM up to 16,000 actions. SIM searches first and so reaches up to 54,000 behaviors. A longer window is not automatically better here. Each card states its own cap, and the caps come with different cost tricks.

@@ -1,0 +1,31 @@
+# Redrawn, simplified diagram. Source: Yuan et al., "FLUID" (RecSys 2026), Fig. 2.
+alt: "Left to right: 2-minute live slices and short-video slices go through a cross-domain multimodal encoder, RQ-KMeans turns the embedding into a slice LUCID, majority voting over slices gives a room LUCID, both are looked up with prefix n-gram tables and enter the ranker as tokens next to user features, with the item ID retired."
+caption:
+  fig: "Fig. 2"
+  work: "FLUID: From Ephemeral IDs to Multimodal Semantic Codes for Billion-Scale Livestreaming Recommendation, RecSys 2026"
+  url: "https://doi.org/10.1145/3773078.3831918"
+  note: "Simplified; the three warmup stages are not drawn."
+columns:
+  - label: Content
+    boxes:
+      - {id: slice, kind: input, text: ["2-minute slices", "livestream and short-video frames, ASR, OCR, metadata"]}
+  - label: Encoder
+    boxes:
+      - {id: enc, kind: module, text: ["Multimodal encoder", "SigLIP2-base plus Qwen3-Embedding-0.6B, 128-d embedding"]}
+  - label: Codes
+    boxes:
+      - {id: rq, kind: module, text: ["RQ-KMeans", "4 levels, 64 clusters each: slice LUCID"]}
+      - {id: room, kind: module, text: ["Room LUCID", "per-level majority vote across slices"]}
+  - label: Ranker
+    boxes:
+      - {id: rank, kind: module, text: ["Token-based ranker", "prefix n-gram LUCID tokens, user tokens, item ID retired"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Livestream ranking", "scores for candidate rooms"]}
+edges:
+  - [slice, enc]
+  - [enc, rq]
+  - [rq, room]
+  - [rq, rank]
+  - [room, rank]
+  - [rank, out]

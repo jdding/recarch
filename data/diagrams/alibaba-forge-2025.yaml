@@ -1,0 +1,32 @@
+# Redrawn, simplified diagram. Source: Fu et al., "FORGE: Forming Semantic Identifiers for Generative Retrieval in Industrial Datasets" (KDD 2026), paper Fig. 2.
+alt: "Left to right: item text and image features and item-to-item co-occurrence are fused by a multimodal encoder; RQ-VAE quantizes the fused feature into a 3-level semantic ID; a post-processing step limits how many items share one SID; a decoder-only LLM reads the user's SID history and generates the next SID with a dynamic beam search; a lookup maps the generated SIDs back to items."
+caption:
+  fig: "Fig. 2"
+  work: "FORGE: Forming Semantic Identifiers for Generative Retrieval in Industrial Datasets, KDD 2026"
+  url: "https://arxiv.org/abs/2509.20904"
+  note: "Merges parts (a) to (d); the codebook-update and loss details are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: content, kind: input, text: ["Item text and image", "plus item-to-item co-occurrence and side information"]}
+      - {id: history, kind: input, text: ["User's behavior history", "up to 100 items, shown as SIDs"]}
+  - label: SID construction
+    boxes:
+      - {id: enc,  kind: module, text: ["Multimodal encoder", "pretrained CLIP-style encoder plus QFormer fusion, contrastive loss on co-occurring items"]}
+      - {id: rq,   kind: module, text: ["RQ-VAE quantization", "3 levels with 8192 codewords each"]}
+      - {id: post, kind: module, text: ["Collision post-processing", "KNN-based or random-based last level, so fewer items share one SID"]}
+  - label: Core model
+    boxes:
+      - {id: llm, kind: module, text: ["Decoder-only LLM", "Qwen2.5 with SID tokens added; trained on the next SID"]}
+  - label: Output
+    boxes:
+      - {id: beam, kind: output, text: ["Generated SIDs", "dynamic beam search over three steps"]}
+      - {id: item, kind: output, text: ["Candidate items", "SID to item lookup, cached after a click"]}
+edges:
+  - [content, enc]
+  - [enc, rq]
+  - [rq, post]
+  - [post, llm]
+  - [history, llm]
+  - [llm, beam]
+  - [beam, item]

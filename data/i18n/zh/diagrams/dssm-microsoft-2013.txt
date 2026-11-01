@@ -1,0 +1,20 @@
+alt|查询和文档各自经过字母 trigram 词哈希和同类的深度网络，最后得到 128 维语义向量。两个向量用余弦相似度打分，再对被点击文档和采样的未点击文档做 softmax。
+caption.note|已简化；文档塔只画了一次，未点击文档是采样得到的。
+columns.0.boxes.0.text.1|词计数
+columns.0.boxes.1.text.0|文档标题
+columns.0.boxes.1.text.1|词计数
+columns.1.label|词哈希
+columns.1.boxes.0.text.0|词哈希
+columns.1.boxes.0.text.1|字母 trigram，约 30k 个单元，固定不学习
+columns.1.boxes.1.text.0|词哈希
+columns.1.boxes.1.text.1|字母 trigram，约 30k 个单元，固定不学习
+columns.2.label|深度层
+columns.2.boxes.0.text.1|两个 300 单元的隐层
+columns.2.boxes.1.text.1|两个 300 单元的隐层
+columns.3.label|语义空间
+columns.3.boxes.0.text.0|查询向量
+columns.3.boxes.0.text.1|128 维
+columns.3.boxes.1.text.0|文档向量
+columns.3.boxes.1.text.1|128 维
+columns.4.boxes.0.text.0|余弦与 softmax
+columns.4.boxes.0.text.1|被点击文档对比采样的未点击文档

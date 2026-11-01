@@ -50,6 +50,6 @@ for (const id of ids.filter((i) => !redirects.includes(i))) {
   const head = art.querySelector("header.v2head");
   ok(!!head.querySelector("h1") && !!head.querySelector(".byline") && !!head.querySelector(".tldr") && head.querySelectorAll(".actions .btn, .actions .btn-off").length === 2, `${id}: header has name, byline, TL;DR and two buttons`);
 }
-ok(withDiagram.length === 3, `exactly 3 diagram cards, found ${withDiagram.length}`);
+ok(["din-alibaba-2017", "tiger-google-2023", "youtube-dnn-2016"].every((i) => withDiagram.includes(i)), `the three pilot diagram cards still have diagrams, found ${withDiagram.length} diagram cards`);
 console.log(`${checks - fails}/${checks} checks passed over ${ids.length} cards, diagrams: ${withDiagram.join(", ")}`);
 process.exit(fails ? 1 : 0);

@@ -1,0 +1,26 @@
+# Redrawn, simplified diagram. Source: Wang et al., "SORT: A Systematically Optimized Ranking Transformer for Industrial-scale Recommenders" (CIKM 2026), Fig. 1.
+alt: "Left to right: pre-trained and frozen item embeddings feed token embedding; user history, profile and all candidates of a request form one sequence; Transformer blocks with local attention, query pruning and a sparse MoE FFN process it; a ranking head scores click, cart and purchase for every candidate."
+caption:
+  fig: "Fig. 1"
+  work: "SORT: A Systematically Optimized Ranking Transformer for Industrial-scale Recommenders, CIKM 2026"
+  url: "https://arxiv.org/abs/2603.03988"
+  note: "Simplified; QKNorm, the attention gate and the exact mask are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: hist, kind: input, text: ["User history and profile", "chronological behaviors and user features"]}
+      - {id: cand, kind: input, text: ["Candidates", "all items of one request"]}
+  - label: Tokenization
+    boxes:
+      - {id: tok, kind: module, text: ["One sequence", "BOS, history, SEP, profile, SEP, candidates; frozen pre-trained item embeddings"]}
+  - label: Transformer
+    boxes:
+      - {id: blk, kind: module, text: ["Transformer blocks", "local attention, query pruning, sparse MoE FFN"]}
+  - label: Output
+    boxes:
+      - {id: head, kind: output, text: ["Ranking head", "click, cart and purchase score per candidate"]}
+edges:
+  - [hist, tok]
+  - [cand, tok]
+  - [tok, blk]
+  - [blk, head]

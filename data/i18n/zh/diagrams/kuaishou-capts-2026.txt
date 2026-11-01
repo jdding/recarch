@@ -1,0 +1,21 @@
+alt|从左到右：用户的近期历史和缓存的长期触发 item 送入打分器；离线时，价值归因步骤重放每个 item 到 item 通道，把召回的 item 与用户之后的观看对照，得到训练标签；路由模型按价值和独特性给每个通道下的每个触发 item 打分，并在每个通道的预算内分配触发 item；Swing、Marm、SimLR 和 MMU 四个 I2I 通道召回候选，再交给排序。
+caption.fig|图 3 和图 4
+caption.note|把图 3 的模型视图和图 4 的部署视图合并；损失项没有画出。
+columns.0.label|输入
+columns.0.boxes.0.text.0|近期历史
+columns.0.boxes.0.text.1|最近 50 个有效观看，在线打分
+columns.0.boxes.1.text.0|近线触发 item 缓存
+columns.0.boxes.1.text.1|长期触发 item，每天刷新
+columns.1.label|离线监督
+columns.1.boxes.0.text.0|价值归因
+columns.1.boxes.0.text.1|重放每个 I2I 通道，与之后 100 个观看对照，累加观看时长
+columns.2.label|路由模型
+columns.2.boxes.0.text.0|通道自适应路由
+columns.2.boxes.0.text.1|共享 encoder 加 target attention；每个通道有价值头、校准器和独特性头
+columns.2.boxes.1.text.0|触发 item 到通道的分配
+columns.2.boxes.1.text.1|分数等于价值加 0.4 倍独特性，在每个通道预算内取靠前的触发 item
+columns.3.label|输出
+columns.3.boxes.0.text.0|四个 I2I 通道
+columns.3.boxes.0.text.1|Swing、Marm、SimLR 和 MMU 对每个触发 item 召回前 50 个 item
+columns.3.boxes.1.text.0|下游排序
+columns.3.boxes.1.text.1|现有的索引和排序模型保持不变

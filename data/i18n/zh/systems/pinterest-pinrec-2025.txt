@@ -1,0 +1,52 @@
+surface|Pinterest 的 Home Feed、Related Pins 和 Search，一个生成式召回模型按场景微调
+era_reason|自回归地生成以期望结果为条件的 item embedding 序列，每个生成的 embedding 都用于近邻召回，生成处于召回的核心位置。
+tldr|Pinterest 的 PinRec 是跨场景预训练、再按场景微调的统一生成式召回模型，带结果条件生成；Search A/B 中 fulfillment +2.24%，saves +3.88%。
+summary|PinRec 是 Pinterest 的候选生成器，部署在 Home Feed、Related Pins 和 Search 三个场景。一个 12 层 transformer decoder 读取由 Pin 和搜索 query 组成的用户序列，每个元素由预训练的 OmniSage 和 OmniSearchSage 向量加上时间和场景 embedding 得到。它先在跨所有场景的终身行为序列上做下一个 item 预测的预训练，使用 sampled softmax，负样本为 batch 内负样本，并用 count-min-sketch 做偏差校正。然后在每个场景自己的 feed 浏览日志上微调，场景内的行为作为额外正样本，只有曝光的 item 作为 hard negative。结果条件生成在输出头上加入可学习的结果 embedding，一次前向就能为每种结果，例如保存或外链点击，各产出一个 embedding，召回预算按结果切分，以此权衡业务指标。生成是自回归的：每一步把采样出的 embedding 连同时间偏移追加回序列，相似的 embedding 按 cosine 相似度合并，每个 embedding 各做一次 Faiss IVF-HNSW 近邻查询。模型部署在 NVIDIA L40S GPU 上，经 Triton 提供服务，使用 CUDA graphs 和 KV cache；候选原样进入已有的排序和混排阶段。
+core_idea|预训练一个跨所有场景的生成式召回模型，按场景微调，并让生成以各场景关心的结果为条件。
+deployed_in|Pinterest 的 Home Feed、Related Pins 和 Search
+scale_short|约 100M 参数的 decoder，p50 40ms
+key_result|Search A/B 中 fulfillment +2.24%，saves +3.88%
+results_reported|作为候选生成器的线上 A/B，候选原样进入排序和混排。Search 上，PinRec-OC 对比 control group：search fulfillment rate +2.24%，search saves +3.88%，search shares +5.30%。Home Feed 上，OC 对比 UC：fulfilled sessions +0.21% 对 +0.02%，site-wide grid clicks +1.76% 对 +0.58%，Home Feed grid clicks +4.01% 对 +1.87%。Related Pins 上，OC：fulfilled sessions +0.21%，time spent +0.38%，site-wide grid clicks +0.76%，sitewide saves +0.26%，同时 Search 的 fulfillment +0.42%，saves +0.39%。零样本方面，Related Searches 的 fulfilled sessions +1.66%，module click rate +4.04%，Ads 的 cost per acquisition -1.83%，cost per click -1.41%。对比线上的生产双塔模型，corpus coverage OC 为 +17.3%，UC 为 +6.2%。离线 unordered recall at 10，依次为 Home Feed、Related Pins、Search：SASRec 0.382、0.426、0.142；PinnerFormer 0.461、0.412、0.257；TIGER 0.208、0.230、0.090；HSTU 0.596、0.539、0.179；PinRec-UC 0.608、0.521、0.350；PinRec-OC 0.625、0.537、0.352。去掉结果条件，recall 下降 -7.5% 到 -12.6%；去掉微调，下降 -2.0% 到 -4.5%。与 1 步相比，16 步自回归生成使 recall 在 Related Pins 上提升 +71.4%，Home Feed 上 +8.8%，Search 上 +11.1%。服务延迟在 p50 上是双塔模型的 3-4x，端到端只增加不到 1%。
+version_note|数字核对自 owner 文库中的 ACM KDD 2026 论文集 PDF，DOI 10.1145/3770855.3818462。同一工作于 9 Apr 2025 以另一个标题作为 v1 首发在 arXiv 上，版本之间摘要数字有变化，这里只采用正式发表的文本。
+serving_infra|NVIDIA L40S GPU 加 Triton ensemble 和 Python backend；分为取信号、Pin 特征化、自回归推理和 Faiss 召回几个阶段。CUDA Graphs 加 torch.compile 和按请求缓存的 KV cache 降低开销。序列 embedding 以 INT8 传输，推理时反量化为 FP16。
+stages.0.model_family|Transformer decoder，12 层、12 个 head、768 隐层维度，约 1 亿参数，自回归地生成连续的 item embedding，输出头带结果条件
+stages.0.details|embedding 由 CPU 主机上的 Faiss IVF-HNSW 以内积匹配到 Pin，并有 overfetch 系数用于之后去重。召回预算按每个生成的 embedding 切分：无条件时平均分，有条件时按结果预算分。cosine 相似度超过阈值的 embedding 会被合并，预算相加。
+id_tokenization.approach|没有；使用稠密 embedding，不用 Semantic ID
+id_tokenization.details|Pin 使用预训练的 OmniSage embedding，query 使用 OmniSearchSage，各自经过 2-3 层全连接并做 L2 归一化，再加上绝对和相对时间 embedding 以及场景 embedding。作者试过 Semantic ID，发现在 Pinterest 规模下有数万个 item 碰撞到同一个 ID，指标也更低，于是选用稠密 embedding，它同时不会幻觉出不存在的 item。
+features_signals.0|跨场景的终身用户行为序列，由 Pin 和搜索 query 组成，来自正向互动
+features_signals.1|每次互动的行为、场景和时间戳
+features_signals.2|请求时的上下文，例如搜索 query 或 close-up Pin，作为序列的最后一个元素
+features_signals.3|预训练的 OmniSage 和 OmniSearchSage embedding
+training.mode|离线预训练覆盖所有场景，再离线按场景微调
+training.objectives.0|下一个 item 预测，使用 sampled softmax、batch 内负样本和 count-min-sketch 偏差校正
+training.objectives.1|结果条件：训练时输出头以目标 item 的行为为条件
+training.objectives.2|在 feed 浏览会话上微调，场景内的行为作为额外正样本，只有曝光的 item 作为 batch 内负样本
+training.notes|训练算力、硬件和数据量均未报告。批信号由 Spark 流水线每天基于过去一年的正向互动重建，RocksDB 存储补充截断时间之后的事件。附录消融使用了 8K 和 16K 随机负样本以及多种 batch 内负样本规模。
+scale.0.metric|Transformer 规模
+scale.0.value|约 1 亿参数，12 层，768 隐层维度
+scale.1.metric|每个模型的 GPU 显存
+scale.1.value|约 1.6GiB，含 KV cache 和 CUDA graphs
+scale.2.value|PinRec-OC 的 p50 为 40ms、p90 为 65ms；PinRec-UC 的 p50 为 23ms、p90 为 46ms
+results_table.online.0.setting|Search，作为候选生成器的线上 A/B
+results_table.online.1.setting|Search，作为候选生成器的线上 A/B
+results_table.online.2.setting|Home Feed，作为候选生成器的线上 A/B
+results_table.online.3.setting|Related Pins，作为候选生成器的线上 A/B
+results_table.offline.0.setting|Home Feed 上的离线 unordered recall at 10
+results_table.offline.1.setting|Search 上的离线 unordered recall at 10
+caveats.0|A/B 没有给出时长、流量占比或用户数，论文只报告相对提升；Pareto 图因属于非公开信息而省略了绝对值。
+caveats.1|Table 7 的对照是一个没有进一步描述的 control group；Table 5 和 Table 6 也没有写明基线，候选还是与其他候选生成器并列加入的。
+caveats.2|离线对比用 PinRec 的预训练流程训练了所有基线，所以不等于与各已发表系统原版的对比。
+caveats.3|训练算力、GPU 数量和训练数据量均未报告。论文说模型代码会在论文发表时公开，但没有给出链接。
+caveats.4|arXiv 条目 2504.10507 的 v1 到 v6 使用另一个标题 PinRec: Outcome-Conditioned, Multi-Token Generative Retrieval for Industry-Scale Recommendation Systems，头条数字也不同，例如 +2% sitewide clicks 和 +4% search repins；本卡只采用 KDD 2026 的文本。
+unknown_fields.0|A/B 时长、流量占比和用户数
+unknown_fields.1|训练硬件、算力和数据量
+unknown_fields.2|在线服务的 GPU 数量和总 QPS
+unknown_fields.3|对照组的具体描述
+code.note|论文说模型代码会在论文发表时公开，但没有给出链接，也没有找到。
+deployment.scenario|Pinterest 的 Home Feed、Related Pins 和 Search，作为召回候选生成器，输出原样经过排序和混排，与其他候选生成器并列
+deployment.baseline|一个 control group；长尾和覆盖度指标则对比线上的生产双塔模型
+deployment.serving_latency|80 QPS 下，PinRec-OC 的 p50 为 40ms、p90 为 65ms，PinRec-UC 的 p50 为 23ms、p90 为 46ms；p50 是双塔模型的 3-4x，并行化后端到端延迟增加不到 1%
+deployment.serving_qps|延迟是在 80 QPS 下测得的；生产总 QPS 未报告
+deployment.inference_cost|含 KV cache 和 CUDA graphs 时约 1.6GiB GPU 显存，不含时约 250 MiB，与现有双塔召回相当
+deployment.hardware|Transformer 使用 NVIDIA L40S GPU；Faiss IVF-HNSW 运行在 CPU 主机上
+deployment.notes.0|约 10 亿参数的 transformer 使 recall 提升 +2.2%，但被认为无法实时在线服务；中间规模没有收益。

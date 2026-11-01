@@ -1,0 +1,11 @@
+alt|从左到右：预训练并冻结的 item embedding 进入 token embedding；用户历史、画像和同一请求的所有候选组成一条序列；带局部注意力、query 剪枝和稀疏 MoE FFN 的 Transformer block 处理它；排序头为每个候选给出点击、加购和购买的分数。
+caption.note|已简化；QKNorm、注意力门控和具体的 mask 没有画出。
+columns.0.boxes.0.text.0|用户历史和画像
+columns.0.boxes.0.text.1|按时间排序的行为和用户特征
+columns.0.boxes.1.text.1|同一请求的所有 item
+columns.1.boxes.0.text.0|单条序列
+columns.1.boxes.0.text.1|BOS、历史、SEP、画像、SEP、候选；冻结的预训练 item embedding
+columns.2.boxes.0.text.0|Transformer 模块
+columns.2.boxes.0.text.1|局部注意力、query 剪枝、稀疏 MoE FFN
+columns.3.boxes.0.text.0|排序头
+columns.3.boxes.0.text.1|每个候选的点击、加购和购买分数

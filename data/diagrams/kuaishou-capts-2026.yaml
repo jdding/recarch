@@ -1,0 +1,30 @@
+# Redrawn, simplified diagram. Source: Zhou et al., "CAPTS: Channel-Aware, Preference-Aligned Trigger Selection for Multi-Channel Item-to-Item Retrieval" (RecSys 2026), paper Fig. 3 and Fig. 4.
+alt: "Left to right: the user's recent history and cached long-term triggers feed a trigger scorer; offline, a value attribution step replays each item-to-item channel and matches retrieved items to the user's future views to give training labels; the routing model scores each trigger per channel with value and uniqueness and assigns the triggers within a per-channel budget; the four I2I channels Swing, Marm, SimLR and MMU retrieve candidates for ranking."
+caption:
+  fig: "Fig. 3 and Fig. 4"
+  work: "CAPTS: Channel-Aware, Preference-Aligned Trigger Selection for Multi-Channel Item-to-Item Retrieval, RecSys 2026"
+  url: "https://arxiv.org/abs/2602.12564"
+  note: "Merges the model view of Fig. 3 with the deployment view of Fig. 4; the loss terms are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: recent, kind: input, text: ["Recent history", "50 most recent effective views, scored online"]}
+      - {id: cache, kind: input, text: ["Nearline trigger cache", "long-term triggers refreshed daily"]}
+  - label: Offline supervision
+    boxes:
+      - {id: vam, kind: module, text: ["Value attribution", "replay each I2I channel, match retrieved items to the next 100 views, sum watch time"]}
+  - label: Routing model
+    boxes:
+      - {id: catr, kind: module, text: ["Channel-adaptive routing", "shared encoder with target attention; value, calibrator and uniqueness heads per channel"]}
+      - {id: route, kind: module, text: ["Trigger-to-channel assignment", "score = value + 0.4 times uniqueness, top triggers within each channel budget"]}
+  - label: Output
+    boxes:
+      - {id: i2i, kind: output, text: ["Four I2I channels", "Swing, Marm, SimLR and MMU retrieve the top 50 items per trigger"]}
+      - {id: rank, kind: output, text: ["Downstream ranking", "existing indices and rankers unchanged"]}
+edges:
+  - [recent, catr]
+  - [cache, route]
+  - [vam, catr]
+  - [catr, route]
+  - [route, i2i]
+  - [i2i, rank]

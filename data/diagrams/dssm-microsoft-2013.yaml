@@ -1,0 +1,36 @@
+# Redrawn, simplified diagram. Source: Huang et al., "Learning Deep Structured Semantic Models for Web Search using Clickthrough Data" (CIKM 2013), Fig. 1.
+alt: "A query and a document each pass through letter-trigram word hashing and the same kind of deep network, ending in a 128-dimensional semantic vector. The two vectors are scored by cosine similarity and a softmax over the clicked document and sampled unclicked documents."
+caption:
+  fig: "Fig. 1"
+  work: "Learning Deep Structured Semantic Models for Web Search using Clickthrough Data, CIKM 2013"
+  url: "https://doi.org/10.1145/2505515.2505665"
+  note: "Simplified; the document tower is shown once and the unclicked documents are sampled."
+columns:
+  - label: Input
+    boxes:
+      - {id: q, kind: input, text: ["Query", "term counts"]}
+      - {id: d, kind: input, text: ["Document title", "term counts"]}
+  - label: Word hashing
+    boxes:
+      - {id: wq, kind: module, text: ["Word hashing", "letter trigrams, about 30k units, fixed"]}
+      - {id: wd, kind: module, text: ["Word hashing", "letter trigrams, about 30k units, fixed"]}
+  - label: Deep layers
+    boxes:
+      - {id: hq, kind: module, text: ["Query DNN", "two hidden layers of 300 units"]}
+      - {id: hd, kind: module, text: ["Document DNN", "two hidden layers of 300 units"]}
+  - label: Semantic space
+    boxes:
+      - {id: vq, kind: module, text: ["Query vector", "128 dimensions"]}
+      - {id: vd, kind: module, text: ["Document vector", "128 dimensions"]}
+  - label: Score
+    boxes:
+      - {id: cos, kind: output, text: ["Cosine and softmax", "clicked document against sampled unclicked ones"]}
+edges:
+  - [q, wq]
+  - [d, wd]
+  - [wq, hq]
+  - [wd, hd]
+  - [hq, vq]
+  - [hd, vd]
+  - [vq, cos]
+  - [vd, cos]

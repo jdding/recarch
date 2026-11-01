@@ -1,0 +1,51 @@
+surface|AliExpress 的 HomePage、DetailPage、ShoppingCart 和 AfterPayment 排序
+era_reason|核心主张是 HSTU 一路的可扩展 Transformer 排序模型：统一的 token 序列，用下一个 item 预测的生成式预训练得到 item embedding，并给出数据、模型和序列长度上的扩展曲线，扩展性就是主打卖点。
+tldr|阿里国际的 SORT 是以请求为中心组织样本、带生成式预训练的 Transformer 排序模型；在 AliExpress 上订单 +7.47%，GMV +8.65%，延迟 -62%。
+summary|SORT 在 AliExpress 上取代了传统 DLRM 排序模型，围绕排序里特征稀疏和标签稀疏两个问题设计。样本以请求为中心：一个样本包含用户历史、用户画像和该请求的全部候选，共享特征只处理一次。输入是一条序列，[BOS; 历史 token; SEP; 画像 token; SEP; 候选 token]，每个 item 由拼接后的特征 embedding 得到一个 token。注意力使用 RoPE、QKNorm 和接在注意力输出之后的门控，用对角 mask 让候选只能看到自己和历史，大部分历史 token 使用局部注意力，并用 query 剪枝在最后一层最多保留 128 个非候选 token。FFN 是 DeepSeek 风格的稀疏 MoE，激活函数为 SwishGLU。排序头预测点击、加购和购买。模型没有用户 ID 特征，item embedding 先用点击序列上的下一个 item 预测做预训练，再迁移并冻结，之后才训练排序模型，这避免了直接迁移时出现的过拟合。训练基于 RecIS 框架，MoE 用 Megablocks，并配有自研的稀疏注意力算子和多进程组通信；推理使用静态图、稀疏注意力 kernel、算子融合、半精度和 KV cache。
+core_idea|把 DLRM 排序模型重建为基于单条以请求为中心序列的 Transformer，并用冻结 item embedding 的生成式预训练让它能够稳定训练。
+deployed_in|AliExpress，全部用户，四个主要推荐场景
+scale_short|85M 稠密参数，24G FLOPs
+key_result|一个月 A/B，宏平均订单 +7.47%，GMV +8.65%，延迟 -62%
+results_reported|四个 AliExpress 场景上为期一个月的线上 A/B，SORT 对比线上 DLRM。宏平均：订单 +7.47%，买家 +6.67%，GMV +8.65%，延迟 -62%，吞吐 +589%。分场景看，订单为 HomePage +2.37%、DetailPage +8.99%、ShoppingCart +7.10%、AfterPayment +11.43%；GMV 为 +10.01%、+11.49%、+6.98%、+6.12%；延迟为 -62%、-51%、-64%、-72%；吞吐为 +325%、+405%、+448%、+1180%。离线方面，base 规模的 CTR AUC：SORT 0.7497，Transformer 0.7456，HSTU 0.7438，OneTrans 0.7476；large 规模 SORT 达到 CTR AUC 0.7536，Transformer 为 0.7485，即 +0.51pt，FLOPs 为 188G 对 322G。采用稀疏迁移加冻结的生成式预训练，使 base Transformer 的 CTR AUC 提升 +2.81pt，而只做迁移则变化 -0.13pt。局部窗口在 64、128、256 中 256 最好。推理优化相比未优化基线带来 29.4% 的吞吐提升和 29.3% 的延迟下降。数据、模型和序列长度的扩展各自都提升 AUC，其中数据扩展斜率最陡。
+version_note|读的是 31 Aug 2026 的 arXiv v3，已是 ACM CIKM 2026 的最终排版。ACM Digital Library 返回 403，所以没有打开正式发表页面本身。
+serving_infra|用 torch.export 和 AOTInductor 把动态图转成静态图；针对各种 mask 的稀疏注意力 kernel、算子融合、半精度计算、KV cache，以及多 context 多 stream 执行。训练基于 RecIS 框架，使用 Megablocks 的 MoE 和多进程组通信来调度 embedding 流量。
+stages.0.model_family|带稀疏 MoE FFN、QKNorm、门控注意力、局部注意力和 query 剪枝的 Transformer 排序模型，输入是由历史、画像和候选 token 组成的单条序列；线上部署的是 base 规模，非 embedding 参数为 85M
+stages.0.details|共享一个排序头，预测点击、加购和购买，每个目标用二元交叉熵损失，加权求和。候选只能看到自己以及历史和画像 token，所以一次前向可以给很多候选打分。
+id_tokenization.approach|每个 item 由拼接的特征 embedding 得到一个 token，不使用 semantic ID
+id_tokenization.details|历史和候选的每个 item 是一个 token，由原始特征做 embedding 查表、拼接、线性投影和归一化得到；画像变成多个 token。BOS 和 SEP 特殊 token 标记边界，并充当 attention sink。把候选拆成多个 token 试过，差别可以忽略。
+features_signals.0|按时间排序的用户行为序列，含 item 元数据、时间戳、行为类型和场景
+features_signals.1|年龄、位置等用户画像特征，以及统计特征
+features_signals.2|候选 item 的元数据、统计特征和用户与 item 的交叉特征
+features_signals.3|用点击序列上的下一个 item 预测预训练的 item embedding；没有显式的用户 ID
+training.mode|在以请求为中心的样本上离线训练，默认一个 epoch，item embedding 先预训练再冻结
+training.objectives.0|点击、加购和购买的二元交叉熵，加权求和
+training.objectives.1|用点击序列上的下一个 item 预测做 item embedding 的生成式预训练，然后做稀疏迁移和稀疏冻结
+training.notes|AdamW，betas 为 0.9 和 0.99，权重衰减 0.01，small、base、large 模型的学习率分别为 5e-4、2e-4 和 1e-4，batch size 为 12K，历史最长 1K。除排序头和 MoE 路由使用 FP32 外，其余使用 BF16 混合精度。线上部署的模型只用最近三个月的数据，而 DLRM 基线是增量训练了一年多。
+scale.0.metric|线上部署的模型
+scale.0.value|base 规模，非 embedding 参数 85M，每个样本 24G FLOPs，embedding 参数约 20B
+scale.1.metric|Large 规模模型
+scale.1.value|非 embedding 参数 685M、188G FLOPs，对比 144M 和 322G 的 Transformer
+scale.2.value|系统优化后 base 规模从 13% 到 22%，large 规模达到 45%
+scale.3.value|训练集 9B 次曝光和 0.6B 次请求，测试集 0.3B 次曝光
+results_table.online.0.setting|AliExpress 四个场景，宏平均，一个月 A/B
+results_table.online.1.setting|AliExpress 四个场景，宏平均，一个月 A/B
+results_table.online.2.setting|AliExpress 四个场景，宏平均，一个月 A/B
+results_table.offline.0.setting|Large 规模，CTR AUC
+results_table.offline.1.setting|Base 规模，CTR AUC
+caveats.0|延迟和吞吐只报告相对线上 DLRM 的变化；绝对延迟、QPS、线上服务硬件和流量占比均未给出。
+caveats.1|对比的 DLRM 是增量训练了一年多的模型，而 SORT 只用三个月数据，两者在模型族、以请求为中心的样本组织和推理栈上也都不同，所以增益不能全部归功于 Transformer。
+caveats.2|离线收益是内部数据集上零点几个点的 AUC 差异，没有置信区间，也没有重复实验。
+caveats.3|论文没有写明所属 track；正式文本是 CIKM 2026 的排版。没有给出代码链接，不过引用了训练系统 RecIS。
+unknown_fields.0|A/B 流量占比和用户数
+unknown_fields.1|绝对延迟和 QPS
+unknown_fields.2|线上服务硬件
+unknown_fields.3|代码是否开源
+deployment.scenario|AliExpress 的 HomePage、DetailPage、ShoppingCart 和 AfterPayment，取代 DLRM 排序模型；论文称 SORT 服务 AliExpress 的全部用户
+deployment.ab_duration|一个月
+deployment.baseline|增量训练了一年多的线上 DLRM
+deployment.training_compute|每个模型视规模使用 4 到 32 块 A100 GPU 训练 1 到 10 天；MFU 在 base 规模从 13% 提升到 22%，在 large 规模达到 45%
+deployment.serving_latency|相对线上 DLRM 平均延迟 -62%，分场景从 -51% 到 -72%；绝对值未报告
+deployment.serving_qps|平均吞吐 +589%，分场景从 +325% 到 +1180%；绝对 QPS 未报告
+deployment.inference_cost|推理优化相对未优化基线带来 29.4% 的吞吐提升和 29.3% 的延迟下降；base 模型每个样本需要 24G FLOPs
+deployment.hardware|训练使用 A100 GPU；线上服务硬件未报告
+deployment.notes.0|线上部署的是 base 规模模型，只用最近三个月的数据。

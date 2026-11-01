@@ -1,0 +1,149 @@
+id: alibaba-forge-2025
+name: "FORGE"
+company: Alibaba Taobao & Tmall Group
+surface: Taobao homepage Guess You Like, generative retrieval channel
+year: 2025
+era: generative
+era_reason: "Studies how to build the semantic IDs that a generative retrieval model writes; the retriever is an LLM-style decoder that generates 3-level semantic IDs, which is the generative paradigm."
+first_public: "2025-09"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3817477"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Taobao's FORGE benchmarks how to build semantic IDs for generative retrieval; swapping its tuned SID recipe for the base recipe gave transaction count +0.35% in a 7-day A/B on Guess You Like."
+summary: 'FORGE is a benchmark and a dataset around one question: how should semantic IDs (SIDs) be built for a generative retrieval (GR) model. The SID pipeline has three steps. Feature extraction fuses text and image features of an item with a pretrained multimodal encoder and a QFormer, optionally with a contrastive loss over item-to-item co-occurrence. SID encoding quantizes the fused feature into three codewords with RQ-VAE, compared with random assignment, multiple VQ, OPQ and RQ-Kmeans. Post-processing limits how many items share one SID, by a KNN-based or a random-based rule. A decoder-only LLM such as Qwen2.5 or a T5 model reads the user history as SIDs and generates the target SID with a dynamic beam search that widens from 300 to 600 to 1200 beams. The paper also proposes two training-free SID quality metrics, Embedding HitRate and the Gini coefficient, and releases the AL-GR dataset. The tuned recipe was tested online on the Taobao homepage and then deployed at full scale.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- llm-based
+stages:
+- stage: retrieval
+  model_family: 'Qwen2.5-0.5B-Instruct by default, with Qwen2.5-3B and T5-base also tested; SIDs are added as new tokens in the tokenizer'
+  details: 'The input is a system prompt plus the user behavior sequence as SIDs, capped at 100 items; the answer is the target SID. Inference uses a dynamic beam search of 300, 600 and 1200 beams over the three levels, which cuts the second decoding step by 75% against a fixed beam of 1200.'
+id_tokenization:
+  approach: 'RQ-VAE over fused text and image features, 3 levels with 8192 codewords each, followed by collision post-processing'
+  details: 'The Final recipe adds item side information and item-to-item co-occurrence to the feature fusion and uses the random-based last-level assignment to spread items over codewords. Compared encoders include random IDs, multiple VQ, OPQ and RQ-Kmeans. Two metrics, Embedding HitRate and the Gini coefficient of SID usage, track downstream HitRate without GR training.'
+features_signals:
+- 'Item text and image features from a pretrained Chinese CLIP encoder, fused by a QFormer'
+- Item-to-item co-occurrence pairs from user behavior, used in a contrastive loss
+- Item side information such as category, seller and price
+- 'User behavior sequence of up to 100 items, with a query keyword added for the search task'
+training:
+  mode: Offline benchmark training on a 10-day Taobao log, split into three stages S1, S2 and S3
+  objectives:
+  - Next SID token cross-entropy for the GR model
+  - Reconstruction and contrastive losses for the RQ-VAE and the multimodal fusion
+  notes: 'The default GR model is trained for 1 epoch on 32 PPU-ZW810E GPUs with total batch size 1280.'
+serving_infra: 'Asynchronous generation on the RTP-LLM inference engine: a click on an item detail page triggers a request, and the candidates are written to a cache table within 200 ms.'
+scale:
+- metric: AL-GR dataset
+  value: 131M users, 251M items and 14B interactions over 10 consecutive days, with image and text features of items
+  note: paper, Table 1
+- metric: SID space
+  value: 3 levels with 8192 codewords each, which is 24576 tokens in total
+  note: paper
+- metric: GR model
+  value: Qwen2.5-0.5B by default; Qwen2.5-3B and T5-base 0.2B in the generalization tests
+  note: paper, Table 12
+results_reported: 'Offline on AL-GR stage S3, Final against base SID recipe: HR@20 4.33% to 5.44% and HR@1000 27.24% to 30.86%, which is +25.64% and +13.29% relative. On Amazon, Final HR@1000 is 13.04% against 8.07% for base. The same recipe also gains on the Taobao search task. Online, a 7-day A/B in the Guess You Like section of the Taobao homepage, Final against base: PVR +8.93%, HR +10.02% and transaction count +0.35%. The abstract states that the SID construction strategies have since been deployed at full scale on Taobao.'
+caveats:
+- The paper calls itself a benchmark; the system-level evidence is one online A/B of the tuned SID recipe against the base recipe, not against the previous production retriever.
+- The 0.35% transaction-count lift is called an increase in the abstract and an absolute increase in Section 4.3.6; the metric is not defined in more detail.
+- The online HR metric is not defined in the sections read, and the size of the model that was deployed is not stated.
+- The training numbers are for the benchmark experiments, not for the production job.
+unknown_fields:
+- A/B traffic share
+- production training compute and model size
+- serving QPS and serving hardware
+- share of Guess You Like requests that use the generative channel
+sources:
+- title: "FORGE: Forming Semantic Identifiers for Generative Retrieval in Industrial Datasets, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3817477
+  type: paper
+- title: "FORGE, arXiv 2509.20904"
+  url: https://arxiv.org/abs/2509.20904
+  type: paper
+version_note: 'Numbers checked against arXiv v3 of 27 May 2026, which is typeset in the final ACM KDD 2026 format with the DOI 10.1145/3770855.3817477. The ACM Digital Library page returned 403, so the published page itself was not opened. arXiv v1 was posted on 25 Sep 2025.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2509.20904
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, benchmark design, datasets, metrics, all offline experiments, generalization tests, online study, appendix on running environment and hyperparameters'
+  verified_on: '2026-11-01'
+  published_pdf: 'arXiv v3 in final ACM KDD 2026 format, read 2026-11-01'
+code:
+  status: official_full
+  checked_on: '2026-11-01'
+  repos:
+  - url: https://github.com/selous123/al_sid
+    owner: Paper first author, linked from the paper
+    official: true
+    note: 'Contains SID generation with RQ-VAE and collision handling, GR training and evaluation, and the item-to-item part; the demo data is small. Production weights and serving code are not included. The full AL-GR dataset is on Hugging Face.'
+core_idea: Build semantic IDs from fused multimodal and co-occurrence features, then spread items evenly over the codewords.
+deployed_in: Taobao homepage Guess You Like, generative retrieval, 7-day A/B
+scale_short: 3-level SIDs with 8192 codewords per level; AL-GR has 14B interactions
+key_result: Transaction count +0.35% in a 7-day A/B on Taobao Guess You Like, Final SID recipe against base
+results_table:
+  online:
+  - setting: Taobao Guess You Like, 7-day A/B
+    method: Final SID recipe
+    metric: Transaction count
+    result: +0.35%
+    versus: Base SID recipe
+  - setting: Taobao Guess You Like, 7-day A/B
+    method: Final SID recipe
+    metric: PVR
+    result: +8.93%
+    versus: Base SID recipe
+  - setting: Taobao Guess You Like, 7-day A/B
+    method: Final SID recipe
+    metric: HR
+    result: +10.02%
+    versus: Base SID recipe
+  offline:
+  - setting: AL-GR stage S3
+    method: Final SID recipe
+    metric: HR@1000
+    result: 30.86%
+    versus: Base SID recipe 27.24%
+  - setting: AL-GR stage S3
+    method: Final SID recipe
+    metric: HR@20
+    result: 5.44%
+    versus: Base SID recipe 4.33%
+  - setting: Amazon-Clothing
+    method: Final SID recipe
+    metric: HR@1000
+    result: 13.04%
+    versus: Base SID recipe 8.07%
+deployment:
+  online_evidence: online_numbers
+  scenario: Taobao homepage Guess You Like, generative retrieval whose candidates are cached after an item-detail click
+  ab_traffic: not_reported
+  ab_duration: 7 days
+  baseline: Same GR model with the base SID recipe, not the previous production retriever
+  online_lifts:
+  - metric: Transaction count
+    value: +0.35%
+  - metric: PVR
+    value: +8.93%
+  - metric: HR
+    value: +10.02%
+  training_compute: 'Benchmark runs, not the production job: Qwen2.5-0.5B 1 epoch on 32 PPU-ZW810E GPUs at about 80 h per epoch; T5-base 4 epochs on 16 GPUs at about 20 h per epoch; RQ-VAE 150 epochs. Production training compute not reported.'
+  serving_latency: 'Asynchronous: the retrieval request starts after a click on an item detail page and writes candidates to the cache table within 200 ms, so the main recommendation service is not affected.'
+  serving_qps: not_reported
+  inference_cost: 'Dynamic beam search with 300, 600 and 1200 beams cuts the second decoding step by 75% against a fixed beam of 1200.'
+  hardware: 'Experiments ran on PPU-ZW810E GPUs, an Alibaba GPU at about 90% of the compute of an NVIDIA A100 with 95.6 GB memory; serving hardware not reported.'
+  notes:
+  - The paper mentions platforms with ten thousand requests per second only as the motivation for dynamic beam search, not as a measured QPS of this system.
+  fulltext_refs:
+  - 'Sec 4.3.6 and Table 13: 7-day A/B, PVR +8.93%, HR +10.02%, transaction count +0.35%, request writes to the cache table within 200 ms'
+  - 'Appendix A.1 and A.2: PPU-ZW810E GPUs at about 90% of an A100, 95.6 GB memory; Qwen2.5-0.5B on 32 GPUs at 80 h/epoch, T5-base 4 epochs on 16 GPUs at 20 h/epoch, 150 RQ-VAE epochs'
+  - 'Sec 3.2: beam sizes 300, 600 and 1200, second decoding step cost reduced by 75%'
+  basis: full_text
+  checked_on: '2026-11-01'

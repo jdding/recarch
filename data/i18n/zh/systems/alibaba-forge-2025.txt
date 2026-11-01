@@ -1,0 +1,66 @@
+surface|淘宝首页猜你喜欢，生成式召回通道
+era_reason|研究生成式召回模型所写的 semantic ID 该怎么构造；召回器是生成 3 层 semantic ID 的 LLM 式解码器，属于生成式范式。
+tldr|淘宝的 FORGE 系统比较了生成式召回的 semantic ID 构造方法；把基础 SID 方案换成调优后的方案，在猜你喜欢的 7 天 A/B 中成交笔数 +0.35%。
+summary|FORGE 是围绕一个问题的基准和数据集：生成式召回 GR 模型该如何构造 semantic ID，即 SID。SID 流水线分三步。特征提取：用预训练的多模态编码器和 QFormer 融合 item 的文本和图像特征，可选地加入基于 item 共现的对比损失。SID 编码：用 RQ-VAE 把融合后的特征量化成三个码字，对比的方案有随机分配、multiple VQ、OPQ 和 RQ-Kmeans。后处理：用基于 KNN 或基于随机的规则，限制共用同一个 SID 的 item 数量。Qwen2.5 这类 decoder-only LLM 或 T5 模型把用户历史读成 SID，再用 beam 数从 300 增加到 600 再到 1200 的动态 beam search 生成目标 SID。论文还提出两个不需要训练 GR 的 SID 质量指标，Embedding HitRate 和 Gini 系数，并发布了 AL-GR 数据集。调优后的方案先在淘宝首页做了线上测试，随后全量部署。
+core_idea|用融合了多模态和共现信息的特征构造 semantic ID，再把 item 均匀地分散到各个码字上。
+deployed_in|淘宝首页猜你喜欢，生成式召回，7 天 A/B
+scale_short|3 层 SID，每层 8192 个码字；AL-GR 含 14B 条交互
+key_result|淘宝猜你喜欢 7 天 A/B 中，Final SID 方案相对 base 方案成交笔数 +0.35%
+results_reported|离线，AL-GR 的 S3 阶段，Final 对比 base SID 方案：HR@20 从 4.33% 提高到 5.44%，HR@1000 从 27.24% 提高到 30.86%，相对提升分别为 +25.64% 和 +13.29%。在 Amazon 上，Final 的 HR@1000 为 13.04%，base 为 8.07%。同样的方案在淘宝搜索任务上也有提升。线上，在淘宝首页猜你喜欢板块做了 7 天 A/B，Final 对比 base：PVR +8.93%，HR +10.02%，成交笔数 +0.35%。摘要称这些 SID 构造策略此后已在淘宝全量部署。
+stages.0.model_family|默认用 Qwen2.5-0.5B-Instruct，也测试了 Qwen2.5-3B 和 T5-base；SID 作为新 token 加入 tokenizer
+stages.0.details|输入是 system prompt 加用户行为序列，序列以 SID 表示，最多 100 个 item；回答是目标 SID。推理用三层 beam 数分别为 300、600、1200 的动态 beam search，与固定 1200 的 beam 相比，第二步解码的计算量减少 75%。
+id_tokenization.approach|对融合后的文本和图像特征做 RQ-VAE，共 3 层，每层 8192 个码字，再做冲突后处理
+id_tokenization.details|Final 方案在特征融合中加入 item 的辅助信息和 item 共现，并用基于随机的末层分配把 item 分散到各个码字。对比的编码器包括随机 ID、multiple VQ、OPQ 和 RQ-Kmeans。Embedding HitRate 和 SID 使用情况的 Gini 系数这两个指标，不用训练 GR 就能跟踪下游的 HitRate。
+features_signals.0|预训练的中文 CLIP 编码器提取的 item 文本和图像特征，由 QFormer 融合
+features_signals.1|来自用户行为的 item 共现对，用于对比损失
+features_signals.2|item 的辅助信息，如类目、商家和价格
+features_signals.3|最多 100 个 item 的用户行为序列，搜索任务中再加入查询词
+training.mode|在 10 天淘宝日志上做离线基准训练，分为 S1、S2、S3 三个阶段
+training.objectives.0|GR 模型的下一个 SID token 交叉熵
+training.objectives.1|RQ-VAE 的重建损失和多模态融合的对比损失
+training.notes|默认的 GR 模型在 32 张 PPU-ZW810E 上训练 1 个 epoch，总 batch size 为 1280。
+serving_infra|在 RTP-LLM 推理引擎上异步生成：点击 item 详情页触发一次请求，候选在 200 ms 内写入缓存表。
+scale.0.metric|AL-GR 数据集
+scale.0.value|131M 用户、251M item 和 14B 条交互，覆盖连续 10 天，并带有 item 的图像和文本特征
+scale.1.metric|SID 空间
+scale.1.value|3 层，每层 8192 个码字，合计 24576 个 token
+scale.2.metric|GR 模型
+scale.2.value|默认 Qwen2.5-0.5B；泛化测试中用了 Qwen2.5-3B 和 T5-base 0.2B
+results_table.online.0.setting|淘宝猜你喜欢，7 天 A/B
+results_table.online.1.setting|淘宝猜你喜欢，7 天 A/B
+results_table.online.2.setting|淘宝猜你喜欢，7 天 A/B
+results_table.online.0.method|Final SID 方案
+results_table.online.1.method|Final SID 方案
+results_table.online.2.method|Final SID 方案
+results_table.online.0.metric|成交笔数
+results_table.online.0.versus|base SID 方案
+results_table.online.1.versus|base SID 方案
+results_table.online.2.versus|base SID 方案
+results_table.offline.0.setting|AL-GR 的 S3 阶段
+results_table.offline.1.setting|AL-GR 的 S3 阶段
+results_table.offline.0.method|Final SID 方案
+results_table.offline.1.method|Final SID 方案
+results_table.offline.2.method|Final SID 方案
+results_table.offline.0.versus|base SID 方案 27.24%
+results_table.offline.1.versus|base SID 方案 4.33%
+results_table.offline.2.versus|base SID 方案 8.07%
+caveats.0|论文自称是基准；系统层面的证据只有一次线上 A/B，比较的是调优后的 SID 方案和 base 方案，不是此前的线上召回器。
+caveats.1|0.35% 的成交笔数提升，摘要说是提升，4.3.6 节说是绝对提升；论文没有对这个指标做更细的定义。
+caveats.2|在所读章节中没有定义线上的 HR 指标，也没有说明上线模型的规模。
+caveats.3|训练数字属于基准实验，不是线上生产任务。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|线上训练算力和模型规模
+unknown_fields.2|线上 QPS 和服务硬件
+unknown_fields.3|猜你喜欢请求中使用生成式通道的比例
+version_note|数字已对照 27 May 2026 的 arXiv v3 核对，该版本采用 ACM KDD 2026 的定稿排版，DOI 为 10.1145/3770855.3817477。ACM Digital Library 页面返回 403，所以没有打开已发表页面本身。arXiv v1 发布于 25 Sep 2025。
+code.repos.0.owner|论文第一作者，论文中有链接
+code.repos.0.note|包含基于 RQ-VAE 的 SID 生成和冲突处理、GR 训练与评估，以及 item 共现部分；演示数据很小。不含线上权重和服务代码。完整的 AL-GR 数据集放在 Hugging Face。
+deployment.scenario|淘宝首页猜你喜欢，生成式召回，点击 item 详情页后把候选写入缓存
+deployment.ab_duration|7 天
+deployment.baseline|同一个 GR 模型使用 base SID 方案，不是此前的线上召回器
+deployment.online_lifts.0.metric|成交笔数
+deployment.training_compute|基准实验，不是线上生产任务：Qwen2.5-0.5B 训练 1 个 epoch，用 32 张 PPU-ZW810E，约 80 h 每个 epoch；T5-base 训练 4 个 epoch，用 16 张，约 20 h 每个 epoch；RQ-VAE 训练 150 个 epoch。线上训练算力未报告。
+deployment.serving_latency|异步：点击 item 详情页后才发起召回请求，候选在 200 ms 内写入缓存表，不影响主推荐服务。
+deployment.inference_cost|beam 数为 300、600、1200 的动态 beam search，使第二步解码的计算量比固定 1200 的 beam 减少 75%。
+deployment.hardware|实验在 PPU-ZW810E 上运行，这是阿里巴巴的 GPU，算力约为 NVIDIA A100 的 90%，显存 95.6 GB；线上服务硬件未报告。
+deployment.notes.0|论文提到每秒一万次请求的平台，只是用来说明动态 beam search 的动机，并不是这套系统实测的 QPS。

@@ -1,0 +1,28 @@
+# Redrawn, simplified diagram. Source: Botta et al., "PinRec: Unified Generative Retrieval for Pinterest Recommender Systems" (KDD 2026), paper Fig. 2, Fig. 3 and Fig. 4.
+alt: "Left to right: user activity sequences from all surfaces plus request context enter a transformer pre-trained on all surfaces and fine-tuned per surface; outcome-conditioned autoregressive generation produces several embeddings that are merged; each embedding runs a nearest-neighbor query and the candidates go to the existing ranking and blending stages."
+caption:
+  fig: "Fig. 2 to Fig. 4"
+  work: "PinRec: Unified Generative Retrieval for Pinterest Recommender Systems, KDD 2026"
+  url: "https://arxiv.org/abs/2504.10507"
+  note: "Simplified; the Triton ensemble steps and the signal service are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: seq, kind: input, text: ["User activity sequence", "Pins and search queries across surfaces, plus request context"]}
+      - {id: out, kind: input, text: ["Outcomes and budgets", "save, click and other outcomes with retrieval budgets"]}
+  - label: Model
+    boxes:
+      - {id: tf, kind: module, text: ["Transformer decoder", "pre-trained on all surfaces, fine-tuned per surface"]}
+      - {id: gen, kind: module, text: ["Autoregressive generation", "outcome-conditioned embeddings, similar ones merged"]}
+  - label: Retrieval
+    boxes:
+      - {id: ann, kind: module, text: ["Nearest-neighbor search", "one Faiss query per embedding"]}
+  - label: Output
+    boxes:
+      - {id: cand, kind: output, text: ["Candidates", "passed to the existing ranking and blending stages"]}
+edges:
+  - [seq, tf]
+  - [tf, gen]
+  - [out, gen]
+  - [gen, ann]
+  - [ann, cand]

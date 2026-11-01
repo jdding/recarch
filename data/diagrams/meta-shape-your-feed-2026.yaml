@@ -1,0 +1,30 @@
+# Redrawn, simplified diagram. Source: Xu et al., "Shape Your Feed: An LLM-based Agentic System for Conversational Recommendation" (RecSys 2026), paper Fig. 1.
+alt: "Left to right: text, voice and UI feedback enter an orchestrator and a recommendation toolchain that updates a Semantic Profile, an Intent Trajectory and a Candidate Cache in a memory layer; the serving flow adds cached candidates to the production candidates, scores them against the profile with an LLM, prunes and re-ranks them; a self-evolution flow trains the scorer with SFT and DPO and feeds signals back to the production ranker."
+caption:
+  fig: "Fig. 1"
+  work: "Shape Your Feed: An LLM-based Agentic System for Conversational Recommendation, RecSys 2026"
+  url: "https://arxiv.org/abs/2608.06632"
+  note: "Simplified; the non-recommendation tools and the response generator are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: user, kind: input, text: ["User feedback", "text, voice, feedback pills and settings"]}
+      - {id: prod, kind: input, text: ["Production candidates", "with engagement scores from the production ranker"]}
+  - label: Perception and memory
+    boxes:
+      - {id: orch, kind: module, text: ["Orchestrator and toolchain", "intent detection, preference synthesis, asynchronous candidate sourcing"]}
+      - {id: mem, kind: module, text: ["Memory layer", "Semantic Profile, Intent Trajectory, Candidate Cache"]}
+  - label: Serving
+    boxes:
+      - {id: score, kind: module, text: ["Agentic refinement", "augment, list-wise LLM alignment scoring, prune, blend with engagement score"]}
+  - label: Output
+    boxes:
+      - {id: feed, kind: output, text: ["Reshaped feed", "final ranking shown to the user"]}
+      - {id: evo, kind: output, text: ["Self-evolution", "SFT and DPO of the scorer, signals distilled into the production ranker"]}
+edges:
+  - [user, orch]
+  - [orch, mem]
+  - [mem, score]
+  - [prod, score]
+  - [score, feed]
+  - [feed, evo]

@@ -1,0 +1,21 @@
+alt|从左到右：文字、语音和界面反馈进入 orchestrator 和推荐工具链，更新记忆层中的语义画像、意图轨迹和候选缓存；服务流把缓存候选加入生产候选，用 LLM 对照画像打分，再剔除和重排；自进化流用 SFT 和 DPO 训练打分器，并把信号反馈给生产排序模型。
+caption.fig|图 1
+caption.note|已简化；非推荐类工具和响应生成器没有画出。
+columns.0.label|输入
+columns.0.boxes.0.text.0|用户反馈
+columns.0.boxes.0.text.1|文字、语音、反馈药丸和设置页
+columns.0.boxes.1.text.0|生产候选
+columns.0.boxes.1.text.1|带有生产排序模型给出的互动分
+columns.1.label|感知与记忆
+columns.1.boxes.0.text.0|Orchestrator 与工具链
+columns.1.boxes.0.text.1|意图识别、偏好合成、异步候选召回
+columns.1.boxes.1.text.0|记忆层
+columns.1.boxes.1.text.1|语义画像、意图轨迹、候选缓存
+columns.2.label|服务
+columns.2.boxes.0.text.0|Agent 式精调
+columns.2.boxes.0.text.1|补充候选、list-wise LLM 对齐打分、剔除、与互动分融合
+columns.3.label|输出
+columns.3.boxes.0.text.0|重塑后的信息流
+columns.3.boxes.0.text.1|展示给用户的最终排序
+columns.3.boxes.1.text.0|自进化
+columns.3.boxes.1.text.1|打分器的 SFT 和 DPO，信号蒸馏回生产排序模型

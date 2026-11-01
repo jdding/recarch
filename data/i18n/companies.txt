@@ -17,3 +17,4 @@ Alibaba / Tmall || 阿里巴巴 / 天猫
 Alibaba Amap || 阿里巴巴高德
 Alibaba Taobao & Tmall Group || 阿里巴巴淘天集团
 Alibaba Taobao Shangou || 阿里巴巴淘宝闪购
+NetEase Cloud Music || 网易云音乐

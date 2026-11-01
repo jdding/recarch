@@ -1,0 +1,151 @@
+id: pinterest-pinrec-2025
+name: "PinRec"
+company: Pinterest
+surface: Pinterest Home Feed, Related Pins and Search, one generative retriever fine-tuned per surface
+year: 2025
+era: generative
+era_reason: "A causal transformer generates sequences of item embeddings autoregressively, conditioned on a desired outcome, and each generated embedding is used for nearest-neighbor retrieval, so generation sits at the center of retrieval."
+first_public: "2025-04"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770855.3818462"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Pinterest's PinRec is one generative retriever pre-trained across surfaces and fine-tuned per surface, with outcome-conditioned generation; Search A/B gives fulfillment +2.24% and saves +3.88%."
+summary: 'PinRec is a candidate generator for Pinterest, deployed on Home Feed, Related Pins and Search. A 12-layer transformer decoder reads a user sequence of Pins and search queries, each embedded from pre-trained OmniSage and OmniSearchSage vectors plus time and surface embeddings. It is pre-trained with next-item prediction on lifelong activity sequences from all surfaces, using a sampled softmax with in-batch negatives and a count-min-sketch bias correction. It is then fine-tuned per surface on that surface''s feed views, with surface actions as extra positives and impression-only items as hard negatives. Outcome conditioning adds learnable outcome embeddings to the output head, so one forward pass produces one embedding per outcome, such as save or outbound click, and the retrieval budget is split across outcomes to trade off business metrics. Generation is autoregressive: each step appends the sampled embedding with a temporal offset, similar embeddings are merged by cosine similarity, and every embedding runs a Faiss IVF-HNSW nearest-neighbor query. The model is served on NVIDIA L40S GPUs behind Triton with CUDA graphs and a KV cache, and its candidates pass unchanged through the existing ranking and blending stages.'
+paradigms:
+- generative-retrieval
+- sequential-transformer
+- embedding-based-retrieval
+stages:
+- stage: retrieval
+  model_family: 'Transformer decoder, 12 layers, 12 heads, 768 hidden dimensions, about 100 million parameters, generating continuous item embeddings autoregressively with outcome-conditioned output heads'
+  details: 'Embeddings are matched to Pins by Faiss IVF-HNSW on CPU hosts with inner product, with an overfetch factor for later de-duplication. The retrieval budget is split per generated embedding, equally without conditioning and by the outcome budget with conditioning. Generated embeddings above a cosine similarity threshold are merged, and their budgets are summed.'
+id_tokenization:
+  approach: 'None; dense embeddings, not Semantic IDs'
+  details: 'Pins use the pre-trained OmniSage embedding and queries use OmniSearchSage, each passed through 2-3 fully connected layers and L2-normalized, plus absolute and relative time embeddings and a surface embedding. The authors tried Semantic IDs, saw tens of thousands of items collide on one ID at Pinterest scale and lower metrics, and chose dense embeddings, which also cannot hallucinate items.'
+features_signals:
+- 'Lifelong user activity sequence of Pins and search queries across surfaces, built from positive engagements'
+- 'Actions, surfaces and timestamps of each interaction'
+- 'Request-time context such as the search query or the close-up Pin, added as the last sequence element'
+- 'Pre-trained OmniSage and OmniSearchSage embeddings'
+training:
+  mode: Offline pre-training on all surfaces, then offline fine-tuning per surface
+  objectives:
+  - 'Next-item prediction with sampled softmax, in-batch negatives and count-min-sketch bias correction'
+  - 'Outcome conditioning: the output head is conditioned on the action of the target item during training'
+  - 'Fine-tuning on feed-view sessions with surface actions as extra positives and impression-only items as in-batch negatives'
+  notes: 'Training compute, hardware and data volume are not reported. The batch signal is rebuilt daily by a Spark pipeline over the past year of positive engagements, and a RocksDB store adds events after the cutoff. Appendix ablations use 8K and 16K random negatives and several in-batch negative sizes.'
+serving_infra: 'NVIDIA L40S GPUs with Triton ensemble and Python backend; stages for signal fetch, Pin featurization, autoregressive inference and Faiss retrieval. CUDA Graphs with torch.compile and a per-request KV cache cut cost. Sequence embeddings travel as INT8 and are dequantized to FP16 for inference.'
+scale:
+- metric: Transformer size
+  value: about 100 million parameters, 12 layers and 768 hidden dimensions
+  note: paper, Sec 5 and A.1.3
+- metric: GPU memory per model
+  value: about 1.6GiB including KV cache and CUDA graphs
+  note: paper, Sec 4.5.4
+- metric: Latency at 80 QPS
+  value: PinRec-OC p50 40ms and p90 65ms; PinRec-UC p50 23ms and p90 46ms
+  note: paper, Sec 4.5.4
+results_reported: 'Online A/B as a candidate generator, passed through unmodified ranking and blending. Search, PinRec-OC against a control group: search fulfillment rate +2.24%, search saves +3.88% and search shares +5.30%. Home Feed, OC against UC: fulfilled sessions +0.21% against +0.02%, site-wide grid clicks +1.76% against +0.58%, Home Feed grid clicks +4.01% against +1.87%. Related Pins, OC: fulfilled sessions +0.21%, time spent +0.38%, site-wide grid clicks +0.76%, sitewide saves +0.26%, and in Search fulfillment +0.42% and saves +0.39%. Zero-shot, Related Searches fulfilled sessions +1.66% and module click rate +4.04%, and for Ads cost per acquisition -1.83% and cost per click -1.41%. Against a production two-tower model, corpus coverage +17.3% for OC and +6.2% for UC. Offline unordered recall at 10 on Home Feed, Related Pins and Search: SASRec 0.382, 0.426, 0.142; PinnerFormer 0.461, 0.412, 0.257; TIGER 0.208, 0.230, 0.090; HSTU 0.596, 0.539, 0.179; PinRec-UC 0.608, 0.521, 0.350; PinRec-OC 0.625, 0.537, 0.352. Removing outcome conditioning costs -7.5% to -12.6% recall and removing fine-tuning costs -2.0% to -4.5%. Autoregressive generation with 16 steps lifts recall by +71.4% on Related Pins, +8.8% on Home Feed and +11.1% on Search against 1 step. Serving latency is 3-4x a two-tower model at p50 and adds under 1% end-to-end.'
+caveats:
+- 'The A/B tests give no duration, traffic share or user count, and the paper reports only relative lifts; the Pareto figures omit absolute values as non-public.'
+- 'Table 7 compares PinRec-OC with a control group that is not described further; Tables 5 and 6 do not name a baseline either, and the candidates are added next to other candidate generators.'
+- 'The offline comparison trains all baselines with the PinRec pre-training procedure, so it is not a comparison with each published system as released.'
+- 'Training compute, GPU count and training data size are not reported. The paper says the model code will be released upon publication; no link is given in the paper.'
+- 'The arXiv entry 2504.10507 shows versions v1 to v6 under the title PinRec: Outcome-Conditioned, Multi-Token Generative Retrieval for Industry-Scale Recommendation Systems with different headline numbers, such as +2% sitewide clicks and +4% search repins; the card uses the KDD 2026 text only.'
+unknown_fields:
+- A/B duration, traffic share and number of users
+- Training hardware, compute and data size
+- Number of serving GPUs and total QPS
+- Description of the control group
+sources:
+- title: "PinRec: Unified Generative Retrieval for Pinterest Recommender Systems, KDD 2026"
+  url: https://doi.org/10.1145/3770855.3818462
+  type: paper
+- title: "PinRec, arXiv 2504.10507 (v7 carries the KDD 2026 title)"
+  url: https://arxiv.org/abs/2504.10507
+  type: paper
+version_note: 'Numbers checked against the ACM KDD 2026 proceedings PDF, DOI 10.1145/3770855.3818462, from the owner''s library. The same work appeared on arXiv on 9 Apr 2025 as v1 under another title; the abstract numbers changed between versions, and only the published text was used.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3770855.3818462
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, problem setup, model architecture, input representation, training, inference, serving, offline evaluation, online A/B tests, zero-shot retrieval, conclusion, appendix A.1'
+  verified_on: '2026-11-01'
+  published_pdf: 'KDD 2026 proceedings PDF read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+  note: The paper says the model code will be released upon publication but gives no link, and none was found.
+core_idea: Pre-train one generative retriever on all surfaces, fine-tune it per surface, and condition generation on the outcome each surface cares about.
+deployed_in: Pinterest Home Feed, Related Pins and Search
+scale_short: about 100M parameter decoder, p50 40ms
+key_result: Search A/B with fulfillment +2.24% and saves +3.88%
+results_table:
+  online:
+  - setting: Search, online A/B as candidate generator
+    method: PinRec-OC
+    metric: Search saves
+    result: +3.88%
+    versus: Control group
+  - setting: Search, online A/B as candidate generator
+    method: PinRec-OC
+    metric: Search fulfillment rate
+    result: +2.24%
+    versus: Control group
+  - setting: Home Feed, online A/B as candidate generator
+    method: PinRec-OC
+    metric: Home Feed grid clicks
+    result: +4.01%
+    versus: Control, PinRec-UC +1.87%
+  - setting: Related Pins, online A/B as candidate generator
+    method: PinRec-OC
+    metric: Site-wide grid clicks
+    result: +0.76%
+    versus: Control
+  offline:
+  - setting: Home Feed, unordered recall at 10
+    method: PinRec-OC
+    metric: Unordered recall at 10
+    result: '0.625'
+    versus: HSTU 0.596
+  - setting: Search, unordered recall at 10
+    method: PinRec-OC
+    metric: Unordered recall at 10
+    result: '0.352'
+    versus: PinnerFormer 0.257
+deployment:
+  online_evidence: online_numbers
+  scenario: Pinterest Home Feed, Related Pins and Search, a retrieval candidate generator whose outputs pass unmodified through ranking and blending alongside other candidate generators
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: A control group, and for tail and coverage metrics a production two-tower model
+  online_lifts:
+  - metric: Search fulfillment rate
+    value: +2.24%
+  - metric: Search saves
+    value: +3.88%
+  - metric: Home Feed grid clicks
+    value: +4.01%
+  - metric: Related Pins fulfilled sessions
+    value: +0.21%
+  training_compute: not_reported
+  serving_latency: 'At 80 QPS, p50 40ms and p90 65ms for PinRec-OC, p50 23ms and p90 46ms for PinRec-UC; 3-4x a two-tower model at p50 and under 1% added end-to-end latency when parallelized'
+  serving_qps: 'Latency was measured at 80 QPS; total production QPS is not reported'
+  inference_cost: 'About 1.6GiB of GPU memory with KV cache and CUDA graphs, and about 250 MiB without them, the same as the existing two-tower retrieval'
+  hardware: 'NVIDIA L40S GPUs for the transformer; Faiss IVF-HNSW on CPU hosts'
+  notes:
+  - 'A transformer with about 1 billion parameters gave +2.2% recall but was judged intractable to serve in real time; sizes in between gave no gain.'
+  fulltext_refs:
+  - 'Table 7 and Sec 6.2.4: Search, PinRec-OC against a control group, search fulfillment rate +2.24%, search saves +3.88%, search shares +5.30%'
+  - 'Tables 5 and 6, Sec 6.2.2 and 6.2.3: Home Feed OC grid clicks +4.01% and Related Pins OC fulfilled sessions +0.21%'
+  - 'Sec 4.5.2 and 4.5.4: L40S GPUs, about 1.6GiB GPU memory, p50 40ms and p90 65ms at 80 QPS, 3-4x a two-tower model, under 1% end-to-end; about 250 MiB without KV cache and CUDA graphs'
+  - 'Appendix A.1.3, Table 12: XL size of about 1 billion parameters gives +2.2% recall and is intractable to serve in real time'
+  basis: full_text
+  checked_on: '2026-11-01'

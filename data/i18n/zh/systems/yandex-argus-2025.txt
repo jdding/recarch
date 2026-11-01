@@ -1,0 +1,52 @@
+surface|Yandex Music 推荐，每日用户 embedding 作为生产排序模型的特征
+era_reason|核心主张是把基于用户历史的自回归 transformer 扩展到十亿参数规模，预训练任务是下一个 item 预测和反馈预测；模型以每日特征的形式进入基于梯度提升树的生产排序模型。
+tldr|Yandex 的 ARGUS 先在用户历史上预训练 transformer，再微调成每日更新的排序特征；线上总收听时长 +2.26%，点赞概率 +6.37%。
+summary|ARGUS，全称 AutoRegressive Generative User Sequential framework，用由上下文、item 和反馈事件组成的用户历史训练一个大 transformer。预训练有两个目标：一是下一个 item 预测，使用经 logQ 校正的 sampled softmax，负样本为 8192 个 batch 内负样本加 8192 个均匀采样负样本，用来模仿日志策略和自然浏览路径；二是反馈预测，做成多输出分类，用来建模用户偏好。一个简化版本把每个上下文、item、反馈三元组合并成一个交互 embedding。微调时把编码器变成感知曝光的单遍双塔排序器：对历史做一次因果前向得到用户状态，曝光按模拟的 24 小时数据延迟与用户状态对齐，再对点积分数使用 pairwise logistic 损失。用户 embedding 每天离线计算一次并存入 key-value 系统，分数作为生产梯度提升树排序模型的一个额外特征。论文把编码器从 3.2M 扩展到 1.007B 参数，并在一个音乐流媒体平台上部署了上下文长度为 8192 的 126.0M 编码器。
+core_idea|在长用户历史上同时预训练下一个 item 预测和反馈预测，再微调成每日更新的双塔分数，供生产排序模型作为特征使用。
+deployed_in|Yandex Music，作为生产排序模型的特征
+scale_short|126.0M 编码器，上下文长度 8192
+key_result|线上 A/B 中总收听时长 +2.26%，点赞概率 +6.37%
+results_reported|线上，在音乐平台上做 A/B，即 Offline V4，上下文长度 8192、126.0M 编码器的 ARGUS，相对现有生产栈：总收听时长 +2.26%，点赞概率 +6.37%；论文称这是迄今 transformer 带来的最强线上收益。更早的部署中，V1 为 +0.52% 和 +1.11%，V2 为 +1.00% 和 +0.73%，V3 为 +0.73% 和 +5.00%，Real-time V1 为 +0.32% 和 +1.38%，每一行都是相对前一代部署。离线扩展实验中，作为特征使用时相对生产排序模型的 pair accuracy uplift：3.2M 参数 +1.35%，18.9M +1.82%，126.0M +2.32%，1.007B +2.66%，176.0M 的 HSTU 编码器 +2.34%。单独使用时，1.007B 模型相对生产排序模型为 -4.78%。从最小模型到最大模型，下一个 item 的 entropy 下降 10.36%。微调上下文长度 512、2048 和 8192 分别为 +1.01%、+2.32% 和 +2.77%。不做预训练时，微调一整年为 +1.17%；做预训练后，微调一周为 +0.63%，微调一年为 +2.32%。
+version_note|数字已对照 18 Feb 2026 的 arXiv v2 核对，该版本带有 ACM KDD 2026 版权块和 DOI 10.1145/3770854.3783916。ACM Digital Library 页面返回 403，所以没有打开已发表页面本身。摘要和第 1 节说部署的是 126M 参数的模型，表 6 写作 126.0M。
+serving_infra|离线：用户 embedding 每天批量计算一次并存入 key-value 系统，曝光用点积打分。论文还说，初次投稿之后，他们把一个较小的实时版本直接集成进了生产排序模型。
+stages.0.model_family|Transformer 编码器，规模为 L10 H1024，生产中为 126.0M 参数，用下一个 item 预测和反馈预测预训练，微调成双塔打分器，其输出作为生产排序模型的特征
+stages.0.details|生产排序模型是一个梯度提升决策树集成，用 pairwise logistic 损失在一千个特征上训练，特征中包含更早几代 transformer 双塔模型的输出。ARGUS 分数作为一个特征加入其中。用户 embedding 每天刷新，用点积打分，论文称这比实时的 target-aware 方案便宜得多。
+id_tokenization.approach|无；item 使用统一的 ID embedding 加 item 特征
+id_tokenization.details|item ID 做 3 路查表，进入一个 130M 参数的共享矩阵，即 512k 个大小为 256 的 embedding，不计入编码器大小。论文说可以去掉 ItemID 特征，改用内容和元数据特征构造 item embedding。
+features_signals.0|由上下文、item 和反馈事件组成的用户历史，上下文包括界面、设备和推荐设置
+features_signals.1|item 特征，包括 ItemID 和 ArtistID
+features_signals.2|隐式反馈，例如收听时长和跳过，以及显式点赞
+training.mode|在用户历史上离线预训练，再离线微调用于排序
+training.objectives.0|下一个 item 预测，使用经 logQ 校正的 sampled softmax 和混合负采样，负样本为 8192 个 batch 内负样本和 8192 个均匀采样负样本
+training.objectives.1|反馈预测，对消费类和互动类信号做多任务交叉熵
+training.objectives.2|微调时对时间上相邻、反馈不同的曝光对使用 pairwise logistic 损失
+training.notes|数据集采样了数千万用户一年的活动，包含超过 300B 条用户与 item 的交互。训练使用 PyTorch 的 DDP，在 64–256 张 A100 80GB GPU 上训练 1 天到 1 周，取决于模型大小，只训练一个 epoch。扩展实验中序列长度预训练为 512，微调为 2048，部署模型为 8192。
+scale.0.metric|编码器大小，已部署
+scale.0.value|126.0M 参数，L10 H1024
+scale.1.metric|编码器大小，测试过的最大规模
+scale.1.value|1.007B 参数，L20 H2048，未做线上测试
+scale.2.metric|上下文长度，已部署
+scale.2.value|8192 个事件
+scale.3.metric|训练交互量
+scale.3.value|超过 300B
+results_table.online.0.setting|线上 A/B，上下文长度 8192，126.0M 编码器
+results_table.online.1.setting|线上 A/B，上下文长度 8192，126.0M 编码器
+results_table.offline.0.setting|作为特征使用时的 pair accuracy uplift，1.007B 编码器
+results_table.offline.1.setting|作为特征使用时的 pair accuracy uplift，对比微调上下文长度
+caveats.0|线上 A/B 没有说明持续时间、流量占比和用户数，论文也没有给出总收听时长和点赞概率的绝对值。
+caveats.1|表 6 中的收益每一步都是相对当时的现有生产栈，论文说这些收益是累积的，所以 ARGUS 这一行不是相对没有 transformer 的基线的独立对比。
+caveats.2|最大的 1.007B 编码器因为大规模线上实验成本太高，没有做线上测试；已部署的编码器为 126.0M 参数。
+caveats.3|离线时 ARGUS 单独使用低于生产排序模型，例如 126.0M 编码器为 -5.33%，只有作为额外特征才有帮助；论文解释说它离线运行，有 24 小时延迟，并且只看用户历史。
+caveats.4|论文只把平台描述为大型音乐流媒体平台；本卡写作 Yandex Music，依据是致谢中感谢了 Yandex Music Recommendations 团队。
+caveats.5|按脚注，作者已离开 Yandex；论文说同一架构还用于电商市场、生鲜配送和广告，但没有给出数字。
+unknown_fields.0|A/B 持续时间、流量占比和用户数
+unknown_fields.1|服务硬件、QPS 和延迟
+unknown_fields.2|已部署的 126.0M 模型的训练算力
+unknown_fields.3|线上指标的绝对值
+code.note|论文没有给出代码链接，数据集为内部数据。
+deployment.scenario|Yandex Music，每日离线用户 embedding 用点积打分，作为生产梯度提升树排序模型的特征
+deployment.baseline|现有生产栈，其排序模型是一个基于一千个特征的梯度提升树集成
+deployment.training_compute|实验使用 64–256 张 A100 80GB GPU，训练 1 天到 1 周，取决于模型大小；论文没有单独说明部署模型
+deployment.inference_cost|embedding 每天批量计算一次，用点积打分；论文称这比实时的 target-aware 方案便宜得多
+deployment.hardware|训练使用 A100 80GB GPU，如上；服务硬件未报告
+deployment.notes.0|后来一个较小的实时版本被集成进生产排序模型，与每日离线 embedding 的收益互补；论文没有给出数字。

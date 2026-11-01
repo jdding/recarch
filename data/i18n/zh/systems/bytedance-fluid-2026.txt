@@ -1,0 +1,48 @@
+surface|字节跳动直播平台上的直播排序
+era_reason|这是一个在点击类目标上训练的判别式 token 排序模型；改变发生在表示层，用离散的多模态语义编码替换候选侧的 item ID，而不是自回归地生成 item。
+tldr|字节的 FLUID 把生产直播排序模型里的 item ID 去掉，换成多模态语义编码；A/B 下优质观看时长 +0.55%，冷启动直播间曝光 +2.05%。
+summary|直播间只在开播期间才是候选，中位生命周期约 40 分钟，所以它的 item ID embedding 永远收敛不了。FLUID 分三部分把生产排序模型里候选侧的 item ID 去掉。第一，跨域多模态编码器由 SigLIP2-base 视觉模块和 Qwen3-Embedding-0.6B 单塔融合模块组成，输入是视觉 token 以及来自标题、OCR、ASR、简介、评论和标签的文本 token，在直播和短视频两类内容的 2 分钟切片上用 query 到 item 的对比损失训练，输出 128 维向量。第二，RQ-KMeans 把每个切片向量变成 4 层编码，每层 64 个聚类，称为 LUCID；直播间级别的 LUCID 来自同一场次各切片上逐层的多数投票。第三，这些编码作为独立的切片 token 和直播间 token 进入排序模型，也就是 Zenith++ 流水线中基于 token 的类 transformer 骨干，使用前缀 n-gram embedding 表，采用晚融合，而不是先与 ID 合并。切换靠分阶段预热完成：先在 item ID 旁加入切片 LUCID，再逐步去掉 item ID，最后加入用切片表初始化的直播间 LUCID，然后在没有 item ID 的情况下继续线上流式训练。
+core_idea|去掉直播排序模型里候选侧的 item ID，用分阶段预热加入的离散多模态 LUCID 编码来承担它的角色。
+deployed_in|字节跳动直播排序，合计用户超过 10 亿
+scale_short|4 层 LUCID 编码，每层 64 个聚类，排序模型训练样本 168B 条
+key_result|对比线上基线的 A/B，优质观看时长 +0.55%，冷启动直播间曝光 +2.05%，活跃时长 +0.05%
+results_reported|对比线上基线的 A/B，三个实验组为 +Slice、-ID 和 FLUID。FLUID：优质观看时长 +0.55%，优质观看场次 +0.51%，冷启动直播间曝光 +2.05%，小众直播间曝光 +2.87%，去重观看标签数 +1.63%，停留时长 +0.07%，活跃时长 +0.05%。+Slice 的优质观看时长 +0.43%，冷启动直播间曝光 +1.15%，留存不显著；只去掉 item ID 时，优质观看时长 -0.02%，冷启动直播间曝光 +1.58%，停留时长 -0.05%。离线 CTR AUC：基线 0.7784，加切片 LUCID 为 0.7801，去掉 item ID 为 0.7748，FLUID 为 0.7802，对应的 logloss 为 0.1264、0.1263、0.1273 和 0.1262。前缀 n-gram embedding 的 AUC 为 0.7802，逐层解码为 0.7793；独立的切片表和直播间表为 0.7802，共享表为 0.7798。早融合各种变体使 AUC 变化 -0.13% 到 +0.01%，直接联合训练为 +0.00%。分阶段预热在第一到第三阶段的 AUC 分别为 +0.22%、+0.11% 和 +0.23%。编码器方面，Live Q2I R@10 从 CLIP-B/32 加 Albert-V2 的 43.96 提升到使用 Qwen3-Embedding 和 SigLIP2 后的 47.44。
+version_note|数字核对自所有者文库里的 ACM RecSys 2026 论文集 PDF，DOI 10.1145/3773078.3831918。没有找到 arXiv 版本。
+serving_infra|LUCID 按 2 分钟切片计算，排序模型查两张分别对应切片和直播间编码的 embedding 表来取代 item ID。延迟、QPS、硬件和成本等服务细节均未报告。
+stages.0.model_family|来自 Zenith++ 流水线的基于 token 的类 transformer 排序骨干，输入有用户、历史、切片 LUCID 和直播间 LUCID 的 token，没有候选 item ID
+stages.0.details|与生产的 Zenith++ 流水线一样，在 168B 条样本、4,552 个特征和 98 个目标上训练；离线表格使用 CTR 目标。
+stages.1.model_family|跨域多模态编码器，由 SigLIP2-base 视觉模块、两层 MLP 投影和 Qwen3-Embedding-0.6B 单塔融合模块组成，后接 RQ-KMeans
+stages.1.details|为每个 2 分钟切片产出 128 维向量，再量化成 4 层、每层 64 个聚类的 LUCID 编码。选择 RQ-KMeans 而不是 RQ-VAE，是因为在线上流式重训的节奏下 RQ-VAE 会出现码本坍缩。
+id_tokenization.approach|LUCID：4 层 RQ-KMeans 编码，每层 64 个聚类，用前缀 n-gram 方式做 embedding
+id_tokenization.details|每一层的查表都以完整的前缀路径为键，表的行数最多为 64、4K、262K 和 16M，所以同一个编码在不同父节点下对应不同的槽位。切片级和直播间级的编码使用各自独立的表；直播间编码是各切片上逐层的多数投票。
+features_signals.0|当前 2 分钟内容片段的切片级 LUCID
+features_signals.1|直播间级 LUCID，由已有切片的多数投票得到
+features_signals.2|作为编码器输入的视频帧、标题、OCR、ASR 转写、作者简介、观众评论和贴纸标签
+features_signals.3|Zenith++ 排序模型中的用户特征和用户历史 token
+training.mode|编码器离线两阶段训练；排序模型先经三阶段预热切换，再进入生产的流式在线训练
+training.objectives.0|编码器：带假负样本屏蔽的 query 到 item InfoNCE，query 来自搜索词或 MLLM 合成的关键词，正样本来自点赞、分享和看完行为
+training.objectives.1|排序模型：沿用 Zenith++ 生产的多目标训练，并在预热中逐步去掉 item ID
+training.notes|编码器第一阶段只训练投影层和输出投影，第二阶段以更低的学习率解冻整个模型。从零开始的直接联合训练没有收益，因为排序模型退化成只依赖 item ID 的行为。
+scale.0.metric|平台用户
+scale.0.value|多个直播平台合计用户超过 10 亿
+scale.1.metric|排序模型训练数据
+scale.1.value|168B 条样本，4,552 个特征，98 个目标
+scale.2.metric|直播间生命周期
+scale.2.value|中位约 40 分钟；40 分钟时 item ID 的范数约 0.86，稳态约 1.2
+scale.3.value|4 层，每层 64 个聚类，切片长 2 分钟
+results_table.online.0.setting|直播排序模型，FLUID 实验组
+results_table.online.1.setting|直播排序模型，FLUID 实验组
+results_table.online.2.setting|直播排序模型，FLUID 实验组
+results_table.offline.0.setting|CTR 目标，离线
+results_table.offline.1.setting|CTR 目标，离线
+caveats.0|论文没有写 A/B 时长、流量占比和各平台的拆分，只报告相对线上基线的变化；留存方面的收益很小，活跃时长 +0.05%，停留时长 +0.07%。
+caveats.1|Table 4 把在 p < 0.05 下不显著的变化标为 n.s.，但没有给置信区间、重复实验和分平台的结果。
+caveats.2|没有报告服务成本、延迟、QPS 和硬件，所以线上多出两个 LUCID token 以及切片级编码器的代价不得而知。
+caveats.3|排序骨干是专有的 Zenith++，编码器数据也是内部的，没有开源代码，所以结果无法复现；编码器是在内部基准集上评估的。
+unknown_fields.0|A/B 时长和流量占比
+unknown_fields.1|服务延迟、QPS 和硬件
+unknown_fields.2|除所列骨干外的编码器规模和训练算力
+unknown_fields.3|代码是否开源
+deployment.scenario|字节跳动直播平台的生产直播排序模型，合计用户超过 10 亿
+deployment.baseline|带 item ID 的生产排序模型
+deployment.notes.0|论文称它已经部署在线上直播排序模型上，并且排序模型在没有 item ID 的情况下继续生产的流式在线训练。

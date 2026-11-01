@@ -1,0 +1,142 @@
+id: bytedance-fluid-2026
+name: "FLUID"
+company: ByteDance
+surface: Livestreaming ranking on ByteDance livestreaming platforms
+year: 2026
+era: deep
+era_reason: "A discriminative token-based ranker trained on click-style targets; the change is representational, replacing the candidate item ID with discrete multimodal semantic codes, not generating items autoregressively."
+first_public: "2026-09"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831918"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "ByteDance's FLUID drops the item ID from a production livestreaming ranker, using multimodal semantic codes instead; A/B gives Quality Watch Duration +0.55% and Cold-Start Room Views +2.05%."
+summary: 'A live room is a candidate only while it broadcasts, with a median lifetime of about 40 minutes, so its item ID embedding never converges. FLUID removes the candidate-side item ID from the production ranker in three parts. First, a cross-domain multimodal encoder, a SigLIP2-base vision module plus a Qwen3-Embedding-0.6B single-tower fusion module over visual tokens and text tokens from titles, OCR, ASR, bios, comments and tags, is trained with a query-to-item contrastive loss on 2-minute slices of both livestreams and short videos and outputs a 128-d embedding. Second, RQ-KMeans turns each slice embedding into a 4-level code with 64 clusters per level, called LUCID, and a room-level LUCID comes from per-level majority voting across the slices of a session. Third, the codes enter the ranker, a token-based transformer-like backbone from the Zenith++ pipeline, as separate slice and room tokens with prefix n-gram embedding tables, a late fusion rather than merging with the ID. A staged warmup makes the switch: add slice LUCID next to the item ID, phase the item ID out, then add room LUCID initialized from the slice tables, and continue online streaming training without item IDs.'
+paradigms:
+- semantic-id
+- multi-task
+- online-training
+stages:
+- stage: rank
+  model_family: 'Token-based transformer-like ranker backbone from the Zenith++ pipeline, with user, history, slice LUCID and room LUCID tokens and no candidate item ID'
+  details: 'Trained on 168B instances, 4,552 features and 98 targets, as in the production Zenith++ pipeline; the CTR target is used for the offline tables.'
+- stage: other
+  model_family: 'Cross-domain multimodal encoder with SigLIP2-base vision, a two-layer MLP projector and a Qwen3-Embedding-0.6B single-tower fusion module, followed by RQ-KMeans'
+  details: 'Produces a 128-d embedding per 2-minute slice, quantized to LUCID codes of 4 levels with 64 clusters each. RQ-KMeans was chosen over RQ-VAE because RQ-VAE collapsed codebook entries under the online streaming retraining cadence.'
+id_tokenization:
+  approach: 'LUCID: 4-level RQ-KMeans code with 64 clusters per level, embedded by a prefix n-gram scheme'
+  details: 'Each level lookup is keyed by the whole prefix path, giving tables of up to 64, 4K, 262K and 16M rows, so the same code under different parents maps to different slots. Slice-level and room-level codes use separate tables; the room code is a per-level majority vote over slices.'
+features_signals:
+- 'Slice-level LUCID of the current 2-minute content segment'
+- 'Room-level LUCID from majority voting over the slices so far'
+- 'Video frames, titles, OCR, ASR transcripts, author bios, audience comments and sticker tags as encoder input'
+- 'User features and user history tokens in the Zenith++ ranker'
+training:
+  mode: 'Encoder trained offline in two stages; ranker moved by a three-stage warmup, then production streaming online training'
+  objectives:
+  - 'Encoder: query-to-item InfoNCE with masking of in-batch negatives that are really positives, on queries from search terms or MLLM-synthesized keywords and positives from likes, shares and watch-through'
+  - 'Ranker: the production multi-target objectives of Zenith++, with the item ID phased out in the warmup'
+  notes: 'Encoder stage one trains only the projector and output projection, stage two unfreezes the full model at a lower learning rate. Naive joint training from scratch gave no gain, because the ranker collapsed to item-ID-only behavior.'
+serving_infra: 'LUCID is computed per 2-minute slice, and the ranker looks up two embedding tables for slice and room codes in place of the item ID. Serving details such as latency, QPS, hardware and cost are not reported.'
+scale:
+- metric: Platform users
+  value: over one billion combined users across livestreaming platforms
+  note: paper, abstract
+- metric: Ranker training data
+  value: 168B instances, 4,552 features, 98 targets
+  note: paper, Table 2
+- metric: Room lifetime
+  value: median about 40 minutes; item ID norm about 0.86 at 40 minutes against a steady state near 1.2
+  note: paper, Figure 1
+- metric: LUCID
+  value: 4 levels with 64 clusters each, slices of 2 minutes
+  note: paper, Sec 3.2
+results_reported: 'Online A/B against the production baseline, arms +Slice, -ID and FLUID. FLUID: Quality Watch Duration +0.55%, Quality Watch Session +0.51%, Cold-Start Room Views +2.05%, Niche Room Views +2.87%, Unique Watched Tags +1.63%, Stay Duration +0.07%, Active Hours +0.05%. +Slice gives +0.43% Quality Watch Duration and +1.15% Cold-Start Room Views with retention not significant; removing the item ID alone gives -0.02% Quality Watch Duration, +1.58% Cold-Start Room Views and -0.05% Stay Duration. Offline CTR AUC is 0.7784 for the baseline, 0.7801 with slice LUCID, 0.7748 without item ID and 0.7802 for FLUID, with logloss 0.1264, 0.1263, 0.1273 and 0.1262. Prefix n-gram embedding gives AUC 0.7802 against 0.7793 for level-wise decoding, and independent slice and room tables 0.7802 against 0.7798 for a shared table. Early fusion variants change AUC by -0.13% to +0.01%, and naive joint training +0.00%. The staged warmup gives +0.22%, +0.11% and +0.23% AUC at stages one to three. On the encoder, Live Q2I R@10 rises from 43.96 for CLIP-B/32 plus Albert-V2 to 47.44 with Qwen3-Embedding and SigLIP2.'
+caveats:
+- 'The A/B duration, traffic share and platform split are not stated, and the paper reports only relative changes against the production baseline; the retention gains are tiny, Active Hours +0.05% and Stay Duration +0.07%.'
+- 'Table 4 marks changes that are not significant at p < 0.05 as n.s., but gives no confidence intervals, no repeated runs and no per-platform split.'
+- 'No serving cost, latency, QPS or hardware is reported, so the cost of two extra LUCID tokens and the slice-level encoder in production is unknown.'
+- 'The ranker is the proprietary Zenith++ backbone and the encoder data are internal, and no code is released, so the result cannot be reproduced; the encoder is evaluated on an internal benchmark suite.'
+unknown_fields:
+- A/B duration and traffic share
+- Serving latency, QPS and hardware
+- Encoder size beyond the named backbones and training compute
+- Code release
+sources:
+- title: "FLUID: From Ephemeral IDs to Multimodal Semantic Codes for Billion-Scale Livestreaming Recommendation, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831918
+  type: paper
+version_note: 'Numbers checked against the ACM RecSys 2026 proceedings PDF, DOI 10.1145/3773078.3831918, from the owner''s library. No arXiv version was found.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://doi.org/10.1145/3773078.3831918
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, method, experiments, ablations, conclusion'
+  verified_on: '2026-11-01'
+  published_pdf: 'RecSys 2026 proceedings PDF read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+core_idea: Retire the candidate item ID in a livestreaming ranker and let discrete multimodal LUCID codes, added by staged warmup, play its role.
+deployed_in: ByteDance livestreaming ranking, over one billion combined users
+scale_short: 4-level LUCID codes, 64 clusters per level, 168B ranker training instances
+key_result: A/B against the production baseline, Quality Watch Duration +0.55%, Cold-Start Room Views +2.05%, Active Hours +0.05%
+results_table:
+  online:
+  - setting: Livestreaming ranker, FLUID arm
+    method: FLUID
+    metric: Quality Watch Duration
+    result: +0.55%
+    versus: Production baseline with item ID
+  - setting: Livestreaming ranker, FLUID arm
+    method: FLUID
+    metric: Cold-Start Room Views
+    result: +2.05%
+    versus: Production baseline with item ID
+  - setting: Livestreaming ranker, FLUID arm
+    method: FLUID
+    metric: Active Hours
+    result: +0.05%
+    versus: Production baseline with item ID
+  offline:
+  - setting: CTR target, offline
+    method: FLUID
+    metric: AUC
+    result: '0.7802'
+    versus: Baseline 0.7784
+  - setting: CTR target, offline
+    method: FLUID
+    metric: Logloss
+    result: '0.1262'
+    versus: Baseline 0.1264
+deployment:
+  online_evidence: online_numbers
+  scenario: Production livestreaming ranker of ByteDance livestreaming platforms with over one billion combined users
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Production ranker with the item ID
+  online_lifts:
+  - metric: Quality Watch Duration
+    value: +0.55%
+  - metric: Cold-Start Room Views
+    value: +2.05%
+  - metric: Active Hours
+    value: +0.05%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - 'The paper says it is deployed on the online livestreaming ranker, and the ranker continues production streaming online training without item IDs.'
+  fulltext_refs:
+  - 'Table 4 and Sec 4.2: online A/B of three arms against the production baseline, FLUID Quality Watch Duration +0.55%, Cold-Start Room Views +2.05%, Active Hours +0.05%'
+  - 'Table 3 and Table 2: CTR AUC 0.7802 against 0.7784, logloss 0.1262 against 0.1264, 168B instances'
+  basis: full_text
+  checked_on: '2026-11-01'

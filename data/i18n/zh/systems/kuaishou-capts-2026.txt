@@ -1,0 +1,59 @@
+surface|Kwai 短视频信息流，多通道 item 到 item 召回的触发 item 选择
+era_reason|一个学习得到的触发 item 打分器，用共享 encoder 加 target attention，再为每个通道配上价值头和独特性头，放在现有 item 到 item 召回器之前；回路中没有生成式模型或基础模型。
+tldr|快手的 CAPTS 学习该用哪些历史 item 去驱动各个 item 到 item 召回通道；在 Kwai 线上 A/B 中总 App 使用时长 +0.713%，每台设备平均 App 使用时长 +0.586%。
+summary|CAPTS 针对两跳 U2I2I 召回的第一步：从用户历史中挑出少量 item，称为触发 item，同时驱动多个 item 到 item 召回通道。线上常见做法是按观看时长最高等规则挑，或者给每个通道单独调一个学习式打分器；论文指出两个问题，价值归因有偏，通道之间的分配不协调。价值归因模块 VAM 在请求时刻离线重放每个通道，把它从某个触发 item 召回的内容，与用户之后 100 个有效观看对照，把命中 item 的观看时长相加，作为该触发 item 在该通道上的价值。通道自适应路由模块 CATR 是一个共享 encoder，对最近 50 个有效观看做 target attention，每个通道各有价值头、有界校准器和独特性头；路由分数等于校准后的价值加上 0.4 倍的预测独特性。线上服务时，近期交互实时打分，长期触发 item 来自近线缓存。现有 I2I 召回器、索引和排序模型保持不变。A/B 中有四个通道在线，Swing、Marm、SimLR 和 MMU。
+core_idea|按触发 item 能召回的内容所带来的观看时长给它打分，再把它路由到最能增加增量的通道。
+deployed_in|Kwai 短视频信息流，为 4 个 I2I 通道选触发 item
+scale_short|4 个 I2I 通道；离线数据含 1,230,150,824 条交互
+key_result|Kwai 线上 A/B 中总 App 使用时长 +0.713%，每台设备平均 App 使用时长 +0.586%
+results_reported|离线，在 Kwai-Industrial 上，对 3 个 I2I 通道合并后的 Recall@K：CAPTS 的 R@100 为 0.0255，R@500 为 0.0963，R@1000 为 0.1519，R@2000 为 0.1994，相对每个 K 下最好的基线分别提升 +25.0%、+17.9%、+13.8% 和 +10.7%。线上，在 Kwai 做了大规模 A/B，开 4 个 I2I 通道，CAPTS 对比现有的规则策略：日活设备 +0.115%，总 App 使用时长 +0.713%，每台设备平均 App 使用时长 +0.586%，视频总观看时长 +0.506%，每台设备平均观看时长 +0.395%。4 个 I2I 通道的曝光占比合计从 26.24% 升到 27.55%。论文称这一局部改动也支撑了 Kwai 电商推荐场景的部署。
+stages.0.model_family|共享 encoder，对最近 50 个有效观看做 target attention，每个 I2I 通道各有价值头、有界校准器和独特性头
+stages.0.details|在每个通道配额之内做触发 item 到通道的路由。通道包括：Swing I2I 为协同过滤，Marm I2I 为深度 embedding 匹配通道，MMU I2I 为多模态内容通道，SimLR I2I 为成对逻辑回归通道；每个通道对每个触发 item 返回前 50 个 item。路由分数等于校准后的价值加上 eta 乘以预测独特性，eta 取 0.4。
+id_tokenization.approach|无；触发 item 是日志中的历史 item，召回沿用现有 I2I 通道
+id_tokenization.details|CAPTS 在现有 item ID 中做选择，不引入新的 item 表示。观看时长和时间间隔被离散化为分桶。
+features_signals.0|用户表示和请求上下文特征
+features_signals.1|触发 item 的表示
+features_signals.2|最近 50 个有效观看作为行为序列，观看时长和时间间隔做分桶
+features_signals.3|来自通道召回重放的监督，与之后 100 个有效观看对照
+training.mode|在重放日志上离线训练，并定期把权重同步到线上服务
+training.objectives.0|针对每个通道价值标签的加权二元交叉熵
+training.objectives.1|感知强度的校准损失
+training.objectives.2|独特性头上的多样性损失，权重为 lambda 和 mu
+training.notes|当被召回并被消费的 item 的裁剪缩放后观看时长达到通道阈值时，价值标签为 1；缩放系数为 100，裁剪上限为 6。重放时使用回退约 20 分钟的索引快照，以避免时间泄漏。
+serving_infra|近期交互在线打分，通常 10^2 到 10^3 个候选，另有一个近线缓存存放长期触发 item，通常 10^3 到 10^4 个候选，每天在低峰期刷新；用同一套路由分数在每个通道预算内分配触发 item，然后进入排序。
+scale.0.metric|离线数据集 Kwai-Industrial
+scale.0.value|1,071,280 个用户、27,361,781 个 item 和 1,230,150,824 条交互
+scale.1.metric|A/B 中的召回通道
+scale.1.value|4 个 I2I 通道，Swing、Marm、SimLR 和 MMU
+results_table.online.0.setting|Kwai 线上 A/B，4 个 I2I 通道
+results_table.online.1.setting|Kwai 线上 A/B，4 个 I2I 通道
+results_table.online.2.setting|Kwai 线上 A/B，4 个 I2I 通道
+results_table.online.0.metric|总 App 使用时长
+results_table.online.1.metric|每台设备平均 App 使用时长
+results_table.online.2.metric|日活设备
+results_table.online.0.versus|现有的规则触发策略
+results_table.online.1.versus|现有的规则触发策略
+results_table.online.2.versus|现有的规则触发策略
+results_table.offline.0.setting|Kwai-Industrial，3 个通道合并
+results_table.offline.1.setting|Kwai-Industrial，3 个通道合并
+results_table.offline.0.versus|最好的基线，相对 +10.7%
+results_table.offline.1.versus|最好的基线，相对 +25.0%
+caveats.0|CAPTS 是放在现有召回器之前的触发 item 选择模块，范围比完整的召回系统窄；完整流水线只在图 4 的层面上展示。
+caveats.1|论文没有给出 A/B 的时长、流量占比和用户数。
+caveats.2|表 6 的标题写的是相对强基线的提升，正文却说对照组是现有策略；本卡按现有规则策略理解。
+caveats.3|离线增益用三个通道重放来衡量，而 A/B 多了第四个通道 SimLR。
+unknown_fields.0|A/B 时长和流量占比
+unknown_fields.1|训练算力和硬件
+unknown_fields.2|服务延迟、QPS 和模型规模
+unknown_fields.3|训练数据窗口和更新频率
+version_note|数字已对照 22 Jul 2026 的 arXiv v2 核对，该版本采用 ACM RecSys 2026 定稿排版，DOI 为 10.1145/3773078.3831883。ACM Digital Library 页面返回 403，所以没有打开已发表页面本身。arXiv v1 发布于 Feb 2026。
+code.note|论文没有给出代码链接。
+deployment.scenario|Kwai，快手的国际短视频平台，为 4 个 I2I 召回通道选触发 item
+deployment.baseline|现有的触发 item 选择策略，通道、配额和排序与实验组相同，都是四个 I2I 通道
+deployment.online_lifts.0.metric|总 App 使用时长
+deployment.online_lifts.1.metric|每台设备平均 App 使用时长
+deployment.online_lifts.2.metric|日活设备
+deployment.online_lifts.3.metric|视频总观看时长
+deployment.online_lifts.4.metric|每台设备平均观看时长
+deployment.inference_cost|在线对 10^2 到 10^3 个近期候选打分，近线缓存覆盖 10^3 到 10^4 个长期候选；论文称只增加了轻量的打分、路由和缓存查询。
+deployment.notes.0|每个 I2I 通道对每个触发 item 返回前 50 个 item。

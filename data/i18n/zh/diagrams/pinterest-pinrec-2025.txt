@@ -1,0 +1,13 @@
+alt|从左到右：所有场景的用户行为序列加请求上下文进入一个跨场景预训练、按场景微调的 transformer；结果条件的自回归生成产出若干 embedding 并合并；每个 embedding 做一次近邻查询，候选进入已有的排序和混排阶段。
+caption.note|已简化；Triton ensemble 的各步骤和信号服务没有画出。
+columns.0.boxes.0.text.0|用户行为序列
+columns.0.boxes.0.text.1|跨场景的 Pin 和搜索 query，加请求上下文
+columns.0.boxes.1.text.0|结果与预算
+columns.0.boxes.1.text.1|保存、点击等结果及其召回预算
+columns.1.boxes.0.text.0|Transformer 解码器
+columns.1.boxes.0.text.1|跨场景预训练，按场景微调
+columns.1.boxes.1.text.0|自回归生成
+columns.1.boxes.1.text.1|结果条件的 embedding，相似的合并
+columns.2.boxes.0.text.0|近邻搜索
+columns.2.boxes.0.text.1|每个 embedding 一次 Faiss 查询
+columns.3.boxes.0.text.1|交给已有的排序和混排阶段

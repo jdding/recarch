@@ -1,5 +1,5 @@
 title: 生成式召回
-summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十六张 RecArch 卡片之间做对比。
+summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十八张 RecArch 卡片之间做对比。
 framing:
 - 经典的召回栈通过对 embedding 做最近邻搜索来找到 item。生成式召回则让模型直接写出答案：它为每个 item 生成一段简短的编码，称为 Semantic ID，或者生成文本，再把输出映射回 item。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
 - 这个词涵盖了差别很大的设计。有的取代整个召回、预排序和排序的级联。有的只是多加一路召回通道。有的生成的不是 item ID。表格之后的各节解释了会改变成本和风险的那些差别。
@@ -54,6 +54,10 @@ members:
   approach: 一个 Transformer 为召回预测单层的 Semantic 编码，并给召回的 item 打分。在手机百度中，它的编码提供约 22.5% 的候选池。
 - id: tencent-tgr-2026
   approach: BARGE 模型用 beam search 生成 Semantic ID 路径，并把它们作为 embedding query 用在一路召回通道中。报告还涵盖排序和 slate 生成。
+- id: alibaba-forge-2025
+  approach: 一个用多模态特征和共现特征构建 Semantic ID 的基准。它调优后的 SID 方案在淘宝猜你喜欢的 7 天 A/B 中优于基础方案。
+- id: pinterest-pinrec-2025
+  approach: 一个跨场景预训练、再按场景微调的生成式召回模型。每个生成的 embedding 做一次最近邻查询，结果条件化把召回预算按结果类型拆分。
 differences:
 - heading: 模型写出的是什么
   text: 大多数系统写出 Semantic ID。DPGR 写出少量意图编码，再让 ANN 搜索为每个编码找到 item。AIGQ 写出 query 文本。URM 让 LLM 根据对目标的文字描述给出一组 item。GenPage 写出整个页面，每一行和每个实体各用一个 token。先检查这一点，因为它决定了除模型之外你还必须构建什么。

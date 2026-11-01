@@ -1,0 +1,69 @@
+surface|Meta 社交信息流，用户可操控的后期重排
+era_reason|这是一个 agent 式系统，用微调过的 Llama 3 8B 把文字、语音和界面反馈变成语义画像，再对信息流候选做重排和剔除，LLM 位于服务链路之中。
+tldr|Meta 的 Shape Your Feed 把用户反馈变成语义画像，由一个 8B 的 LLM 据此剔除并重排信息流候选；线上 A/B 中不喜欢帖子 -2.74%，忽略帖子 -1.70%。
+summary|Shape Your Feed，简称 SYF，在信息流上加了一层，让用户可以用文字、语音和一键控件来调整内容。系统有三个流程。感知流包含一个 Orchestrator，把请求路由到由意图识别、偏好合成和候选召回组成的推荐工具链；输出是一份包含正向和负向兴趣的语义画像，连同意图轨迹和候选缓存一起存放。服务流是叠在生产排序模型之上的后期层：先把 item 特征翻译成文本，为新兴趣加入缓存中的候选，再用一次 list-wise 的 LLM 调用给所有候选打与画像的对齐分，剔除低于阈值的候选，并把对齐分与生产的互动分融合。自进化流用于训练对齐打分器，也就是一个 Llama 3 8B 模型：先用 LLM 评审团的标签做 SFT，再用真实用户行为做 DPO，同时把 agent 的信号蒸馏回生产排序模型。线上测试把用户限制在上下文感知反馈药丸这一种界面上。
+core_idea|维护一份记录用户所说偏好的文本语义画像，用 8B 的 LLM 在生产排序之上据此剔除并重排候选。
+deployed_in|Meta 社交信息流，A/B 仅限反馈药丸界面
+scale_short|Llama 3 8B 的 list-wise 对齐打分器
+key_result|持续数月的线上 A/B 中不喜欢帖子 -2.74%，忽略帖子 -1.70%
+results_reported|离线，对齐打分器在评审团标注的评测集上：few-shot 基线的准确率为 83.84%，延迟 650 ms，SFT 为 98.21%，延迟 325 ms，SFT 加 DPO 为 98.85%，延迟 323 ms；F1 分别为 53.00%、76.97% 和 79.51%。在 1029 条人工样本组成的独立 golden 集上，SFT 加 DPO 的准确率为 95.8%，精确率 75.6%，召回率 74.7%，F1 为 75.1%；零样本的 Llama 3 8B 在该集合上准确率为 87.0%，Llama 3 70B 为 94.6%。线上，在一小部分随机化的生产流量上做了持续数月的大规模 A/B，用户为 18 岁以上的美国和加拿大用户，只开放上下文感知反馈药丸界面：忽略帖子 -1.70%，不喜欢帖子 -2.74%，兴趣消费 +0.16%，均相对生产基线。上下文感知药丸占药丸交互的 76.02%，静态药丸为 23.98%。整套系统给关键路径增加 +0.043% 的延迟，给直接层增加 +0.412% 的延迟。
+stages.0.model_family|Llama 3 8B，先 SFT 再 DPO，作为针对语义画像和一组候选的 list-wise 对齐打分器
+stages.0.details|对齐分是双向的：命中正向兴趣为正，命中不喜欢的话题为负。低于阈值的候选被剔除，最终分数是对齐分与生产互动预测的加权和。针对新的正向兴趣的候选召回异步执行，使用一个轻量排序模型。
+id_tokenization.approach|无；item 用自然语言描述，用户用文本语义画像表示
+id_tokenization.details|上下文生成模块把 item 的哈希 ID 和稠密向量解码为话题字符串和创作者元数据，放进 LLM 的 prompt。用户状态是带兴趣分数的半结构化文本画像，不是 embedding。
+features_signals.0|多模态用户输入：文字、语音，以及反馈药丸和设置页等界面操作
+features_signals.1|存放在记忆层中的语义画像和意图轨迹
+features_signals.2|帖子上下文，例如作者和正文
+features_signals.3|用于融合的生产互动预测
+training.mode|对齐打分器的离线 SFT 和定期 DPO
+training.objectives.0|用 LLM 评审团的标签做 SFT，推理理由由 Llama 4 Maverick 生成
+training.objectives.1|用来自显式用户反馈和评审标注上下文的选中与拒绝样本对做 DPO
+training.notes|SFT 用一台 8x80GB GPU 的机器，每个 epoch 约 2.5 GPU 小时，学习率 2e-5。DPO 用 2 台各 8xA100 80GB 的机器，batch size 为 4，学习率 2e-6，训练 1 个 epoch。评审模型如 Llama 4 Maverick 和 Qwen3-VL-235B-A22B，与人工判断的一致率为 96%。
+serving_infra|对齐打分器位于关键路径上，用一次 list-wise 推理给所有候选打分。感知流的查询量较低，候选召回异步执行；自进化流完全离线。
+scale.0.metric|对齐打分器
+scale.0.value|Llama 3 8B，并对比了 1B 和 70B 版本
+scale.1.metric|独立 golden 测试集
+scale.1.value|1029 条人工标注样本
+caveats.0|论文没有说明所在的 App 和信息流场景；本卡写作 Meta 社交信息流。
+caveats.1|离线准确率 98.85% 这个头条数字，是在与训练标签同一个 LLM 评审团给出的标签上测得的；在独立的人工标注集上准确率为 95.8%，F1 为 75.1%。
+caveats.2|6.1.3 节正文称 SFT 加 DPO 的准确率为 74.9% 和 99.4%，而表 2 中 SFT 为 0.749 和 0.992，SFT 加 DPO 为 0.794 和 0.994；本卡不使用表 2 的这些数字。
+caveats.3|线上测试只开放反馈药丸界面，所以这些提升只适用于使用该控件的用户；论文说很少给出反馈的用户会退回基线排序。
+caveats.4|论文没有给出线上指标的绝对值和用户数，提升均相对生产基线。
+unknown_fields.0|A/B 流量占比和用户数
+unknown_fields.1|服务硬件和 QPS
+unknown_fields.2|p99 延迟上限
+unknown_fields.3|SFT 和 DPO 数据集规模
+version_note|数字已对照 6 Aug 2026 的 arXiv v1 核对，该版本带有 ACM RecSys 2026 版权块和 DOI 10.1145/3773078.3831877。ACM Digital Library 页面返回 403，所以没有打开已发表页面本身。arXiv 上只有 v1。
+code.note|论文没有给出代码链接。
+deployment.scenario|Meta 社交信息流，在生产排序之上做后期重排和剔除；测试仅限上下文感知反馈药丸
+deployment.ab_traffic|一小部分随机化的线上生产流量，用户为 18 岁以上的美国和加拿大用户；占比未报告
+deployment.ab_duration|数月
+deployment.baseline|带静态反馈选项的生产排序栈
+deployment.online_lifts.0.metric|忽略帖子
+deployment.online_lifts.1.metric|不喜欢帖子
+deployment.online_lifts.2.metric|兴趣消费
+deployment.training_compute|SFT 用一台 8x80GB GPU 的机器，每个 epoch 约 2.5 GPU 小时；DPO 用 2 台各 8xA100 80GB 的机器，训练 1 个 epoch
+deployment.serving_latency|对齐打分耗时 323 ms；整套系统给关键路径增加 +0.043% 的延迟，给直接层增加 +0.412% 的延迟
+deployment.inference_cost|用一次推理对所有候选做 list-wise 打分，而不是逐个候选打分
+deployment.hardware|训练硬件如上；服务硬件未报告
+deployment.notes.0|70B 版本的精确率更高，但因内存占用和关键路径上的延迟被排除。
+results_table.online.0.setting|数月的线上 A/B，美国和加拿大用户
+results_table.online.1.setting|数月的线上 A/B，美国和加拿大用户
+results_table.online.2.setting|数月的线上 A/B，美国和加拿大用户
+results_table.online.0.method|完整的 SYF
+results_table.online.1.method|完整的 SYF
+results_table.online.2.method|完整的 SYF
+results_table.online.0.metric|不喜欢帖子
+results_table.online.1.metric|忽略帖子
+results_table.online.2.metric|兴趣消费
+results_table.online.0.versus|生产排序栈
+results_table.online.1.versus|生产排序栈
+results_table.online.2.versus|生产排序栈
+results_table.offline.0.setting|评审团标注的评测集
+results_table.offline.1.setting|1029 条样本的独立 golden 集
+results_table.offline.0.method|SFT 加 DPO
+results_table.offline.1.method|SFT 加 DPO
+results_table.offline.0.metric|准确率
+results_table.offline.1.metric|准确率
+results_table.offline.0.versus|few-shot 基线 83.84%
+results_table.offline.1.versus|零样本 Llama 3 8B 87.0%

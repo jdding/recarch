@@ -1,0 +1,105 @@
+id: dssm-microsoft-2013
+name: "DSSM"
+company: Microsoft Research
+surface: Web document ranking for a commercial search engine, evaluated offline on its query log
+year: 2013
+era: classic
+era_reason: "A neural semantic model with three layers, trained on clickthrough data and a template for later two-tower models; the schema bounds the deep era to 2016 onward, so a 2013 paper is filed as classic."
+first_public: "2013-10"
+venue: "CIKM 2013"
+venue_year: 2013
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/2505515.2505665"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: research
+evidence_level: research_only
+tldr: "DSSM runs a query and a document through the same kind of DNN over letter-trigram word hashing, scores them by cosine and trains on clicks; NDCG@1 is 0.362 against 0.319 for TF-IDF."
+summary: 'DSSM maps a query and a document to concept vectors in a common low-dimensional space with two deep networks and ranks documents by the cosine of the two vectors. Its input layer is word hashing: each word is wrapped with start and end marks, split into letter trigrams and represented as a count vector over letter trigrams, a fixed non-learned linear layer of about 30k units that shrinks a 500K-word vocabulary with few collisions and handles unseen words. Two further hidden layers of 300 units and an output layer of 128 units follow, with tanh activations. Training maximizes the conditional likelihood of the clicked document given the query, with a softmax over cosine scores, a smoothing factor tuned on held-out data, and each clicked document competing against four randomly sampled unclicked documents. The paper presents the family as an extension of LSA with supervised, nonlinear and large-vocabulary elements, and evaluates it on web document ranking where documents are represented by titles only.'
+paradigms:
+- two-tower
+- embedding-based-retrieval
+stages:
+- stage: rank
+  model_family: 'Two DNN towers with letter-trigram word hashing, a 128-d semantic vector per query or document and cosine scoring'
+  details: 'Evaluated as ranking of about 15 candidate URLs per query. Later work used the same structure for retrieval, but the paper itself frames it as document ranking.'
+id_tokenization:
+  approach: 'Letter-trigram word hashing, a fixed linear layer over a bag of letter n-grams'
+  details: 'A word is wrapped as #good# and split into trigrams, #go, goo, ood, od#. For a 40K-word vocabulary each word becomes a 10,306-dimensional vector with 2 collisions, and for 500K words a 30,621-dimensional vector with 22 collisions, a 0.0044% collision rate. Letter bigrams give 1,107 and 1,607 dimensions with 18 and 1,192 collisions.'
+features_signals:
+- 'Raw term counts of the query and of the document title, passed through letter-trigram word hashing'
+- 'Query-title pairs from clickthrough logs as the only supervision'
+training:
+  mode: 'Offline supervised training on clickthrough pairs'
+  objectives:
+  - 'Maximize the conditional likelihood of the clicked document given the query, with a softmax over cosine scores against four sampled unclicked documents'
+  notes: 'About 100 million query-title pairs for popular documents with rich click information, one year of logs. Mini-batch SGD with 1024 samples per batch, converging within 20 epochs; weights initialized from a uniform range and layer-wise pre-training gave no gain.'
+serving_infra: 'Not described; the paper evaluates offline ranking quality only.'
+scale:
+- metric: Training pairs
+  value: about 100 million query-title pairs from one year of query logs
+  note: paper, Sec 4.1
+- metric: Evaluation set
+  value: 16,510 English queries with about 15 URLs each, human-labelled on a 5-level scale
+  note: paper, Sec 4.1
+- metric: Network
+  value: word hashing layer of about 30k units, two hidden layers of 300, output of 128
+  note: paper, Sec 3.4
+results_reported: 'Offline NDCG at 1, 3 and 10 on 16,510 queries with 2-fold cross validation and paired t-tests at p < 0.05. L-WH DNN, the best DSSM, scores 0.362, 0.425 and 0.498. Baselines: TF-IDF 0.319, 0.382, 0.462; BM25 0.308, 0.373, 0.455; word translation model 0.332, 0.400, 0.478; LSA 0.298, 0.372, 0.455; PLSA 0.295, 0.371, 0.456; DAE 0.310, 0.377, 0.459; BLTM-PR 0.337, 0.403, 0.480; DPM 0.329, 0.401, 0.479. DSSM variants: DNN without word hashing on a 40K vocabulary 0.342, 0.410, 0.486; L-WH linear 0.357, 0.422, 0.495; L-WH non-linear 0.357, 0.421, 0.494. The paper states a margin of 2.5-4.3% in NDCG@1 over the competing methods, 3.2 points in NDCG@1 for supervised DNN over DAE with the same 40K vocabulary, and 0.4-0.5 point from raising non-linear layers from one to three.'
+caveats:
+- 'Offline evaluation only: the paper reports no A/B test and makes no production deployment claim, and the authors name a commercial search engine without saying whether DSSM served traffic; it is admitted through the exemption for papers cited 500 or more times.'
+- 'Documents are represented by their titles only, and the evaluation set is assumed to contain only new or tail URLs without click information, so the setting is narrower than full web ranking.'
+- 'All baselines, including LSA, PLSA, DAE, BLTM-PR and DPM, were re-implemented by the authors, and the DNN and DAE rows use a 40K vocabulary while the best DSSM uses 500K with word hashing; the paper cites a baseline margin of 2.5-4.3% without defining it as relative or absolute.'
+- 'The text refers to DAE and LSA as Rows 3 and 2 of Table 2 while the table lists them as Rows 6 and 4, so some row references in the discussion do not match the table.'
+unknown_fields:
+- Production deployment and online metrics
+- Serving latency and hardware
+- Training compute
+- Official code
+sources:
+- title: "Learning Deep Structured Semantic Models for Web Search using Clickthrough Data, CIKM 2013"
+  url: https://doi.org/10.1145/2505515.2505665
+  type: paper
+version_note: 'Read from the author-hosted ACM-format PDF of the CIKM 2013 paper, which carries the CIKM 2013 copyright block. The ACM Digital Library page itself was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://posenhuang.github.io/papers/cikm2013_DSSM_fullversion.pdf
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, model, experiments, conclusion'
+  verified_on: '2026-11-01'
+  published_pdf: 'Author-hosted CIKM 2013 PDF in ACM format, read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+core_idea: Project query and document into one semantic space with DNNs over letter-trigram word hashing, and train on clickthrough data to rank clicked documents highest.
+deployed_in: Evaluated offline on a commercial search engine query log, no deployment claim
+scale_short: About 100 million training pairs, 128-d semantic vectors, 500K-word vocabulary
+key_result: 'Offline: NDCG@1 0.362 against 0.319 for TF-IDF and 0.337 for BLTM-PR on 16,510 queries'
+results_table:
+  offline:
+  - setting: 16,510 web queries, title-only ranking
+    method: DSSM, L-WH DNN
+    metric: NDCG@1
+    result: '0.362'
+    versus: TF-IDF 0.319, BM25 0.308
+  - setting: 16,510 web queries, title-only ranking
+    method: DSSM, L-WH DNN
+    metric: NDCG@10
+    result: '0.498'
+    versus: TF-IDF 0.462, BLTM-PR 0.480
+deployment:
+  online_evidence: no_online_claim
+  scenario: Offline ranking evaluation on a commercial search engine query log
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  basis: full_text
+  checked_on: '2026-11-01'

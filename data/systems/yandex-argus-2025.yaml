@@ -1,0 +1,140 @@
+id: yandex-argus-2025
+name: "ARGUS"
+company: Yandex
+surface: Yandex Music recommendations, daily user embeddings as a feature for the production ranker
+year: 2025
+era: generative
+era_reason: "The central claim is scaling an autoregressive transformer on user histories to a billion parameters, with next-item and feedback prediction as the pre-training task; the model reaches production as a daily feature of a gradient-boosted ranker."
+first_public: "2025-07"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770854.3783916"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Yandex's ARGUS pre-trains a transformer on user histories, then fine-tunes it into a daily ranker feature; online it adds +2.26% total listening time and +6.37% like likelihood."
+summary: 'ARGUS, AutoRegressive Generative User Sequential framework, trains a large transformer on user histories of context, item and feedback events. Pre-training has two objectives: next-item prediction with a logQ-corrected sampled softmax over 8192 in-batch and 8192 uniform negatives, which imitates the logging policy and organic navigation, and feedback prediction as multi-output classification, which models user preferences. A simplified version merges each context-item-feedback triplet into one interaction embedding. Fine-tuning then turns the encoder into an impression-aware, one-pass, two-tower ranker: one causal pass over the history produces user states, impressions are matched to states with a simulated 24-hour data delay, and a pairwise logistic loss is applied to dot-product scores. User embeddings are computed once per day offline and stored in a key-value system, and the score is used as an extra feature of the production gradient-boosted ranker. The paper scales the encoder from 3.2M to 1.007B parameters and deploys a 126.0M encoder with context length 8192 on a music streaming platform.'
+paradigms:
+- sequential-transformer
+- foundation-model
+- two-tower
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Transformer encoder (L10 H1024, 126.0M parameters in production) pre-trained on next-item and feedback prediction, fine-tuned into a two-tower scorer whose output is a feature of the production ranker'
+  details: 'The production ranker is a gradient-boosted decision tree ensemble trained with a pairwise logistic loss on one thousand features, including outputs of earlier transformer two-tower models. The ARGUS score is added to it as a feature. User embeddings are refreshed daily and scored with a dot product, which the paper says is much cheaper than real-time target-aware schemes.'
+id_tokenization:
+  approach: 'None; items use a unified ID embedding plus item features'
+  details: 'A 3-way lookup for item ID into a shared matrix of 130M parameters (512k embeddings of size 256), not counted in encoder size. The paper says the ItemID feature can be omitted and item embeddings built from content and metadata features.'
+features_signals:
+- 'User history of context, item and feedback events, with the surface, device and recommendation settings as context'
+- 'Item features including ItemID and ArtistID'
+- 'Implicit feedback such as listening duration and skips, and explicit likes'
+training:
+  mode: Offline pre-training on user histories, then offline fine-tuning for ranking
+  objectives:
+  - 'Next-item prediction with logQ-corrected sampled softmax and mixed negative sampling over 8192 in-batch and 8192 uniform negatives'
+  - 'Feedback prediction as multi-task cross-entropy over consumption and engagement signals'
+  - 'Fine-tuning with a pairwise logistic loss over temporally adjacent impressions with different feedback'
+  notes: 'The dataset samples one year of activity of tens of millions of users and holds over 300B user-item interactions. Training used PyTorch with DDP on 64–256 A100 80GB GPUs for 1 day to 1 week depending on model size, for a single epoch. Sequence length is 512 for pre-training and 2048 for fine-tuning in the scaling study, and 8192 for the deployed model.'
+serving_infra: 'Offline: user embeddings are computed once per day in batch and stored in a key-value system, and impressions are scored with a dot product. The paper also integrated a smaller real-time variant directly into the production ranker after the initial submission.'
+scale:
+- metric: Encoder size, deployed
+  value: 126.0M parameters (L10 H1024)
+  note: paper, Table 6
+- metric: Encoder size, largest tested
+  value: 1.007B parameters (L20 H2048), not tested online
+  note: paper, Table 3
+- metric: Context length, deployed
+  value: 8192 events
+  note: paper, Table 6
+- metric: Training interactions
+  value: over 300B
+  note: paper, Sec 4.1.1
+results_reported: 'Online A/B on the music platform, ARGUS (Offline V4, context 8192, 126.0M encoder) against the existing production stack: total listening time +2.26% and like likelihood +6.37%; the paper calls these the strongest transformer-driven online gains to date. Earlier deployments gave +0.52% and +1.11% for V1, +1.00% and +0.73% for V2, +0.73% and +5.00% for V3, and +0.32% and +1.38% for the Real-time V1, each measured against the previous deployments. Offline scaling, as pair accuracy uplift over the production ranker when used as a feature: 3.2M parameters +1.35%, 18.9M +1.82%, 126.0M +2.32%, 1.007B +2.66%, and a 176.0M HSTU encoder +2.34%. Standalone, the 1.007B model is -4.78% against the production ranker. Next-item entropy falls by 10.36% from the smallest to the largest model. Fine-tuning context length 512, 2048 and 8192 gives +1.01%, +2.32% and +2.77%. Without pre-training, one year of fine-tuning gives +1.17%, and with pre-training one week of fine-tuning gives +0.63% against +2.32% for one year.'
+caveats:
+- 'The online A/B has no stated duration, traffic share or user count, and the paper does not report absolute values of total listening time or like likelihood.'
+- 'Gains in Table 6 are measured against the existing production stack at each step and the paper says they are cumulative, so the ARGUS row is not an isolated comparison against a no-transformer baseline.'
+- 'The largest 1.007B encoder was not tested online because of the cost of large-scale online experiments; the deployed encoder has 126.0M parameters.'
+- 'Offline, ARGUS alone is below the production ranker, for example -5.33% for the 126.0M encoder, and helps only as an extra feature; the paper explains that it runs offline with a 24-hour lag and sees only user history.'
+- 'The platform is described only as a large-scale music streaming platform; the card names Yandex Music from the acknowledgments, which thank the Yandex Music Recommendations team.'
+- 'The authors have left Yandex, per the footnote; the paper says the same architecture was also applied to an e-commerce marketplace, grocery delivery and advertising, without numbers.'
+unknown_fields:
+- A/B duration, traffic share and number of users
+- Serving hardware, QPS and latency
+- Training compute of the deployed 126.0M model
+- Absolute values of the online metrics
+sources:
+- title: "Scaling Recommender Transformers to One Billion Parameters, KDD 2026"
+  url: https://doi.org/10.1145/3770854.3783916
+  type: paper
+- title: "Scaling Recommender Transformers to One Billion Parameters, arXiv 2507.15994"
+  url: https://arxiv.org/abs/2507.15994
+  type: paper
+version_note: 'Numbers checked against arXiv v2 of 18 Feb 2026, which carries the ACM KDD 2026 copyright block and DOI 10.1145/3770854.3783916. The ACM Digital Library page returned 403, so the published page itself was not opened. The abstract and Section 1 say a 126M-parameter model was deployed; Table 6 gives 126.0M.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2507.15994
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, pre-training and fine-tuning method, experimental setup, scaling, HSTU comparison, two-stage ablation, context length, real-world experiments, discussion, conclusion'
+  verified_on: '2026-11-01'
+  published_pdf: 'arXiv v2 in final ACM KDD 2026 format, read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+  note: The paper links no code; its dataset is proprietary.
+core_idea: Pre-train a transformer on both next-item and feedback prediction over long user histories, then fine-tune it into a daily two-tower score that the production ranker takes as a feature.
+deployed_in: Yandex Music, as a feature of the production ranker
+scale_short: 126.0M encoder, context 8192
+key_result: Total listening time +2.26% and like likelihood +6.37% in online A/B tests
+results_table:
+  online:
+  - setting: Online A/B, context 8192 and 126.0M encoder
+    method: ARGUS (Offline V4)
+    metric: Total listening time
+    result: +2.26%
+    versus: Existing production stack
+  - setting: Online A/B, context 8192 and 126.0M encoder
+    method: ARGUS (Offline V4)
+    metric: Like likelihood
+    result: +6.37%
+    versus: Existing production stack
+  offline:
+  - setting: Pair accuracy uplift as a feature, 1.007B encoder
+    method: ARGUS Large
+    metric: Pair accuracy uplift
+    result: +2.66%
+    versus: 3.2M encoder +1.35%
+  - setting: Pair accuracy uplift as a feature, fine-tuning context
+    method: ARGUS Medium, context 8192
+    metric: Pair accuracy uplift
+    result: +2.77%
+    versus: Context 512 +1.01%
+deployment:
+  online_evidence: online_numbers
+  scenario: Yandex Music, daily offline user embeddings scored by dot product and used as a feature of the production gradient-boosted ranker
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Existing production stack, whose ranker is a gradient-boosted tree ensemble on one thousand features
+  online_lifts:
+  - metric: Total listening time
+    value: +2.26%
+  - metric: Like likelihood
+    value: +6.37%
+  training_compute: 'Experiments used 64–256 A100 80GB GPUs for 1 day to 1 week depending on model size; the deployed model is not singled out'
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: 'Embeddings are computed once per day in batch and scored with a dot product; the paper says this is substantially cheaper than real-time target-aware schemes'
+  hardware: 'Training on A100 80GB GPUs as above; serving hardware not reported'
+  notes:
+  - 'A smaller real-time variant was later integrated into the production ranker, with complementary gains over the daily offline embeddings; no numbers are given.'
+  fulltext_refs:
+  - 'Sec 4.6 and Table 6: ARGUS Offline V4 with context 8192 and a 126.0M encoder, total listening time +2.26%, like likelihood +6.37%'
+  - 'Sec 4.1.2: the production ranker is a gradient-boosted tree ensemble on one thousand features'
+  - 'Sec 4.1.4 and 3.2: training on 64–256 A100 80GB GPUs for 1 day to 1 week; daily embeddings stored in a key-value system and scored with a dot product'
+  basis: full_text
+  checked_on: '2026-11-01'

@@ -1,0 +1,12 @@
+alt|从左到右：2 分钟的直播切片和短视频切片经过跨域多模态编码器，RQ-KMeans 把向量变成切片 LUCID，对各切片做多数投票得到直播间 LUCID，两者用前缀 n-gram 表查表后，作为 token 与用户特征一起进入排序模型，item ID 已被去掉。
+caption.note|已简化；三个预热阶段没有画出。
+columns.0.boxes.0.text.0|2 分钟切片
+columns.0.boxes.0.text.1|直播和短视频的画面、ASR、OCR、元数据
+columns.1.boxes.0.text.0|多模态编码器
+columns.1.boxes.0.text.1|SigLIP2-base 加 Qwen3-Embedding-0.6B，输出 128 维向量
+columns.2.boxes.0.text.1|4 层，每层 64 个聚类：切片 LUCID
+columns.2.boxes.1.text.1|对各切片逐层多数投票
+columns.3.boxes.0.text.0|基于 token 的排序模型
+columns.3.boxes.0.text.1|前缀 n-gram 的 LUCID token、用户 token，item ID 已去掉
+columns.4.boxes.0.text.0|直播排序
+columns.4.boxes.0.text.1|候选直播间的分数

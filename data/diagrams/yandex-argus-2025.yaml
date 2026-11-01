@@ -1,0 +1,28 @@
+# Redrawn, simplified diagram. Source: Khrylchenko et al., "Scaling Recommender Transformers to One Billion Parameters" (KDD 2026), paper Fig. 1 and Fig. 3.
+alt: "Left to right: a user history of context, item and feedback events enters a transformer pre-trained with next-item and feedback prediction; fine-tuning turns it into a one-pass two-tower scorer that produces daily user embeddings stored in a key-value system; the dot-product score is a feature of the production ranker."
+caption:
+  fig: "Fig. 1 and Fig. 3"
+  work: "Scaling Recommender Transformers to One Billion Parameters, KDD 2026"
+  url: "https://arxiv.org/abs/2507.15994"
+  note: "Simplified; the merged-embedding variant and the loss details are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: hist, kind: input, text: ["User history", "context, item and feedback events"]}
+      - {id: imp, kind: input, text: ["Impressions", "recommended items to be ranked"]}
+  - label: Pre-training
+    boxes:
+      - {id: tf, kind: module, text: ["Causal transformer", "next-item prediction and feedback prediction"]}
+  - label: Fine-tuning and serving
+    boxes:
+      - {id: tt, kind: module, text: ["One-pass two-tower scorer", "user states matched to impressions with a 24-hour delay"]}
+      - {id: kv, kind: module, text: ["Daily user embeddings", "stored in a key-value system"]}
+  - label: Output
+    boxes:
+      - {id: feat, kind: output, text: ["Production ranker feature", "dot-product score added to the ranker"]}
+edges:
+  - [hist, tf]
+  - [tf, tt]
+  - [imp, tt]
+  - [tt, kv]
+  - [kv, feat]

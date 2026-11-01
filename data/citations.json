@@ -95,6 +95,30 @@
    }
   ]
  },
+ "alibaba-forge-2025": {
+  "count": 44,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/3591dd4a2fdd90ffb7aee38d52feda6fa9ded229",
+  "fetched_on": "2026-11-01",
+  "matched_title": "FORGE: Forming Semantic Identifiers for Generative Retrieval in Industrial Datasets",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3770855.3817477"
+  ],
+  "papers": [
+   {
+    "name": "FORGE",
+    "count": 44,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/3591dd4a2fdd90ffb7aee38d52feda6fa9ded229",
+    "matched_title": "FORGE: Forming Semantic Identifiers for Generative Retrieval in Industrial Datasets",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3770855.3817477"
+    ]
+   }
+  ]
+ },
  "alibaba-lum-2025": {
   "count": 29,
   "source": "Semantic Scholar",
@@ -115,6 +139,30 @@
     "matched_year": 2025,
     "ids": [
      "arxiv:2502.08309"
+    ]
+   }
+  ]
+ },
+ "alibaba-sort-2026": {
+  "count": 4,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1e409094e56c4f0ef8e55e098f4ecc78977153e4",
+  "fetched_on": "2026-11-01",
+  "matched_title": "SORT: A Systematically Optimized Ranking Transformer for Industrial-scale Recommenders",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3799682.3840109"
+  ],
+  "papers": [
+   {
+    "name": "SORT",
+    "count": 4,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1e409094e56c4f0ef8e55e098f4ecc78977153e4",
+    "matched_title": "SORT: A Systematically Optimized Ranking Transformer for Industrial-scale Recommenders",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3799682.3840109"
     ]
    }
   ]
@@ -211,6 +259,30 @@
     "matched_year": 2026,
     "ids": [
      "doi:10.1145/3773078.3831936"
+    ]
+   }
+  ]
+ },
+ "bytedance-fluid-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/c2c661b216675c07dd3f34230548e4ebf87ff36e",
+  "fetched_on": "2026-11-01",
+  "matched_title": "FLUID: From Ephemeral IDs to Multimodal Semantic Codes for Billion-Scale Livestreaming Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831918"
+  ],
+  "papers": [
+   {
+    "name": "FLUID",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/c2c661b216675c07dd3f34230548e4ebf87ff36e",
+    "matched_title": "FLUID: From Ephemeral IDs to Multimodal Semantic Codes for Billion-Scale Livestreaming Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831918"
     ]
    }
   ]
@@ -539,6 +611,30 @@
    }
   ]
  },
+ "dssm-microsoft-2013": {
+  "count": 2527,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/fdb813d8b927bdd21ae1858cafa6c34b66a36268",
+  "fetched_on": "2026-11-01",
+  "matched_title": "Learning deep structured semantic models for web search using clickthrough data",
+  "matched_year": 2013,
+  "ids": [
+   "doi:10.1145/2505515.2505665"
+  ],
+  "papers": [
+   {
+    "name": "DSSM",
+    "count": 2527,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/fdb813d8b927bdd21ae1858cafa6c34b66a36268",
+    "matched_title": "Learning deep structured semantic models for web search using clickthrough data",
+    "matched_year": 2013,
+    "ids": [
+     "doi:10.1145/2505515.2505665"
+    ]
+   }
+  ]
+ },
  "esmm-alibaba-2018": {
   "count": 586,
   "source": "Semantic Scholar",
@@ -727,6 +823,30 @@
     "matched_year": 2025,
     "ids": [
      "doi:10.1145/3774904.3792818"
+    ]
+   }
+  ]
+ },
+ "kuaishou-capts-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/36e15586232095b9e1d1dad58d0c6a77a8a21c63",
+  "fetched_on": "2026-11-01",
+  "matched_title": "CAPTS: Channel-Aware, Preference-Aligned Trigger Selection for Multi-Channel Item-to-Item Retrieval",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831883"
+  ],
+  "papers": [
+   {
+    "name": "CAPTS",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/36e15586232095b9e1d1dad58d0c6a77a8a21c63",
+    "matched_title": "CAPTS: Channel-Aware, Preference-Aligned Trigger Selection for Multi-Channel Item-to-Item Retrieval",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831883"
     ]
    }
   ]
@@ -1067,6 +1187,30 @@
    }
   ]
  },
+ "meta-shape-your-feed-2026": {
+  "count": 1,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/3e00fc75ab060b9d9aacfdce4def1af205256031",
+  "fetched_on": "2026-11-01",
+  "matched_title": "Shape Your Feed: An LLM-based Agentic System for Conversational Recommendation",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831877"
+  ],
+  "papers": [
+   {
+    "name": "Shape Your Feed",
+    "count": 1,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/3e00fc75ab060b9d9aacfdce4def1af205256031",
+    "matched_title": "Shape Your Feed: An LLM-based Agentic System for Conversational Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831877"
+    ]
+   }
+  ]
+ },
  "meta-unity-2026": {
   "count": 0,
   "source": "Semantic Scholar",
@@ -1399,6 +1543,30 @@
     "matched_year": 2025,
     "ids": [
      "doi:10.1145/3705328.3748050"
+    ]
+   }
+  ]
+ },
+ "pinterest-pinrec-2025": {
+  "count": 20,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/70577bfe325ff4f42a2c50e0bb03e44228eba2af",
+  "fetched_on": "2026-11-01",
+  "matched_title": "PinRec: Unified Generative Retrieval Model for Pinterest Recommender Systems",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3770855.3818462"
+  ],
+  "papers": [
+   {
+    "name": "PinRec",
+    "count": 20,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/70577bfe325ff4f42a2c50e0bb03e44228eba2af",
+    "matched_title": "PinRec: Unified Generative Retrieval Model for Pinterest Recommender Systems",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3770855.3818462"
     ]
    }
   ]
@@ -1786,6 +1954,30 @@
     "matched_year": 2024,
     "ids": [
      "doi:10.1145/3589335.3648314"
+    ]
+   }
+  ]
+ },
+ "yandex-argus-2025": {
+  "count": 23,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1001f61f4964d5849dd0dbdd09397baf11ef30c1",
+  "fetched_on": "2026-11-01",
+  "matched_title": "Scaling Recommender Transformers to One Billion Parameters",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3770854.3783916"
+  ],
+  "papers": [
+   {
+    "name": "ARGUS",
+    "count": 23,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1001f61f4964d5849dd0dbdd09397baf11ef30c1",
+    "matched_title": "Scaling Recommender Transformers to One Billion Parameters",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3770854.3783916"
     ]
    }
   ]

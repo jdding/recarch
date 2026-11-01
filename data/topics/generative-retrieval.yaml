@@ -1,5 +1,5 @@
 title: Generative retrieval
-summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across sixteen RecArch cards.
+summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across eighteen RecArch cards.
 framing:
   - A classic retrieval stack finds items by nearest-neighbor search over embeddings. Generative retrieval has a model write the answer. It produces a short code for each item, called a semantic ID, or it produces text, and the output is mapped back to items. All systems below report production use except TIGER, which reports public datasets only.
   - The word covers very different designs. Some replace the whole retrieval, pre-rank and rank cascade. Some add one more retrieval channel. Some generate things other than item IDs. The sections after the table explain the differences that change cost and risk.
@@ -54,6 +54,10 @@ members:
     approach: One Transformer predicts a single-layer semantic code for retrieval and scores the retrieved items. In Mobile Baidu its codes supply about 22.5% of the candidate pool.
   - id: tencent-tgr-2026
     approach: The BARGE model generates semantic ID paths by beam search and uses them as an embedding query in a retrieval channel. The report also covers ranking and slate generation.
+  - id: alibaba-forge-2025
+    approach: A benchmark for building semantic IDs from multimodal and co-occurrence features. Its tuned SID recipe beat the base recipe in a 7-day A/B on Taobao Guess You Like.
+  - id: pinterest-pinrec-2025
+    approach: One generative retriever pre-trained across surfaces and fine-tuned per surface. Each generated embedding runs a nearest-neighbor query, and outcome conditioning splits the retrieval budget.
 differences:
   - heading: What the model writes
     text: Most systems write semantic IDs. DPGR writes a few intent codes and lets ANN search find the items for each code. AIGQ writes query text. URM asks an LLM for a set of items from a text description of the goal. GenPage writes a whole page, with one token for each row and each entity. Check this first, because it decides what you must build besides the model.

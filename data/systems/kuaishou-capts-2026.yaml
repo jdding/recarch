@@ -1,0 +1,142 @@
+id: kuaishou-capts-2026
+name: "CAPTS"
+company: Kuaishou
+surface: Kwai short-video feed, trigger selection for multi-channel item-to-item retrieval
+year: 2026
+era: deep
+era_reason: "A learned trigger scorer, a shared encoder with target attention and per-channel value and uniqueness heads, sits in front of existing item-to-item retrievers; there is no generative model or foundation model in the loop."
+first_public: "2026-02"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831883"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Kuaishou's CAPTS learns which history items should seed each item-to-item retrieval channel; in the Kwai online A/B it gave total app time spent +0.713% and average app time spent per device +0.586%."
+summary: 'CAPTS targets the first step of two-hop U2I2I retrieval, choosing a small set of history items, called triggers, that seed several item-to-item retrieval channels at once. Production practice picks triggers by rules such as top watch time or by a learned scorer tuned per channel; the paper names two flaws, biased value attribution and uncoordinated routing. The Value Attribution Module replays each channel offline at the request time, matches the items it would retrieve from a trigger against the next 100 effective views of the user, and sums the watch time on the matches as the trigger value for that channel. The Channel-Adaptive Trigger Routing module is a shared encoder with target attention over the 50 most recent effective views, with a value head, a bounded calibrator and a uniqueness head for each channel; the routing score is the calibrated value plus 0.4 times the predicted uniqueness. In serving, recent interactions are scored online and long-term triggers come from a nearline cache. The existing I2I retrievers, indices and rankers stay unchanged. Four channels were live in the A/B, Swing, Marm, SimLR and MMU.'
+paradigms:
+- item-cf
+- multi-task
+stages:
+- stage: retrieval
+  model_family: 'Shared encoder with target attention over the 50 most recent effective views, and for each I2I channel a value head, a bounded calibrator and a uniqueness head'
+  details: 'Trigger-to-channel routing under a per-channel quota. The channels are Swing I2I as collaborative filtering, Marm I2I as a deep embedding-matching channel, MMU I2I as a multi-modal content channel and SimLR I2I as a pairwise logistic-regression channel; each returns the top 50 items per trigger. The routing score is the calibrated value plus eta times the predicted uniqueness, with eta 0.4.'
+id_tokenization:
+  approach: 'None; triggers are logged history items and retrieval uses the existing I2I channels'
+  details: 'CAPTS selects among existing item IDs and adds no new item representation. Watch time and time gaps are discretized into buckets.'
+features_signals:
+- 'User representation and request context features'
+- 'Trigger item representation'
+- 'Most recent 50 effective views as the behavior sequence, with watch time and time gaps in buckets'
+- 'Supervision from replayed channel retrieval matched to the next 100 effective views'
+training:
+  mode: Offline training on replayed logs, with periodic weight synchronization to serving
+  objectives:
+  - Weighted binary cross-entropy on the per-channel value label
+  - Intensity-aware calibration loss
+  - Diversity loss on the uniqueness head, with weights lambda and mu
+  notes: 'The value label is 1 when the clipped and rescaled watch time on retrieved and consumed items reaches a channel threshold; the scale is 100 and the clipping cap is 6. The replay uses an artifact snapshot rolled back by about 20 minutes to avoid temporal leakage.'
+serving_infra: 'Online scoring of recent interactions, typically 10^2 to 10^3 candidates, plus a nearline cache of long-term triggers, typically 10^3 to 10^4 candidates, refreshed daily in off-peak hours; the same routing scores assign triggers to channels under per-channel budgets before ranking.'
+scale:
+- metric: Offline dataset Kwai-Industrial
+  value: 1,071,280 users, 27,361,781 items and 1,230,150,824 interactions
+  note: paper, Table 1
+- metric: Retrieval channels in the A/B
+  value: 4 I2I channels, Swing, Marm, SimLR and MMU
+  note: paper, Sec 4.4.1
+results_reported: 'Offline on Kwai-Industrial, overall Recall@K over 3 I2I channels: CAPTS reaches R@100 0.0255, R@500 0.0963, R@1000 0.1519 and R@2000 0.1994, which is +25.0%, +17.9%, +13.8% and +10.7% relative to the best baseline at each K. Online, in a large-scale A/B on Kwai with 4 I2I channels, CAPTS against the incumbent rule-based policy: daily active devices +0.115%, total app time spent +0.713%, average app time spent per device +0.586%, total video watch time +0.506% and average watch time per device +0.395%. The summed exposure share of the four I2I channels rises from 26.24% to 27.55%. The paper says the localized change has also supported deployment in the Kwai e-commerce recommendation scenario.'
+caveats:
+- 'CAPTS is a trigger-selection module in front of existing retrievers, so it is narrower than a full retrieval system; the full pipeline is shown only at the level of Figure 4.'
+- 'The A/B duration, traffic share and number of users are not given in the paper.'
+- 'Table 6 is titled relative improvement over the strong baseline, while the text says control is the incumbent policy; the card reads it as the incumbent rule-based policy.'
+- 'Offline gains are measured with three channels replayed, while the A/B has a fourth channel, SimLR.'
+unknown_fields:
+- A/B duration and traffic share
+- training compute and hardware
+- serving latency, QPS and model size
+- training data window and update frequency
+sources:
+- title: "CAPTS: Channel-Aware, Preference-Aligned Trigger Selection for Multi-Channel Item-to-Item Retrieval, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831883
+  type: paper
+- title: "CAPTS, arXiv 2602.12564"
+  url: https://arxiv.org/abs/2602.12564
+  type: paper
+version_note: 'Numbers checked against arXiv v2 of 22 Jul 2026, which is typeset in the final ACM RecSys 2026 format with the DOI 10.1145/3773078.3831883. The ACM Digital Library page returned 403, so the published page itself was not opened. arXiv v1 was posted in Feb 2026.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.12564
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, problem setup, VAM and CATR design, production deployment, all offline experiments, online A/B and channel analysis, appendices on implementation, replay and cross-channel analysis'
+  verified_on: '2026-11-01'
+  published_pdf: 'arXiv v2 in final ACM RecSys 2026 format, read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+  note: The paper links no code.
+core_idea: Credit each history item by the watch time of the items it would retrieve, then route items to the channels where they add the most.
+deployed_in: Kwai short-video feed, trigger selection for 4 I2I channels
+scale_short: 4 I2I channels; offline set of 1,230,150,824 interactions
+key_result: Total app time spent +0.713% and average app time spent per device +0.586% in the Kwai online A/B
+results_table:
+  online:
+  - setting: Kwai online A/B, 4 I2I channels
+    method: CAPTS
+    metric: Total app time spent
+    result: +0.713%
+    versus: Incumbent rule-based trigger policy
+  - setting: Kwai online A/B, 4 I2I channels
+    method: CAPTS
+    metric: Average app time spent per device
+    result: +0.586%
+    versus: Incumbent rule-based trigger policy
+  - setting: Kwai online A/B, 4 I2I channels
+    method: CAPTS
+    metric: Daily active devices
+    result: +0.115%
+    versus: Incumbent rule-based trigger policy
+  offline:
+  - setting: Kwai-Industrial, overall over 3 channels
+    method: CAPTS
+    metric: R@2000
+    result: '0.1994'
+    versus: Best baseline, relative +10.7%
+  - setting: Kwai-Industrial, overall over 3 channels
+    method: CAPTS
+    metric: R@100
+    result: '0.0255'
+    versus: Best baseline, relative +25.0%
+deployment:
+  online_evidence: online_numbers
+  scenario: Kwai, Kuaishou's international short-video platform, trigger selection for 4 I2I retrieval channels
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Incumbent trigger selection policy, with the same four I2I channels, quotas and ranking
+  online_lifts:
+  - metric: Total app time spent
+    value: +0.713%
+  - metric: Average app time spent per device
+    value: +0.586%
+  - metric: Daily active devices
+    value: +0.115%
+  - metric: Total video watch time
+    value: +0.506%
+  - metric: Average watch time per device
+    value: +0.395%
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: 'Online scoring covers 10^2 to 10^3 recent candidates and a nearline cache covers 10^3 to 10^4 long-term candidates; the paper says only lightweight scoring, routing and cache lookup are added.'
+  hardware: not_reported
+  notes:
+  - 'Each I2I channel returns the top 50 items per trigger.'
+  fulltext_refs:
+  - 'Sec 4.4.1 and Table 6: online A/B lifts, with the four channels Swing, Marm, SimLR and MMU'
+  - 'Sec 3.3: 10^2 to 10^3 online candidates, 10^3 to 10^4 nearline candidates, lightweight scoring only'
+  - 'Appendix D: top 50 items per trigger per channel'
+  basis: full_text
+  checked_on: '2026-11-01'

@@ -1,0 +1,142 @@
+id: alibaba-sort-2026
+name: "SORT"
+company: Alibaba International
+surface: AliExpress HomePage, DetailPage, ShoppingCart and AfterPayment ranking
+year: 2026
+era: generative
+era_reason: "The central claim is a scalable Transformer ranker in the HSTU line: one unified token sequence, next-item generative pre-training for the item embeddings, and scaling curves over data, model and sequence length, so scaling is the headline."
+first_public: "2026-03"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3799682.3840109"
+added_on: "2026-11-01"
+last_verified: "2026-11-01"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Alibaba International's SORT is a Transformer ranker with request-centric samples and generative pre-training; on AliExpress it gives orders +7.47%, GMV +8.65% and latency -62%."
+summary: 'SORT replaces the conventional DLRM ranker on AliExpress with a Transformer built around the sparse-feature and sparse-label problems of ranking. Samples are request-centric: one sample holds the user history, the user profile and all candidates of a request, so shared features are processed once. The input is one sequence, [BOS; history tokens; SEP; profile tokens; SEP; candidate tokens], with one token per item built from concatenated feature embeddings. Attention uses RoPE, QKNorm and a gate after the attention output, a diagonal mask so candidates only see themselves and the history, local attention over most history tokens, and query pruning that keeps at most 128 non-candidate tokens at the last layer. The FFN is a DeepSeek-style sparse MoE with SwishGLU. A ranking head predicts click, cart and purchase. There is no user ID feature, and item embeddings are first pre-trained by next-item prediction over click sequences, then transferred and frozen while the ranker trains, which stops the overfitting seen with plain transfer. Training uses the RecIS framework with Megablocks for MoE, a custom sparse attention operator and multi-process-group communication; inference uses static graphs, sparse attention kernels, fusion, half precision and KV caching.'
+paradigms:
+- sequential-transformer
+- multi-task
+stages:
+- stage: rank
+  model_family: 'Transformer ranker with sparse MoE FFN, QKNorm, gated attention, local attention and query pruning over one sequence of history, profile and candidate tokens; the deployed model is base scale with 85M non-embedding parameters'
+  details: 'Predicts click, cart and purchase with a shared ranking head and a binary cross-entropy loss per objective, weighted and summed. Candidates attend only to themselves and the history and profile tokens, so one forward pass scores many candidates.'
+id_tokenization:
+  approach: 'One token per item from concatenated feature embeddings, no semantic IDs'
+  details: 'Each history and candidate item is one token, made by embedding lookups on its raw features, concatenation, a linear projection and normalization; the profile becomes several tokens. BOS and SEP special tokens mark boundaries and act as attention sinks. Multi-token candidates were tried and made a negligible difference.'
+features_signals:
+- 'Chronological user behavior sequence with item metadata, timestamp, action type and scene'
+- 'User profile features such as age and location, plus statistical features'
+- 'Candidate item metadata, statistical features and user-item cross features'
+- 'Item embeddings pre-trained by next-item prediction on click sequences; no explicit user ID'
+training:
+  mode: Offline training on request-centric samples, one epoch by default, with item embeddings pre-trained and frozen
+  objectives:
+  - 'Binary cross-entropy for click, cart and purchase, summed with weights'
+  - 'Generative pre-training of item embeddings by next-item prediction over click sequences, then sparse transfer and sparse freeze'
+  notes: 'AdamW with betas 0.9 and 0.99, weight decay 0.01, learning rates 5e-4, 2e-4 and 1e-4 for small, base and large models, batch size 12K, maximum history length 1K. BF16 mixed precision except the ranking head and the MoE routers in FP32. The deployed model uses only the recent three months of data, while the DLRM baseline was trained incrementally on over a year.'
+serving_infra: 'Dynamic graphs converted to static graphs with torch.export and AOTInductor; sparse attention kernels for each mask, operator fusion, half-precision computing, KV caching and multi-context and multi-stream execution. Training runs on the RecIS framework with Megablocks MoE and multi-process-group communication for embedding traffic.'
+scale:
+- metric: Deployed model
+  value: base scale, 85M non-embedding parameters, 24G FLOPs per sample, about 20B embedding parameters
+  note: paper, Table 4
+- metric: Large scale model
+  value: 685M non-embedding parameters, 188G FLOPs, against a 144M and 322G Transformer
+  note: paper, Table 4
+- metric: Training MFU
+  value: 13% to 22% at base scale after system optimization, 45% at large scale
+  note: paper, Sec 3.3
+- metric: Dataset
+  value: 9B impressions and 0.6B requests in train, 0.3B impressions in test
+  note: paper, Table 1
+results_reported: 'Online A/B over one month in four AliExpress scenarios, SORT against the production DLRM. Macro average: orders +7.47%, buyers +6.67%, GMV +8.65%, latency -62%, throughput +589%. By scenario, orders are HomePage +2.37%, DetailPage +8.99%, ShoppingCart +7.10% and AfterPayment +11.43%; GMV is +10.01%, +11.49%, +6.98% and +6.12%; latency is -62%, -51%, -64% and -72%; throughput is +325%, +405%, +448% and +1180%. Offline, base scale CTR AUC is SORT 0.7497, Transformer 0.7456, HSTU 0.7438 and OneTrans 0.7476; large scale SORT reaches CTR AUC 0.7536 against 0.7485 for the Transformer, +0.51pt, with 188G against 322G FLOPs. Generative pre-training with sparse transfer and freeze lifts base Transformer CTR AUC by +2.81pt, while transfer alone changes it by -0.13pt. Local window 256 was best of 64, 128 and 256. Inference optimizations give a 29.4% throughput increase and a 29.3% latency reduction over the unoptimized baseline. Scaling of data, model and sequence length each improves AUC, with data scaling the steepest.'
+caveats:
+- 'Latency and throughput are reported only as relative changes against the production DLRM; absolute latency, QPS, serving hardware and traffic share are not given.'
+- 'The comparison is against a DLRM trained incrementally on over a year of data, while SORT uses three months of data, and the two also differ in model family, request-centric organization and the inference stack, so the gain is not attributable to the Transformer alone.'
+- 'Offline gains are AUC differences of fractions of a point on an internal dataset, with no confidence intervals or repeated runs.'
+- 'The paper does not name a track; the final text is in CIKM 2026 format. No code link is given, though the training system RecIS is cited.'
+unknown_fields:
+- A/B traffic share and number of users
+- Absolute latency and QPS
+- Serving hardware
+- Code release
+sources:
+- title: "SORT: A Systematically Optimized Ranking Transformer for Industrial-scale Recommenders, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840109
+  type: paper
+- title: "SORT, arXiv 2603.03988"
+  url: https://arxiv.org/abs/2603.03988
+  type: paper
+version_note: 'Read from arXiv v3 dated 31 Aug 2026, which is in the final ACM CIKM 2026 format. The ACM Digital Library returned 403, so the published page itself was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2603.03988
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, related work, preliminaries, model, infrastructure, experimental settings, generative pre-training, hyperparameters, ablation and comparison, scaling, online A/B test, conclusion'
+  verified_on: '2026-11-01'
+  published_pdf: 'arXiv v3 in final ACM CIKM 2026 format, read 2026-11-01'
+code:
+  status: none
+  checked_on: '2026-11-01'
+  repos: []
+core_idea: Rebuild the DLRM ranker as a Transformer over one request-centric sequence, and make it trainable with generative pre-training of frozen item embeddings.
+deployed_in: AliExpress, all users, four main recommendation scenarios
+scale_short: 85M dense parameters, 24G FLOPs
+key_result: One-month A/B, macro average orders +7.47%, GMV +8.65%, latency -62%
+results_table:
+  online:
+  - setting: AliExpress four scenarios, macro average, one-month A/B
+    method: SORT
+    metric: Orders
+    result: +7.47%
+    versus: Production DLRM
+  - setting: AliExpress four scenarios, macro average, one-month A/B
+    method: SORT
+    metric: GMV
+    result: +8.65%
+    versus: Production DLRM
+  - setting: AliExpress four scenarios, macro average, one-month A/B
+    method: SORT
+    metric: Latency
+    result: -62%
+    versus: Production DLRM
+  offline:
+  - setting: Large scale, CTR AUC
+    method: SORT
+    metric: CTR AUC
+    result: '0.7536'
+    versus: Transformer 0.7485
+  - setting: Base scale, CTR AUC
+    method: SORT
+    metric: CTR AUC
+    result: '0.7497'
+    versus: OneTrans 0.7476
+deployment:
+  online_evidence: online_numbers
+  scenario: AliExpress HomePage, DetailPage, ShoppingCart and AfterPayment, replacing the DLRM ranking model; the paper says SORT serves all users on AliExpress
+  ab_traffic: not_reported
+  ab_duration: One month
+  baseline: Production DLRM trained incrementally on over a year of data
+  online_lifts:
+  - metric: Orders, macro average
+    value: +7.47%
+  - metric: Buyers, macro average
+    value: +6.67%
+  - metric: GMV, macro average
+    value: +8.65%
+  training_compute: 'Each model trains on 4 to 32 A100 GPUs for 1 to 10 days depending on size; MFU rises from 13% to 22% at base scale and reaches 45% at large scale'
+  serving_latency: 'Latency -62% on average against the production DLRM, from -51% to -72% by scenario; absolute values not reported'
+  serving_qps: 'Throughput +589% on average, from +325% to +1180% by scenario; absolute QPS not reported'
+  inference_cost: 'Inference optimizations give a 29.4% throughput increase and a 29.3% latency reduction over the unoptimized baseline; the base model needs 24G FLOPs per sample'
+  hardware: 'A100 GPUs for training; serving hardware not reported'
+  notes:
+  - 'The deployed model is base scale and uses only the recent three months of data.'
+  fulltext_refs:
+  - 'Table 5 and Sec 4.6: one-month A/B in four scenarios, macro average orders +7.47%, buyers +6.67%, GMV +8.65%, latency -62%, throughput +589%; scenario ranges latency -51% to -72%, throughput +325% to +1180%'
+  - 'Sec 4.1.3: 4 to 32 A100 GPUs for 1 to 10 days; Sec 3.3: MFU 13% to 22% at base scale, 45% at large scale; 29.4% throughput increase and 29.3% latency reduction'
+  - 'Sec 4.6: deployed SORT is base scale trained on the recent three months, the DLRM baseline incrementally on over a year'
+  basis: full_text
+  checked_on: '2026-11-01'
