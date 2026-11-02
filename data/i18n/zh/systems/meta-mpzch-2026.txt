@@ -1,0 +1,46 @@
+surface|生产推荐模型的嵌入表索引；部署在视频后期排序模型和 HSTU 视频检索模型中
+era_reason|面向深度推荐模型带在线更新的哈希嵌入表组件；主张是冲突消除与新鲜度，不是生成式建模。
+tldr|MPZCH 用线性探测加 TTL 淘汰消除嵌入表冲突；在 Meta 对 1.5 亿用户实现零冲突，新视频曝光 +0.83%。
+summary|MPZCH 来自 Meta，另有一位 OpenAI 与一位 Periodic Labs 共同作者，是嵌入表的多探测零冲突哈希索引机制。CUDA 内核在表旁维护身份张量与元数据张量，以两趟线性探测即先发现后动作的方式解析查找，ID 要么找到自己的槽位，要么通过插入空行或淘汰过期条目分配一个。淘汰支持可配置的 TTL 或 LRU 策略，且嵌入与优化器状态一同重置，新 ID 从零学起而不继承过期且无关的嵌入。模块与 TorchRec 中的嵌入表同分片，发布时冻结为只读，并以分钟级稀疏增量支撑在线训练。已部署在服务约 30 亿月活用户的视频后期排序模型的 40 亿行用户表中，以及 HSTU 视频检索模型的 Post ID 与 Owner ID 表中。
+core_idea|记录每个槽位的占用 ID 并线性探测，淘汰过期条目时整体重置状态，让每个用户和物品保有自己的新鲜嵌入。
+deployed_in|Meta 的视频后期排序模型与 HSTU 视频检索模型
+scale_short|40 亿行用户表，服务约 30 亿月活用户
+key_result|用户嵌入零冲突，17 个任务中 14 个 NE 提升；检索 A/B 新视频曝光 +0.83%
+results_reported|冲突研究，表 1，1.5 亿唯一用户 ID：Sigrid 哈希基线在 3.33 倍容量下仍有 13.61% 冲突率，MPZCH 在 1.33 倍容量、探测深度 256 时冲突率为 0.0000%，此时 Sigrid 为 29.65%；在 2.0 倍容量、深度 64 时同样 0.0000%，此时 Sigrid 为 21.31%；深度 8 且 1.00 倍容量时为 12.09%，Sigrid 为 36.79%。内核基准见表 2：HBM 即 CUDA 批处理延迟在深度 8 到 512 间保持 0.8 到 0.9 毫秒，UVM 批处理 4.4 毫秒，CPU 即 DRAM 批处理 6.1 到 8.9 毫秒、非批处理 94.2 到 102.7 毫秒。用户嵌入见表 3：在生产视频后期排序模型部署 MPZCH 后，17 个预测任务中 14 个 Normalized Entropy 改善、3 个持平，含视频观看时长 +0.38%、视频观看完成率 100 +0.12%、跳过 +0.12%，论文称鉴于该模型已经多年迭代优化，这些提升具有统计显著性。物品嵌入见 4.2 节：在 Post ID 24 小时、Owner ID 72 小时 TTL 的 HSTU 视频检索模型中，A/B 使 48 小时内发布的新视频曝光提升 0.83%；同一创作者视频嵌入相似度从 0.66% 升至 0.91%，当天与次日均 +38%，总体从 0.62% 升至 0.77% 即 +25%。
+serving_infra|发布时辅助张量冻结、元数据张量从快照中移除，推理只做只读查找。HBM 即 CUDA 批处理内核在探测深度 8 到 512 下均为 0.8 到 0.9 毫秒；非批处理 CPU 即 DRAM 达 94.2 到 102.7 毫秒，论文以此说明必须 GPU 加速。探测深度对延迟影响可忽略。
+stages.0.model_family|推荐模型的嵌入表索引层，与 TorchRec 嵌入集合同分片
+stages.0.details|本身不是排序模型：MPZCH 服务视频后期排序器的用户嵌入表，以及 HSTU 视频检索模型的 Post ID 与 Owner ID 表，TTL 按特征分别配置。
+id_tokenization.approach|普通类别特征 ID 经哈希映射进固定大小表并跟踪身份；无 Semantic ID
+id_tokenization.details|ID 哈希到初始槽位；在可配置的 max_probe 深度内探测，找到身份匹配的槽位、空行或可淘汰的过期条目；身份张量记录每槽占用的 ID，元数据张量记录 TTL 时间戳。
+features_signals.0|高基数类别 ID：用户 ID、视频 ID、Post ID 与 Owner ID
+features_signals.1|按特征配置的 TTL：检索部署中 Post ID 24 小时、Owner ID 72 小时
+training.mode|带流式更新与分钟级稀疏增量发布的在线训练，辅以全量快照
+training.notes|淘汰时嵌入与优化器状态一并重置；输入特征去重缓解训练 QPS 回退；身份张量与嵌入行同步更新以保持查找一致。
+scale.0.metric|用户侧部署
+scale.0.value|服务约 30 亿月活用户的视频后期排序模型
+scale.1.metric|用户嵌入表
+scale.1.value|40 亿行
+scale.2.metric|冲突研究
+scale.2.value|1.5 亿唯一用户 ID
+results_table.online.0.setting|视频后期排序，用户嵌入表，A/B
+results_table.online.1.setting|HSTU 视频检索，Post 与 Owner ID 表，A/B
+results_table.offline.0.setting|1.5 亿用户 ID，容量 1.33 倍，深度 256
+results_table.online.0.versus|Sigrid 哈希生产基线
+results_table.online.1.versus|标准哈希基线
+results_table.offline.0.versus|Sigrid 哈希 29.65%
+caveats.0|未报告 A/B 流量占比、时长与显著性水平。
+caveats.1|论文说明 MPZCH 需要表容量超过 ID 基数并配合足够探测深度如 512 才能保证零冲突。
+caveats.2|多数作者来自 Meta，一位共同作者在 OpenAI，一位在 Periodic Labs。
+unknown_fields.0|A/B 流量占比、时长与显著性水平
+unknown_fields.1|除所列三个之外的 17 个预测任务
+unknown_fields.2|训练硬件细节
+code.repos.0.owner|含 Meta 作者在内的 TorchRec 维护者
+code.repos.0.note|论文说明该方案已在开源 TorchRec 库中发布；该仓库为官方主页。
+version_note|读的是 arXiv 2602.17050 v4 的 PDF，带完整 RecSys 2026 ACM 引用和 DOI 10.1145/3773078.3831866；DOI 已在 Crossref 核对，页码 1333-1342。
+deployment.scenario|服务约 30 亿月活用户的视频后期排序模型与 HSTU 视频检索模型的嵌入索引
+deployment.baseline|标准哈希方法 torcharrow sigrid hash，Meta 多数模型的默认算法
+deployment.serving_latency|HBM 即 CUDA 批处理内核在深度 8 到 512 下为 0.8 到 0.9 毫秒；探测深度对延迟影响可忽略
+deployment.serving_qps|通过输入特征去重，训练 QPS 与既有方法保持相当
+deployment.inference_cost|发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积
+deployment.notes.0|17 个预测任务中 14 个 NE 改善、3 个持平；论文称鉴于模型成熟度，提升具有统计显著性。
+deployment.notes.1|检索部署中 Post ID 的 TTL 为 24 小时、Owner ID 为 72 小时。

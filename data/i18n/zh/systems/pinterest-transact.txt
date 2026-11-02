@@ -1,0 +1,59 @@
+surface|Pinterest 首页信息流排序的 CTR 预测；每次请求对检索出的数千个 Pin 打分的 point-wise 多任务模型
+era_reason|判别式 wide-and-deep CTR 排序器，序列模块是两层小 transformer 编码器；没有自回归或生成式主张。
+tldr|TransAct V2 为首页排序器加入终身行为序列和下一动作损失；A/B 转发量 +6.35%、隐藏量 -12.80%。
+summary|TransAct V2 是 Pinterest 首页信息流排序的生产序列模型。候选 Pin 作为锚点，在三类用户序列上做最近邻检索：跨年的显式行为终身序列、实时序列和曝光序列，外加最近的动作；拼接结果进入小型 transformer 编码器，输出同时服务多头 CTR 预测和新的下一动作损失，后者用曝光负样本的 sampled softmax 训练。为在首页规模服务约一万量级长度的终身序列，系统只记录最近邻特征、PinSage 嵌入存为 int8，并在 A10G GPU 上运行 Triton 单核融合 transformer、请求级去重和固定内存竞技场。论文说明该模型正在首页服务生产流量，为超过 5 亿用户提供推荐。
+core_idea|用候选锚定的最近邻检索挖掘终身、实时和曝光序列，并加下一动作损失，让一个小 transformer 同时服务排序和行为预测。
+deployed_in|Pinterest 首页信息流排序，服务生产流量
+scale_short|69 亿训练样本；服务超过 5 亿用户
+key_result|1.5% 流量 A/B 对比生产 TransAct：转发量 +6.35%、隐藏量 -12.80%、应用时长 +1.41%
+results_reported|线上 A/B，表 3，每组 1.5% 首页访客，基线为带实时序列的生产 TransAct：TransAct V2 使首页转发量 +6.35%、首页隐藏量 -12.80%、曝光多样性 +0.45%、应用时长 +1.41%；表注说明转发量提升 1% 即被视为显著收益。离线见表 2，HIT@3/repin：BST +6.04%、实时 TransAct +7.74%、加批内 NAL +8.41%、加曝光 NAL +8.92%、带实时加终身序列加曝光 NAL 的 TransAct V2 达 +13.31%，同时 HIT@3/hide 下降 -11.25%，实时 TransAct 为 -6.86%。NAL 消融见表 4：曝光负样本达到 repin +1.10%、hide -2.39%，批内负样本为 +0.63% 和 -1.90%。服务消融：融合反量化与 NN 检索核较原生 PyTorch 降低模型延迟 20%；单核统一 transformer 在序列长度 192 时延迟低 85.09%、GPU 显存少 13.24%，长度 64 到 2048 的延迟降幅从 -59.29% 到 -84.79% 再到 -73.10%；批 128、256、512 的拷贝时间分别改善 85%、82%、85%；模型运行延迟在批 128、256、512 分别下降 75%、75%、81%；端到端推理延迟 p50 提升 103 倍、p90 提升 338 倍、p99 提升 250 倍，批处理加速 5 倍、排队延迟约降 1300 倍；固定内存竞技场在最终配置中带来最高 35% 的推理提速。
+serving_infra|自研 C++ 推理引擎加 CUDAGraph 与 Triton 核。单核统一 transformer 在 A10G 共享内存中把 QKV 投影、注意力、层归一化和前向网络融合为一个核；请求级去重避免广播用户序列，PCIe 传输降 8 倍；固定内存竞技场消除 pageable 到 pinned 的拷贝。服务环境每主机每秒 29,000 个样本，按一分钟窗口的 p99 评估。
+stages.0.model_family|wide-and-deep point-wise 多任务 CTR 模型加 TransAct V2 序列模块：候选锚定 NN 检索、模型维 64、前向维 32 的两层单头 transformer 编码器，输出同时供多头预测与下一动作损失
+stages.0.details|终身序列保存跨年显式行为，最大长度按访问频率加权的两年历史第 90 百分位设定；每个 token 含时间戳、多热动作类型、场景和 32 维 PinSage 嵌入，嵌入量化为 int8。拼接序列控制在数百 token；编码器输出经线性层和最大池化进入特征交叉层。
+id_tokenization.approach|普通 Pin 标识加 32 维 PinSage 内容嵌入；无 Semantic ID
+id_tokenization.details|候选与序列 token 用 PinSage 嵌入表示，经 0.65 仿射缩放的 int8 量化减半存储；NN 检索以点积对序列 token 与候选打分。
+features_signals.0|终身、实时与曝光三类用户行为序列，含时间戳、动作类型、场景和 PinSage 嵌入
+features_signals.1|wide-and-deep 排序器的上下文、创作者、物品与用户特征
+features_signals.2|下一动作损失使用的曝光负样本
+training.mode|两周首页日志上从零离线训练，评估集取训练窗口结束后第 7 天的数据
+training.objectives.0|CTR 模型的多头交叉熵
+training.objectives.1|下一动作损失：用户嵌入与下一正向互动 Pin 的 PinSage 嵌入对批内或曝光负样本的 sampled softmax
+training.notes|消融显示曝光负样本优于批内负样本。最优配置：序列长度 192、两层、前向维 32，在转发指标与推理延迟间平衡。
+scale.0.metric|离线数据集
+scale.0.value|两周内 1.82 亿用户、3.5 亿 Pin 的 69 亿训练样本
+scale.1.metric|终身序列长度
+scale.1.value|10000 量级动作
+scale.2.metric|部署
+scale.2.value|首页服务生产流量，覆盖超 5 亿用户
+results_table.online.0.setting|首页 A/B，每组 1.5% 访客
+results_table.online.1.setting|首页 A/B，每组 1.5% 访客
+results_table.online.2.setting|首页 A/B，每组 1.5% 访客
+results_table.offline.0.setting|两周首页日志，HIT@3
+results_table.offline.1.setting|两周首页日志，HIT@3
+results_table.online.0.versus|带实时序列的生产 TransAct
+results_table.online.1.versus|带实时序列的生产 TransAct
+results_table.online.2.versus|带实时序列的生产 TransAct
+results_table.offline.0.versus|BST +6.04%、实时 TransAct +7.74%
+results_table.offline.1.versus|实时 TransAct -6.86%
+caveats.0|所读 arXiv 文本是占位 ACM 模板的预印本；未读到 RecSys 2026 正式版，其标题不同，为 Production System for Lifelong User Sequence Modeling at Scale。
+caveats.1|论文说明 TWIN 因依赖昂贵的离线推理系统而未比较，BERT4Rec 类模型因问题设定不同而未直接比较。
+caveats.2|离线指标 HIT@3 是 Pinterest 内部按推荐 chunk 计算的排序指标。
+caveats.3|论文说明 FlashAttention-2 因不支持下一动作损失和填充所需的自定义掩码而未直接比较。
+unknown_fields.0|A/B 持续天数
+unknown_fields.1|模型规模与训练算力
+unknown_fields.2|官方代码
+unknown_fields.3|模型头数
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
+version_note|本卡呈现 TransAct V2，同一系统 2 个版本中的最新版。TransAct v1 保留在来源和版本列表中。
+versions.0.note|KDD 2023 论文，提出基于 transformer 的实时用户动作模型，用候选锚定的最近邻检索处理实时序列。
+versions.1.note|扩展终身行为序列、下一动作损失与网络级服务；本卡呈现此版本，发表于 RecSys 2026。
+deployment.scenario|Pinterest 首页信息流排序的序列模块，服务生产流量，覆盖超 5 亿用户
+deployment.ab_traffic|每组 1.5% 的首页访客
+deployment.baseline|带实时序列的生产 TransAct 模型
+deployment.serving_latency|每主机每秒 29,000 样本环境下按一分钟窗口的 p99 评估；端到端推理延迟较未优化基线 p50 提升 103 倍、p90 提升 338 倍、p99 提升 250 倍；SKUT 在序列长度 192 延迟低 85.09%
+deployment.serving_qps|服务评估中每主机每秒 29,000 个样本
+deployment.inference_cost|请求级去重使序列特征 PCIe 传输降 8 倍；融合 transformer 比 PyTorch 快 6.6 倍；批 128 拷贝时间降 85%
+deployment.hardware|NVIDIA A10G GPU，8 MB 共享内存
+deployment.notes.0|论文说明转发量提升 1% 即被视为显著收益。
+deployment.notes.1|PinSage 序列嵌入以 int8 仿射量化存储，体积减半。
+updates.0.note|按一系统一卡规则，把 TransAct 与 TransAct V2 合并为呈现 V2 的一张卡。

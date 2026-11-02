@@ -1,0 +1,49 @@
+surface|服务东南亚头部电商广告平台生成式检索系统的语义 ID tokenization
+era_reason|为生成式检索与排序生成语义 ID 的多模态 tokenizer，带行为感知微调；语义 ID 生成式技术栈是主角。
+tldr|MMQ 用共享与专属专家把多模态内容量化成语义 ID；30 天 A/B 广告收入 +0.90%、CVR +4.33%。
+summary|MMQ 来自阿里集团，并有北大、北航、武大共同作者，是面向推荐的多模态混合量化 tokenizer，生成语义 ID。多专家编码器保留模态共享与模态专属专家，让文本、视觉与行为信号融合而不被迫挤进单一共享空间；两阶段训练先做多模态共享专属预训练，再做行为感知微调，把语义空间与下游任务的行为空间对齐。生成的语义 ID 已部署于东南亚头部电商广告平台的生成式检索系统，在在线 A/B 中取代基于物品 ID 的系统。
+core_idea|用共享与模态专属专家量化多模态内容，再把码微调到用户行为上。
+deployed_in|东南亚电商广告平台的生成式检索
+scale_short|30 天 A/B，10% 流量，3000 万用户
+key_result|30 天 A/B 对比物品 ID 系统：广告收入 +0.90%、CVR +4.33%、订单 +3.52%
+results_reported|线上 A/B 见 5 节，2025 年七月 6 日至八月 6 日共 30 天，随机用户流量 10%，基线为既有物品 ID 系统：广告收入 +0.90%、转化率 +4.33%、订单 +3.52%。离线排序见表 1a，相对最优基线：工业集上 MMQ 达 AUC 0.7184、GAUC 0.6081，相对提升 +0.04% 与 +0.07%，重建损失 0.5529 低 +0.32%，码本熵 7.9560 高 +2.08%，利用率 1.00；Amazon Beauty 上 AUC 0.6503 高 +0.33%、GAUC 0.6020 高 +0.31%。离线生成式检索见表 1b，MMQ 在两个数据集的 Recall@5、@10 与 NDCG@5、@10 上稳定超过模态对齐与模态分离的量化基线。消融见表 2：去掉正交正则会使码本利用率与熵大幅下降，去掉行为感知微调会使各设置下 Recall 与 NDCG 全面下降；图 6 显示即便 10 个专属专家的 Specific-Only 变体也追不上 2 共享加 4 专属的 MMQ。语义 ID 方法在长尾物品上相对 PPNet 物品 ID 骨干取得显著 AUC 提升。
+serving_infra|生成的语义 ID 在该平台广告业务的生成式检索系统内运行；服务基础设施细节未报告。
+stages.0.model_family|多模态共享专属专家 tokenizer 加残差量化，供生成式检索与判别式排序骨干使用
+stages.0.details|tokenizer 产出的语义 ID 供生成式检索系统消费，并在判别式排序中与 PPNet 物品 ID 骨干对照验证；实验显示共享专家对参数高效、高度专属的专家至关重要。
+id_tokenization.approach|共享与专属专家的多模态混合量化语义 ID
+id_tokenization.details|每个模态保留自己的专家并跨模态共享一个共享专家；量化指标跟踪重建损失、码本熵与利用率，行为感知微调把码与下游推荐行为对齐。
+features_signals.0|多模态物品内容：图片、标题、描述
+features_signals.1|曝光、点击、转化的用户行为序列，平均长度 128
+features_signals.2|来自下游生成式检索与排序的行为对齐信号
+training.mode|两阶段：多模态共享专属预训练，随后行为感知微调
+training.objectives.0|带码本熵与利用率正则的量化重建损失
+training.objectives.1|把语义空间与推荐任务对齐的行为感知微调
+training.notes|论文报告两阶段设计化解了内容派生表示与行为驱动表示之间的错配。
+scale.0.metric|工业数据集
+scale.0.value|3000 万用户、4000 万广告，2024 年十月至 2025 年五月，平均序列长度 128
+scale.1.metric|A/B 流量
+scale.1.value|随机用户流量的 10%
+scale.2.metric|A/B 时长
+scale.2.value|30 天，2025 年七月 6 日至八月 6 日
+results_table.online.0.setting|电商广告平台，30 天 A/B，10% 流量
+results_table.online.1.setting|电商广告平台，30 天 A/B，10% 流量
+results_table.offline.0.setting|工业数据集，判别式排序
+results_table.offline.1.setting|Amazon Beauty，判别式排序
+results_table.online.0.versus|物品 ID 系统
+results_table.online.1.versus|物品 ID 系统
+results_table.offline.0.versus|最优基线，+0.04%
+results_table.offline.1.versus|最优基线，+0.33%
+caveats.0|所读 arXiv 文本是双栏非 ACM 排版的预印本；WSDM 2026 的 DOI 10.1145/3773966.3777923 已在 Crossref 核对，页码 788-797，正式版未读到。
+caveats.1|论文将该平台描述为东南亚头部电商广告平台，未给出名称。
+caveats.2|论文局限一节说明两阶段框架增加训练复杂度，且微调阶段依赖任务。
+unknown_fields.0|平台名称
+unknown_fields.1|A/B 桶数与显著性水平
+unknown_fields.2|训练算力与硬件
+unknown_fields.3|官方代码
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
+version_note|读的是 arXiv 2508.15281 v1 预印本；WSDM 2026 的 DOI 10.1145/3773966.3777923 已在 Crossref 核对，正式版本身未读到。
+deployment.scenario|东南亚头部电商广告平台生成式检索系统的语义 ID tokenization
+deployment.ab_traffic|平台随机用户流量的 10%
+deployment.ab_duration|30 天，2025 年七月 6 日至八月 6 日
+deployment.baseline|既有的物品 ID 系统
+deployment.notes.0|论文称线上收益在关键业务指标上显著且一致。

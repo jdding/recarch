@@ -1,0 +1,55 @@
+surface|快手 App 的本地生活服务推荐；向附近用户推荐带门店位置信息的短视频
+era_reason|带地理感知语义 ID 和 DPO 后训练的端到端编码器-解码器生成式推荐器；取代级联的生成式范式是核心主张。
+tldr|OneLoc 为快手本地生活端到端生成地理感知语义 ID；10% 流量一周 A/B GMV +21.016%，现已全量。
+summary|OneLoc 来自快手，是面向快手 App 本地生活服务的端到端生成式推荐器，取代生产多阶段级联为带门店的短视频做推荐。地理信息从三个层面进入：由视频文本融合位置特征构建的语义 ID、注意力分数叠加位置上下文相似度并按用户实时位置门控的地理感知自注意力，以及通过交叉注意力聚合周边位置上下文的邻居感知解码器提示。训练遵循 OneRec 的两阶段：先在观看、点击、支付多行为序列上预训练，再用按距离的地理奖励和 GMV 奖励打分的偏好对做 DPO 强化学习。部署侧由 beam search 推理服务、视频映射服务和奖励系统组成，现已服务 4 亿日活用户的全部流量。
+core_idea|把位置融入语义 ID、注意力和解码器提示，再用距离与 GMV 奖励对齐生成。
+deployed_in|快手本地生活服务，全量流量
+scale_short|全量服务 4 亿日活用户
+key_result|10% 流量一周 A/B 对比多阶段管线：GMV +21.016%、订单 +17.891%，p < 0.01
+results_reported|线上 A/B 见表 4，一周，5 节称在快手主要短视频推荐场景进行，实验组 10% 流量，基线为候选池一致的生产级多阶段管线：GMV +21.016%、订单量 +17.891%、本地生活付费用户数 +18.585%、新付费用户 +23.027%，双尾 t 检验 p < 0.01。离线见 4.2 节：KuaiLLSR 上 Recall@5 +13.46%、Recall@20 +10.44%、NDCG@5 +14.47%、NDCG@20 +12.97%；Foursquare 全球集平均 Recall@5 +13.18%、NDCG@5 +16.34%。消融见表 3：去掉位置分数 Recall@5 从 0.3565 降到 0.3476，去掉位置门控降到 0.3501，整个地理感知自注意力去掉降到 0.3315。模型从 0.05B 扩到 0.3B 平均召回 +6.96%、NDCG +7.29%。
+serving_infra|部署由流式更新的训练器、beam search 的 OneLoc 推理服务、视频映射服务和奖励系统组成。推理在 NVIDIA A10 GPU 上用混合精度、KV cache、动态批处理和 TensorRT，达到 25% MFU。
+stages.0.model_family|地理感知语义 ID 上的编码器-解码器：两侧各 4 层，隐层 1024，8 头，FFN 4096，3 个 8192 码本，预训练加 DPO
+stages.0.details|编码器经地理感知自注意力处理观看 256、点击 32、支付 10 的多行为序列；解码器在邻居感知提示引导下生成语义 token；视频映射服务把 token 转为视频 ID，奖励系统按 GMV 分数和规则过滤后取 TopK。
+id_tokenization.approach|残差量化 3 个 8192 聚类码本的地理感知语义 ID
+id_tokenization.details|视频文本描述融合地理特征后编码并残差量化；每个视频映射为 3 token 语义 ID，聚类携带地理语义。
+features_signals.0|带位置 ID 与位置上下文嵌入的观看、点击、支付行为序列
+features_signals.1|用户实时位置作为门控与解码器 Query，周边位置作为 Key 和 Value
+features_signals.2|按用户门店距离的地理奖励与 GMV 奖励，用于 DPO 偏好对
+training.mode|两阶段：7 天日志流式预训练，随后 DPO 强化学习
+training.objectives.0|语义 ID 序列的下一 token 预测
+training.objectives.1|在地理与 GMV 奖励打分最高与最低的采样视频偏好对上做 DPO，损失权重 0.05
+training.notes|AdamW，初始学习率 2e-4、权重衰减 0.1，NVIDIA A800 GPU；模型规模 0.05B 到 0.3B 平均召回 +6.96%、NDCG +7.29%。
+scale.0.metric|部署
+scale.0.value|本地生活服务全量流量，4 亿日活用户
+scale.1.metric|KuaiLLSR 数据集
+scale.1.value|8 天、6000 万用户、90 万物品、4.4 亿交互，平均序列长约 200
+scale.2.metric|A/B 流量
+scale.2.value|实验组 10% 流量
+results_table.online.0.setting|快手本地生活，一周 A/B，10% 流量
+results_table.online.1.setting|快手本地生活，一周 A/B，10% 流量
+results_table.online.2.setting|快手本地生活，一周 A/B，10% 流量
+results_table.offline.0.setting|KuaiLLSR 数据集
+results_table.offline.1.setting|Foursquare 全球数据集
+results_table.online.0.versus|生产多阶段管线
+results_table.online.1.versus|生产多阶段管线
+results_table.online.2.versus|生产多阶段管线
+results_table.offline.0.versus|次优基线
+results_table.offline.1.versus|次优基线，平均
+caveats.0|所读 arXiv 文本是占位 ACM 模板的预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，页码 735-744，正式版未读到。
+caveats.1|论文说明当用户禁止 App 访问其实时位置时，本地生活服务会被停用。
+caveats.2|离线基线含传统与生成式推荐器，但线上仅与生产多阶段管线对比。
+unknown_fields.0|10% 实验组之外的 A/B 对照组流量占比
+unknown_fields.1|推理延迟数字
+unknown_fields.2|A800 之外的训练算力
+unknown_fields.3|官方代码
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
+version_note|读的是 arXiv 2508.14646，占位 ACM 模板预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，camera-ready 未读到。
+deployment.scenario|快手 App 的本地生活服务推荐，服务 4 亿日活用户的全部流量
+deployment.ab_traffic|实验组 10% 流量，对照组用生产管线
+deployment.ab_duration|一周
+deployment.baseline|生产级多阶段管线：多路召回、粗排精排和链路级重排
+deployment.training_compute|在 NVIDIA A800 GPU 上训练；测试 0.05B 到 0.3B 规模；GPU 时长未报告
+deployment.inference_cost|NVIDIA A10 GPU 上混合精度、KV cache、动态批处理与 TensorRT，达 25% MFU
+deployment.hardware|训练用 NVIDIA A800，推理用 NVIDIA A10
+deployment.notes.0|全部线上提升在 alpha 0.05 下双尾 t 检验 p < 0.01 显著。
+deployment.notes.1|两组 A/B 共享一致候选池与系统约束。

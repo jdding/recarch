@@ -1,0 +1,157 @@
+id: pinterest-transact
+name: TransAct
+company: Pinterest
+surface: Pinterest Homefeed ranking as CTR prediction; point-wise multi-task model scoring thousands of retrieved Pins per request
+year: 2023
+era: deep
+era_reason: "A discriminative wide-and-deep CTR ranker whose sequence module is a small two-layer transformer encoder; no autoregressive or generative claim."
+first_public: "2023-05"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773078.3831868"
+added_on: "2026-10-29"
+last_verified: "2026-11-02"
+version: TransAct V2
+versions:
+- name: TransAct
+  first_public: "2023-05"
+  source: https://doi.org/10.1145/3580305.3599918
+  note: 'KDD 2023 paper introducing the transformer-based realtime user action model with candidate-anchored nearest-neighbor search over real-time sequences.'
+- name: TransAct V2
+  first_public: "2025-06"
+  source: https://doi.org/10.1145/3773078.3831868
+  note: 'Extends the model with lifelong user sequences, a next-action loss and web-scale serving; presented on this card and published at RecSys 2026.'
+version_note: 'This card presents TransAct V2, the latest of 2 versions of one system. TransAct V1 is kept as a source and in the version list.'
+updates:
+- date: "2026-11-02"
+  note: "Merged TransAct and TransAct V2 into one card presenting V2, per the one-system-one-card rule."
+system_type: recommendation
+evidence_level: production_described
+tldr: "TransAct V2 adds lifelong sequences and a next-action loss to Pinterest's Homefeed ranker; the A/B lifted repin volume +6.35% and cut hides -12.80%."
+summary: "TransAct V2 is the production sequence model of Pinterest's Homefeed ranking system. A candidate Pin anchors nearest-neighbor searches over three user sequences, the lifelong sequence of explicit actions spanning years, the real-time sequence and the impression sequence, plus the most recent actions; the concatenated results feed a small transformer encoder whose output serves both multi-head CTR prediction and a new next-action loss trained with sampled softmax over impression-based negatives. To serve lifelong sequences on the order of ten thousand actions at Homefeed scale, the system logs only nearest-neighbor features, keeps PinSage embeddings in int8, and runs a custom Triton single-kernel transformer with request-level deduplication and a pinned memory arena on A10G GPUs. The paper states the model now serves production traffic on the Homefeed, delivering recommendations to over 500 million users."
+paradigms:
+- sequential-transformer
+- attention-ctr
+stages:
+- stage: rank
+  model_family: "Wide-and-deep point-wise multi-task CTR model with the TransAct V2 sequence module: candidate-anchored NN search, a two-layer single-head transformer encoder with model dimension 64 and feed-forward 32, feeding both multi-head prediction and the next-action loss"
+  details: "The lifelong sequence holds explicit actions over years with a maximum length set at the 90th percentile of two-year histories weighted by visiting frequency; each token carries timestamp, multi-hot action type, surface and a 32-dimensional PinSage embedding quantized to int8. The concatenated sequence is kept to several hundred tokens; the encoder output goes through a linear layer and max pooling into the feature-crossing layers."
+id_tokenization:
+  approach: "Plain Pin identifiers with 32-dimensional PinSage content embeddings; no semantic IDs"
+  details: "Candidates and sequence tokens are represented by PinSage embeddings, quantized with affine int8 scaling of 0.65 to halve storage; NN search scores sequence tokens against the candidate by dot product."
+features_signals:
+- "Lifelong, real-time and impression user action sequences with timestamp, action type, surface and PinSage embedding"
+- "Context, creator, item and user features of the wide-and-deep ranker"
+- "Impression-based negative samples for the next-action loss"
+training:
+  mode: "Offline training from scratch on two weeks of Homefeed logs, evaluated on data collected 7 days after the training window"
+  objectives:
+  - "Multi-head cross-entropy of the CTR model"
+  - "Next-action loss: sampled softmax between the user embedding and the PinSage embedding of the next engaged Pin against in-batch or impression-based negatives"
+  notes: "Impression-based negatives beat in-batch negatives in ablation. Optimal configuration: sequence length 192, two layers, feed-forward dimension 32, balancing repin metrics against inference latency."
+serving_infra: "A custom C++ inference engine with CUDAGraph and Triton kernels. The Single Kernel Unified Transformer fuses QKV projection, attention, layer norm and feed-forward in one kernel on A10G shared memory; request-level deduplication avoids broadcasting user sequences and cuts PCIe transfers 8x; a pinned memory arena removes the pageable-to-pinned copy. The serving environment handles 29,000 examples per second per host and is evaluated at p99 over one-minute windows."
+scale:
+- metric: Offline dataset
+  value: "6.9 billion training instances from 182 million users and 350 million Pins over two weeks"
+  note: "paper, Sec 4.1.1"
+- metric: Lifelong sequence length
+  value: on the order of 10,000 actions
+  note: "paper, Sec 1 and 3.4"
+- metric: Deployment
+  value: serving production traffic on the Homefeed to over 500 million users
+  note: "paper, abstract and Sec 1"
+results_reported: "Online A/B, Table 3, each group at 1.5% of Homefeed visitors against the production TransAct with real-time sequences: TransAct V2 lifts Homefeed Repin Volume +6.35%, reduces Homefeed Hide Volume -12.80%, improves Impression Diversity +0.45% and Time Spent on App +1.41%; the note states that a 1% increase in repin volume is considered a substantial gain. Offline, Table 2, HIT@3 over repin: BST +6.04%, TransAct real-time +7.74%, adding in-batch NAL +8.41%, impression NAL +8.92%, and TransAct V2 with real-time, lifelong sequences and impression NAL +13.31%, while HIT@3 over hide falls -11.25% for V2 against -6.86% for the real-time TransAct. NAL ablation, Table 4: impression-based negatives reach +1.10% repin and -2.39% hide against +0.63% and -1.90% for in-batch. Serving ablations: the fused dequantization and NN search kernel cut model latency 20% against native PyTorch; the Single Kernel Unified Transformer reaches 85.09% lower latency and 13.24% less GPU memory at sequence length 192, with latency decreases from -59.29% at length 64 to -84.79% at 256 and -73.10% at 2048; copy time improves 85% at batch 128, 82% at 256 and 85% at 512; model run latency falls 75%, 75% and 81% at batches 128, 256 and 512; end-to-end inference latency improves 103x at p50, 338x at p90 and 250x at p99, with batch preparation 5x faster and queuing delay reduced about 1300x; the pinned memory arena alone adds up to 35% inference speed in the final setup."
+caveats:
+- "The arXiv text read is a preprint in a placeholder ACM template; the published RecSys 2026 version was not read, and its title differs, Production System for Lifelong User Sequence Modeling at Scale."
+- "The paper notes that TWIN is not compared because it relies on a computationally expensive offline inference system, and BERT4Rec-style models are omitted due to differences in problem formulation."
+- "The offline evaluation metric HIT@3 is a Pinterest-internal ranking metric computed over recommendation chunks."
+- "FlashAttention-2 is not directly compared because it lacks support for the custom masks needed for the next-action loss and padding, as the paper states."
+unknown_fields:
+- A/B duration in days
+- Full model size and training compute
+- Official code
+- Number of model heads
+sources:
+- title: "TransAct: Transformer-based Realtime User Action Model for Recommendation at Pinterest, KDD 2023"
+  url: https://doi.org/10.1145/3580305.3599918
+  type: paper
+- title: "TransAct V2: Production System for Lifelong User Sequence Modeling at Scale, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831868
+  type: paper
+- title: "TransAct V2, arXiv 2506.02267"
+  url: https://arxiv.org/abs/2506.02267
+  type: paper
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2506.02267
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, related work, methodology, serving and logging design, experiments with Tables 2 to 5 and Figures 6 to 9, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; the RecSys 2026 DOI 10.1145/3773078.3831868 was verified against Crossref with pages 1576-1585, but the ACM page was not readable"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Anchor nearest-neighbor search on each candidate to mine lifelong, real-time and impression sequences, and add a next-action loss so one small transformer serves both ranking and behavior forecasting."
+deployed_in: "Pinterest Homefeed ranking, serving production traffic"
+scale_short: "6.9 billion training instances; serving over 500 million users"
+key_result: "A/B at 1.5% traffic vs production TransAct: Repin Volume +6.35%, Hide Volume -12.80%, Time Spent +1.41%"
+results_table:
+  online:
+  - setting: "Pinterest Homefeed A/B, 1.5% of visitors per group"
+    method: "TransAct V2"
+    metric: "Homefeed Repin Volume"
+    result: "+6.35%"
+    versus: "Production TransAct with real-time sequences"
+  - setting: "Pinterest Homefeed A/B, 1.5% of visitors per group"
+    method: "TransAct V2"
+    metric: "Homefeed Hide Volume"
+    result: "-12.80%"
+    versus: "Production TransAct with real-time sequences"
+  - setting: "Pinterest Homefeed A/B, 1.5% of visitors per group"
+    method: "TransAct V2"
+    metric: "Time Spent on App"
+    result: "+1.41%"
+    versus: "Production TransAct with real-time sequences"
+  offline:
+  - setting: "Two weeks of Homefeed logs, HIT@3"
+    method: "TransAct V2"
+    metric: "HIT@3/repin"
+    result: "+13.31%"
+    versus: "BST +6.04%, TransAct RT +7.74%"
+  - setting: "Two weeks of Homefeed logs, HIT@3"
+    method: "TransAct V2"
+    metric: "HIT@3/hide"
+    result: "-11.25%"
+    versus: "TransAct RT -6.86%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Sequence module of Pinterest Homefeed ranking, serving production traffic to over 500 million users"
+  ab_traffic: "1.5% of Homefeed page visitors per group"
+  ab_duration: not_reported
+  baseline: "The production TransAct model with real-time sequences"
+  online_lifts:
+  - metric: "Homefeed Repin Volume"
+    value: "+6.35%"
+  - metric: "Homefeed Hide Volume"
+    value: "-12.80%"
+  - metric: "Impression Diversity"
+    value: "+0.45%"
+  - metric: "Time Spent on App"
+    value: "+1.41%"
+  training_compute: not_reported
+  serving_latency: "p99 over one-minute windows in an environment of 29,000 examples per second per host; end-to-end inference latency improves 103x at p50, 338x at p90 and 250x at p99 over the unoptimized baseline; SKUT latency -85.09% at sequence length 192"
+  serving_qps: "29,000 examples per second per host in the serving evaluation"
+  inference_cost: "Request-level deduplication cuts PCIe transfers of sequence features 8x; the fused transformer is 6.6 times faster than PyTorch; copy time falls 85% at batch 128"
+  hardware: "NVIDIA A10G GPUs with 8 MB shared memory"
+  notes:
+  - "The paper notes that a 1% increase in repin volume is considered a substantial gain."
+  - "PinSage sequence embeddings are stored as int8 with affine scaling, halving storage."
+  fulltext_refs:
+  - "Table 3: Repin Volume +6.35%, Hide Volume -12.80%, Impression Diversity +0.45%, Time Spent +1.41%, 1.5% groups"
+  - "Table 2: HIT@3/repin +13.31%, HIT@3/hide -11.25%; Table 4: impression negatives +1.10% and -2.39%"
+  - "Sec 4.4.3, Tables 5 and Figures 7 to 9: -85.09% latency at length 192, 8x PCIe reduction, 20% fused dequantization gain, fused transformer 6.6 times faster than PyTorch, 103x, 338x, 250x end-to-end, 29,000 examples per second per host, A10G"
+  basis: full_text
+  checked_on: "2026-11-02"

@@ -1,0 +1,132 @@
+id: meta-mpzch-2026
+name: MPZCH
+company: Meta
+surface: Embedding-table indexing for production recommendation models; deployed in a Video Late-Stage Ranking model and an HSTU-based video retrieval model
+year: 2026
+era: deep
+era_reason: "A hash-based embedding-table component for deep recommendation models with online updates; the claim is collision mitigation and freshness, not generative modeling."
+first_public: "2026-02"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831866"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: "MPZCH removes embedding-table collisions with linear probing and TTL eviction; at Meta it reached zero collisions for 150M users and +0.83% impressions for new videos."
+summary: "MPZCH, from Meta with one OpenAI and one Periodic Labs co-author, is a Multi-Probe Zero Collision Hash indexing mechanism for embedding tables. A CUDA kernel keeps an identities tensor and a metadata tensor beside each table and resolves lookups by two-pass linear probing, discovery then action, so an ID either finds its own slot or allocates one by inserting into an empty row or evicting an expired entry. Eviction follows a configurable TTL or LRU policy, and both the embedding and the optimizer state are reset on eviction, so a new ID learns from scratch instead of inheriting a stale, unrelated embedding. The module is co-sharded with the embedding table inside TorchRec, freezes to read-only at publish time, and propagates minute-level sparse deltas for online training. Deployed in a production Video Late-Stage Ranking model serving about 3 billion monthly active users with a 4 billion-row user table, and in an HSTU-based video retrieval model for Post and Owner ID tables."
+paradigms:
+- online-training
+- dlrm
+stages:
+- stage: rank
+  model_family: "Embedding-table indexing layer for recommendation models, co-sharded with TorchRec embedding collections"
+  details: "Not a ranking model itself: MPZCH serves the user embedding table of a video late-stage ranker and the Post ID and Owner ID tables of an HSTU-based video retrieval model, with per-feature TTL configurations."
+id_tokenization:
+  approach: "Plain categorical feature IDs mapped by hash into a fixed-size table with identity tracking; no semantic IDs"
+  details: "IDs hash to an initial slot; probing up to a configurable max_probe depth finds the slot whose identity matches, an empty row, or an evictable expired entry; the identities tensor stores the occupying ID per slot and the metadata tensor stores TTL timestamps."
+features_signals:
+- "High-cardinality categorical IDs, user IDs, video IDs, post IDs and owner IDs"
+- "Per-feature TTL configurations, 24 hours for Post IDs and 72 hours for Owner IDs in the retrieval deployment"
+training:
+  mode: "Online training with streaming updates and minute-level sparse delta publishing, complemented by full snapshots"
+  objectives: []
+  notes: "Eviction resets embedding and optimizer state together; input feature deduplication mitigates training QPS regression; the identities tensor updates in lockstep with embedding rows to keep lookups consistent."
+serving_infra: "At publish the auxiliary tensors freeze and the metadata tensor is dropped from the snapshot, so inference is strictly read-only lookup. Batched HBM or CUDA kernels run at 0.8 to 0.9 ms across probe depths from 8 to 512; non-batched CPU or DRAM operation reaches 94.2 to 102.7 ms, which the paper uses to argue GPU acceleration is necessary. Probe depth has negligible latency impact."
+scale:
+- metric: User deployment
+  value: "Video Late-Stage Ranking model serving about 3 billion monthly active users"
+  note: "paper, Sec 4.1"
+- metric: User embedding table
+  value: 4 billion rows
+  note: "paper, Sec 4.1"
+- metric: Collision study
+  value: 150 million unique user IDs
+  note: "paper, Table 1"
+results_reported: "Collision study, Table 1, on 150 million unique user IDs: the Sigrid hash baseline keeps a 13.61% collision rate even at 3.33x capacity, while MPZCH reaches a 0.0000% collision rate at 1.33x capacity with probe depth 256, where Sigrid retains 29.65%, and at 2.0x capacity with probe depth 64, where Sigrid retains 21.31%; at probe depth 8 and 1.00x capacity it sits at 12.09% versus Sigrid 36.79%. Kernel benchmark, Table 2: batched HBM or CUDA latency stays at 0.8 to 0.9 ms for probe depths 8 through 512, UVM batched 4.4 ms, CPU or DRAM batched 6.1 to 8.9 ms and non-batched 94.2 to 102.7 ms. User embeddings, Table 3: deploying MPZCH in the production Video Late-Stage Ranking model improved Normalized Entropy in 14 of 17 prediction tasks with 3 neutral, including Video View Duration +0.38%, Video View Percentage 100 +0.12% and Skip +0.12%, gains the paper calls statistically significant given years of prior optimization. Item embeddings, Sec 4.2: in the HSTU-based video retrieval model with 24-hour Post ID and 72-hour Owner ID TTLs, A/B testing yielded 0.83% more impressions for new videos posted within 48 hours; intra-creator embedding similarity rose from 0.66% to 0.91% same day and same-and-next day, +38%, and overall from 0.62% to 0.77%, +25%."
+caveats:
+- "The A/B traffic share, duration and significance levels are not reported."
+- "The paper notes that MPZCH requires table capacity to exceed ID cardinality and a sufficient probe depth, for example 512, to guarantee zero collisions."
+- "Most authors are Meta employees; one co-author is at OpenAI and one at Periodic Labs."
+unknown_fields:
+- A/B traffic share, duration and significance levels
+- The 17 prediction tasks beyond the three listed
+- Training hardware details
+sources:
+- title: "Multi-Probe Zero Collision Hash (MPZCH): Mitigating Embedding Collisions and Enhancing Model Freshness in Large-Scale Recommenders, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831866
+  type: paper
+- title: "MPZCH, arXiv 2602.17050"
+  url: https://arxiv.org/abs/2602.17050
+  type: paper
+- title: "MPZCH in the TorchRec library"
+  url: https://github.com/pytorch/torchrec
+  type: source_code
+version_note: "Read from the arXiv 2602.17050 v4 PDF, which carries the full RecSys 2026 ACM citation and DOI 10.1145/3773078.3831866; the DOI was verified against Crossref with pages 1333-1342."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.17050
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, related work, methodology with algorithm and figures, benchmarks with Tables 1 and 2, online experiments with Tables 3 and 4 and Figures 5 and 6, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "camera-ready with full ACM citation read from arXiv v4 on 2026-11-02; ACM page not opened"
+code:
+  status: official_full
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/pytorch/torchrec
+    owner: "the TorchRec maintainers including the Meta authors"
+    official: true
+    note: "The paper states the solution has been released within the open-source TorchRec library; the repository is the official home."
+core_idea: "Track the ID occupying every slot and probe linearly, evicting expired entries with a full state reset, so each user and item keeps its own fresh embedding."
+deployed_in: "Video Late-Stage Ranking and an HSTU video retrieval model at Meta"
+scale_short: "4 billion-row user table serving about 3 billion monthly active users"
+key_result: "Zero collisions for user embeddings with NE gains in 14 of 17 tasks, and +0.83% impressions for new videos in retrieval A/B"
+results_table:
+  online:
+  - setting: "Video Late-Stage Ranking, user embedding table, A/B"
+    method: MPZCH
+    metric: "NE, Video View Duration"
+    result: "+0.38%"
+    versus: "Sigrid hash production baseline"
+  - setting: "HSTU video retrieval, Post and Owner ID tables, A/B"
+    method: MPZCH
+    metric: "Impressions for new videos within 48 hours"
+    result: "+0.83%"
+    versus: "Standard hashing baseline"
+  offline:
+  - setting: "150M user IDs, capacity 1.33x, probe 256"
+    method: MPZCH
+    metric: "Collision rate"
+    result: "0.0000%"
+    versus: "Sigrid hash 29.65%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Embedding indexing for a Video Late-Stage Ranking model serving about 3 billion monthly active users and an HSTU-based video retrieval model"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: "The standard hash-based method, torcharrow sigrid hash, the default for most models at Meta"
+  online_lifts:
+  - metric: "NE, Video View Duration, ranking"
+    value: "+0.38%"
+  - metric: "NE, Video View Percentage 100, ranking"
+    value: "+0.12%"
+  - metric: "Impressions for new videos within 48 hours, retrieval"
+    value: "+0.83%"
+  training_compute: not_reported
+  serving_latency: "Batched HBM or CUDA kernel 0.8 to 0.9 ms flat across probe depths 8 to 512; probe depth has negligible latency impact"
+  serving_qps: "Training QPS maintained comparable to existing methods through input feature deduplication"
+  inference_cost: "Published model drops the metadata tensor and freezes identities read-only; auxiliary tensors add the identities tensor to model size"
+  hardware: not_reported
+  notes:
+  - "NE improved in 14 of 17 prediction tasks with 3 neutral; the paper calls the gains statistically significant given the model's maturity."
+  - "TTL set to 24 hours for Post IDs and 72 hours for Owner IDs in the retrieval deployment."
+  fulltext_refs:
+  - "Table 1: 150M IDs, Sigrid 13.61% at 3.33x capacity, MPZCH zero at 1.33x with probe 256"
+  - "Table 2: 0.8 to 0.9 ms batched HBM, 94.2 to 102.7 ms non-batched CPU"
+  - "Table 3 and Sec 4.1: 14 of 17 tasks, VVD +0.38%, VVP100 +0.12%, Skip +0.12%, about 3 billion MAU, 4 billion rows"
+  - "Sec 4.2: +0.83% new-video impressions, similarity 0.66% to 0.91% same day +38%"
+  basis: full_text
+  checked_on: "2026-11-02"

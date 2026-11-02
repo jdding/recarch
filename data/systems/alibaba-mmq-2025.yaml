@@ -1,0 +1,133 @@
+id: alibaba-mmq-2025
+name: MMQ
+company: Alibaba
+surface: Semantic-ID tokenization serving the generative retrieval system of a leading e-commerce advertising platform in Southeast Asia
+year: 2025
+era: generative
+era_reason: "A multimodal tokenizer producing semantic IDs for generative retrieval and ranking, with behavior-aware fine-tuning; the semantic-ID generative stack is the subject."
+first_public: "2025-08"
+venue: "WSDM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773966.3777923"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "MMQ tokenizes multimodal item content into semantic IDs with shared and specific experts; a 30-day A/B lifted advertising revenue +0.90% and CVR +4.33%."
+summary: "MMQ, from Alibaba Group with Peking University, BUAA and Wuhan University co-authors, is a multimodal mixture-of-quantization tokenizer that generates semantic IDs for recommendation. A multi-expert encoder keeps modality-shared and modality-specific experts so textual, visual and behavioral signals fuse without forcing a single shared space, and a two-stage recipe trains the tokenizer: multimodal shared-specific pretraining followed by behavior-aware fine-tuning that aligns the semantic space with the behavioral space of the downstream tasks. The generated semantic IDs were deployed in the generative retrieval system of a leading e-commerce advertising platform in Southeast Asia, replacing an Item ID-based system in an online A/B test."
+paradigms:
+- semantic-id
+- multi-task
+stages:
+- stage: retrieval
+  model_family: "Multimodal shared-specific expert tokenizer with residual quantization, feeding generative retrieval and discriminative ranking backbones"
+  details: "The tokenizer produces semantic IDs consumed by a generative retrieval system and validated in discriminative ranking against the PPNet item-ID backbone; the shared expert is shown to be crucial for parameter-efficient, highly specialized experts."
+id_tokenization:
+  approach: "Multimodal mixture-of-quantization semantic IDs from shared and specific experts"
+  details: "Each modality keeps its own expert with a shared expert across modalities; quantization metrics track reconstruction loss, codebook entropy and utilization, and behavior-aware fine-tuning aligns the codes with downstream recommendation behavior."
+features_signals:
+- "Multimodal item content: images, titles, descriptions"
+- "User behavior sequences of impressions, clicks and conversions, average length 128"
+- "Behavioral alignment signals from downstream generative retrieval and ranking"
+training:
+  mode: "Two-stage: multimodal shared-specific pretraining, then behavior-aware fine-tuning"
+  objectives:
+  - "Reconstruction loss for quantization with codebook entropy and utilization regularization"
+  - "Behavior-aware fine-tuning aligning the semantic space with recommendation tasks"
+  notes: "The paper reports the two-stage design resolves the mismatch between content-derived and behavior-driven representations."
+serving_infra: "The generated semantic IDs run inside the generative retrieval system of the platform's advertising business; serving infrastructure details are not reported."
+scale:
+- metric: Industrial dataset
+  value: "30 million users and 40 million advertisements, October 2024 to May 2025, average sequence length 128"
+  note: "paper, Sec 4.1.1"
+- metric: A/B traffic
+  value: 10% of random user traffic
+  note: "paper, Sec 5"
+- metric: A/B duration
+  value: 30 days, July 6 to August 6, 2025
+  note: "paper, Sec 5"
+results_reported: "Online A/B, Sec 5, 30 days from July 6 to August 6, 2025 with 10% of random user traffic against the existing Item ID-based system: Advertising Revenue +0.90%, Conversion Rate +4.33%, Orders +3.52%. Offline ranking, Table 1a, against the best baseline: on the industrial dataset MMQ reaches AUC 0.7184 and GAUC 0.6081 with relative improvements +0.04% and +0.07%, reconstruction loss 0.5529 at +0.32% lower, codebook entropy 7.9560 at +2.08% and utilization 1.00; on Amazon Beauty AUC 0.6503 at +0.33% and GAUC 0.6020 at +0.31%. Offline generative retrieval, Table 1b, MMQ consistently surpasses modality-aligned and modality-separated quantization baselines in Recall and NDCG at 5 and 10 on both datasets. Ablations, Table 2: removing orthogonal regularization sharply lowers codebook utilization and entropy, and removing behavior-aware fine-tuning lowers Recall and NDCG in all settings; Figure 6 shows even a Specific-Only variant with 10 experts fails to match MMQ with 2 shared and 4 specific experts. Methods with semantic IDs achieve significant AUC improvements over the PPNet item-ID backbone on long-tail items."
+caveats:
+- "The arXiv text read is a preprint in a two-column non-ACM layout; the WSDM 2026 DOI 10.1145/3773966.3777923 was verified against Crossref with pages 788-797, and the published version was not read."
+- "The paper describes the platform as a leading e-commerce advertising platform in Southeast Asia without naming it."
+- "The paper's limitations section states the two-stage framework adds training complexity and the fine-tuning stage is task-dependent."
+unknown_fields:
+- Platform name
+- A/B bucket counts and significance levels
+- Training compute and hardware
+- Official code
+sources:
+- title: "MMQ: Multimodal Mixture-of-Quantization Tokenization for Semantic ID Generation and User Behavioral Adaptation, WSDM 2026"
+  url: https://doi.org/10.1145/3773966.3777923
+  type: paper
+- title: "MMQ, arXiv 2508.15281"
+  url: https://arxiv.org/abs/2508.15281
+  type: paper
+version_note: "Read from arXiv 2508.15281 v1, a preprint; the WSDM 2026 DOI 10.1145/3773966.3777923 was verified against Crossref, and the published version itself was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.15281
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, methodology, experimental setup with datasets, Tables 1 and 2, online experiments, ablations, conclusion, limitations"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; WSDM 2026 version not available, arXiv v1 preprint read on 2026-11-02"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Quantize multimodal item content with shared and modality-specific experts, then fine-tune the codes toward user behavior."
+deployed_in: "Generative retrieval of a Southeast Asian e-commerce advertising platform"
+scale_short: "30-day A/B at 10% traffic on 30 million users"
+key_result: "30-day A/B vs Item ID system: Advertising Revenue +0.90%, CVR +4.33%, Orders +3.52%"
+results_table:
+  online:
+  - setting: "E-commerce advertising platform, 30-day A/B, 10% traffic"
+    method: "MMQ semantic IDs"
+    metric: "Advertising Revenue"
+    result: "+0.90%"
+    versus: "Item ID-based system"
+  - setting: "E-commerce advertising platform, 30-day A/B, 10% traffic"
+    method: "MMQ semantic IDs"
+    metric: "Conversion Rate"
+    result: "+4.33%"
+    versus: "Item ID-based system"
+  offline:
+  - setting: "Industrial dataset, discriminative ranking"
+    method: MMQ
+    metric: AUC
+    result: "0.7184"
+    versus: "Best baseline, +0.04%"
+  - setting: "Amazon Beauty, discriminative ranking"
+    method: MMQ
+    metric: AUC
+    result: "0.6503"
+    versus: "Best baseline, +0.33%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Semantic-ID tokenization for the generative retrieval system of a leading e-commerce advertising platform in Southeast Asia"
+  ab_traffic: "10% of the platform's random user traffic"
+  ab_duration: "30 days, July 6 to August 6, 2025"
+  baseline: "The existing Item ID-based system"
+  online_lifts:
+  - metric: "Advertising Revenue"
+    value: "+0.90%"
+  - metric: "Conversion Rate"
+    value: "+4.33%"
+  - metric: "Orders"
+    value: "+3.52%"
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - "The paper describes the online gains as significant and consistent across key business metrics."
+  fulltext_refs:
+  - "Sec 5: Advertising Revenue +0.90%, CVR +4.33%, Orders +3.52%, 30 days July 6 to August 6 2025, 10% traffic"
+  - "Table 1a: industrial AUC 0.7184, GAUC 0.6081, Lrecon 0.5529, entropy 7.9560, utilization 1.00; Beauty AUC 0.6503"
+  - "Sec 4.1.1: 30 million users, 40 million advertisements, average length 128"
+  basis: full_text
+  checked_on: "2026-11-02"

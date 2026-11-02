@@ -1,0 +1,52 @@
+surface|Meta 多个推荐场景生产模型的训练数据基础设施；用户交互历史只存一份，训练时重建序列
+era_reason|论文核心主张是为 HSTU 类生成式推荐器扩展定律级的序列长度，并自称是 HSTU 与 ULTRA-HSTU 的基础数据设施。
+tldr|版本化晚物化让每份用户历史只存一份、训练时重建；主读取带宽最高降 70.3%，并在 Meta 解锁了 4K 到 64K 的序列扩展。
+summary|来自 Meta 的 VLM 用版本化晚物化取代行业标准Fat Row范式，后者把完整用户交互历史复制进每条训练样本。历史被拆为按例快照的近期可变层与只存一份的长期不可变层；推理时只记录带时间边界的轻量版本元数据，训练时通过有界范围扫描重建精确的推理时状态，在流式与批式两种训练下都保持线上线下一致性并防止未来信息泄漏。单层不可变存储配合每日卸载压实、多维投影下推与按特征感知的列式编码，支撑一百多个并发训练作业；分离式数据预处理加流水线预取让训练保持 GPU 算力受限。该系统部署在多个推荐场景的生产模型上，论文称其为 HSTU 与 ULTRA-HSTU 的基础数据设施。
+core_idea|把只追加的用户历史在不可变层只存一份，训练时用轻量版本指针重建精确的推理时状态。
+deployed_in|Meta 多个推荐场景的生产训练管线
+scale_short|主读取带宽最高降 70.3%，同时把序列扩到 64K
+key_result|Platform A：4K 到 64K 累计 NE +1.2%；4K 到 16K 的 A/B 北极星 +0.22%、消费类指标 +4.1%
+results_reported|系统效率，表 1，相对 Fat Row 基线、共享同一并集数据集的三个模型租户：主写入带宽 -46.2%，由租户共享；主读取带宽 Model A -70.3%、Model B -50.9%、Model C -47.7%；晚物化新增的序列查找带宽，流式下 Model A +62.7%、Model B +16.2%、Model C +8.7%，批式下 +24.6%、+6.5%、+3.4%；每批数据加载延迟 Model A +9.7%、Model B -26.4%、Model C -36.2%。不可变存储每单位主机资源读吞吐为 3.4 倍；分离式预处理的基础批大小调优带来每 worker 吞吐 15% 提升；流水线 I/O 预取在重查找模型上带来 10%；数据亲和分桶与对称分片把批式读取带宽降 60%、每 worker 吞吐提升 28%。模型质量见 5.2 节：Fat Row 墙约在 4K，此时数据服务资源超过 GPU 训练算力的 0.75；Platform A 从 4K 到 64K 累计 Normalized Entropy 提升 1.2%，总计超过 5%，Platform B 从 4K 到 10K 提升 0.65%，论文说明该生产规模下 1% 的 NE 提升即被视为成功。线上 A/B 见表 2，指标匿名化：Platform A 在 4K 到 16K 使 Metric-Topline +0.22%、Metrics-C +4.1%、Metrics-E-1 +2.3%、Metrics-E-2 +4.3%；Platform B 在 4K 到 10K 使 Metric-Topline +0.14%、Metrics-C +0.79%、Metrics-E-3 +1.4%、Metrics-E-4 +1.7%。
+serving_infra|非服务系统。可变 UIH 存储用盲写追加和写穿缓存在推理路径上提供秒级新鲜度；不可变 UIH 存储以单层布局保存长期历史，每次查询一次磁盘寻道加顺序 I/O，每单位主机资源读吞吐 3.4 倍。
+stages.0.model_family|服务推荐漏斗模型队的数据基础设施，含超长序列的 HSTU 类生成式排序器
+stages.0.details|本身不是排序模型：系统为共享同一并集训练数据集、序列长度需求差异巨大的检索、粗排和排序租户存储并重建用户交互历史。
+id_tokenization.approach|不适用；这是数据基础设施系统
+id_tokenization.details|历史按用户、特征组和子序列时间戳组织成多维模式；物品身份的处理属于被服务的模型。
+features_signals.0|只追加、按时间排序的用户交互历史事件
+features_signals.1|每个事件的异构类型特征，如帖子 ID、时间戳、事件类型和观看时长，有稠密也有稀疏
+features_signals.2|每条训练样本的版本元数据：时间边界、序列长度和校验和
+training.mode|同时服务实时消息流上的流式训练和每小时落仓后的批式训练
+training.notes|重建完全发生在数据预处理层，仅依赖记录的版本元数据，因此同一协议服务两种训练范式；与 Fat Row 基线的校验和比对验证了重建保真度。
+scale.0.metric|存储节省
+scale.0.value|共享数据集主写入带宽下降 46.2%
+scale.1.metric|读取节省
+scale.1.value|三个租户的每作业主读取带宽下降 47.7% 到 70.3%
+scale.2.metric|序列扩展
+scale.2.value|Platform A 从 4K 到 64K，Platform B 从 4K 到 10K
+scale.3.metric|训练舰队
+scale.3.value|100 多个并发训练作业共享同一不可变存储
+results_table.online.0.setting|Platform A，序列 4K 到 16K，A/B
+results_table.online.1.setting|Platform A，序列 4K 到 16K，A/B
+results_table.online.2.setting|Platform B，序列 4K 到 10K，A/B
+results_table.offline.0.setting|三租户并集数据集，流式训练
+results_table.offline.1.setting|两个平台，NE 扩展
+results_table.online.0.versus|4K Fat Row 基线
+results_table.online.1.versus|4K Fat Row 基线
+results_table.online.2.versus|4K Fat Row 基线
+results_table.offline.0.versus|Fat Row 基线
+results_table.offline.1.versus|4K 到 64K，总计超过 5%
+caveats.0|所读 arXiv 文本是预印本；未读到 RecSys 2026 正式版，DOI 已在 Crossref 核对，页码 1654-1662。
+caveats.1|线上 A/B 指标沿用先前工作的做法做了匿名化，分为 Metric-Topline、Metrics-C 和 Metrics-E 三类，场景名与指标身份未公开。
+caveats.2|论文说明两个平台由不同模型架构驱动，但未给出平台名称。
+unknown_fields.0|A/B 流量占比与时长
+unknown_fields.1|三个租户与两个平台的模型身份
+unknown_fields.2|训练算力与硬件
+unknown_fields.3|官方代码
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
+version_note|读的是 arXiv 2604.24806 v2 预印本；RecSys 2026 的 DOI 10.1145/3773078.3831845 已在 Crossref 核对，正式版本身未读到。
+deployment.scenario|Meta 两个以上推荐场景生产排序模型的训练数据基础设施，服务 HSTU 类生成式推荐器
+deployment.baseline|4K 序列长度下的 Fat Row 范式
+deployment.training_compute|本身不是训练系统；分离式预处理让 GPU 保持算力受限，批大小调优带来每 worker 15%、流水线预取带来 10% 的吞吐提升
+deployment.inference_cost|可变 UIH 存储在推理路径提供秒级新鲜度；不可变存储读取只需一次磁盘寻道加顺序 I/O
+deployment.notes.0|论文说明该生产规模下 1% 的 Normalized Entropy 提升即被视为成功。
+deployment.notes.1|一百多个并发训练作业共享读取同一不可变存储。

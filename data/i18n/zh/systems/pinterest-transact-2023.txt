@@ -48,3 +48,4 @@ deployment.notes.0|模型每周重训两次，因为它对行为漂移敏感。
 deployment.online_lifts.0.metric|Homefeed repin 量，所有用户
 deployment.online_lifts.1.metric|Homefeed hide 量，所有用户
 deployment.online_lifts.2.metric|Homefeed 总停留时长，所有用户
+status_reason|按一系统一卡规则，并入呈现 TransAct V2 的 pinterest-transact 卡。

@@ -1,0 +1,52 @@
+surface|美团生成式推荐模型的分布式训练系统，与武汉大学合作构建；部署于含外卖在内的推荐体系
+era_reason|该系统为在 100 卡规模上训练基于 HSTU 的生成式推荐模型而生，其对象与扩展性主张都属于生成式推荐体系。
+tldr|MTGenRec 用动态嵌入表和序列均衡让美团生成式推荐器在 100 多张 GPU 上训练快 1.6 至 2.4 倍；外卖 A/B 订单 +1.22%。
+summary|MTGenRec 由武汉大学与美团共建，是面向生成式推荐模型的分布式训练系统，服务美团各应用上 HSTU 加 MMoE 的模型栈。它在 TorchRec 基础上解决两个生产阻碍：哈希动态嵌入表取代静态表，让新用户、新物品和商家改菜单可以实时增删嵌入；两阶段 ID 去重加自动表合并削减嵌入查找与通信。动态序列组批在不截断的前提下按 GPU 均衡变长用户序列，而这正是生成式模型所需。系统已部署于美团多个应用，日处理数亿请求；在外卖平台，用 MTGenRec 训练的 GRM 在离线 GAUC 和线上业务指标上都胜过长期运行的深度推荐基线。
+core_idea|为生成式推荐器配上带动态哈希嵌入表、去重查找和序列均衡的训练系统，让全长序列在 100 多张 GPU 上训练。
+deployed_in|美团推荐训练，多个应用含外卖
+scale_short|每日超 2 亿条序列的日志，最多 128 张 A100 GPU
+key_result|外卖 2% 流量 A/B 对比训练 2 年的 DLRM：订单 +1.22%、PV_CTR +1.31%；训练比 TorchRec 快 2.44 倍
+results_reported|GRM 在 10 天日志上从零训练。美团外卖表 1，基线为持续学习 2 年的最先进在线 DRM 即 DLRM，A/B 占 2% 流量：离线上，GRM 4G 使 CTR GAUC +0.0036、CTCVR GAUC +0.0154，GRM 110G 为 +0.0153 和 +0.0288；线上，GRM 4G 使 PV_CTR +1.04%、UV_CTCVR +0.04%，GRM 110G 为 +1.90% 和 +1.02%。摘要报告配送平台用户订单量 +1.22%、线上 PV_CTR +1.31%，引言把离线收益概括为 CTCVR GAUC 提升 2.88 个百分点。系统侧：相对 TorchRec 训练时间降低 2.44 倍；表 2 把 GRM 4G 1D 的 100 步分解为查找 7.0 到 3.2 秒、前向 14.8 到 14.0、反向 50.7 到 32.6，GRM 110G 64D 为查找 95.2 到 14.4、前向 27.8 到 19.9、反向 177.7 到 54.7。序列均衡在引言中带来 1.75 倍吞吐提升，GRM 110G 平均 26.5%、64 GPU 时峰值 33.5%；批大小从 480 升到 496、GPU 显存利用率 86.3% 到 95.7% 即 GRM 4G 1D，从 80 升到 116、75.3% 到 90.3% 即 GRM 110G 1D，而均衡前同步延迟最高 25.8 毫秒。两阶段 ID 去重引言中带来 53% 吞吐提升，相对不去重为 1.1 至 3.7 倍。动态嵌入表相对 TorchRec Managed Collision Handling 达 1.47 至 2.22 倍，GRM 4G 1D 为 47.59%，GRM 110G 8D 为 97.4%，MCH 在 64D 时内存溢出。128 GPU 时 MTGenRec 保持理想加速的 62.75% 到 78.5%，图 9 显示 GRM 与 TorchRec 在同等数据下 GAUC 一致。
+serving_infra|非服务系统。训练在每节点 8 张 NVIDIA A100 SXM4 80GB 的节点上进行，最多 16 节点；节点内 NVLink 600 GB/s，节点间 InfiniBand 200 GB/s。
+stages.0.model_family|美团 GRM 的训练基础设施：嵌入层、N 个 HSTU 层和 top-k 专家聚合的 MMoE 头，用交叉熵端到端训练
+stages.0.details|重点在基础设施而非特定漏斗阶段：稀疏表模型并行、稠密模型数据并行的混合并行，All-to-all 嵌入交换，异构反向更新，以及基于 HDFS 分区 Hive 表的数据管线。
+id_tokenization.approach|普通特征 ID 映射进动态哈希嵌入表；无 Semantic ID
+id_tokenization.details|MurmurHash3 加开放寻址和分组并行探测把任意特征 ID 映射到嵌入；键值分离存储，按块分配，负载因子超过 0.75 时表容量翻倍。
+features_signals.0|GRM 的上下文、历史与曝光物品序列
+features_signals.1|覆盖用户、物品和上下文的稀疏类别特征
+features_signals.2|变长用户序列，平均长度 600，最长 3000
+training.mode|基于 Hive 日志块的离线端到端同步训练，带下一批预取流水线
+training.objectives.0|GRM 的交叉熵损失，按动态批大小做加权梯度平均以校正跨设备差异
+training.notes|动态序列组批以平均序列长度 600 乘批大小为目标 token 数并在缓冲区上二分查找；模型从零训练于 10 天日志，日量超 2 亿条序列，优化器 Adam。
+scale.0.metric|相对 TorchRec 的吞吐提升
+scale.0.value|1.6 至 2.4 倍
+scale.1.metric|训练数据
+scale.1.value|日日志超 2 亿条序列，平均长度 600，最长 3000
+scale.2.metric|部署
+scale.2.value|美团多个应用，日处理数亿请求
+scale.3.metric|公司规模
+scale.3.value|2024 年超 7.7 亿交易用户，日峰值订单超 9800 万
+results_table.online.0.setting|美团外卖，2% 流量 A/B
+results_table.online.1.setting|美团外卖，2% 流量 A/B
+results_table.offline.0.setting|美团 10 天日志
+results_table.offline.1.setting|相对 TorchRec 的吞吐基准
+results_table.online.0.versus|在线 DLRM，已学习 2 年
+results_table.online.1.versus|在线 DLRM，已学习 2 年
+results_table.offline.0.versus|DRM 基线
+results_table.offline.1.versus|TorchRec
+caveats.0|论文说明 MTGenRec 基于 TorchRec 开发，且 TorchRec 是唯一面向 PyTorch 的 GRM 训练框架，因此未比较其他基线。
+caveats.1|线上 A/B 的基线是持续学习 2 年的生产 DLRM，而 GRM 在 10 天日志上从零训练，论文自己也指出训练数据量明显更少。
+caveats.2|论文指出 GRM 需要保留完整用户序列，因此不做 LLM 训练中常见的截断与填充。
+unknown_fields.0|A/B 时长与桶数
+unknown_fields.1|官方代码
+unknown_fields.2|各应用部署清单
+unknown_fields.3|所训 GRM 的推理侧指标
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布；同名 MTGRec 仓库是无关的学术项目。
+version_note|读的是 arXiv 2505.12663 v3 的 PDF，带完整 KDD 2026 ACM 引用和 DOI 10.1145/3770854.3783925；DOI 已在 Crossref 核对，页码 2482-2493。arXiv v1 于 2025 年五月以 MTGRBoost 旧题首发。
+deployment.scenario|美团生成式推荐器的训练系统，覆盖多个应用；A/B 在外卖应用上进行
+deployment.ab_traffic|2% 流量
+deployment.baseline|最先进的在线 DRM，即持续学习 2 年的 DLRM
+deployment.training_compute|最多 16 节点、每节点 8 张 NVIDIA A100 SXM4 80GB，共 128 GPU，NVLink 600 GB/s、InfiniBand 200 GB/s；100 多 GPU 上较 TorchRec 吞吐 1.6 至 2.4 倍，128 GPU 保持理想加速的 62.75% 到 78.5%
+deployment.hardware|NVIDIA A100 SXM4 80GB，每节点 8 张，最多 16 节点
+deployment.notes.0|系统覆盖美团多个应用，日处理数亿请求。
+deployment.notes.1|美团 2024 年服务超 7.7 亿交易用户，日峰值订单超 9800 万。

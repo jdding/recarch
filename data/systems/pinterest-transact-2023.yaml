@@ -11,7 +11,11 @@ venue_year: 2023
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3580305.3599918"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-02"
+status: superseded
+status_date: "2026-11-02"
+status_reason: Merged into the pinterest-transact card that presents TransAct V2, one system one card.
+superseded_by: pinterest-transact
 updates:
 - date: "2026-10-30"
   note: "Checked against the KDD 2023-format PDF, arXiv v1 with the final DOI; all numbers confirmed."

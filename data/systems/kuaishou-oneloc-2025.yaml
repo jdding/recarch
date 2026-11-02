@@ -1,0 +1,142 @@
+id: kuaishou-oneloc-2025
+name: OneLoc
+company: Kuaishou
+surface: Local life service recommendation in the Kuaishou App; recommends store-attached short videos to nearby users
+year: 2025
+era: generative
+era_reason: "An end-to-end encoder-decoder generative recommender over geo-aware semantic IDs with DPO post-training; the generative paradigm replacing a cascade is the central claim."
+first_public: "2025-08"
+venue: "WSDM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773966.3777963"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "OneLoc generates geo-aware semantic IDs end to end for Kuaishou local life; a one-week A/B at 10% traffic lifted GMV +21.016% and now serves full traffic."
+summary: "OneLoc, from Kuaishou, is an end-to-end generative recommender for the local life service of the Kuaishou App, replacing the production multi-stage cascade for store-attached short videos. Geographic information enters at three levels: semantic IDs built from video text fused with location features, a geo-aware self-attention whose scores add location-context similarity and gate outputs by the user's real-time location, and a neighbor-aware decoder prompt that aggregates the surrounding location context through cross-attention. A two-stage recipe follows OneRec: pre-training on multi-behavior watch, click and pay sequences, then reinforcement learning with DPO over preference pairs scored by a geographic reward for distance and a GMV reward. Deployed with an inference stack of beam search, a video-mapping server and a reward system, OneLoc now serves the full traffic of 400 million daily active users."
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: "Encoder-decoder over geo-aware semantic IDs: 4 blocks each side, 1024 hidden, 8 heads, FFN 4096, 3 codebooks of 8192, trained by pre-training plus DPO"
+  details: "The encoder consumes multi-behavior sequences of watch length 256, click 32 and pay 10 with geo-aware self-attention; the decoder generates semantic tokens guided by the neighbor-aware prompt; the Video Mapping Server converts tokens to video IDs and the Reward System filters by GMV score and rules before TopK."
+id_tokenization:
+  approach: "Geo-aware semantic IDs from residual quantization with 3 codebooks of 8192 clusters"
+  details: "Video textual descriptions fused with geographic features are encoded and residual-quantized; each video maps to a 3-token semantic ID whose clusters carry geographic semantics."
+features_signals:
+- "Watch, click and pay behavior sequences with location IDs and location context embeddings"
+- "User real-time location as a gate and as the decoder query, with surrounding locations as keys and values"
+- "Geographic reward by user-store distance and GMV reward for DPO preference pairs"
+training:
+  mode: "Two-stage: streaming pre-training on 7 days of logs, then DPO reinforcement learning"
+  objectives:
+  - "Next-token prediction over semantic-ID sequences"
+  - "DPO on preference pairs from the highest- and lowest-scoring sampled videos under geographic and GMV rewards, loss weight 0.05"
+  notes: "AdamW, initial learning rate 2e-4, weight decay 0.1, on NVIDIA A800 GPUs; scaling model size from 0.05B to 0.3B yields an average +6.96% recall and +7.29% NDCG."
+serving_infra: "Deployment consists of a trainer with streaming updates, the OneLoc inference server with beam search, a video-mapping server and a reward system. Inference uses mixed precision, KV cache, dynamic batching and TensorRT on NVIDIA A10 GPUs, reaching 25% Model FLOPs Utilization."
+scale:
+- metric: Deployment
+  value: full traffic of local life service, 400 million daily active users
+  note: "paper, abstract and Sec 5"
+- metric: KuaiLLSR dataset
+  value: "8 days, 60 million users, 900K items, 440 million interactions, average sequence length about 200"
+  note: "paper, Sec 4.1.1"
+- metric: A/B traffic
+  value: 10% of traffic in the treatment group
+  note: "paper, Sec 5"
+results_reported: "Online A/B, Table 4, one week, which Sec 5 describes as run on Kuaishou's primary short-video recommendation scenario, at 10% treatment traffic against the production-level multi-stage pipeline with identical candidate pools: GMV +21.016%, order volume +17.891%, number of paying users +18.585% and new paying users +23.027%, all significant at p < 0.01 under two-tailed t-tests. Offline, Sec 4.2: on KuaiLLSR, OneLoc improves Recall@5 +13.46%, Recall@20 +10.44%, NDCG@5 +14.47% and NDCG@20 +12.97% over the second-best baseline; on the Foursquare global dataset the average gains are +13.18% Recall@5 and +16.34% NDCG@5. Ablations, Table 3: removing location scores drops Recall@5 from 0.3565 to 0.3476, removing the location gate to 0.3501, and removing geo-aware self-attention entirely to 0.3315. Scaling from 0.05B to 0.3B brings an average +6.96% recall and +7.29% NDCG."
+caveats:
+- "The arXiv text read is a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref with pages 735-744, and the published version was not read."
+- "The paper states that local life service is disabled when a user forbids the app from visiting her real-time location."
+- "Offline baselines include traditional and generative recommenders, but the online comparison is against the production multi-stage pipeline only."
+unknown_fields:
+- A/B control-group share beyond the 10% treatment allocation
+- Inference latency numbers
+- Training compute beyond the A800 GPU mention
+- Official code
+sources:
+- title: "OneLoc: Geo-Aware Generative Recommender Systems for Local Life Service, WSDM 2026"
+  url: https://doi.org/10.1145/3773966.3777963
+  type: paper
+- title: "OneLoc, arXiv 2508.14646"
+  url: https://arxiv.org/abs/2508.14646
+  type: paper
+version_note: "Read from arXiv 2508.14646, a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref, and the camera-ready was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.14646
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, methodology including tokenizer, encoder, decoder and RL, experiments with Tables 1 to 4, deployment, scaling analysis, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; WSDM 2026 version not available, arXiv preprint read on 2026-11-02"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Fuse location into semantic IDs, attention and decoder prompts, then align generation with distance and GMV rewards."
+deployed_in: "Kuaishou local life service, full traffic"
+scale_short: "Full traffic serving 400 million daily active users"
+key_result: "One-week A/B at 10% traffic vs the multi-stage pipeline: GMV +21.016%, orders +17.891%, p < 0.01"
+results_table:
+  online:
+  - setting: "Kuaishou local life, one-week A/B, 10% traffic"
+    method: OneLoc
+    metric: GMV
+    result: "+21.016%"
+    versus: "Production multi-stage pipeline"
+  - setting: "Kuaishou local life, one-week A/B, 10% traffic"
+    method: OneLoc
+    metric: "Order volume"
+    result: "+17.891%"
+    versus: "Production multi-stage pipeline"
+  - setting: "Kuaishou local life, one-week A/B, 10% traffic"
+    method: OneLoc
+    metric: "New paying users"
+    result: "+23.027%"
+    versus: "Production multi-stage pipeline"
+  offline:
+  - setting: "KuaiLLSR dataset"
+    method: OneLoc
+    metric: "Recall@5"
+    result: "+13.46%"
+    versus: "Second-best baseline"
+  - setting: "Foursquare global dataset"
+    method: OneLoc
+    metric: "NDCG@5"
+    result: "+16.34%"
+    versus: "Second-best baseline, average"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Local life service recommendation in the Kuaishou App, serving the full traffic of 400 million daily active users"
+  ab_traffic: "10% of traffic in the treatment group, control on the production pipeline"
+  ab_duration: "One week"
+  baseline: "The production-level multi-stage pipeline with multi-channel retrieval, coarse and fine ranking and link-specific refinements"
+  online_lifts:
+  - metric: GMV
+    value: "+21.016%"
+  - metric: "Order volume"
+    value: "+17.891%"
+  - metric: "Paying users in local services"
+    value: "+18.585%"
+  - metric: "New paying users in local services"
+    value: "+23.027%"
+  training_compute: "Trained on NVIDIA A800 GPUs; 0.05B to 0.3B model scales tested; GPU hours not reported"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "Mixed precision, KV cache, dynamic batching and TensorRT on NVIDIA A10 GPUs, reaching 25% MFU"
+  hardware: "NVIDIA A800 for training, NVIDIA A10 for inference"
+  notes:
+  - "All online gains significant at p < 0.01 under two-tailed t-tests at alpha 0.05."
+  - "Both A/B groups shared identical candidate pools and system constraints."
+  fulltext_refs:
+  - "Table 4 and Sec 5: GMV +21.016%, orders +17.891%, paying users +18.585%, new paying users +23.027%, 10% traffic, one week, p < 0.01"
+  - "Sec 4.2: KuaiLLSR Recall@5 +13.46%, NDCG@5 +14.47%; Foursquare Recall@5 +13.18%, NDCG@5 +16.34%"
+  - "Table 3: full model Recall@5 0.3565, w/o geo-aware self-attention 0.3315"
+  basis: full_text
+  checked_on: "2026-11-02"

@@ -1,0 +1,128 @@
+id: alibaba-nezha-2025
+name: NEZHA
+company: Alibaba
+surface: Candidate generation for Taobao Search Advertising first-page slots under a 30 ms latency budget
+year: 2025
+era: generative
+era_reason: "An autoregressive generative-recommendation retriever over semantic IDs whose decoding is accelerated by self-drafting and hash-set verification; the generative stack is the subject."
+first_public: "2025-11"
+venue: "WWW 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3774904.3792797"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "NEZHA adds a self-drafting head and hash-set verification to generative retrieval, cutting Taobao ad latency from over 1000 ms to under 30 ms; A/B revenue +1.2%."
+summary: "NEZHA, built by City University of Hong Kong with Alibaba Group, is a decoding architecture that makes LLM-based generative recommendation fast enough for Taobao Search Advertising's first-page slots, which enforce a 30 millisecond budget. Instead of a separate draft model, a nimble autoregressive draft head is trained inside the primary model so the model drafts its own semantic-ID continuations, and a model-free verifier checks drafted candidates against a pre-computed hash set of valid item identifiers, which the paper identifies as the fix for hallucinated invalid IDs. Deployed in the recall stage since October 2025, the system serves hundreds of millions of daily active users and moved the generative retriever from later pages into all advertising slots including the first page."
+paradigms:
+- generative-retrieval
+- semantic-id
+stages:
+- stage: retrieval
+  model_family: "LLM generative retriever, benchmarked with Llama-1B and Qwen3-0.8B backbones, extended with an autoregressive draft head and hash-set verification"
+  details: "The draft head combines a logit head over the LLM's final-layer hidden states with an autoregressive component that consumes previously drafted tokens; drafted candidate sequences are filtered in place against the hash set of valid semantic IDs, retaining only items in the intersection."
+id_tokenization:
+  approach: "Multi-token semantic IDs encoded as integers in a pre-computed hash set"
+  details: "Each item's semantic ID maps to an integer index; verification is a constant-time hash lookup. The paper reports the ratio of valid IDs among raw generations is around 0.1% in production data, and verification lifts the valid drafted-candidate ratio from 43% to over 93%."
+features_signals:
+- "Query and user interaction sequence serialized for the LLM"
+- "Semantic-ID token stream generated autoregressively"
+- "Beam search with KV cache as the baseline decoding path"
+training:
+  mode: "Offline training of the LLM with the attached draft head"
+  objectives:
+  - "Next-token prediction over semantic-ID sequences with the draft head trained jointly"
+  notes: "Table 1 benchmarks 0.6B and 3B models with beam size 512; timings are normalized by the 0.6B prefill time for confidentiality."
+serving_infra: "Deployed in the candidate-generation stage of Taobao Search Advertising. The 2.6x algorithm-level speedup plus system-level savings on queuing cut total latency from over 1000 ms to below the 30 ms first-page threshold."
+scale:
+- metric: Deployment
+  value: "Taobao Search Advertising since October 2025, hundreds of millions of daily active users"
+  note: "paper, abstract and Sec 5"
+- metric: Business scale
+  value: "a business unit accounting for over a quarter of advertising revenue, at billion level"
+  note: "paper, Sec 1"
+- metric: Speedup
+  value: 2.6x algorithm-level
+  note: "paper, Sec 5 Table 1"
+results_reported: "Deployment, Sec 5: cutting total latency from over 1000 ms to below the 30 ms first-page threshold, offline hit rate on clicked items improves +0.58% at top 500 and +0.61% at top 1000; the 7-day online A/B test registered a 1.2% revenue increase for a billion-level business after the system took the prime first-page position in October 2025. Verification, Sec 3.3: the model-free hash-set verifier lifts the ratio of valid drafted candidates from 43% to over 93%, worth a 12 percentage point uplift in key offline metrics. Public benchmarks, Table 3, with Llama and Qwen backbones on Beauty, Games and Yelp: NEZHA matches or beats beam search and the MTP self-drafting baseline, for example Qwen Beauty Hit@5 0.0451 against 0.0446 for beam search, with Games Hit@5 0.0239 against 0.0226 marked statistically significant at p < 0.05, while latency sits close to the MTP baseline and far below beam search, whose normalized latency reaches 74.21 and 47.70 on Beauty against 7.00 and 4.41 for NEZHA."
+caveats:
+- "The paper states that the 7-day online test was a reverse A/B test on 10% of traffic; no further bucket detail is given, and the production training setup is not described beyond the semantic-ID configuration shared with the public experiments."
+- "Serving latencies in Table 1 are normalized by the 0.6B prefill time for confidentiality, so absolute milliseconds are not published."
+- "The paper states that previously the generative retriever could only serve advertising slots after the first page."
+unknown_fields:
+- Absolute latency numbers
+- Training compute
+sources:
+- title: "NEZHA code repository"
+  url: https://github.com/Applied-Machine-Learning-Lab/WWW2026_NEZHA
+  type: source_code
+- title: "NEZHA: A Zero-sacrifice and Hyperspeed Decoding Architecture for Generative Recommendations, WWW 2026"
+  url: https://doi.org/10.1145/3774904.3792797
+  type: paper
+- title: "NEZHA, arXiv 2511.18793"
+  url: https://arxiv.org/abs/2511.18793
+  type: paper
+version_note: "Read from arXiv 2511.18793 v2, the WWW 2026 camera-ready with the final ACM reference and DOI 10.1145/3774904.3792797, which was also verified against Crossref with pages 8073-8082."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2511.18793
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, latency analysis with Table 1, methodology including drafting and hash verification, experiments with Tables 2 and 3, deployment, related work, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "camera-ready with full ACM citation read from arXiv v2 on 2026-11-02; ACM page not opened"
+code:
+  status: official_full
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/Applied-Machine-Learning-Lab/WWW2026_NEZHA
+    owner: "Applied Machine Learning Lab, CityU authors of the paper"
+    official: true
+    note: "The paper states the code is available at this repository; it holds the draft head, training and inference scripts and the public-dataset pipeline, and no production data."
+core_idea: "Let the LLM draft its own semantic-ID continuations and verify them against a hash set of valid items, so generative retrieval fits a 30 ms budget."
+deployed_in: "Taobao Search Advertising recall, all slots including the first page"
+scale_short: "Serves hundreds of millions of DAU at billion-level revenue scale"
+key_result: "7-day A/B revenue +1.2% for a billion-level business; latency from over 1000 ms to below the 30 ms first-page threshold"
+results_table:
+  online:
+  - setting: "Taobao Search Advertising, 7-day A/B, first-page slots"
+    method: NEZHA
+    metric: Revenue
+    result: "+1.2%"
+    versus: "Prior serving without GR in first-page slots"
+  offline:
+  - setting: "Production data, hit rate on clicked items"
+    method: NEZHA
+    metric: "Hit rate, top 500"
+    result: "+0.58%"
+    versus: "GR baseline"
+  - setting: "Public benchmarks, Qwen backbone, Beauty"
+    method: NEZHA
+    metric: "Hit@5"
+    result: "0.0451"
+    versus: "Beam search 0.0446"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Candidate generation for Taobao Search Advertising, deployed since October 2025 across all slots including first-page placements"
+  ab_traffic: "10% of traffic, reverse A/B test"
+  ab_duration: "7 days"
+  baseline: "The prior deployment that kept the generative retriever out of first-page slots"
+  online_lifts:
+  - metric: Revenue
+    value: "+1.2%"
+  training_compute: "Benchmarked 0.6B and 3B backbones; training compute not reported"
+  serving_latency: "Below the 30 ms first-page constraint, down from over 1000 ms; 2.6x algorithm-level speedup plus queuing savings; Table 1 timings normalized for confidentiality"
+  serving_qps: not_reported
+  inference_cost: "Model-free hash-set verification replaces target-model verification; valid draft ratio 43% to over 93%"
+  hardware: not_reported
+  notes:
+  - "The paper describes the business unit as accounting for over a quarter of advertising revenue."
+  - "KV cache is already included in the Table 1 baseline measurements."
+  fulltext_refs:
+  - "Sec 5: 2.6x speedup, over 1000 ms to below 30 ms, +0.58% and +0.61% hit rate, 7-day reverse A/B on 10% of traffic +1.2% revenue, October 2025"
+  - "Sec 3.3: 43% to over 93% valid ratio, 12 percentage point uplift"
+  - "Table 3: Qwen Beauty 0.0451, Games 0.0239 significant, normalized latency 7.00 and 4.41 against beam search 74.21 and 47.70"
+  basis: full_text
+  checked_on: "2026-11-02"

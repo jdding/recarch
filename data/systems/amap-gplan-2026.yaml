@@ -1,0 +1,138 @@
+id: amap-gplan-2026
+name: GPlan
+company: Alibaba Amap
+surface: Amap homepage agent generating ordered sequences of tool-intent cards, ride-hailing, destination exploration and local lifestyle services
+year: 2026
+era: generative
+era_reason: "An LLM-backbone generator producing parameterized intent sequences with latent chain-of-thought tokens and DPO alignment; autoregressive generation over an intent library is the core claim."
+first_public: "2026-05"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3773078.3831861"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "GPlan distills LLM planning into a 1.7B model with latent CoT tokens and counterfactual DPO; the Amap A/B lifted UV-CTR +0.87% overall and +1.04% cross-city."
+summary: "GPlan, from AMAP at Alibaba Group, generates Generative Spatiotemporal Intent Sequence Recommendations for the Amap homepage agent: ordered, parameterized tool invocations that are logically coherent and physically executable under spatiotemporal constraints. A human-in-the-loop pipeline builds the dataset from 1,000 expert-calibrated Intent-Environment-Logic seed triplets, scales synthesis with a Qwen3-235B-A22B teacher, and filters with format, schema and logic rules that remove 28.9% of candidates, leaving 100,000 training and 1,000 test samples. Progressive Implicit CoT Distillation compresses the teacher's explicit reasoning into reserved latent token triplets so a Qwen3 student inherits planning logic without decoding reasoning text, and a Compression-Aware LR schedule separates scaffold acquisition from plan refinement. Spatiotemporal Counterfactual DPO then aligns the model on bidirectional preference pairs built by perturbing time or location, with reference-anchor, bounded-margin and centered-drift terms that teach context-conditional preference without degrading SFT planning. The 1.7B model served the online A/B on the Amap homepage."
+paradigms:
+- llm-based
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: "Qwen3 1.7B and 4B backbones generating JSON intent sequences with a latent reasoning prefix, trained by PICD and SC-DPO"
+  details: "Each reasoning block, context, strategy and per-intent step, compresses into a triplet of reserved tokens with K=3; the latent block count follows plan length as B = 2 + plan length, tracked dynamically per sample; the maximum intent-sequence length is nine. The production stack renders the generated intents as homepage tool cards."
+id_tokenization:
+  approach: "Parameterized tool intents serialized as JSON; no semantic IDs"
+  details: "Each intent invokes a tool from a fixed library with arguments; the rule filter enforces schema validity, resolves every parameter reference to an earlier producer intent, and bounds mutually exclusive travel-class intents."
+features_signals:
+- "User profile, interaction history and spatiotemporal context: time, location, city, weekday flag, holiday flag"
+- "Expert-calibrated Intent-Environment-Logic seed triplets for data synthesis"
+- "Counterfactual context pairs differing only in spatiotemporal variables"
+training:
+  mode: "Three phases: HITL data synthesis, PICD supervised distillation, SC-DPO post-training"
+  objectives:
+  - "Section-normalized cross-entropy balancing CoT and JSON plan sections"
+  - "SC-DPO: DPO plus anchor, gap and center terms on bidirectional counterfactual pairs"
+  notes: "PICD trains 13 epochs with K=3, latent target B-star at the 90th percentile of 9, structure LR 5e-6 and polish LR 1e-6; SC-DPO trains 1 epoch at 2e-7 with DPO beta 0.20, anchor weight 5, gap range 0.10 to 0.20 with weights 10 and 2, center target 0 with weight 3. The teacher is Qwen3-235B-A22B."
+serving_infra: "GPlan-1.7B served the A/B on the Amap homepage. On two NVIDIA H20 GPUs at a target load of 10 QPS with greedy decoding, mean response time is 366 ms at 1.7B and 503 ms at 4B under PICD, against 299 and 437 ms for Direct-SFT and 1.06 s and 1.85 s for CoT-SFT; PICD is a 3.7x speedup over CoT-SFT at 4B."
+scale:
+- metric: Dataset
+  value: "100,000 training and 1,000 test intent sequences from 1,000 expert seeds"
+  note: "paper, Sec 3.2"
+- metric: A/B traffic
+  value: "5% of homepage traffic at about 600 QPS, plus a separate 5% cross-city slice"
+  note: "paper, Sec 5.5"
+- metric: Filter yield
+  value: 28.9% of synthesized candidates removed
+  note: "paper, Sec 3.2"
+results_reported: "Online A/B, Sec 5.5, 14 consecutive days on the Amap homepage against the incumbent CTR-based ranking model, serving GPlan-1.7B: the general slice on 5% of traffic at about 600 QPS lifted UV-CTR +0.87%, and the cross-city slice on another 5% lifted +1.04%. Offline, Table 1, on 1,000 test sequences: GPlan-4B reaches Acc@1 62.7 and NDCG@3 0.7759, GPlan-1.7B reaches 60.5 and 0.7450, against SASRec 36.1 and 0.5865, BERT4Rec 37.4 and 0.5973, ReaRec 42.9 and 0.6442, P5 43.5 and 0.6581, TIGER 44.2 and 0.6647, an 18.5 percentage-point Acc@1 margin for GPlan-4B over TIGER. Ablations on GPlan-4B, Table 2: Direct-SFT Acc@1 61.2, CoT-SFT 62.3, PICD 62.6, PICD plus SC-DPO 62.7 with NDCG@3 0.7759 and NES 0.6365; LLM-judge scores: Flow 3.58, Logic 3.59, ST 3.75 and Overall 3.64 for the full model, against 3.37, 3.43, 3.49 and 3.43 for Direct-SFT. Table 3: CALR keeps Latent-Valid at 1.0 with Acc@1 62.6 while Cosine-LR drops Latent-Valid to 0.0; Table 4: vanilla DPO lowers all axes, Acc@1 62.1, ST 3.60, while SC-DPO raises ST to 3.75 without hurting Overall. Inference, Table 5: 299 ms Direct-SFT, 1.06 s CoT-SFT, 366 ms PICD at 1.7B; 437 ms, 1.85 s, 503 ms at 4B."
+caveats:
+- "Most training and offline evaluation targets are teacher-generated from Qwen3-235B-A22B rather than human-written, as the paper states in its label-provenance note; the offline metrics measure agreement with these curated targets."
+- "The LLM judge is GPT-4o and is applied only within the GPlan family because baselines emit ID-only sequences without parameter slots; the paper notes a residual risk that the judge may reward superficial context mentions."
+- "The paper notes that no single map app observes all of a user's activity and recorded actions need not form a coherent plan, which motivated the HITL synthesis."
+unknown_fields:
+- A/B bucket counts and significance levels
+- Production rollout status beyond the A/B
+- Training compute
+- The incumbent CTR ranker's identity
+sources:
+- title: "Generative Spatiotemporal Intent Sequence Recommendation via Implicit Reasoning in Amap, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831861
+  type: paper
+- title: "GPlan, arXiv 2605.28888"
+  url: https://arxiv.org/abs/2605.28888
+  type: paper
+- title: "GPlan implementation and dataset"
+  url: https://github.com/alibaba/GPlan
+  type: source_code
+version_note: "Read from the arXiv 2605.28888 v2 PDF, which carries the full RecSys 2026 ACM citation and DOI 10.1145/3773078.3831861; the DOI was verified against Crossref with pages 1119-1127."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2605.28888
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, related work, problem formulation, data synthesis, PICD, SC-DPO, experiments with Tables 1 to 5, online A/B, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "camera-ready with full ACM citation read from arXiv v2 on 2026-11-02; ACM page not opened"
+code:
+  status: official_full
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/alibaba/GPlan
+    owner: "the AMAP authors under the Alibaba organization"
+    official: true
+    note: "The paper states the implementation and the anonymized GSISR dataset are available at this repository."
+core_idea: "Distill LLM trip planning into a small model with latent reasoning tokens, then teach it to change the plan when time or location changes."
+deployed_in: "Amap homepage agent, A/B on 5% plus 5% traffic slices"
+scale_short: "14-day A/B at about 600 QPS on 5% of homepage traffic"
+key_result: "14-day A/B vs incumbent CTR ranker: UV-CTR +0.87% general slice, +1.04% cross-city slice"
+results_table:
+  online:
+  - setting: "Amap homepage A/B, 14 days, 5% traffic, general slice"
+    method: "GPlan-1.7B"
+    metric: UV-CTR
+    result: "+0.87%"
+    versus: "Incumbent CTR-based ranking model"
+  - setting: "Amap homepage A/B, 14 days, 5% traffic, cross-city slice"
+    method: "GPlan-1.7B"
+    metric: UV-CTR
+    result: "+1.04%"
+    versus: "Incumbent CTR-based ranking model"
+  offline:
+  - setting: "Industrial GSISR dataset, 1,000 test sequences"
+    method: "GPlan-4B"
+    metric: Acc@1
+    result: "62.7"
+    versus: "TIGER 44.2"
+  - setting: "Industrial GSISR dataset, 1,000 test sequences"
+    method: "GPlan-1.7B"
+    metric: Acc@1
+    result: "60.5"
+    versus: "P5 43.5"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Amap homepage agent generating ordered tool-intent cards; GPlan-1.7B served the A/B treatment"
+  ab_traffic: "5% of homepage traffic at about 600 QPS for the general slice, plus a separate 5% cross-city slice"
+  ab_duration: "14 consecutive days"
+  baseline: "The incumbent CTR-based ranking model on the Amap homepage"
+  online_lifts:
+  - metric: "UV-CTR, general slice"
+    value: "+0.87%"
+  - metric: "UV-CTR, cross-city slice"
+    value: "+1.04%"
+  training_compute: "Teacher is Qwen3-235B-A22B; student training runs 13 epochs of PICD plus 1 epoch of SC-DPO; GPU hours not reported"
+  serving_latency: "Mean response time 366 ms at 1.7B and 503 ms at 4B under PICD on two NVIDIA H20 GPUs at 10 QPS with greedy decoding; 3.7x faster than CoT-SFT at 4B"
+  serving_qps: "About 600 QPS on 5% of homepage traffic; benchmark target load 10 QPS"
+  inference_cost: not_reported
+  hardware: "Two NVIDIA H20 GPUs for the latency benchmark"
+  notes:
+  - "The cross-city slice isolates users with an active out-of-town context, where the lift is larger."
+  - "Maximum intent-sequence length is nine for training, evaluation and serving."
+  fulltext_refs:
+  - "Sec 5.5: 14 days, 5% plus 5% slices, about 600 QPS, UV-CTR +0.87% general and +1.04% cross-city, GPlan-1.7B serving"
+  - "Table 1: SASRec 36.1, BERT4Rec 37.4, ReaRec 42.9, P5 43.5, TIGER 44.2, GPlan-1.7B 60.5, GPlan-4B 62.7 Acc@1"
+  - "Table 5: 299 ms, 1.06 s, 366 ms at 1.7B; 437 ms, 1.85 s, 503 ms at 4B; Sec 3.2: 28.9% filtered, 100,000 training samples"
+  basis: full_text
+  checked_on: "2026-11-02"

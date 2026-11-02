@@ -1,0 +1,49 @@
+surface|淘宝搜索广告首页广告位的候选生成，30 毫秒延迟预算
+era_reason|以自起草和哈希集验证加速语义 ID 自回归生成式检索；生成式技术栈本身是主角。
+tldr|NEZHA 用自起草头加哈希集验证加速生成式检索，淘宝广告延迟从 1000 多毫秒降到 30 毫秒内；A/B 收入 +1.2%。
+summary|NEZHA 由香港城市大学与阿里集团共建，是一套让基于 LLM 的生成式推荐快到能进淘宝搜索广告首页广告位的解码架构，该位置要求 30 毫秒预算。它不用单独的草稿模型，而是在主模型内训练一个轻量自回归草稿头让模型自己续写语义 ID，再用无模型验证器把草稿候选对照预计算的合法物品标识哈希集核对，论文指出这正是对幻觉非法 ID 的解法。系统自 2025 年十月部署于召回阶段，服务数亿日活用户，并把生成式检索器从后页推进到含首页在内的全部广告位。
+core_idea|让 LLM 自己草拟语义 ID 续写并用合法物品哈希集验证，使生成式检索塞进 30 毫秒预算。
+deployed_in|淘宝搜索广告召回，含首页在内的全部广告位
+scale_short|服务数亿日活，十亿级收入规模
+key_result|7 天 A/B 收入 +1.2% 即十亿级业务；延迟从 1000 多毫秒降到 30 毫秒内
+results_reported|部署见 5 节：总延迟从 1000 多毫秒降到 30 毫秒首页阈值以内；点击物品命中率离线提升 top 500 +0.58%、top 1000 +0.61%；2025 年十月进入首页首位后，7 天线上 A/B 收入 +1.2%，业务为十亿级。验证见 3.3 节：无模型哈希集验证把合法草稿候选比例从 43% 提到 93% 以上，对应离线关键指标 12 个百分点提升。公开基准见表 3，Llama 与 Qwen 骨干在 Beauty、Games、Yelp 上：NEZHA 追平或超过 beam search 与 MTP 自起草基线，如 Qwen Beauty Hit@5 0.0451 对 beam search 0.0446，Games Hit@5 0.0239 对 0.0226 且 p < 0.05 显著；延迟接近 MTP 基线并远低于 beam search，后者的归一化延迟在 Beauty 上达 74.21 和 47.70，NEZHA 为 7.00 和 4.41。
+serving_infra|部署在淘宝搜索广告的候选生成阶段。2.6 倍算法级加速加排队时间的系统级节省，把总延迟从 1000 多毫秒降到 30 毫秒首页阈值以内。
+stages.0.model_family|LLM 生成式检索器，基准用 Llama-1B 与 Qwen3-0.8B 骨干，扩展自回归草稿头与哈希集验证
+stages.0.details|草稿头由 LLM 末层隐状态上的 logit 头与消费已草拟 token 的自回归组件构成；草稿候选序列就地对照合法语义 ID 哈希集过滤，只保留交集中的物品。
+id_tokenization.approach|多 token 语义 ID 编码为整数并预计算哈希集
+id_tokenization.details|每个物品的语义 ID 映射为整数索引，验证是常数时间哈希查找。论文报告生产数据中原始生成的合法 ID 比例约 0.1%，验证把合法草稿候选比例从 43% 提到 93% 以上。
+features_signals.0|序列化进 LLM 的查询与用户交互序列
+features_signals.1|自回归生成的语义 ID token 流
+features_signals.2|带 KV cache 的 beam search 作为基线解码路径
+training.mode|LLM 连同所附草稿头的离线训练
+training.objectives.0|语义 ID 序列的下一 token 预测，草稿头联合训练
+training.notes|表 1 以 beam size 512 基准 0.6B 与 3B 模型；计时按 0.6B 预填充时间归一化以保密。
+scale.0.metric|部署
+scale.0.value|2025 年十月起在淘宝搜索广告，服务数亿日活用户
+scale.1.metric|业务规模
+scale.1.value|占广告收入四分之一以上的业务单元，十亿级
+scale.2.metric|加速
+scale.2.value|算法级 2.6 倍
+results_table.online.0.setting|淘宝搜索广告，7 天 A/B，首页广告位
+results_table.offline.0.setting|生产数据，点击物品命中率
+results_table.offline.1.setting|公开基准，Qwen 骨干，Beauty
+results_table.online.0.versus|首页不放生成式检索器的前版部署
+results_table.offline.0.versus|生成式检索基线
+results_table.offline.1.versus|=beam search 的 0.0446
+caveats.0|论文说明 7 天线上测试是占 10% 流量的反向 A/B；没有更多分桶细节，生产训练设置除与公开实验共享的语义 ID 配置外未作描述。
+caveats.1|表 1 服务延迟按 0.6B 预填充时间归一化以保密，绝对毫秒数未公开。
+caveats.2|论文说明此前生成式检索器只能服务首页之后的广告位。
+unknown_fields.0|绝对延迟数字
+unknown_fields.1|训练算力
+code.repos.0.owner|论文作者所在的香港城市大学 Applied Machine Learning Lab
+code.repos.0.note|论文说明代码发布于该仓库；含草稿头、训练与推理脚本和公开数据集流程，不含生产数据。
+version_note|读的是 arXiv 2511.18793 v2，即带最终 ACM 引用和 DOI 10.1145/3774904.3792797 的 WWW 2026 camera-ready，DOI 另已在 Crossref 核对，页码 8073-8082。
+deployment.scenario|淘宝搜索广告的候选生成，2025 年十月起部署于含首页展示在内的全部广告位
+deployment.ab_traffic|占 10% 流量的反向 A/B
+deployment.ab_duration|7 天
+deployment.baseline|此前不放生成式检索器进首页的部署方式
+deployment.training_compute|基准覆盖 0.6B 与 3B 骨干；训练算力未报告
+deployment.serving_latency|低于 30 毫秒首页约束，从 1000 多毫秒降下；算法级 2.6 倍加排队节省；表 1 计时保密归一化
+deployment.inference_cost|无模型哈希集验证取代目标模型验证；合法草稿比例 43% 到 93% 以上
+deployment.notes.0|论文将该业务单元描述为占广告收入四分之一以上。
+deployment.notes.1|表 1 基线测量已含 KV cache。

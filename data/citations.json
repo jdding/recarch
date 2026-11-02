@@ -143,6 +143,54 @@
    }
   ]
  },
+ "alibaba-mmq-2025": {
+  "count": 32,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/5c683d1d9a9e4362584457bb1687706ac84640e1",
+  "fetched_on": "2026-11-03",
+  "matched_title": "MMQ: Multimodal Mixture-of-Quantization Tokenization for Semantic ID Generation and User Behavioral Adaptation",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3773966.3777923"
+  ],
+  "papers": [
+   {
+    "name": "MMQ",
+    "count": 32,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/5c683d1d9a9e4362584457bb1687706ac84640e1",
+    "matched_title": "MMQ: Multimodal Mixture-of-Quantization Tokenization for Semantic ID Generation and User Behavioral Adaptation",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3773966.3777923"
+    ]
+   }
+  ]
+ },
+ "alibaba-nezha-2025": {
+  "count": 25,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/2daa1fc5b1a6ec780b951131c92f907446860e90",
+  "fetched_on": "2026-11-03",
+  "matched_title": "NEZHA: A Zero-sacrifice and Hyperspeed Decoding Architecture for Generative Recommendations",
+  "matched_year": 2025,
+  "ids": [
+   "doi:10.1145/3774904.3792797"
+  ],
+  "papers": [
+   {
+    "name": "NEZHA",
+    "count": 25,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/2daa1fc5b1a6ec780b951131c92f907446860e90",
+    "matched_title": "NEZHA: A Zero-sacrifice and Hyperspeed Decoding Architecture for Generative Recommendations",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3774904.3792797"
+    ]
+   }
+  ]
+ },
  "alibaba-sort-2026": {
   "count": 4,
   "source": "Semantic Scholar",
@@ -187,6 +235,30 @@
     "matched_year": 2025,
     "ids": [
      "arxiv:2502.03041"
+    ]
+   }
+  ]
+ },
+ "amap-gplan-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/83db04d59e187ebc999d39b05f9454e1773e7985",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Generative Spatiotemporal Intent Sequence Recommendation via Implicit Reasoning in Amap",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831861"
+  ],
+  "papers": [
+   {
+    "name": "GPlan",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/83db04d59e187ebc999d39b05f9454e1773e7985",
+    "matched_title": "Generative Spatiotemporal Intent Sequence Recommendation via Implicit Reasoning in Amap",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831861"
     ]
    }
   ]
@@ -875,6 +947,30 @@
    }
   ]
  },
+ "kuaishou-oneloc-2025": {
+  "count": 20,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/af44e426b683623f8677bd45bbca34560ed0ab37",
+  "fetched_on": "2026-11-03",
+  "matched_title": "OneLoc: Geo-Aware Generative Recommender Systems for Local Life Service",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2508.14646"
+  ],
+  "papers": [
+   {
+    "name": "OneLoc",
+    "count": 20,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/af44e426b683623f8677bd45bbca34560ed0ab37",
+    "matched_title": "OneLoc: Geo-Aware Generative Recommender Systems for Local Life Service",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2508.14646"
+    ]
+   }
+  ]
+ },
  "kuaishou-onerec-think-2025": {
   "count": 91,
   "source": "Semantic Scholar",
@@ -1115,6 +1211,33 @@
    }
   ]
  },
+ "meituan-mtgenrec-2025": {
+  "count": 5,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/d0231f5387721fc7d917a5497ce72898a80879d2",
+  "fetched_on": "2026-11-03",
+  "matched_title": "MTGenRec: An Efficient Distributed Training System for Generative Recommendation Models in Meituan",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3770854.3783925",
+   "arxiv:2505.12663"
+  ],
+  "papers": [
+   {
+    "name": "MTGenRec",
+    "count": 5,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/d0231f5387721fc7d917a5497ce72898a80879d2",
+    "matched_title": "MTGenRec: An Efficient Distributed Training System for Generative Recommendation Models in Meituan",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3770854.3783925",
+     "arxiv:2505.12663"
+    ]
+   }
+  ],
+  "note": "Semantic Scholar lists the venue and arXiv versions separately; counts are summed (5 doi:10.1145/3770854.3783925 + 0 arxiv:2505.12663). Papers citing both are counted twice."
+ },
  "meituan-mtgr-2025": {
   "count": 132,
   "source": "Semantic Scholar",
@@ -1211,6 +1334,30 @@
    }
   ]
  },
+ "meta-mpzch-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/3695790fb7b69a4a9358e97803d44eab5473675e",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Multi-Probe Zero Collision Hash (MPZCH): Mitigating Embedding Collisions and Enhancing Model Freshness in Large-Scale Recommenders",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831866"
+  ],
+  "papers": [
+   {
+    "name": "MPZCH",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/3695790fb7b69a4a9358e97803d44eab5473675e",
+    "matched_title": "Multi-Probe Zero Collision Hash (MPZCH): Mitigating Embedding Collisions and Enhancing Model Freshness in Large-Scale Recommenders",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831866"
+    ]
+   }
+  ]
+ },
  "meta-rankgraph2-2026": {
   "count": 2,
   "source": "Semantic Scholar",
@@ -1279,6 +1426,30 @@
     "matched_year": 2026,
     "ids": [
      "doi:10.1145/3770855.3818505"
+    ]
+   }
+  ]
+ },
+ "meta-vlm-2026": {
+  "count": 0,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/17786b8ec5f720a7b67d906d0796d75e2b8778ed",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Versioned Late Materialization for Ultra-Long Sequence Training in Recommendation Systems at Scale",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3773078.3831845"
+  ],
+  "papers": [
+   {
+    "name": "VLM",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/17786b8ec5f720a7b67d906d0796d75e2b8778ed",
+    "matched_title": "Versioned Late Materialization for Ultra-Long Sequence Training in Recommendation Systems at Scale",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831845"
     ]
    }
   ]
@@ -1615,6 +1786,42 @@
     "matched_year": 2025,
     "ids": [
      "doi:10.1145/3770855.3818462"
+    ]
+   }
+  ]
+ },
+ "pinterest-transact": {
+  "count": 76,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/13e73108df40fea2bc65ac53173dac4700dedb05",
+  "fetched_on": "2026-11-03",
+  "matched_title": "TransAct V2: Production System for Lifelong User Sequence Modeling at Scale",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3580305.3599918",
+   "doi:10.1145/3773078.3831868"
+  ],
+  "papers": [
+   {
+    "name": "TransAct",
+    "count": 76,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/e91642d3a6e448bff508b2a6ec3b7a2c94d88e1e",
+    "matched_title": "TransAct: Transformer-based Realtime User Action Model for Recommendation at Pinterest",
+    "matched_year": 2023,
+    "ids": [
+     "doi:10.1145/3580305.3599918"
+    ]
+   },
+   {
+    "name": "TransAct V2",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/13e73108df40fea2bc65ac53173dac4700dedb05",
+    "matched_title": "TransAct V2: Production System for Lifelong User Sequence Modeling at Scale",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3773078.3831868"
     ]
    }
   ]

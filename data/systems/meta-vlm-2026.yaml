@@ -1,0 +1,142 @@
+id: meta-vlm-2026
+name: VLM
+company: Meta
+surface: Training data infrastructure for production recommendation models on multiple Meta surfaces; stores User Interaction History once and rebuilds sequences at training time
+year: 2026
+era: generative
+era_reason: "The paper's central claim is scaling-law sequence length for HSTU-class generative recommenders, and it names itself the foundational data infrastructure for HSTU and ULTRA-HSTU."
+first_public: "2026-04"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773078.3831845"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: "Versioned late materialization stores each user's history once and rebuilds it at training time; it cuts primary read bandwidth up to -70.3% and unlocked 4K-to-64K sequences at Meta."
+summary: "VLM, from Meta, replaces the industry-standard Fat Row paradigm, which copies the full User Interaction History into every training example, with versioned late materialization. The history is split into a mutable recent tier snapshotted per example and an immutable long-term tier stored once; inference logs only lightweight version metadata with temporal boundaries, and training reconstructs the exact inference-time state through a bounded range scan, keeping Online-to-Offline consistency and preventing future leakage for both streaming and batch training. A single-level immutable store with daily offloaded compaction, multi-dimensional projection pushdown and trait-aware columnar encoding serves a hundred-plus concurrent training jobs, and disaggregated data preprocessing with pipelined prefetching keeps training compute-bound on GPUs. Deployed on production models across multiple recommendation surfaces, the system is described as the foundational data infrastructure for HSTU and ULTRA-HSTU."
+paradigms:
+- sequential-transformer
+- foundation-model
+stages:
+- stage: rank
+  model_family: "Data infrastructure serving the model fleet of a recommendation funnel, including HSTU-class generative rankers with ultra-long sequences"
+  details: "Not a ranking model itself: the system stores and reconstructs User Interaction History for retrieval, pre-ranking and ranking tenants that share one union training dataset with very different sequence length needs."
+id_tokenization:
+  approach: "Not applicable; a data infrastructure system"
+  details: "Histories are organized by user, feature group and subsequence timestamp in a multi-dimensional schema; item identity handling belongs to the served models."
+features_signals:
+- "Append-only, temporally ordered User Interaction History events"
+- "Typed heterogeneous traits per event, such as post ID, timestamp, event type and watch time, dense or sparse"
+- "Version metadata per training example: temporal boundaries, sequence length and a checksum"
+training:
+  mode: "Serves both streaming training on a real-time messaging stream and hourly-persisted batch training from the data warehouse"
+  objectives: []
+  notes: "Reconstruction happens entirely in the data preprocessing layer from logged version metadata, so the same protocol serves both training paradigms; checksum validation against the Fat Row baseline verified reconstruction fidelity."
+serving_infra: "Not a serving system. A mutable UIH store with blind-write appends and a write-through cache serves second-level freshness on the inference path; the immutable UIH store holds the long-term history in a single-level layout with one disk seek plus sequential I/O per query and 3.4x higher read throughput per unit of host resource."
+scale:
+- metric: Storage saving
+  value: primary write bandwidth down 46.2% across the shared dataset
+  note: "paper, Table 1"
+- metric: Read saving
+  value: per-job primary read bandwidth down 47.7% to 70.3% across three tenants
+  note: "paper, Table 1"
+- metric: Sequence scaling
+  value: "from 4K to 64K on Platform A and 4K to 10K on Platform B"
+  note: "paper, Sec 5.2"
+- metric: Training fleet
+  value: "100+ concurrent training jobs served from the shared immutable store"
+  note: "paper, Sec 3.3"
+results_reported: "System efficiency, Table 1, against the Fat Row baseline on three model tenants sharing one union dataset: primary write bandwidth -46.2% shared across tenants; primary read bandwidth Model A -70.3%, Model B -50.9%, Model C -47.7%; sequence lookup bandwidth added by late materialization, streaming, Model A +62.7%, Model B +16.2%, Model C +8.7%, batch, +24.6%, +6.5% and +3.4%; per-batch data loading latency Model A +9.7%, Model B -26.4%, Model C -36.2%. The immutable store delivers 3.4x read throughput per unit host resource; tuning the disaggregated preprocessing base batch adds 15% per-worker throughput; pipelined I/O prefetching adds 10% on heavy-lookup models; data-affinity bucketing and symmetric sharding cut batch read bandwidth by 60% and raise per-worker throughput by 28%. Model quality, Section 5.2: the Fat Row Wall sits at about 4K where data-service usage exceeds 0.75 of GPU training power; Platform A gains 1.2% cumulative Normalized Entropy from 4K to 64K, above 5% total, and Platform B gains 0.65% from 4K to 10K, where a 1% NE improvement is considered a success. Online A/B, Table 2, with anonymized metrics: Platform A at 4K to 16K lifts Metric-Topline +0.22%, Metrics-C +4.1%, Metrics-E-1 +2.3% and Metrics-E-2 +4.3%; Platform B at 4K to 10K lifts Metric-Topline +0.14%, Metrics-C +0.79%, Metrics-E-3 +1.4% and Metrics-E-4 +1.7%."
+caveats:
+- "The arXiv text read is a preprint; the published RecSys 2026 version was not read, and the DOI was verified against Crossref with pages 1654-1662."
+- "Online A/B metrics are anonymized into Metric-Topline, Metrics-C and Metrics-E categories following prior work, so surface names and metric identities are not public."
+- "The platforms are described as powered by distinct model architectures but are not named."
+unknown_fields:
+- A/B traffic share and duration
+- Model identities of the three tenants and two platforms
+- Training compute and hardware
+- Official code
+sources:
+- title: "Versioned Late Materialization for Ultra-Long Sequence Training in Recommendation Systems at Scale, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831845
+  type: paper
+- title: "Versioned Late Materialization, arXiv 2604.24806"
+  url: https://arxiv.org/abs/2604.24806
+  type: paper
+version_note: "Read from arXiv 2604.24806 v2, a preprint; the RecSys 2026 DOI 10.1145/3773078.3831845 was verified against Crossref, and the published version itself was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2604.24806
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, fat row analysis, methodology, productionization, evaluation with Tables 1 and 2 and Figure 4, related work, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; RecSys 2026 version not available, arXiv v2 preprint read on 2026-11-02"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Store the append-only user history once in an immutable tier and rebuild the exact inference-time state at training time from lightweight version pointers."
+deployed_in: "Production training pipelines on multiple Meta recommendation surfaces"
+scale_short: "Cuts primary read bandwidth up to 70.3% while scaling sequences to 64K"
+key_result: "Platform A: +1.2% cumulative NE from 4K to 64K; A/B at 4K to 16K: top-line +0.22%, consumption +4.1%"
+results_table:
+  online:
+  - setting: "Platform A, sequence length 4K to 16K, A/B"
+    method: "Sequence scaling via VLM"
+    metric: "Metric-Topline"
+    result: "+0.22%"
+    versus: "4K Fat Row baseline"
+  - setting: "Platform A, sequence length 4K to 16K, A/B"
+    method: "Sequence scaling via VLM"
+    metric: "Metrics-C"
+    result: "+4.1%"
+    versus: "4K Fat Row baseline"
+  - setting: "Platform B, sequence length 4K to 10K, A/B"
+    method: "Sequence scaling via VLM"
+    metric: "Metrics-C"
+    result: "+0.79%"
+    versus: "4K Fat Row baseline"
+  offline:
+  - setting: "Three-tenant union dataset, streaming training"
+    method: VLM
+    metric: "Primary read bandwidth, Model A"
+    result: "-70.3%"
+    versus: "Fat Row baseline"
+  - setting: "Two platforms, NE scaling"
+    method: "Sequence scaling via VLM"
+    metric: "Cumulative NE, Platform A"
+    result: "+1.2%"
+    versus: "4K to 64K, total above 5%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Training data infrastructure for production ranking models on two or more Meta recommendation surfaces, serving HSTU-class generative recommenders"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: "The Fat Row paradigm at 4K sequence length"
+  online_lifts:
+  - metric: "Metric-Topline, Platform A, 4K to 16K"
+    value: "+0.22%"
+  - metric: "Metrics-C, Platform A, 4K to 16K"
+    value: "+4.1%"
+  - metric: "Metrics-E-1, Platform A, 4K to 16K"
+    value: "+2.3%"
+  - metric: "Metric-Topline, Platform B, 4K to 10K"
+    value: "+0.14%"
+  training_compute: "Not a training system itself; disaggregated preprocessing keeps GPUs compute-bound, with 15% per-worker throughput from batch tuning and 10% from pipelined prefetching"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "Mutable UIH store serves second-level freshness on the inference path; immutable store reads need one disk seek plus sequential I/O"
+  hardware: not_reported
+  notes:
+  - "The paper states that at this production scale a 1% Normalized Entropy improvement is considered a success."
+  - "A hundred-plus concurrent training jobs read the shared immutable store."
+  fulltext_refs:
+  - "Table 1: write -46.2%, reads -70.3%, -50.9%, -47.7%, lookups +62.7%, +16.2%, +8.7% streaming and +24.6%, +6.5%, +3.4% batch, latency +9.7%, -26.4%, -36.2%"
+  - "Sec 5.2 and Table 2: Fat Row Wall about 4K, Platform A +1.2% NE to 64K, Platform B +0.65% to 10K, A/B lifts +0.22%, +4.1%, +2.3%, +4.3%, +0.14%, +0.79%, +1.4%, +1.7%"
+  - "Sec 4: 3.4x read throughput per host resource, 15% and 10% preprocessing gains, 60% batch read reduction, 28% per-worker throughput"
+  basis: full_text
+  checked_on: "2026-11-02"
