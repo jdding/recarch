@@ -1,0 +1,32 @@
+# Redrawn, simplified diagram. Source: Hertel et al., "An Industrial-Scale Sequential Recommender for LinkedIn Feed Ranking" (CIKM 2026), Fig. 1.
+alt: "Left to right: a member's history of impressed posts and actions is interleaved into one sequence; a decoder-only Transformer with RoPE processes it together with candidate posts; late-fused context features and a member profile embedding are concatenated after the Transformer; a parallel DCNv2 head outputs multi-task engagement scores for each candidate."
+caption:
+  fig: "Fig. 1"
+  work: "An Industrial-Scale Sequential Recommender for LinkedIn Feed Ranking, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840102"
+  note: "Simplified; the multi-item attention mask for candidates and the exact feature groups are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: hist, kind: input, text: ["Member history", "up to 1000 impressed posts and the member action on each"]}
+      - {id: cand, kind: input, text: ["Candidate posts", "about 512 per request"]}
+      - {id: ctx, kind: input, text: ["Context features", "popularity, affinity and Qwen3 profile embedding"]}
+  - label: Sequence
+    boxes:
+      - {id: seq, kind: module, text: ["Interleaved sequence", "post, action, post, action; 2000 tokens"]}
+  - label: Transformer
+    boxes:
+      - {id: tr, kind: module, text: ["Decoder-only Transformer", "Pre-LN, RoPE, softmax attention, scalar rescaled residuals"]}
+  - label: Fusion
+    boxes:
+      - {id: fuse, kind: module, text: ["Late fusion", "context features concatenated after the Transformer"]}
+  - label: Output
+    boxes:
+      - {id: head, kind: output, text: ["DCNv2 head", "multi-task engagement scores per candidate"]}
+edges:
+  - [hist, seq]
+  - [seq, tr]
+  - [cand, tr]
+  - [tr, fuse]
+  - [ctx, fuse]
+  - [fuse, head]

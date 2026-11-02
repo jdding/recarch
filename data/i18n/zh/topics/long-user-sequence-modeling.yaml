@@ -1,5 +1,5 @@
 title: 长用户序列建模
-summary: 生产级推荐系统如何在延迟预算内读取很长的用户历史，在十一张 RecArch 卡片之间做对比。
+summary: 生产级推荐系统如何在延迟预算内读取很长的用户历史，在十二张 RecArch 卡片之间做对比。
 framing:
 - 用户的历史可以多达数万个事件，而排序器每个请求只有数十毫秒。本页的每个系统都在回答同样的两个问题。历史读多少，以及什么时候为读取付出代价？
 - 答案差别很大。有的系统实时只读最近的数百个行为。有的对完整历史做搜索或压缩。有的把重模型移出请求路径，只提供缓存的结果。表格列出了每张卡片的报告。之后的各节解释了在选择方案时重要的那些差别。
@@ -13,8 +13,8 @@ decisions:
   then: 先检索或压缩。SIM 在完整历史中搜索与候选接近的行为，KuaiFormer 把 item 压缩成更少的 token，SequenceO1 把长历史变成摘要，同时仍直接读取最新的事件。
   cards: [sim-alibaba-2020, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026]
 - when: 你付得起请求时做注意力计算的代价。
-  then: 在排序模型内部读取序列，并依靠 GPU 服务或 KV cache，TransAct 和 LONGER 就是这样做的。
-  cards: [pinterest-transact-2023, bytedance-longer-2025]
+  then: 在排序模型内部读取序列，并依靠 GPU 服务或 KV cache，TransAct、LONGER 和 LinkedIn Feed SR 就是这样做的。
+  cards: [pinterest-transact-2023, bytedance-longer-2025, linkedin-feed-sr-2026]
 - when: 你想要最小的迁移成本。
   then: 产出能接入现有排序模型的输出。LUM 和 PinFM 就是这样做的，LLaTTE 则把工作拆给上游模型和一个紧凑的线上模块。
   cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026]
@@ -44,12 +44,14 @@ members:
   approach: 把召回和排序都视为对用户行为的序列预测，并用 HSTU encoder 取代通常的特征交叉层。
 - id: yandex-argus-2025
   approach: 在最长 8192 个事件的历史上预训练 Transformer，再提供每日更新的用户 embedding，供线上排序器作为特征使用。
+- id: linkedin-feed-sr-2026
+  approach: Feed 排序器内部的仅解码器 Transformer 读取最多 1000 条曝光帖子并与会员的行为交错，共 2000 个 token，在共享历史的一次前向中为约 512 个候选打分。
 differences:
 - heading: 输入多少历史
-  text: 两个系统读取较短的窗口。TransAct 读取最近 100 个行为，PinnerFormer 最多读取 256 个。两个系统做压缩。KuaiFormer 把 256 个 item 压缩成 55 个 token，SequenceO1 把 100K 个事件变成一个 sketch，同时仍直接读取最近的 10K 个事件。两个系统读取很长的原始序列，LONGER 最多 10,000 个行为，PinFM 最多 16,000 个行为。SIM 先搜索，因此能触及最多 54,000 个行为。在这里，窗口更长并不自动更好。每张卡片都给出自己的上限，而这些上限各自配有不同的降成本技巧。
+  text: 两个系统读取较短的窗口。TransAct 读取最近 100 个行为，PinnerFormer 最多读取 256 个。两个系统做压缩。KuaiFormer 把 256 个 item 压缩成 55 个 token，SequenceO1 把 100K 个事件变成一个 sketch，同时仍直接读取最近的 10K 个事件。三个系统读取很长的原始序列，LinkedIn Feed SR 最多 1000 条曝光帖子及其行为，LONGER 最多 10,000 个行为，PinFM 最多 16,000 个行为。SIM 先搜索，因此能触及最多 54,000 个行为。在这里，窗口更长并不自动更好。每张卡片都给出自己的上限，而这些上限各自配有不同的降成本技巧。
 - heading: 成本在什么时候付出
-  text: TransAct 和 LONGER 在请求时运行 attention，依赖 GPU 服务或 KV cache。PinnerFormer 在每日批处理中运行。LLaTTE 异步运行大模型，所以线上排序器只做一次特征查找。SequenceO1 构建的 sketch 不依赖候选，所以这个 sketch 可以缓存。LUM 缓存其实时查询的结果。如果你的请求预算很紧，应该先看这条轴。
+  text: TransAct、LONGER 和 LinkedIn Feed SR 在请求时运行 attention，依赖 GPU 服务或 KV cache，Feed SR 在一次前向中让约 512 个候选共享同一段历史。PinnerFormer 在每日批处理中运行。LLaTTE 异步运行大模型，所以线上排序器只做一次特征查找。SequenceO1 构建的 sketch 不依赖候选，所以这个 sketch 可以缓存。LUM 缓存其实时查询的结果。如果你的请求预算很紧，应该先看这条轴。
 - heading: 给排序器供数，还是取代它
-  text: LUM 和 PinFM 的输出可以接入团队已在运行的排序器，迁移成本小。LLaTTE 把工作分给上游模型和紧凑的线上模块。HSTU 反其道而行，取代排序器自己的特征交叉层。PinnerFormer 和 KuaiFormer 位于召回一侧，提供 embedding。
+  text: LUM 和 PinFM 的输出可以接入团队已在运行的排序器，迁移成本小。LLaTTE 把工作分给上游模型和紧凑的线上模块。HSTU 反其道而行，取代排序器自己的特征交叉层，LinkedIn Feed SR 则用处理历史的 Transformer 取代它的 DCNv2 排序器。PinnerFormer 和 KuaiFormer 位于召回一侧，提供 embedding。
 - heading: 线上数字能说明什么，不能说明什么
   text: 表中的每个提升都是相对该公司自己的基线。TransAct 的对照组完全没有实时序列特征，所以它的收益是相对没有序列，而不是相对强的序列模型。SequenceO1 的基线已经是带 TWIN V2 的 10K 排序器。不要按百分比给这些系统排名。请改为比较每张卡片上的基线、流量占比和服务数字。

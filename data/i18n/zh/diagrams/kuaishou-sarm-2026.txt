@@ -1,0 +1,13 @@
+alt|从左到右：直播内容进入离线微调的多模态 LLM，写出六个语义锚点；锚点进入带直播 tokenizer 和门控融合的四个 block 的 Semantic Anchor Encoder，产出 CLS、主播和用户兴趣 token；它们与多任务排序模型的现有特征汇合，预测互动；按主播 ID 的 memory bank 存放主播表示，供推理时查表。
+caption.note|已简化；损失项和 Fig. 4 中的非对称部署只用 memory bank 概括。
+columns.0.boxes.0.text.0|直播间
+columns.0.boxes.0.text.1|主播资料、关键帧、音频转写、评论
+columns.1.boxes.0.text.0|微调的多模态 LLM
+columns.1.boxes.0.text.1|每天为每位主播运行一次，写出六个语义锚点
+columns.2.boxes.0.text.1|四个 block，直播 tokenizer，门控融合
+columns.2.boxes.1.text.0|=
+columns.2.boxes.1.text.1|按主播 ID 存放 CLS 和 TAR 向量，常数时间查表
+columns.3.boxes.0.text.0|多任务排序模型
+columns.3.boxes.0.text.1|CLS、TAR 和 UIN token 加现有特征，辅助 CTR 损失
+columns.4.boxes.0.text.0|互动分数
+columns.4.boxes.0.text.1|点击、关注、长播、打赏

@@ -1,0 +1,15 @@
+alt|从左到右：物品内容经过 PCRQ-VAE 得到三级 Semantic ID；用户上下文进入粗粒度的 slate planner，为每个 slate 位置输出一个偏好 embedding；共享的轻量物品生成器根据每个位置的 embedding 解码该物品的 Semantic ID；ORPO 的 listwise 对齐调整解码器；SID 到物品的索引和过滤器把生成的 slate 变成返回的物品。
+caption.note|已简化；损失项和 KV cache 没有画出。
+columns.0.boxes.0.text.0|物品内容
+columns.0.boxes.0.text.1|物品目录的 embedding
+columns.0.boxes.1.text.0|用户上下文
+columns.0.boxes.1.text.1|实时特征和历史
+columns.1.boxes.0.text.1|3 级 Semantic ID，前缀对比对齐
+columns.2.label|Slate 解码器
+columns.2.boxes.0.text.0|=
+columns.2.boxes.0.text.1|14 层，每个 slate 位置一个偏好 embedding
+columns.2.boxes.1.text.0|物品生成器
+columns.2.boxes.1.text.1|共享的 2 层，解码每个物品的 Semantic ID
+columns.3.boxes.0.text.0|ORPO 对齐
+columns.3.boxes.0.text.1|listwise：排序保真度、真实兴趣、多样性
+columns.4.boxes.0.text.1|SID 到物品的索引，再做去重、可用性和安全过滤

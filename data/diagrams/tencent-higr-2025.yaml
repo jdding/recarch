@@ -1,0 +1,32 @@
+# Redrawn, simplified diagram. Source: Pang et al., "HiGR: Industrial-Scale Hierarchical Generative Slate Recommendation Framework in Tencent" (CIKM 2026), Fig. 1 and Fig. 2.
+alt: "Left to right: item content goes through PCRQ-VAE to give three-level semantic IDs; the user context enters a coarse slate planner that outputs one preference embedding per slate position; a shared lightweight item generator decodes the semantic IDs of each item from its embedding; ORPO listwise alignment tunes the decoder; an SID-to-item index and filters turn the generated slate into the returned items."
+caption:
+  fig: "Fig. 1"
+  work: "HiGR: Industrial-Scale Hierarchical Generative Slate Recommendation Framework in Tencent, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840166"
+  note: "Simplified; the loss terms and the KV cache are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: item, kind: input, text: ["Item content", "embeddings of the item catalog"]}
+      - {id: user, kind: input, text: ["User context", "real-time features and history"]}
+  - label: Tokenizer
+    boxes:
+      - {id: tok, kind: module, text: ["PCRQ-VAE", "3-level semantic IDs, prefix contrastive alignment"]}
+  - label: Slate decoder
+    boxes:
+      - {id: plan, kind: module, text: ["Slate planner", "14 layers, one preference embedding per slate position"]}
+      - {id: gen, kind: module, text: ["Item generator", "shared 2 layers, decodes each item's semantic IDs"]}
+  - label: Alignment
+    boxes:
+      - {id: orpo, kind: module, text: ["ORPO alignment", "listwise: ranking fidelity, genuine interest, diversity"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Slate", "SID-to-item index, then dedup, availability and safety filters"]}
+edges:
+  - [item, tok]
+  - [user, plan]
+  - [tok, gen]
+  - [plan, gen]
+  - [orpo, gen]
+  - [gen, out]

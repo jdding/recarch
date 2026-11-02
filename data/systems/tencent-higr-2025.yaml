@@ -1,0 +1,143 @@
+id: tencent-higr-2025
+name: "HiGR"
+company: Tencent
+surface: Slate recommendation on Tencent platform surfaces for news, videos and web novels
+year: 2025
+era: generative
+era_reason: "The system generates a whole slate of semantic ID sequences with an autoregressive decoder, trained by pretraining and preference alignment, and replaces a multi-stage pipeline in the reported A/B test."
+first_public: "2025-12"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840166"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Tencent's HiGR generates a slate with a coarse planner and a shared item decoder, aligned by ORPO; a 5% live-traffic A/B gives Watch Time +1.22% and Video Views +1.73%."
+summary: 'HiGR is a generative slate recommender that produces a list of items as one structured output, in three stages. PCRQ-VAE tokenizes each item into a 3-layer semantic ID with a codebook size of 1024, using global quantization plus a prefix-level contrastive loss over the first D-1 layers, so that items sharing a SID prefix are semantically close. The Hierarchical Slate Decoder splits generation into a coarse planner and a fine item generator. The planner, with 14 layers, produces one preference embedding for each slate position and is regularized by an intra-list diversity term. A shared lightweight item generator, with 2 layers, then decodes the SID tokens of each item from its slate-position embedding. The model uses d_model 512 and d_ffn 2048. Post-training is a listwise ORPO alignment with a combined loss weighted by alpha 0.1, optimizing ranking fidelity, genuine interest and diversity without a reference model. Pretraining uses 1 billion samples and post-training 3% of them. In deployment, an online feature assembler fetches real-time user features, HiGR generates slate SIDs with KV caching, an SID-to-item index maps them back to items, and deduplication, availability, safety and business-rule filters run before results are returned. Exposure and feedback logs flow back for continuous updates.'
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: single-stage
+  model_family: 'Hierarchical Slate Decoder with a 14-layer slate planner and a shared 2-layer item generator, d_model 512 and d_ffn 2048, over PCRQ-VAE semantic IDs'
+  details: 'The slate planner outputs one embedding per slate position, and the item generator decodes the 3 SID tokens of each item. Generated SIDs are mapped to items and passed through deduplication, availability, safety and business-rule filters. The online test compares this against the incumbent multi-stage system.'
+id_tokenization:
+  approach: 'PCRQ-VAE, a residual quantized VAE with 3 layers and a codebook size of 1024, trained with prefix-level contrastive alignment'
+  details: 'Global quantization is combined with an InfoNCE-style contrast over the first D-1 layers so that items sharing a prefix are close. The paper reports lower collision and higher consistency than RQ-Kmeans and RQ-VAE.'
+features_signals:
+- 'Real-time user features assembled online for each request'
+- 'User behavior history for the slate decoder context'
+- 'Exposure and Effective View logs from the Tencent commercial media platform'
+training:
+  mode: Three-stage training, PCRQ-VAE, Hierarchical Slate Decoder pretraining and ORPO alignment, with continuous updates from exposure and feedback logs
+  objectives:
+  - 'Autoregressive generation loss over SID tokens with an intra-list diversity regularizer on the slate planner'
+  - 'Listwise ORPO post-training loss with alpha 0.1 over three objectives: ranking fidelity, genuine interest and diversity'
+  notes: 'Pretraining uses 1 billion samples and post-training 3% of them, selected as higher-quality slates. Training runs on clusters with tens of NVIDIA H20 GPUs.'
+serving_infra: 'Serving runs on clusters with tens of NVIDIA L20 GPUs. For each request an online feature assembler fetches real-time user features, the decoder generates slate SIDs by coarse-to-fine decoding with KV caching, and an SID-to-item index maps them back to items before deduplication, availability, safety and business-rule filters. Exposure and feedback logs return for continuous updates. At the same throughput as OneRec, P99 latency stays below 50 ms and GPU demand drops by about 60%.'
+scale:
+- metric: Users served
+  value: hundreds of millions of users
+  note: paper, abstract and Sec 5.6
+- metric: Training samples
+  value: 1 billion pretraining samples, 3% used for post-training
+  note: paper, Sec 5.1
+- metric: Model sizes studied
+  value: 25M and 100M parameters in the main table, 0.05B to 2B parameters in the scaling study
+  note: paper, Table 1 and Fig 4
+results_reported: 'On the industrial dataset, HiGR-100M reaches Impressions hit@5 0.3163 and recall@5 0.0760 and Effective View hit@5 0.2145, recall@5 0.0495 and NDCG@5 0.0831. HiGR-25M scores 0.2825 and 0.0692, with Effective View hit@5 0.1945, against 0.2438 and 0.0577 for OneRec-25M, 0.2281 and 0.0506 for HSTU and 0.1812 and 0.0383 for TIGER. In SID quality, prefix-contrastive variants lower collision to 0.0264, 0.0237 and 0.0873 and raise consistency to 0.6205, 0.6647 and 0.6932, against 0.2126 and 0.4533 for RQ-Kmeans and 0.0298 and 0.5577 for RQ-VAE. Intra-list diversity is 0.38 for TIGER, 0.42 for HSTU, 0.48 for OneRec, 0.52 for HiGR without alignment, 0.57 with DPO and 0.62 with ORPO. In the layer-allocation ablation, a 14 to 2 layer split gives NDCG@5 0.0631 at the reference latency, a 15 to 1 split gives 0.0623 at 0.932 times, and 8 to 8 gives 0.0605 at 2.065 times. Without KV caching, HiGR has over 5% higher Recall@5 than OneRec-Beam at more than 5 times the speed. In a 5% live-traffic A/B against the incumbent multi-stage system, Average Stay Time is +1.03%, Watch Time +1.22%, Video Views +1.73% and Request Count +1.57%.'
+caveats:
+- 'The arXiv v5 read is a CIKM-template preprint with placeholder DOI and copyright text, and its title differs from the first version; the final CIKM 2026 text was not read.'
+- 'The online comparison is against an incumbent multi-stage system that the paper does not describe, so the lift cannot be attributed to the slate decoder alone.'
+- 'Online results are relative percentage changes with no confidence intervals or significance tests, and the A/B duration is not given.'
+- 'The offline comparison with OneRec uses models that the authors trained under identical settings, and the main table is on an internal industrial dataset.'
+- 'No official code was found.'
+unknown_fields:
+- A/B duration and significance
+- Which Tencent surface the A/B ran on
+- The incumbent multi-stage system architecture
+- Code release
+sources:
+- title: "HiGR: Industrial-Scale Hierarchical Generative Slate Recommendation Framework in Tencent, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840166
+  type: paper
+- title: "HiGR, arXiv 2512.24787"
+  url: https://arxiv.org/abs/2512.24787
+  type: paper
+version_note: 'Read from arXiv v5 dated 11 Jun 2026, a CIKM-template preprint whose DOI line is still a placeholder, so it may differ from the final CIKM 2026 text. The first arXiv version carried the title HiGR: Efficient Generative Slate Recommendation via Hierarchical Planning and Multi-Objective Preference Alignment. The ACM Digital Library returned 403.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2512.24787
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, method, system deployment, offline experiments, ablations, efficiency comparison, scaling study, online A/B tests, conclusion'
+  verified_on: '2026-11-02'
+  published_pdf: 'not read; arXiv v5 preprint only, read 2026-11-02'
+code:
+  status: none
+  checked_on: '2026-11-02'
+  repos: []
+  note: 'The paper links no code, and no official release was found; an independent reproduction attempt reports that no author code was available.'
+core_idea: Plan a whole slate coarsely, one embedding per position, then decode each item's semantic IDs with a shared small decoder, and align the result with a listwise ORPO objective.
+deployed_in: Tencent news, video and web novel surfaces, commercial media platform
+scale_short: Hundreds of millions of users
+key_result: 5% live-traffic A/B, Watch Time +1.22% and Video Views +1.73% against the multi-stage system
+results_table:
+  online:
+  - setting: Tencent commercial media platform, 5% live traffic
+    method: HiGR
+    metric: Watch Time
+    result: +1.22%
+    versus: Incumbent multi-stage system
+  - setting: Tencent commercial media platform, 5% live traffic
+    method: HiGR
+    metric: Video Views
+    result: +1.73%
+    versus: Incumbent multi-stage system
+  - setting: Tencent commercial media platform, 5% live traffic
+    method: HiGR
+    metric: Request Count
+    result: +1.57%
+    versus: Incumbent multi-stage system
+  offline:
+  - setting: Industrial dataset, Impressions hit@5
+    method: HiGR-25M
+    metric: Impressions hit@5
+    result: '0.2825'
+    versus: OneRec-25M 0.2438
+  - setting: Industrial dataset, Effective View NDCG@5
+    method: HiGR-100M
+    metric: Effective View hit@5
+    result: '0.2145'
+    versus: HiGR-25M 0.1945
+deployment:
+  online_evidence: online_numbers
+  scenario: Tencent commercial media platform serving hundreds of millions of users; the paper says HiGR is deployed on news, video and web novel surfaces
+  ab_traffic: 5% of live traffic
+  ab_duration: not_reported
+  baseline: The incumbent multi-stage recommendation system
+  online_lifts:
+  - metric: Average Stay Time
+    value: +1.03%
+  - metric: Average Watch Time
+    value: +1.22%
+  - metric: Average Video Views
+    value: +1.73%
+  - metric: Average Request Count
+    value: +1.57%
+  training_compute: 'Clusters with tens of NVIDIA H20 GPUs for training; training time not reported'
+  serving_latency: 'P99 latency below 50 ms at the same throughput as OneRec'
+  serving_qps: not_reported
+  inference_cost: 'About 60% lower GPU demand than OneRec at the same throughput; without KV caching, over 5% higher Recall@5 than OneRec-Beam at more than 5 times the speed'
+  hardware: 'NVIDIA H20 GPUs for training and NVIDIA L20 GPUs for serving, tens of GPUs each'
+  notes:
+  - 'The latency and GPU comparison is against OneRec at the same throughput, not against the incumbent multi-stage production system.'
+  fulltext_refs:
+  - 'Sec 5.6: online A/B with 5% live traffic on the Tencent commercial media platform against the incumbent multi-stage system; Average Stay Time +1.03%, Watch Time +1.22%, Video Views +1.73%, Request Count +1.57%'
+  - 'Sec 4 System Deployment: tens of NVIDIA H20 and L20 GPUs for training and serving, P99 latency below 50 ms and about 60% less GPU demand than OneRec at the same throughput'
+  - 'Sec 5.5 efficiency comparison: over 5% higher Recall@5 than OneRec-Beam with more than 5 times speedup without KV caching'
+  basis: full_text
+  checked_on: '2026-11-02'

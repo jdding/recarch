@@ -1,5 +1,5 @@
 title: Generative retrieval
-summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across eighteen RecArch cards.
+summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across nineteen RecArch cards.
 framing:
   - A classic retrieval stack finds items by nearest-neighbor search over embeddings. Generative retrieval has a model write the answer. It produces a short code for each item, called a semantic ID, or it produces text, and the output is mapped back to items. All systems below report production use except TIGER, which reports public datasets only.
   - The word covers very different designs. Some replace the whole retrieval, pre-rank and rank cascade. Some add one more retrieval channel. Some generate things other than item IDs. The sections after the table explain the differences that change cost and risk.
@@ -58,16 +58,18 @@ members:
     approach: A benchmark for building semantic IDs from multimodal and co-occurrence features. Its tuned SID recipe beat the base recipe in a 7-day A/B on Taobao Guess You Like.
   - id: pinterest-pinrec-2025
     approach: One generative retriever pre-trained across surfaces and fine-tuned per surface. Each generated embedding runs a nearest-neighbor query, and outcome conditioning splits the retrieval budget.
+  - id: tencent-higr-2025
+    approach: A hierarchical slate decoder over 3-level semantic IDs. A coarse planner writes one embedding per slate position, a shared item generator decodes each item's IDs, and ORPO aligns the result. Tested against a multi-stage system.
 differences:
   - heading: What the model writes
-    text: Most systems write semantic IDs. DPGR writes a few intent codes and lets ANN search find the items for each code. AIGQ writes query text. URM asks an LLM for a set of items from a text description of the goal. GenPage writes a whole page, with one token for each row and each entity. Check this first, because it decides what you must build besides the model.
-    cards: [tiger-google-2023, meituan-dpgr-2026, taobao-aigq-2026, alibaba-urm-2025, netflix-genpage-2026]
+    text: Most systems write semantic IDs. DPGR writes a few intent codes and lets ANN search find the items for each code. AIGQ writes query text. URM asks an LLM for a set of items from a text description of the goal. GenPage writes a whole page, with one token for each row and each entity. HiGR writes a whole slate of semantic IDs, planned with one embedding per slate position. Check this first, because it decides what you must build besides the model.
+    cards: [tiger-google-2023, meituan-dpgr-2026, taobao-aigq-2026, alibaba-urm-2025, netflix-genpage-2026, tencent-higr-2025]
   - heading: Replace the cascade or add a channel
-    text: GPR and OneSearch replace the retrieval, pre-rank and rank cascade. Gwhere and OneRec are single-stage systems. GEAR, BARGE, DPGR, URM and AIGQ are added next to existing retrieval sources, and SnapLGR is launched as one retrieval source. An added channel is easier to roll back and to measure. A replacement removes stages but puts the whole result on one model.
-    cards: [tencent-gpr-2025, kuaishou-onesearch-2025, amap-gwhere-2026, onerec-kuaishou, bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026, snap-snaplgr-2026]
+    text: GPR and OneSearch replace the retrieval, pre-rank and rank cascade. Gwhere and OneRec are single-stage systems, and HiGR generates a whole slate and is compared with a multi-stage system. GEAR, BARGE, DPGR, URM and AIGQ are added next to existing retrieval sources, and SnapLGR is launched as one retrieval source. An added channel is easier to roll back and to measure. A replacement removes stages but puts the whole result on one model.
+    cards: [tencent-gpr-2025, kuaishou-onesearch-2025, amap-gwhere-2026, onerec-kuaishou, tencent-higr-2025, bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026, snap-snaplgr-2026]
   - heading: The tokenizer is the hard part
-    text: Several cards spend most of their effort on semantic IDs themselves. TIGER adds a fourth token to separate items that collide. QuaSID pushes colliding items apart. GEAR uses a residual quantizer meant to avoid dead codes. SnapLGR adds a co-engagement loss that raises codebook utilization and reduces collisions. UNIQUE moved to one flat codebook of 16,384 codes, from a 128 x 128 hierarchical layout.
-    cards: [tiger-google-2023, kuaishou-quasid-2026, bytedance-gear-2026, snap-snaplgr-2026, baidu-unique-2026]
+    text: Several cards spend most of their effort on semantic IDs themselves. TIGER adds a fourth token to separate items that collide. QuaSID pushes colliding items apart. GEAR uses a residual quantizer meant to avoid dead codes. SnapLGR adds a co-engagement loss that raises codebook utilization and reduces collisions. HiGR adds a prefix-level contrastive loss so that items sharing a prefix are close. UNIQUE moved to one flat codebook of 16,384 codes, from a 128 x 128 hierarchical layout.
+    cards: [tiger-google-2023, kuaishou-quasid-2026, bytedance-gear-2026, snap-snaplgr-2026, tencent-higr-2025, baidu-unique-2026]
   - heading: How serving is kept affordable
     text: TIGER notes that inference costs more than an ANN lookup. The production systems avoid per-request generation in different ways. SnapLGR runs beam search as a daily offline batch. AIGQ serves nearline through a cached list and a daily index. URM runs asynchronously. S-GRec keeps the LLM offline and serves a small generator. OneRec reports 36 ms online latency with beam size 512. Gwhere reports about 30 ms P99 on 2 GPUs in a load test, against about 20 ms for the cascade. UNIQUE runs on about 400 GPUs.
     cards: [tiger-google-2023, snap-snaplgr-2026, taobao-aigq-2026, alibaba-urm-2025, tencent-sgrec-2026, onerec-kuaishou, amap-gwhere-2026, baidu-unique-2026]

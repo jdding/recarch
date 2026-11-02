@@ -1,5 +1,5 @@
 title: 生成式召回
-summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十八张 RecArch 卡片之间做对比。
+summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十九张 RecArch 卡片之间做对比。
 framing:
 - 经典的召回栈通过对 embedding 做最近邻搜索来找到 item。生成式召回则让模型直接写出答案：它为每个 item 生成一段简短的编码，称为 Semantic ID，或者生成文本，再把输出映射回 item。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
 - 这个词涵盖了差别很大的设计。有的取代整个召回、预排序和排序的级联。有的只是多加一路召回通道。有的生成的不是 item ID。表格之后的各节解释了会改变成本和风险的那些差别。
@@ -58,13 +58,15 @@ members:
   approach: 一个用多模态特征和共现特征构建 Semantic ID 的基准。它调优后的 SID 方案在淘宝猜你喜欢的 7 天 A/B 中优于基础方案。
 - id: pinterest-pinrec-2025
   approach: 一个跨场景预训练、再按场景微调的生成式召回模型。每个生成的 embedding 做一次最近邻查询，结果条件化把召回预算按结果类型拆分。
+- id: tencent-higr-2025
+  approach: 基于 3 级 Semantic ID 的层级 slate 解码器。粗粒度 planner 为每个 slate 位置写一个 embedding，共享的物品生成器解码每个物品的 ID，再用 ORPO 对齐结果。对比的是多阶段系统。
 differences:
 - heading: 模型写出的是什么
-  text: 大多数系统写出 Semantic ID。DPGR 写出少量意图编码，再让 ANN 搜索为每个编码找到 item。AIGQ 写出 query 文本。URM 让 LLM 根据对目标的文字描述给出一组 item。GenPage 写出整个页面，每一行和每个实体各用一个 token。先检查这一点，因为它决定了除模型之外你还必须构建什么。
+  text: 大多数系统写出 Semantic ID。DPGR 写出少量意图编码，再让 ANN 搜索为每个编码找到 item。AIGQ 写出 query 文本。URM 让 LLM 根据对目标的文字描述给出一组 item。GenPage 写出整个页面，每一行和每个实体各用一个 token。HiGR 写出整个 slate 的 Semantic ID，规划时每个 slate 位置一个 embedding。先检查这一点，因为它决定了除模型之外你还必须构建什么。
 - heading: 取代级联，还是新增通道
-  text: GPR 和 OneSearch 取代召回、预排序和排序的级联。Gwhere 和 OneRec 是单阶段系统。GEAR、BARGE、DPGR、URM 和 AIGQ 加在现有召回来源旁边，SnapLGR 则作为一路召回来源上线。新增通道更容易回滚和衡量。取代级联则去掉了阶段，但把全部结果压在一个模型上。
+  text: GPR 和 OneSearch 取代召回、预排序和排序的级联。Gwhere 和 OneRec 是单阶段系统，HiGR 生成整个 slate，对比的是多阶段系统。GEAR、BARGE、DPGR、URM 和 AIGQ 加在现有召回来源旁边，SnapLGR 则作为一路召回来源上线。新增通道更容易回滚和衡量。取代级联则去掉了阶段，但把全部结果压在一个模型上。
 - heading: tokenizer 是难点
-  text: 有几张卡片把大部分精力花在 Semantic ID 本身。TIGER 加上第四个 token 来区分冲突的 item。QuaSID 把冲突的 item 推开。GEAR 使用旨在避免死码的残差量化器。SnapLGR 加入共同互动损失，提高码本利用率并减少冲突。UNIQUE 从 128 x 128 的分层结构，改成了 16,384 个编码的单层扁平码本。
+  text: 有几张卡片把大部分精力花在 Semantic ID 本身。TIGER 加上第四个 token 来区分冲突的 item。QuaSID 把冲突的 item 推开。GEAR 使用旨在避免死码的残差量化器。SnapLGR 加入共同互动损失，提高码本利用率并减少冲突。HiGR 加入前缀级对比损失，让共享前缀的物品彼此接近。UNIQUE 从 128 x 128 的分层结构，改成了 16,384 个编码的单层扁平码本。
 - heading: 如何让服务成本可承受
   text: TIGER 指出推理比 ANN 查找更贵。线上系统用不同的办法避免每次请求都做生成。SnapLGR 每天离线批量做 beam search。AIGQ 通过缓存列表和每日索引做近线服务。URM 异步运行。S-GRec 让 LLM 留在离线，服务时用小型生成器。OneRec 报告在 beam 大小为 512 时线上延迟为 36 ms。Gwhere 在压测中报告 2 块 GPU 上 P99 约 30 ms，而级联约 20 ms。UNIQUE 运行在约 400 块 GPU 上。
 - heading: 线上数字能说明什么，不能说明什么

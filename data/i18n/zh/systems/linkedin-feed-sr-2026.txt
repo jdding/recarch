@@ -1,0 +1,54 @@
+surface|LinkedIn Feed 排序
+era_reason|仅解码器 Transformer 处理长达一年的帖子与行为交错历史，取代 DCNv2 排序模型，scaling 曲线覆盖 10^17 到 10^19 训练 FLOPs。它是遵循 scaling 驱动的生成式时代模式的序列排序模型，不过预测的是互动分数，而不是物品 token。
+tldr|LinkedIn 的 Feed SR 用处理一年帖子与行为历史的 Transformer 取代 DCNv2 排序模型，服务 12 亿会员；停留时间 +2.10%，点赞、评论和分享 +3.52%。
+summary|Feed SR 是 LinkedIn Feed 的排序模型，被改写成序列推荐模型。每位会员由一年数据中最多 1000 条曝光帖子表示，并与会员对每条帖子的行为交错排列，所以 Transformer 的输入有 2000 个 token。一个带旋转位置 embedding、标量缩放残差和 softmax attention 的仅解码器 Pre-LN Transformer 处理该序列，并行的 DCNv2 头产生多任务互动分数。少量数值上下文特征，主要是物品热度和浏览者与作者的亲和度，在 Transformer 之后用后期融合拼接，相比早期融合使训练步时间降低 12%。会员画像 embedding 来自微调过的 Qwen3 6 亿参数模型，作为后期融合的稠密特征加入，使历史行为少于 10 次的会员 AUC 提升超过 2%。该模型使用的特征比它取代的线上模型少约 80%。训练在 16 张 H200 GPU 上冷启动，在 8 张 H200 GPU 上温启动并每天增量更新，没有点击的曝光以 0.1 的概率保留。服务拆分为 CPU 推理驱动和 PyTorch GPU 推理服务器，通过 gRPC 上的 Arrow 缓冲区连接。每个请求约 512 个候选共享同一段历史，用自定义 attention mask 在一次前向中完成，名为 SRMIS 的自定义 Flash Attention kernel 处理这种模式。论文还说明了为什么没有部署基于 LLM 的排序模型和 TransAct。
+core_idea|用处理一年帖子与行为交错历史的仅解码器 Transformer 取代 DCNv2 的 Feed 排序模型，并通过共享上下文批处理、自定义 kernel 和 CPU 与 GPU 拆分的服务栈让它能上线。
+deployed_in|LinkedIn Feed 排序，12 亿会员，占 Feed 流量的大部分
+scale_short|12 亿会员，1000 条曝光的历史
+key_result|线上停留时间 +2.10%，点赞、评论和分享 +3.52%，对比线上排序模型
+results_reported|线上，Feed SR 与此前的线上排序模型做对照 A/B 测试，论文报告整体停留时间 +2.10%，点赞、评论和分享 +3.52%。分人群看，DAU 提升为 +2.38% 和 +4.07%，WAU 为 +1.84% 和 +3.40%，MAU 为 +0.82% 和 +1.86%，新会员没有统计显著性。这些线上结果不含增量训练。Feed SR 已服务 Feed 流量的大部分超过三个月。相对此前模型的每物品能耗，训练是 0.2 倍，推理是 0.7 倍。训练效率方面的工作，使指标 kernel 的 GPU 小时减少 22%，optimizer 融合减少 15%，数据加载减少 50%，并行评估减少 16%。scaling 显示在 10^17 到 10^19 FLOPs 范围内，训练 FLOPs 每增加 10 倍，Long Dwell AUC 约提升 0.0093。消融中，把层换成 HSTU 使 Long Dwell AUC 降低 0.23%，Contributions AUC 降低 0.28%，Linear 头使 Long Dwell AUC 降低 1.20%，去掉位置 embedding 使其降低 0.91%。
+version_note|读的是 16 Sep 2026 的 arXiv v3，它已经是最终的 ACM CIKM 2026 格式。ACM Digital Library 返回 403，所以没有打开正式发表页面本身。
+serving_infra|拆分式服务：CPU 推理驱动获取并关联会员和帖子特征，Python 的 PyTorch 推理服务器在 GPU 上运行模型，两者通过 gRPC 消息里的 Apache Arrow 缓冲区连接，零拷贝转换为张量。会员历史离线预先算好，以 Arrow 列式缓冲区存放在 key-value 存储里。共享上下文批处理在一次前向中为约 512 个候选打分，使 Transformer 加速 80 倍，SRMIS kernel 比带 mask 的 SDPA 再快约 2 倍。历史解析从 450 ms 降到 2 ms，稀疏转稠密每个特征从 254 ms 降到 5 ms。
+stages.0.model_family|处理帖子与行为交错 token 的仅解码器 Pre-LN Transformer，带 RoPE、标量缩放残差和 softmax attention，另有并行的 DCNv2 多任务头和后期融合的上下文特征
+stages.0.details|历史保存最近 1000 条曝光，所以序列有 2000 个 token。每个请求约 512 个候选在共享会员历史的一次前向中打分。该模型取代了此前在 CPU 上服务的 Tensorflow DCNv2 排序模型。
+id_tokenization.approach|每个帖子的特征 embedding 加每个帖子的行为 embedding，不使用 Semantic ID
+id_tokenization.details|每个帖子由特征表示，特征通过 embedding 查表、log 变换或恒等映射编码，每个行为向量由可学习层投影。帖子和行为交错排列，所以历史里的每个帖子占两个 token。
+features_signals.0|会员一年数据中最多 1000 条曝光帖子的历史，以及会员对每条帖子的行为
+features_signals.1|帖子特征和 ID embedding
+features_signals.2|后期融合的上下文特征，主要是物品热度和浏览者与作者的亲和度
+features_signals.3|会员画像 embedding，来自微调过的 Qwen3 6 亿参数模型，每天刷新
+training.mode|先冷启动训练，再每天做温启动的增量训练
+training.objectives.0|带并行 DCNv2 头的多任务互动预测，覆盖 long dwell、点赞、评论和分享等行为
+training.objectives.1|在对负样本降采样后的曝光上计算训练损失，没有点击的曝光以 0.1 的概率保留
+training.notes|冷启动训练用 16 张 H200 GPU，温启动训练用 8 张 H200 GPU，全局 batch size 为 1024，优化器为 AdamW。每日增量训练只在新到的交互上计算损失。会话内随机化用来防止同一会话的曝光之间发生泄漏。
+scale.0.metric|服务会员数
+scale.0.value|12 亿会员
+scale.1.metric|历史长度
+scale.1.value|1000 条曝光，2000 个 token
+scale.2.metric|每个请求的候选数
+scale.2.value|约 512
+scale.3.metric|服务预算
+scale.3.value|几百毫秒延迟和数万 QPS
+results_table.online.0.setting|LinkedIn Feed，全体会员
+results_table.online.1.setting|LinkedIn Feed，全体会员
+results_table.online.2.setting|LinkedIn Feed，日活会员
+results_table.offline.0.setting|架构消融，Long Dwell AUC
+results_table.offline.1.setting|10^17 到 10^19 FLOPs 范围内的 scaling
+caveats.0|论文没有给出 A/B 流量占比、时长、用户数或置信区间；提升是停留时间以及点赞、评论和分享的相对变化。
+caveats.1|服务成本以相对加速比和每物品相对能耗给出；服务用的绝对延迟、GPU 型号和集群规模都没有给出。
+caveats.2|线上结果不含增量训练，所以不包含每日更新带来的新鲜度收益。
+caveats.3|此前的排序模型在 CPU 上服务，所以 Table 3 中的能耗比较，比的是 GPU 上的 Transformer 与 CPU 上的 DCNv2 系统。
+caveats.4|没有描述代码发布或公开数据集。
+unknown_fields.0|A/B 流量占比和时长
+unknown_fields.1|绝对延迟和服务硬件
+unknown_fields.2|线上模型的训练算力
+unknown_fields.3|代码发布
+code.note|论文没有链接代码，网页搜索也没有找到官方发布。
+deployment.scenario|LinkedIn Feed 排序，服务 Feed 流量的大部分超过三个月
+deployment.baseline|此前线上的 DCNv2 排序模型
+deployment.training_compute|在 16 张 H200 GPU 上冷启动训练，在 8 张 H200 GPU 上温启动训练，全局 batch size 为 1024；每物品相对能耗是此前模型的 0.2 倍
+deployment.serving_latency|延迟预算为几百毫秒；实测绝对延迟未报告
+deployment.serving_qps|数万 QPS
+deployment.inference_cost|每物品推理相对能耗是此前模型的 0.7 倍；共享上下文批处理在典型负载下使 Transformer 加速 80 倍
+deployment.hardware|GPU 推理服务器加 CPU 推理驱动；服务用的 GPU 型号未报告；训练用 H200 GPU
+deployment.notes.0|此前的排序模型在 CPU 上服务，并在同样的 GPU 上训练。

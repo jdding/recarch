@@ -1,0 +1,145 @@
+id: kuaishou-sarm-2026
+name: "SARM"
+company: Kuaishou
+surface: Live-streaming ranking on the key pages of Kuaishou and Kuaishou Lite
+year: 2026
+era: deep
+era_reason: "A multimodal LLM runs offline to write text descriptions of each live stream, and a small encoder feeds the result into an existing MMoE multi-task ranker. There is no autoregressive or scaling claim, so this is a deep-learning ranker with an LLM-derived feature path."
+first_public: "2026-02"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840099"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Kuaishou's SARM lets an offline multimodal LLM write semantic anchors for each live stream and trains them end to end inside the ranker; a two-week A/B shows Watch Time +0.962% on Kuaishou Lite."
+summary: 'SARM puts natural-language descriptions of a live stream into the ranker itself, instead of using discrete semantic IDs or dense multimodal embeddings extracted separately. A fine-tuned multimodal LLM reads an author profile, key frames, audio transcription and comments, and writes six semantic anchors for the stream: POI, Theme, Topic, Target audience, Format and Scene. The anchors become learnable text tokens. A Semantic Anchor Encoder with four blocks and a Live-Streaming Tokenizer encodes them, with gated fusion after every layer that mixes the new domain tokens with the base token sequence. It outputs a [CLS] semantic representation, a [TAR] author representation made by cross-attention between an author ID embedding and the semantic output, and a [UIN] user interest representation built by a self-attention Transformer over the [CLS] vectors of the authors in the user effective-view history. These three representations are concatenated with the existing features of the base ranker, the deployed HoME MMoE multi-task model, which predicts click, follow, long view and gift targets. An auxiliary CTR loss on [CLS] and [TAR] gives the semantic encoder dense supervision and speeds up convergence. Deployment is asymmetric around a memory bank keyed by author ID: the LLM generates anchors once a day per author, the encoder and ranker train in a streaming way, and at inference the candidate authors returned by recall are fetched by constant-time lookup, so no LLM or text encoding runs per request. The user side runs the same way in training and serving.'
+paradigms:
+- llm-based
+- multi-task
+stages:
+- stage: rank
+  model_family: 'HoME MMoE multi-task ranker extended with a four-block Semantic Anchor Encoder, a Live-Streaming Tokenizer with gated fusion, [CLS], [TAR] and [UIN] representations, and an auxiliary CTR head'
+  details: 'The semantic features are concatenated with the existing ranking features and fed to the multi-task backbone, which is trained with a sum of per-target binary cross-entropy losses plus a weighted auxiliary loss. Candidate authors come from the upstream recall stage.'
+id_tokenization:
+  approach: 'Natural-language semantic anchors as learnable text tokens, plus an author ID embedding; no semantic IDs'
+  details: 'The anchors are six text fields per stream that a Live-Streaming Tokenizer extends with domain-specific tokens. Gated fusion after every encoder layer keeps the base tokens and adds the domain tokens. Author identity enters as a learnable ID embedding fused by cross-attention.'
+features_signals:
+- 'Author profile, key frames, audio transcription and comments of each live stream, read by the multimodal LLM'
+- 'Six generated semantic anchors: POI, Theme, Topic, Target audience, Format and Scene'
+- 'Learnable author ID embedding'
+- 'User effective-view history of authors, retrieved from the memory bank as [CLS] vectors'
+- 'The existing ranking features of the base HoME model'
+training:
+  mode: Streaming continuous training of the encoder and ranker, with LLM anchors regenerated daily
+  objectives:
+  - 'Sum of binary cross-entropy losses over the engagement targets, which are click, follow, long view and gift'
+  - 'Auxiliary CTR binary cross-entropy on the author-side representation, weighted by a tunable coefficient'
+  notes: 'Anchor generation by the multimodal LLM runs daily for each author. The SAE encoding and the end-to-end ranking train continuously, and the author representations are written to a memory bank that new observations overwrite.'
+serving_infra: 'A memory bank keyed by author ID holds the [CLS] and [TAR] author representations, so inference fetches precomputed vectors for the candidate authors by constant-time lookup and skips the LLM and the text encoder. The user side retrieves bank vectors for the effective-view history and encodes them in both training and serving. The paper reports training CPU and GPU utilization and inference QPS in Table 5.'
+scale:
+- metric: Users served
+  value: over 400 million users daily
+  note: paper, abstract
+- metric: Semantic anchors per stream
+  value: six dimensions, POI, Theme, Topic, Target audience, Format and Scene
+  note: paper, Sec 3.1
+- metric: Encoder depth
+  value: four blocks
+  note: paper, Sec 3.2
+results_reported: 'Offline, with the deployed HoME as the base ranker, CTR AUC and GAUC go from 0.8387 and 0.6453 to 0.8411 and 0.6485 with SARM, and LVTR AUC and GAUC from 0.8928 and 0.7542 to 0.8959 and 0.7580. The two-stage baselines with tags, SIDs, or MLLM embeddings from MMBee and SIM reach CTR AUC 0.8390, 0.8389, 0.8385 and 0.8394. Gated fusion after every layer was the best fusion variant, and the stratified analysis shows larger relative gains for low-exposure authors. Replacing the Qwen2.5-VL-7B anchors with Qwen3-VL-8B raises the CTR AUC increment over the base from +0.19% to +0.24%. A two-week online A/B on key pages reports, for Kuaishou, Exposure +0.424%, Watch Count +0.189%, Watch Time +0.092%, Click +0.982%, Gift +0.482%, Effective View +0.070% and Follow +0.805%; for Kuaishou Lite, Exposure +1.190%, Watch Count +0.397%, Watch Time +0.962%, Click +0.562%, Gift +1.287%, Effective View +0.340% and Follow +0.522%. Table 5 puts training CPU at 51.71% against 48.69% for the base, GPU at 80.29% against 77.54%, training time per pass at 1.08x, inference QPS at 271.30 against 280.71 and time per query at 1.02x, with no statistically significant degradation reported.'
+caveats:
+- 'The arXiv version read is a preprint in a placeholder ACM template, with the conference line still reading Conference acronym XX; the final CIKM 2026 text was not read.'
+- 'Online results are relative percentage changes against the production ranker over two weeks, with no traffic share, user count or confidence intervals given.'
+- 'The offline gains are fractions of a point of AUC and GAUC on an internal dataset, and the paper does not give confidence intervals or repeated runs.'
+- 'Serving cost is reported only relative to the base ranker or as utilization percentages; absolute latency, hardware and the LLM serving setup for the daily anchor job are not given.'
+- 'The paper does not name a track; no code link is given.'
+unknown_fields:
+- A/B traffic share
+- Absolute latency and serving hardware
+- Cost and scale of the daily LLM anchor generation
+- Which MLLM runs in production
+- Code release
+sources:
+- title: "SARM: LLM-Augmented Semantic Anchor for End-to-End Live-Streaming Ranking, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840099
+  type: paper
+- title: "SARM, arXiv 2602.09401"
+  url: https://arxiv.org/abs/2602.09401
+  type: paper
+version_note: 'Read from arXiv v1 dated 10 Feb 2026, a preprint that still carries the placeholder ACM header and does not match the final CIKM 2026 layout, so the published version was not checked. The ACM Digital Library returned 403.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.09401
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, methodology, offline experiments, component replacement, stratified analysis, online A/B test and Table 5, conclusion, appendix prompt'
+  verified_on: '2026-11-02'
+  published_pdf: 'not read; arXiv v1 preprint only, read 2026-11-02'
+code:
+  status: none
+  checked_on: '2026-11-02'
+  repos: []
+  note: 'No official code is cited in the paper, and a web and GitHub search found no release.'
+core_idea: Let an offline multimodal LLM write text anchors for each live stream, and train their encoder end to end inside the ranker, with a memory bank so nothing heavy runs per request.
+deployed_in: Kuaishou and Kuaishou Lite live-streaming ranking, key pages
+scale_short: Serves over 400 million users daily
+key_result: Two-week A/B, Kuaishou Lite Watch Time +0.962% and Gift +1.287%
+results_table:
+  online:
+  - setting: Kuaishou Lite key pages, two-week A/B
+    method: SARM
+    metric: Watch Time
+    result: +0.962%
+    versus: Production ranker
+  - setting: Kuaishou Lite key pages, two-week A/B
+    method: SARM
+    metric: Gift
+    result: +1.287%
+    versus: Production ranker
+  - setting: Kuaishou key pages, two-week A/B
+    method: SARM
+    metric: Click
+    result: +0.982%
+    versus: Production ranker
+  offline:
+  - setting: CTR prediction, HoME base ranker
+    method: SARM
+    metric: CTR AUC
+    result: '0.8411'
+    versus: Base ranker 0.8387
+  - setting: LVTR prediction, HoME base ranker
+    method: SARM
+    metric: LVTR GAUC
+    result: '0.7580'
+    versus: Base ranker 0.7542
+deployment:
+  online_evidence: online_numbers
+  scenario: Key pages of the live-streaming ranking services on Kuaishou and Kuaishou Lite; the paper says SARM is fully deployed and serves over 400 million users daily
+  ab_traffic: not_reported
+  ab_duration: Two weeks
+  baseline: The deployed production ranking model, HoME, without semantic anchors
+  online_lifts:
+  - metric: Watch Time, Kuaishou Lite
+    value: +0.962%
+  - metric: Exposure, Kuaishou Lite
+    value: +1.190%
+  - metric: Gift, Kuaishou Lite
+    value: +1.287%
+  - metric: Click, Kuaishou
+    value: +0.982%
+  training_compute: 'Training CPU utilization 51.71% against 48.69% for the base ranker, GPU utilization 80.29% against 77.54%, and training time per pass 1.08x; absolute hardware and training time not reported'
+  serving_latency: 'Time per query 1.02x of the base ranker, with no statistically significant degradation reported; absolute latency not reported'
+  serving_qps: 'Inference QPS 271.30 against 280.71 for the base ranker, in the units of Table 5'
+  inference_cost: 'The memory bank turns author-side encoding into a constant-time lookup at inference; no LLM runs per request'
+  hardware: not_reported
+  notes:
+  - 'Anchor generation by the multimodal LLM runs daily for each author, outside the request path.'
+  fulltext_refs:
+  - 'Table 3 and Sec 4.4: two-week online A/B on key pages of Kuaishou and Kuaishou Lite; Kuaishou Exposure +0.424%, Watch Count +0.189%, Watch Time +0.092%, Click +0.982%, Gift +0.482%, Effective View +0.070%, Follow +0.805%; Kuaishou Lite Exposure +1.190%, Watch Count +0.397%, Watch Time +0.962%, Click +0.562%, Gift +1.287%, Effective View +0.340%, Follow +0.522%'
+  - 'Table 5: training CPU 51.71% against 48.69%, GPU 80.29% against 77.54%, time per pass 1.08x, inference QPS 271.30 against 280.71, time per query 1.02x'
+  - 'Sec 3.4 and abstract: memory bank lookup at inference, daily anchor generation, serves over 400 million users daily'
+  basis: full_text
+  checked_on: '2026-11-02'

@@ -1,0 +1,31 @@
+# Redrawn, simplified diagram. Source: SARM, "LLM-Augmented Semantic Anchor for End-to-End Live-Streaming Ranking" (CIKM 2026), Fig. 2.
+alt: "Left to right: live-stream content goes to an offline fine-tuned multimodal LLM that writes six semantic anchors; the anchors go to a four-block Semantic Anchor Encoder with a live-streaming tokenizer and gated fusion, producing CLS, author and user-interest tokens; these join the existing features of the multi-task ranker, which predicts engagement; an author-ID memory bank stores the author representations for lookup at inference."
+caption:
+  fig: "Fig. 2"
+  work: "SARM: LLM-Augmented Semantic Anchor for End-to-End Live-Streaming Ranking, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840099"
+  note: "Simplified; the loss terms and the asymmetric deployment in Fig. 4 are only summarized by the memory bank."
+columns:
+  - label: Content
+    boxes:
+      - {id: live, kind: input, text: ["Live stream", "author profile, key frames, audio transcription, comments"]}
+  - label: Offline
+    boxes:
+      - {id: mllm, kind: module, text: ["Fine-tuned multimodal LLM", "runs daily per author, writes six semantic anchors"]}
+  - label: Encoder
+    boxes:
+      - {id: sae, kind: module, text: ["Semantic Anchor Encoder", "four blocks, live-streaming tokenizer, gated fusion"]}
+      - {id: bank, kind: module, text: ["Memory bank", "CLS and TAR vectors by author ID, constant-time lookup"]}
+  - label: Ranker
+    boxes:
+      - {id: rank, kind: module, text: ["Multi-task ranker", "CLS, TAR and UIN tokens plus existing features, auxiliary CTR loss"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Engagement scores", "click, follow, long view, gift"]}
+edges:
+  - [live, mllm]
+  - [mllm, sae]
+  - [sae, bank]
+  - [sae, rank]
+  - [bank, rank]
+  - [rank, out]

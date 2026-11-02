@@ -971,6 +971,30 @@
    }
   ]
  },
+ "kuaishou-sarm-2026": {
+  "count": 6,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/b922704ef0659daa50a0f996db666c1aabe8aec7",
+  "fetched_on": "2026-11-02",
+  "matched_title": "SARM: LLM-Augmented Semantic Anchor for End-to-End Live-Streaming Ranking",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2602.09401"
+  ],
+  "papers": [
+   {
+    "name": "SARM",
+    "count": 6,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/b922704ef0659daa50a0f996db666c1aabe8aec7",
+    "matched_title": "SARM: LLM-Augmented Semantic Anchor for End-to-End Live-Streaming Ranking",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2602.09401"
+    ]
+   }
+  ]
+ },
  "linkedin-360brew-2025": {
   "count": 15,
   "source": "Semantic Scholar",
@@ -991,6 +1015,30 @@
     "matched_year": 2025,
     "ids": [
      "arxiv:2501.16450"
+    ]
+   }
+  ]
+ },
+ "linkedin-feed-sr-2026": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/115626d7f1bab08f193cf3e300f82fb0d70b8b31",
+  "fetched_on": "2026-11-02",
+  "matched_title": "An Industrial-Scale Sequential Recommender for LinkedIn Feed Ranking",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2602.12354"
+  ],
+  "papers": [
+   {
+    "name": "Feed SR",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/115626d7f1bab08f193cf3e300f82fb0d70b8b31",
+    "matched_title": "An Industrial-Scale Sequential Recommender for LinkedIn Feed Ranking",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2602.12354"
     ]
    }
   ]
@@ -1786,6 +1834,30 @@
     "matched_year": 2025,
     "ids": [
      "doi:10.1145/3770855.3818425"
+    ]
+   }
+  ]
+ },
+ "tencent-higr-2025": {
+  "count": 5,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1ca747e4420a59bb08ce61ab97e7a91353287334",
+  "fetched_on": "2026-11-02",
+  "matched_title": "HiGR: Industrial-Scale Hierarchical Generative Slate Recommendation Framework in Tencent",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2512.24787"
+  ],
+  "papers": [
+   {
+    "name": "HiGR",
+    "count": 5,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1ca747e4420a59bb08ce61ab97e7a91353287334",
+    "matched_title": "HiGR: Industrial-Scale Hierarchical Generative Slate Recommendation Framework in Tencent",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2512.24787"
     ]
    }
   ]

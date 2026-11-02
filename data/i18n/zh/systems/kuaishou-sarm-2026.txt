@@ -1,0 +1,54 @@
+surface|快手和快手极速版关键页面上的直播间排序
+era_reason|多模态 LLM 离线为每个直播间写文字描述，一个小型编码器把结果送入现有的 MMoE 多任务排序模型。论文没有自回归或 scaling 方面的主张，所以这是带有 LLM 特征通路的深度学习排序模型。
+tldr|快手的 SARM 让离线多模态 LLM 为每个直播间写语义锚点，并在排序模型内端到端训练；两周 A/B 中快手极速版 Watch Time +0.962%。
+summary|SARM 把直播间的自然语言描述直接放进排序模型，而不是使用离散 Semantic ID 或另行提取的稠密多模态 embedding。微调过的多模态 LLM 读取主播资料、关键帧、音频转写和评论，为直播间写出六个语义锚点：POI、Theme、Topic、Target audience、Format 和 Scene。锚点成为可学习的文本 token。四个 block 的 Semantic Anchor Encoder 加上 Live-Streaming Tokenizer 对它们编码，每一层之后都用门控融合把新增的领域 token 与基础 token 序列混合。它输出 [CLS] 语义表示；由主播 ID embedding 与语义输出做 cross-attention 得到的 [TAR] 主播表示；以及 [UIN] 用户兴趣表示，由 self-attention Transformer 在用户有效观看历史中各主播的 [CLS] 向量上构建。这三种表示与基础排序模型的现有特征拼接，基础模型是线上的 HoME MMoE 多任务模型，预测点击、关注、长播和打赏目标。作用在 [CLS] 和 [TAR] 上的辅助 CTR 损失给语义编码器提供稠密监督并加快收敛。部署是围绕按主播 ID 索引的 memory bank 做的非对称设计：LLM 每天为每位主播生成一次锚点，编码器和排序模型以流式方式训练，推理时召回返回的候选主播通过常数时间的查表取得向量，所以每个请求都不运行 LLM 或文本编码。用户侧在训练和服务中的做法相同。
+core_idea|让离线多模态 LLM 为每个直播间写文字锚点，并在排序模型内端到端训练其编码器，再用 memory bank 保证每个请求都不用运行重计算。
+deployed_in|快手和快手极速版直播排序，关键页面
+scale_short|每天服务超过 4 亿用户
+key_result|两周 A/B，快手极速版 Watch Time +0.962%，Gift +1.287%
+results_reported|离线，以线上的 HoME 为基础排序模型，SARM 把 CTR 的 AUC 和 GAUC 从 0.8387 和 0.6453 提高到 0.8411 和 0.6485，LVTR 的 AUC 和 GAUC 从 0.8928 和 0.7542 提高到 0.8959 和 0.7580。使用标签、SID 或 MMBee 与 SIM 的 MLLM embedding 的两阶段基线，CTR AUC 分别为 0.8390、0.8389、0.8385 和 0.8394。每一层之后做门控融合是最好的融合方式，分层分析显示低曝光主播的相对收益更大。把 Qwen2.5-VL-7B 锚点换成 Qwen3-VL-8B，相对基础模型的 CTR AUC 提升从 +0.19% 增加到 +0.24%。关键页面上为期两周的线上 A/B：快手的 Exposure +0.424%，Watch Count +0.189%，Watch Time +0.092%，Click +0.982%，Gift +0.482%，Effective View +0.070%，Follow +0.805%；快手极速版的 Exposure +1.190%，Watch Count +0.397%，Watch Time +0.962%，Click +0.562%，Gift +1.287%，Effective View +0.340%，Follow +0.522%。Table 5 中训练 CPU 利用率为 51.71%，基础模型为 48.69%；GPU 为 80.29%，基础模型为 77.54%；每轮训练时间为 1.08x；推理 QPS 为 271.30，基础模型为 280.71；每次查询时间为 1.02x，论文没有报告统计显著的退化。
+version_note|读的是 10 Feb 2026 的 arXiv v1。它是预印本，仍带有占位的 ACM 页眉，与最终的 CIKM 2026 排版不一致，所以没有核对正式发表版本。ACM Digital Library 返回 403。
+serving_infra|按主播 ID 索引的 memory bank 保存 [CLS] 和 [TAR] 主播表示，所以推理时对候选主播直接取预先算好的向量，用常数时间查表，不用运行 LLM 和文本编码器。用户侧为有效观看历史取 bank 里的向量，并在训练和服务中用相同方式编码。论文在 Table 5 中报告了训练 CPU、GPU 利用率和推理 QPS。
+stages.0.model_family|在 HoME MMoE 多任务排序模型上，加入四个 block 的 Semantic Anchor Encoder、带门控融合的 Live-Streaming Tokenizer、[CLS]、[TAR] 和 [UIN] 表示，以及辅助 CTR 头
+stages.0.details|语义特征与现有排序特征拼接后送入多任务骨干，训练损失是各目标二元交叉熵之和，再加上带权重的辅助损失。候选主播来自上游召回阶段。
+id_tokenization.approach|自然语言语义锚点作为可学习的文本 token，加上主播 ID embedding，不使用 Semantic ID
+id_tokenization.details|锚点是每个直播间的六个文本字段，Live-Streaming Tokenizer 用领域专用 token 扩展它们。每个编码层之后的门控融合保留基础 token 并加入领域 token。主播身份以可学习的 ID embedding 进入，并通过 cross-attention 融合。
+features_signals.0|每个直播间的主播资料、关键帧、音频转写和评论，由多模态 LLM 读取
+features_signals.1|生成的六个语义锚点：POI、Theme、Topic、Target audience、Format 和 Scene
+features_signals.2|可学习的主播 ID embedding
+features_signals.3|用户有效观看过的主播历史，从 memory bank 中以 [CLS] 向量取出
+features_signals.4|基础 HoME 模型已有的排序特征
+training.mode|编码器和排序模型流式持续训练，LLM 锚点每天重新生成
+training.objectives.0|各互动目标二元交叉熵之和，目标是点击、关注、长播和打赏
+training.objectives.1|作用在主播侧表示上的辅助 CTR 二元交叉熵，由可调系数加权
+training.notes|多模态 LLM 每天为每位主播生成一次锚点。SAE 编码和端到端排序持续训练，主播表示写入 memory bank，新的观测会覆盖旧值。
+scale.0.metric|服务用户数
+scale.0.value|每天超过 4 亿用户
+scale.1.metric|每个直播间的语义锚点
+scale.1.value|六个维度，POI、Theme、Topic、Target audience、Format 和 Scene
+scale.2.metric|编码器深度
+scale.2.value|四个 block
+results_table.online.0.setting|快手极速版关键页面，两周 A/B
+results_table.online.1.setting|快手极速版关键页面，两周 A/B
+results_table.online.2.setting|快手关键页面，两周 A/B
+results_table.offline.0.setting|CTR 预测，HoME 基础排序模型
+results_table.offline.1.setting|LVTR 预测，HoME 基础排序模型
+caveats.0|读的 arXiv 版本是占位 ACM 模板下的预印本，会议行仍写着 Conference acronym XX，最终的 CIKM 2026 正文没有读。
+caveats.1|线上结果是相对线上排序模型的相对百分比变化，周期两周，没有给出流量占比、用户数或置信区间。
+caveats.2|离线收益是内部数据集上 AUC 和 GAUC 零点几个点的提升，论文没有给出置信区间或重复实验。
+caveats.3|服务成本只相对基础排序模型或以利用率百分比给出，绝对延迟、硬件和每日 LLM 锚点任务的服务方式都没有给出。
+caveats.4|论文没有说明所属 track，也没有给出代码链接。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|绝对延迟和服务硬件
+unknown_fields.2|每日 LLM 锚点生成的成本和规模
+unknown_fields.3|线上实际运行的是哪个 MLLM
+unknown_fields.4|代码发布
+code.note|论文没有引用官方代码，网页和 GitHub 搜索也没有找到发布。
+deployment.scenario|快手和快手极速版直播排序服务的关键页面；论文称 SARM 已全量部署，每天服务超过 4 亿用户
+deployment.ab_duration|两周
+deployment.baseline|线上的生产排序模型 HoME，不带语义锚点
+deployment.training_compute|训练 CPU 利用率 51.71%，基础排序模型为 48.69%；GPU 利用率 80.29%，基础模型为 77.54%；每轮训练时间为 1.08x；绝对硬件和训练时长未报告
+deployment.serving_latency|每次查询时间是基础排序模型的 1.02x，论文没有报告统计显著的退化；绝对延迟未报告
+deployment.serving_qps|推理 QPS 为 271.30，基础排序模型为 280.71，单位按 Table 5
+deployment.inference_cost|memory bank 让主播侧编码在推理时变成常数时间的查表，每个请求都不运行 LLM
+deployment.notes.0|多模态 LLM 每天为每位主播生成一次锚点，不在请求路径上。

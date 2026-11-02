@@ -1,0 +1,147 @@
+id: linkedin-feed-sr-2026
+name: "Feed SR"
+company: LinkedIn
+surface: LinkedIn Feed ranking
+year: 2026
+era: generative
+era_reason: "A decoder-only Transformer over one year of interleaved post and action history replaces the DCNv2 ranker, with scaling curves over 10^17 to 10^19 training FLOPs. It is a sequential ranker that follows the scaling-driven generative-era pattern, although it predicts engagement scores, not item tokens."
+first_public: "2026-02"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3799682.3840102"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "LinkedIn's Feed SR replaces the DCNv2 ranker with a Transformer over a year of post and action history for 1.2 billion members; time spent +2.10%, likes, comments and shares +3.52%."
+summary: 'Feed SR is the ranking model of LinkedIn Feed, rewritten as a sequential recommender. Each member is represented by up to 1000 impressed posts from one year of data, interleaved with the actions the member took on each post, so the Transformer input has 2000 tokens. A decoder-only Pre-LN Transformer with rotary position embeddings, scalar rescaled residuals and softmax attention processes the sequence, and a parallel DCNv2 head produces the multi-task engagement scores. Select numeric context features, mainly item popularity and viewer-author affinity, are concatenated after the Transformer by late fusion, which cuts training step time by 12% against early fusion. Member profile embeddings from a fine-tuned Qwen3 0.6 billion parameter model are added as a late-fused dense feature and give more than 2% AUC for members with fewer than 10 historical actions. The model uses about 80% fewer features than the production model it replaces. Training is cold-start on 16 H200 GPUs and warm-start on 8 H200 GPUs with daily incremental updates, and impressions without a click are kept with probability 0.1. Serving is split into a CPU inference driver and a PyTorch GPU inference server linked by Arrow buffers over gRPC. About 512 candidates per request share one history in a single forward pass with a custom attention mask, and a custom Flash Attention kernel called SRMIS handles that pattern. The paper also describes why an LLM-based ranker and TransAct were not deployed.'
+paradigms:
+- sequential-transformer
+- multi-task
+- online-training
+stages:
+- stage: rank
+  model_family: 'Decoder-only Pre-LN Transformer over interleaved post and action tokens with RoPE, scalar rescaled residuals and softmax attention, plus a parallel DCNv2 multi-task head and late-fused context features'
+  details: 'The history holds the most recent 1000 impressions, so the sequence has 2000 tokens. About 512 candidates per request are scored in one pass that shares the member history. The model replaces a Tensorflow DCNv2 ranker that had served on CPUs.'
+id_tokenization:
+  approach: 'Per-post feature embeddings and an action embedding per post, no semantic IDs'
+  details: 'Each post is represented by features encoded by embedding lookup, log transform or identity, and each action vector is projected by a learnable layer. Posts and actions are interleaved, so each post in the history costs two tokens.'
+features_signals:
+- 'Member history of up to 1000 impressed posts from one year of data, with the member action on each post'
+- 'Post features and ID embeddings'
+- 'Late-fused context features, mainly item popularity and viewer-author affinity'
+- 'Member profile embeddings from a fine-tuned Qwen3 0.6 billion parameter model, refreshed daily'
+training:
+  mode: Cold-start training followed by daily incremental training with warm start
+  objectives:
+  - 'Multi-task engagement prediction with a parallel DCNv2 head, covering actions such as long dwell, like, comment and share'
+  - 'Training loss on impressions with negative downsampling; impressions without a click are kept with probability 0.1'
+  notes: 'Cold-start training uses 16 H200 GPUs and warm-start training 8 H200 GPUs, with global batch size 1024 and AdamW. Daily incremental training computes the loss only on newly arrived interactions. Within-session randomization is used to prevent leakage between impressions of the same session.'
+serving_infra: 'Disaggregated serving: a CPU inference driver fetches and joins member and post features, and a Python PyTorch inference server runs the model on GPUs, linked by Apache Arrow buffers inside gRPC messages for zero-copy conversion to tensors. Member history is precomputed offline as Arrow columnar buffers in key-value stores. Shared-context batching scores about 512 candidates in one pass for an 80 times Transformer speedup, and the SRMIS kernel adds about 2 times over masked SDPA. History parsing fell from 450 ms to 2 ms and sparse-to-dense conversion from 254 ms to 5 ms per feature.'
+scale:
+- metric: Members served
+  value: 1.2 billion members
+  note: paper, abstract
+- metric: Sequence
+  value: 1000 impressions, 2000 tokens
+  note: paper, Sec 4.2
+- metric: Candidates per request
+  value: about 512
+  note: paper, Sec 6.2
+- metric: Serving budget
+  value: a few hundred milliseconds latency and tens of thousands of QPS
+  note: paper, Sec 1
+results_reported: 'Online, Feed SR was compared in controlled A/B tests with the previous production ranker, and the paper reports Overall time spent +2.10% and likes, comments and shares +3.52%. By segment, DAU gains are +2.38% and +4.07%, WAU +1.84% and +3.40%, MAU +0.82% and +1.86%, and new members are not statistically significant. These online results exclude incremental training. Feed SR has served the majority of Feed traffic for over three months. Relative energy per item against the previous model is 0.2 times in training and 0.7 times in inference. Training efficiency work reduced GPU hours by 22% for the metrics kernel, 15% for optimizer fusing, 50% for data loading and 16% for parallel evaluation. Scaling shows Long Dwell AUC improving by about 0.0093 per 10 times training FLOPs over 10^17 to 10^19 FLOPs. In the ablations, replacing the layers with HSTU lowers Long Dwell AUC by 0.23% and Contributions AUC by 0.28%, a Linear head lowers Long Dwell AUC by 1.20%, and no position embedding lowers it by 0.91%.'
+caveats:
+- 'The paper gives no A/B traffic share, duration, user count or confidence intervals; the lifts are relative changes in time spent and in likes, comments and shares.'
+- 'Serving cost is reported as relative speedups and relative energy per item; absolute latency, GPU type and fleet size for serving are not given.'
+- 'The online results exclude incremental training, so they do not include the freshness gain of daily updates.'
+- 'The previous ranker was served on CPUs, so the energy comparison in Table 3 compares a GPU Transformer with a CPU DCNv2 system.'
+- 'No code release or public dataset is described.'
+unknown_fields:
+- A/B traffic share and duration
+- Absolute latency and serving hardware
+- Training compute for the production model
+- Code release
+sources:
+- title: "An Industrial-Scale Sequential Recommender for LinkedIn Feed Ranking, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840102
+  type: paper
+- title: "Feed SR, arXiv 2602.12354"
+  url: https://arxiv.org/abs/2602.12354
+  type: paper
+version_note: 'Read from arXiv v3 dated 16 Sep 2026, which is in the final ACM CIKM 2026 format. The ACM Digital Library returned 403, so the published page itself was not opened.'
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.12354
+  local_pdf: full text read, file not redistributed
+  sections_read: 'Abstract, introduction, background, model, features, training techniques, scaling laws, alternatives considered, system architecture, training optimizations, energy analysis, A/B test results, deployment lessons'
+  verified_on: '2026-11-02'
+  published_pdf: 'arXiv v3 in final ACM CIKM 2026 format, read 2026-11-02'
+code:
+  status: none
+  checked_on: '2026-11-02'
+  repos: []
+  note: 'The paper links no code, and a web search found no official release.'
+core_idea: Replace the DCNv2 Feed ranker with a decoder-only Transformer over a year of interleaved posts and actions, and make it serve with shared-context batching, custom kernels and a split CPU and GPU stack.
+deployed_in: LinkedIn Feed ranking for 1.2 billion members, the majority of Feed traffic
+scale_short: 1.2 billion members, 1000-impression history
+key_result: Online time spent +2.10% and likes, comments and shares +3.52% against the production ranker
+results_table:
+  online:
+  - setting: LinkedIn Feed, overall members
+    method: Feed SR
+    metric: Time spent
+    result: +2.10%
+    versus: Previous production ranker
+  - setting: LinkedIn Feed, overall members
+    method: Feed SR
+    metric: Likes, comments and shares
+    result: +3.52%
+    versus: Previous production ranker
+  - setting: LinkedIn Feed, daily active members
+    method: Feed SR
+    metric: Likes, comments and shares
+    result: +4.07%
+    versus: Previous production ranker
+  offline:
+  - setting: Architecture ablation, Long Dwell AUC
+    method: Feed SR with HSTU layers
+    metric: Long Dwell AUC change
+    result: -0.23%
+    versus: Feed SR baseline
+  - setting: Scaling over 10^17 to 10^19 FLOPs
+    method: Feed SR
+    metric: Long Dwell AUC per 10 times training FLOPs
+    result: '+0.0093'
+    versus: Smaller configurations
+deployment:
+  online_evidence: online_numbers
+  scenario: LinkedIn Feed ranking, serving the majority of Feed traffic for over three months
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: The previous production DCNv2 ranker
+  online_lifts:
+  - metric: Time spent, overall
+    value: +2.10%
+  - metric: Likes, comments and shares, overall
+    value: +3.52%
+  - metric: Time spent, DAU segment
+    value: +2.38%
+  - metric: Likes, comments and shares, DAU segment
+    value: +4.07%
+  training_compute: 'Cold-start training on 16 H200 GPUs and warm-start training on 8 H200 GPUs, global batch size 1024; relative energy per item 0.2 times the previous model'
+  serving_latency: 'A few hundred milliseconds latency budget; absolute measured latency not reported'
+  serving_qps: 'Tens of thousands of QPS'
+  inference_cost: 'Relative inference energy per item 0.7 times the previous model; shared-context batching gives an 80 times Transformer speedup for typical workloads'
+  hardware: 'GPU inference servers with a CPU inference driver; GPU model for serving not reported; H200 GPUs for training'
+  notes:
+  - 'The previous ranker was served on CPUs and trained on the same GPUs.'
+  fulltext_refs:
+  - 'Abstract and Table 4: time spent +2.10% and likes, comments and shares +3.52% overall; DAU +2.38% and +4.07%; WAU +1.84% and +3.40%; MAU +0.82% and +1.86%; new members not statistically significant; online results exclude incremental training'
+  - 'Sec 4.6.4: cold-start 16 H200 GPUs, warm-start 8 H200 GPUs, global batch size 1024, AdamW'
+  - 'Sec 1 and Sec 6: a few hundred milliseconds latency and tens of thousands of QPS; about 512 candidates; 80 times Transformer speedup; SRMIS about 2 times; Table 3 energy per item 0.2 times training and 0.7 times inference'
+  basis: full_text
+  checked_on: '2026-11-02'

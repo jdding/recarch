@@ -1,0 +1,51 @@
+surface|腾讯平台新闻、视频和网络小说页面上的 slate 推荐
+era_reason|该系统用自回归解码器生成整个 slate 的 Semantic ID 序列，经预训练和偏好对齐训练，并在报告的 A/B 测试中取代了多阶段流水线。
+tldr|腾讯的 HiGR 用粗粒度 planner 和共享的物品解码器生成整个 slate，再用 ORPO 对齐；5% 线上流量的 A/B 中 Watch Time +1.22%，Video Views +1.73%。
+summary|HiGR 是生成式 slate 推荐模型，把一组物品作为一个结构化输出生成，分三个阶段。PCRQ-VAE 把每个物品 token 化为 3 层的 Semantic ID，codebook 大小为 1024，使用全局量化加上作用在前 D-1 层上的前缀级对比损失，让共享 SID 前缀的物品语义相近。Hierarchical Slate Decoder 把生成拆成粗粒度的 planner 和细粒度的物品生成器。planner 有 14 层，为 slate 的每个位置产出一个偏好 embedding，并由列表内多样性项正则。一个共享的轻量物品生成器有 2 层，再根据每个 slate 位置的 embedding 解码该物品的 SID token。模型使用 d_model 512 和 d_ffn 2048。后训练是 listwise 的 ORPO 对齐，组合损失的权重 alpha 为 0.1，优化排序保真度、真实兴趣和多样性，不需要参考模型。预训练使用 10 亿个样本，后训练使用其中的 3%。部署时，在线特征组装器获取实时用户特征，HiGR 借助 KV caching 生成 slate 的 SID，SID 到物品的索引把它们映射回物品，返回结果前再运行去重、可用性、安全和业务规则过滤。曝光和反馈日志回流用于持续更新。
+core_idea|先为每个位置用一个 embedding 粗粒度地规划整个 slate，再用共享的小解码器解码每个物品的 Semantic ID，并用 listwise 的 ORPO 目标对齐结果。
+deployed_in|腾讯新闻、视频和网络小说页面，商业媒体平台
+scale_short|数亿用户
+key_result|5% 线上流量 A/B，对比多阶段系统，Watch Time +1.22%，Video Views +1.73%
+results_reported|在工业数据集上，HiGR-100M 的 Impressions hit@5 为 0.3163，recall@5 为 0.0760，Effective View hit@5 为 0.2145，recall@5 为 0.0495，NDCG@5 为 0.0831。HiGR-25M 为 0.2825 和 0.0692，Effective View hit@5 为 0.1945，对比 OneRec-25M 的 0.2438 和 0.0577，HSTU 的 0.2281 和 0.0506，TIGER 的 0.1812 和 0.0383。在 SID 质量上，前缀对比的各变体把碰撞率降到 0.0264、0.0237 和 0.0873，把一致性提高到 0.6205、0.6647 和 0.6932，对比 RQ-Kmeans 的 0.2126 和 0.4533，RQ-VAE 的 0.0298 和 0.5577。列表内多样性，TIGER 为 0.38，HSTU 为 0.42，OneRec 为 0.48，未对齐的 HiGR 为 0.52，用 DPO 为 0.57，用 ORPO 为 0.62。在层数分配的消融中，14 比 2 层的划分在参考延迟下 NDCG@5 为 0.0631，15 比 1 的划分为 0.0623，延迟是 0.932 倍，8 比 8 为 0.0605，延迟是 2.065 倍。不用 KV caching 时，HiGR 的 Recall@5 比 OneRec-Beam 高出 5% 以上，速度超过其 5 倍。在对比线上多阶段系统的 5% 线上流量 A/B 中，Average Stay Time 为 +1.03%，Watch Time 为 +1.22%，Video Views 为 +1.73%，Request Count 为 +1.57%。
+version_note|读的是 11 Jun 2026 的 arXiv v5，它是 CIKM 模板的预印本，DOI 行仍是占位符，所以可能与最终的 CIKM 2026 正文有出入。arXiv 第一个版本的标题是 HiGR: Efficient Generative Slate Recommendation via Hierarchical Planning and Multi-Objective Preference Alignment。ACM Digital Library 返回 403。
+serving_infra|服务运行在有数十张 NVIDIA L20 GPU 的集群上。对每个请求，在线特征组装器获取实时用户特征，解码器用 KV caching 做由粗到细的解码，生成 slate 的 SID，SID 到物品的索引把它们映射回物品，然后做去重、可用性、安全和业务规则过滤。曝光和反馈日志回流用于持续更新。在与 OneRec 相同的吞吐下，P99 延迟保持在 50 ms 以下，GPU 需求下降约 60%。
+stages.0.model_family|Hierarchical Slate Decoder，含 14 层 slate planner 和共享的 2 层物品生成器，d_model 512，d_ffn 2048，基于 PCRQ-VAE 的 Semantic ID
+stages.0.details|slate planner 为每个 slate 位置输出一个 embedding，物品生成器解码每个物品的 3 个 SID token。生成的 SID 映射为物品后，再经过去重、可用性、安全和业务规则过滤。线上测试把它与线上的多阶段系统做对比。
+id_tokenization.approach|PCRQ-VAE，3 层、codebook 大小为 1024 的残差量化 VAE，用前缀级对比对齐训练
+id_tokenization.details|全局量化与作用在前 D-1 层上的 InfoNCE 式对比结合，使共享前缀的物品彼此接近。论文报告碰撞率比 RQ-Kmeans 和 RQ-VAE 更低，一致性更高。
+features_signals.0|每个请求在线组装的实时用户特征
+features_signals.1|作为 slate 解码器上下文的用户行为历史
+features_signals.2|来自腾讯商业媒体平台的曝光和 Effective View 日志
+training.mode|三阶段训练：PCRQ-VAE、Hierarchical Slate Decoder 预训练和 ORPO 对齐，并根据曝光和反馈日志持续更新
+training.objectives.0|SID token 上的自回归生成损失，并对 slate planner 加列表内多样性正则项
+training.objectives.1|listwise 的 ORPO 后训练损失，alpha 为 0.1，覆盖排序保真度、真实兴趣和多样性三个目标
+training.notes|预训练使用 10 亿个样本，后训练使用其中的 3%，选取质量更高的 slate。训练运行在有数十张 NVIDIA H20 GPU 的集群上。
+scale.0.metric|服务用户数
+scale.0.value|数亿用户
+scale.1.metric|训练样本
+scale.1.value|10 亿个预训练样本，其中 3% 用于后训练
+scale.2.metric|研究的模型规模
+scale.2.value|主表中为 25M 和 100M 参数，scaling 研究中为 0.05B 到 2B 参数
+results_table.online.0.setting|腾讯商业媒体平台，5% 线上流量
+results_table.online.1.setting|腾讯商业媒体平台，5% 线上流量
+results_table.online.2.setting|腾讯商业媒体平台，5% 线上流量
+results_table.offline.0.setting|工业数据集，Impressions hit@5
+results_table.offline.1.setting|工业数据集，Effective View NDCG@5
+caveats.0|读的 arXiv v5 是 CIKM 模板的预印本，DOI 和版权文字仍是占位，标题也与第一个版本不同；最终的 CIKM 2026 正文没有读。
+caveats.1|线上对比的是论文没有描述的线上多阶段系统，所以提升不能只归因于 slate 解码器。
+caveats.2|线上结果是相对百分比变化，没有置信区间或显著性检验，A/B 时长也没有给出。
+caveats.3|与 OneRec 的离线对比使用作者在相同设置下训练的模型，主表在内部的工业数据集上。
+caveats.4|没有找到官方代码。
+unknown_fields.0|A/B 时长和显著性
+unknown_fields.1|A/B 是在腾讯哪个页面上做的
+unknown_fields.2|线上多阶段系统的架构
+unknown_fields.3|代码发布
+code.note|论文没有链接代码，也没有找到官方发布；一项独立的复现尝试称没有作者代码可用。
+deployment.scenario|腾讯商业媒体平台，服务数亿用户；论文称 HiGR 部署在新闻、视频和网络小说页面
+deployment.ab_traffic|5% 的线上流量
+deployment.baseline|线上的多阶段推荐系统
+deployment.training_compute|训练用有数十张 NVIDIA H20 GPU 的集群；训练时长未报告
+deployment.serving_latency|与 OneRec 相同吞吐下 P99 延迟低于 50 ms
+deployment.inference_cost|相同吞吐下 GPU 需求比 OneRec 低约 60%；不用 KV caching 时，Recall@5 比 OneRec-Beam 高 5% 以上，速度超过其 5 倍
+deployment.hardware|训练用 NVIDIA H20 GPU，服务用 NVIDIA L20 GPU，各数十张
+deployment.notes.0|延迟和 GPU 的比较针对的是相同吞吐下的 OneRec，而不是线上的多阶段生产系统。

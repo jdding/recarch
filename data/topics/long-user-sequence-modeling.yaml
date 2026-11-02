@@ -1,5 +1,5 @@
 title: Long user-sequence modeling
-summary: How production recommenders read very long user histories under a latency budget, compared across eleven RecArch cards.
+summary: How production recommenders read very long user histories under a latency budget, compared across twelve RecArch cards.
 framing:
   - A user's history can run to tens of thousands of events, but a ranker has a few tens of milliseconds per request. Every system on this page answers the same two questions. How much of the history do you read, and when do you pay for reading it?
   - The answers differ a lot. Some systems read only the latest few hundred actions in real time. Some search or compress the full history. Some move the heavy model out of the request path and serve a cached result. The table lists what each card reports. The sections after it explain the differences that matter when you pick an approach.
@@ -13,8 +13,8 @@ decisions:
     then: Search it or compress it first. SIM searches the full history for behaviors close to the candidate, KuaiFormer compresses items into fewer tokens, and SequenceO1 turns a long history into a sketch while still reading the latest events directly.
     cards: [sim-alibaba-2020, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026]
   - when: You can pay for attention at request time.
-    then: Read the sequence inside the ranker and rely on GPU serving or a KV cache, as TransAct and LONGER do.
-    cards: [pinterest-transact-2023, bytedance-longer-2025]
+    then: Read the sequence inside the ranker and rely on GPU serving or a KV cache, as TransAct, LONGER and LinkedIn Feed SR do.
+    cards: [pinterest-transact-2023, bytedance-longer-2025, linkedin-feed-sr-2026]
   - when: You want the smallest migration.
     then: Produce outputs that plug into the ranker you already run. LUM and PinFM do this, and LLaTTE splits the work between an upstream model and a compact online module.
     cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026]
@@ -44,16 +44,18 @@ members:
     approach: Treats retrieval and ranking as sequence prediction over the user's actions and replaces the usual feature interaction layers with the HSTU encoder.
   - id: yandex-argus-2025
     approach: Pre-trains a transformer on histories of up to 8192 events, then serves a daily user embedding that the production ranker takes as a feature.
+  - id: linkedin-feed-sr-2026
+    approach: A decoder-only Transformer inside the Feed ranker reads up to 1000 impressed posts interleaved with the member's actions, 2000 tokens, and scores about 512 candidates in one pass that shares the history.
 differences:
   - heading: How much history goes in
-    text: Two systems read a short window. TransAct reads the last 100 actions and PinnerFormer up to 256. Two compress. KuaiFormer shrinks 256 items to 55 tokens, and SequenceO1 turns 100K events into a sketch while still reading the latest 10K directly. Two read a long raw sequence, LONGER up to 10,000 behaviors and PinFM up to 16,000 actions. SIM searches first and so reaches up to 54,000 behaviors. A longer window is not automatically better here. Each card states its own cap, and the caps come with different cost tricks.
-    cards: [pinterest-transact-2023, pinnerformer-2022, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026, bytedance-longer-2025, pinterest-pinfm-2025, sim-alibaba-2020]
+    text: Two systems read a short window. TransAct reads the last 100 actions and PinnerFormer up to 256. Two compress. KuaiFormer shrinks 256 items to 55 tokens, and SequenceO1 turns 100K events into a sketch while still reading the latest 10K directly. Three read a long raw sequence, LinkedIn Feed SR up to 1000 impressed posts with their actions, LONGER up to 10,000 behaviors and PinFM up to 16,000 actions. SIM searches first and so reaches up to 54,000 behaviors. A longer window is not automatically better here. Each card states its own cap, and the caps come with different cost tricks.
+    cards: [pinterest-transact-2023, pinnerformer-2022, kuaishou-kuaiformer-2024, bytedance-sequenceo1-2026, linkedin-feed-sr-2026, bytedance-longer-2025, pinterest-pinfm-2025, sim-alibaba-2020]
   - heading: When the cost is paid
-    text: TransAct and LONGER run attention at request time and rely on GPU serving or a KV cache. PinnerFormer runs in a daily batch. LLaTTE runs a large model asynchronously, so the online ranker only does one feature lookup. SequenceO1 builds a sketch that does not depend on the candidate, so the sketch can be cached. LUM caches the results of its real-time queries. If your request budget is tight, this is the axis to look at first.
-    cards: [pinterest-transact-2023, bytedance-longer-2025, pinnerformer-2022, meta-llatte-2026, bytedance-sequenceo1-2026, alibaba-lum-2025]
+    text: TransAct, LONGER and LinkedIn Feed SR run attention at request time and rely on GPU serving or a KV cache, and Feed SR shares one history across about 512 candidates in a single pass. PinnerFormer runs in a daily batch. LLaTTE runs a large model asynchronously, so the online ranker only does one feature lookup. SequenceO1 builds a sketch that does not depend on the candidate, so the sketch can be cached. LUM caches the results of its real-time queries. If your request budget is tight, this is the axis to look at first.
+    cards: [pinterest-transact-2023, bytedance-longer-2025, linkedin-feed-sr-2026, pinnerformer-2022, meta-llatte-2026, bytedance-sequenceo1-2026, alibaba-lum-2025]
   - heading: Feed a ranker or replace it
-    text: LUM and PinFM produce outputs that plug into rankers a team already runs, which keeps the migration small. LLaTTE splits the work between an upstream model and a compact online module. HSTU goes the other way and replaces the feature interaction layers of the ranker itself. PinnerFormer and KuaiFormer sit on the retrieval side and serve embeddings.
-    cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026, hstu-meta-2024, pinnerformer-2022, kuaishou-kuaiformer-2024]
+    text: LUM and PinFM produce outputs that plug into rankers a team already runs, which keeps the migration small. LLaTTE splits the work between an upstream model and a compact online module. HSTU goes the other way and replaces the feature interaction layers of the ranker itself, and LinkedIn Feed SR replaces its DCNv2 ranker with a Transformer over the history. PinnerFormer and KuaiFormer sit on the retrieval side and serve embeddings.
+    cards: [alibaba-lum-2025, pinterest-pinfm-2025, meta-llatte-2026, hstu-meta-2024, linkedin-feed-sr-2026, pinnerformer-2022, kuaishou-kuaiformer-2024]
   - heading: What the online numbers can and cannot tell you
     text: Every lift in the table is against that company's own baseline. The TransAct control had no real-time sequence features at all, so its gain is versus no sequence, not versus a strong sequence model. The SequenceO1 baseline is already a 10K ranker with TWIN V2. Do not rank these systems by their percentages. Compare the baseline, the traffic share and the serving numbers on each card instead.
     cards: [pinterest-transact-2023, bytedance-sequenceo1-2026]
