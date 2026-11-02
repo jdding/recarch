@@ -23,3 +23,4 @@ unknown_fields.2|召回和排序阶段的细节
 code.repos.0.note|基于 TensorFlow 的框架，带无冲突 embedding 表和实时训练。论文称「code to be released soon」。仓库自 2025-10-13 起已归档，只读。
 deployment.scenario|推荐训练系统，已产品化为 BytePlus Recommend
 deployment.notes.0|稀疏参数分钟级同步，稠密参数每天同步。论文对比了在线训练和批量训练，没有给出服务数字。
+status_reason|按 2026-11-02 采纳的长文规则下线：这是工作坊论文，发表于 ORSUM @ RecSys 2022，没有主会场或期刊版本，被引也不到短文和工作坊论文特批所需的 500。

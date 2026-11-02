@@ -71,3 +71,6 @@ deployment:
     and gives no serving numbers.
   basis: full_text
   checked_on: '2026-10-31'
+status: retired
+status_date: "2026-11-02"
+status_reason: "Retired under the long-paper rule adopted 2026-11-02: a workshop paper (ORSUM @ RecSys 2022) with no main-conference or journal version, and citations below the 500 that allow a short or workshop paper by special approval."
