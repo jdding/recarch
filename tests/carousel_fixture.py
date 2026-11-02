@@ -1,6 +1,6 @@
 """Selection tests for the home carousel (pure Python) + writes HTML fixtures for tests/carousel.test.js.
 Run: python3 tests/carousel_fixture.py /tmp/car-fixtures"""
-import datetime, json, os, sys
+import datetime, json, os, re, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import build
 
@@ -16,8 +16,18 @@ def scenario(name, cards, expect_ids, expect_recent_n):
     assert sum(x["recent"] for x in sel) == expect_recent_n, (name, [x["recent"] for x in sel])
     return sel
 
+def _write_fixture(out, name, text):
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name):
+        raise SystemExit("fixture name must be a single path segment")
+    root = os.path.abspath(out)
+    dest = os.path.abspath(os.path.join(root, name))
+    if os.path.commonpath([root, dest]) != root:
+        raise SystemExit("fixture path escapes the output directory")
+    os.makedirs(root, exist_ok=True)
+    open(dest, "w").write(text)
+
 def main(out):
-    os.makedirs(out, exist_ok=True); build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
+    build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
     sc = {}
     # 0 recent: everything older than 7 days -> pure backfill, newest activity first (an old update counts)
     c0 = [card(i, 20 + i) for i in range(8)]; c0[5]["updates"] = [{"date": day(9), "note": "n"}]
@@ -37,11 +47,11 @@ def main(out):
         if name == "few4": ids = [x["card"]["id"] for x in sel]; assert len(ids) == 4
         scenario(name, cards, ids, nrec)
         html = build.strip([], "", TODAY, cards)
-        open(os.path.join(out, name + ".html"), "w").write(f'<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/static/style.css"><body style="max-width:900px;margin:20px auto">{html}<script src="/static/carousel.js"></script>')
+        _write_fixture(out, name + ".html", f'<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/static/style.css"><body style="max-width:900px;margin:20px auto">{html}<script src="/static/carousel.js"></script>')
         meta[name] = {"ids": ids, "recent": nrec, "kinds": [x["kind"] for x in sel]}
     assert build.carousel_select([card(0, 7)], TODAY)[0]["recent"] is False and build.carousel_select([card(0, 6)], TODAY)[0]["recent"] is True
     assert build.carousel_select([], TODAY) == []
-    open(os.path.join(out, "meta.json"), "w").write(json.dumps(meta))
+    _write_fixture(out, "meta.json", json.dumps(meta))
     print("python selection tests: ALL PASS", {k: v["ids"] for k, v in meta.items()})
 
 def pill_tests():

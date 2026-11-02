@@ -65,19 +65,28 @@ def chrome():
         if p: return p
     sys.exit("headless Chrome or Chromium is needed to render the social card")
 
+def _under(root, path):
+    base = os.path.realpath(root)
+    dest = os.path.realpath(path)
+    if os.path.commonpath([base, dest]) != base:
+        raise SystemExit(f"refusing path outside {root}: {path}")
+    return dest
+
 def render(svg, out):
+    out = _under(ST, out)
     with tempfile.TemporaryDirectory() as t:
-        f = os.path.join(t, "og.svg"); open(f, "w", encoding="utf-8").write(svg)
-        html = os.path.join(t, "og.html"); open(html, "w").write(f'<!doctype html><meta charset="utf-8"><style>html,body{{margin:0}}img{{display:block}}</style><img src="og.svg" width="1200" height="630">')
+        f = os.path.join(t, "og.svg"); open(_under(t, f), "w", encoding="utf-8").write(svg)
+        html = os.path.join(t, "og.html"); open(_under(t, html), "w").write(f'<!doctype html><meta charset="utf-8"><style>html,body{{margin:0}}img{{display:block}}</style><img src="og.svg" width="1200" height="630">')
+        # argv list, never a shell. The screenshot path is confined to static/ and the HTML is inside this temp dir.
         subprocess.run([chrome(), "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--window-size=1200,630", "--force-device-scale-factor=1",
                         "--virtual-time-budget=2000", f"--screenshot={out}", "file://" + html], check=True, capture_output=True)
 
 if __name__ == "__main__":
-    open(os.path.join(ST, "favicon.svg"), "w").write(favicon_svg())
-    favicon_png(32).save(os.path.join(ST, "favicon.png")); favicon_png(180).save(os.path.join(ST, "apple-touch-icon.png"))
-    favicon_png(48).save(os.path.join(ST, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48)])
+    open(_under(ST, os.path.join(ST, "favicon.svg")), "w").write(favicon_svg())
+    favicon_png(32).save(_under(ST, os.path.join(ST, "favicon.png"))); favicon_png(180).save(_under(ST, os.path.join(ST, "apple-touch-icon.png")))
+    favicon_png(48).save(_under(ST, os.path.join(ST, "favicon.ico")), sizes=[(16, 16), (32, 32), (48, 48)])
     en, zh = ui("og.tagline")
-    open(os.path.join(ST, "og-default.svg"), "w", encoding="utf-8").write(og_svg(en, "en"))
+    open(_under(ST, os.path.join(ST, "og-default.svg")), "w", encoding="utf-8").write(og_svg(en, "en"))
     render(og_svg(en, "en"), os.path.join(ST, "og-default.png")); render(og_svg(zh, "zh"), os.path.join(ST, "og-default-zh.png"))
     for n in ("favicon.svg", "favicon.png", "apple-touch-icon.png", "favicon.ico", "og-default.svg", "og-default.png", "og-default-zh.png"):
         print(n, os.path.getsize(os.path.join(ST, n)), "bytes")
