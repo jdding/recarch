@@ -1,0 +1,54 @@
+surface|YouTube 观看页与首页多任务生产排序模型、以及基础 Transformer 检索模型内的 Semantic ID 特征流
+era_reason|核心主张是统一的离散 token 空间：稠密内容嵌入被量化为 Semantic ID token 并按需重建，正是生成式推荐体系所依赖的 token 基础设施。
+tldr|双用途 Semantic ID 把稠密内容嵌入压成 token 按需重建；在 YouTube 使观看页满足感互动 +0.80%，并打破 I/O 瓶颈。
+summary|SiDec 来自 YouTube 并有 Google DeepMind 作者参与，让同一串 Semantic ID token 在推荐模型里承担两个角色。作为协同身份，token 经 unigram、重叠 bigram、嵌套 n-gram 或 Sentence-Piece 表示变成层次化类别特征。作为内容，一个轻量 Semantic Decoder 在模型图内从码本查找重建原始稠密内容嵌入，训练日志与服务不再存储、传输和 join 浮点向量。该框架部署在一个多任务生产排序模型中，使用候选视频、正在观看的视频和观看历史三组 Semantic ID 特征，也部署在以观看历史为输入的基础 Transformer 检索模型中。由于生产基线已使用 Semantic ID token 嵌入，线上收益隔离的是新增内容重建流的效果。
+core_idea|把稠密内容嵌入压成 Semantic ID token 并在模型内按需重建，让同一串 token 同时承担协同身份与内容两种角色。
+deployed_in|YouTube 观看页与首页排序及一个基础检索模型
+scale_short|在大型视频平台实现 50-100 倍的内容嵌入压缩
+key_result|满足感互动：观看页排序 +0.80%、首页排序 +0.22%、检索模型首页 +0.13%
+results_reported|Online Satisfied Engagement 是反映长时观看与点赞、收藏等正向互动的专有综合指标，表 1：观看页排序全站 +0.09%、观看页 +0.80%；首页排序全站 +0.08%、首页 +0.22%；检索模型全站 +0.06%、首页 +0.13%、观看页 +0.09%。表注说明报告的指标可能是所列名称的专有变体；论文称这些绝对提升在 YouTube 的规模下高度统计显著，并对新账户和长尾内容收益更大。检索模型的离线 I/O 研究，表 2：Control 为 16.80 steps/s、loss 2.766、Hit Rate@100 0.2811；直接摄入 64 维原始内容嵌入把 Hit Rate 提到 0.2844，但吞吐下降 28.2% 到 12.07 steps/s；SID v0 码本解码恢复到 15.41 steps/s，比原始嵌入快 27.7%，Hit Rate 0.2816；SID v1 用 256 维隐空间达到 0.2870、15.26 steps/s；SID v1 加扩展达到最优 loss 2.681 与 Hit Rate 0.2910，吞吐 14.53 steps/s，比原始嵌入快 20.4%。排序消融，表 3 与表 4，CTR AUC 绝对百分点：只留候选与观看 SID -0.04%，只留观看历史 SID -0.03%，去掉轻量解码器 -0.01%，去掉对比 SSL 损失 -0.05%，去掉交叉注意力 -0.08%，去掉多模态内容 -0.06%。
+serving_infra|不再记录或 join 稠密内容嵌入：从缓存查 K 个整数 token，码本解码在模型图内完成。论文称重建成本不超过新增一个普通稀疏嵌入特征，且 token 在基线服务路径中本就已取回并缓存。
+stages.0.model_family|多任务生产排序模型，含双流 Semantic ID 特征：嵌套 n-gram 或 SPM 协同身份流加 SiDec 重建流
+stages.0.details|三组 Semantic ID 特征：候选视频、正在观看的视频和用户观看历史。SiDec 流即时重建内容嵌入，论文称其对冷启动友好、对热度偏置稳健，对排序训练集中零互动的物品也稳定。
+stages.1.model_family|基础 Transformer 检索模型，观看历史表示替换为 SiDec 重建的内容嵌入
+stages.1.details|核心架构是利用相对注意力机制捕捉多尺度时间依赖的 Transformer 网络；解码出的语义嵌入与其他标准用户、物品特征拼接，构成深度自回归网络的输入，论文称这在不违反严格延迟与资源约束的前提下弥合 ID 嵌入的语义鸿沟。
+id_tokenization.approach|对预训练内容嵌入做残差量化 RQ-VAE，得到共享码本中的 K 个 token
+id_tokenization.details|每物品存储从 d x 32 比特降到 K x log2 V 比特，典型压缩 50-100 倍。码本从预训练量化器导出；解码器是基于码本嵌入的 MLP 或浅层 Transformer，以 MSE 逼近原始嵌入训练，训练推荐模型时冻结或以小学习率微调。
+features_signals.0|候选视频、正在观看的视频和观看历史的 Semantic ID
+features_signals.1|Semantic Decoder 重建的内容嵌入
+features_signals.2|unigram、重叠 bigram、嵌套 n-gram 与 Sentence-Piece 的 token 表示，用于协同身份
+features_signals.3|周边架构中的对比 SSL、交叉注意力与多模态内容表示
+training.mode|离线研究用固定步数；生产模型经离线验证后部署
+training.objectives.0|排序用下一物品交叉熵与 CTR AUC；检索用 Hit Rate@100
+training.objectives.1|Semantic Decoder 以 MSE 重建损失逼近原始内容嵌入
+training.notes|离线 I/O 研究对各实验组施加相同步数预算，保证算力一致。L = 200、d = 256 时，原始稠密历史每条样本需 51200 个浮点数，FP32 下约 200 KB。
+scale.0.metric|嵌入压缩
+scale.0.value|相对 FP32 向量典型 50-100 倍
+scale.1.metric|部署
+scale.1.value|大型视频分享平台的生产排序与检索系统
+results_table.online.0.setting|观看页排序，Online Satisfied Engagement
+results_table.online.1.setting|首页排序，Online Satisfied Engagement
+results_table.online.2.setting|检索模型，Online Satisfied Engagement
+results_table.offline.0.setting|检索模型 I/O 研究，固定步数训练
+results_table.offline.1.setting|检索模型 I/O 研究，固定步数训练
+results_table.online.0.versus|带 SID token、无 SiDec 的生产排序
+results_table.online.1.versus|带 SID token、无 SiDec 的生产排序
+results_table.online.2.versus|带 SID token、无 SiDec 的生产检索
+results_table.offline.0.versus|原始嵌入 0.2844
+results_table.offline.1.versus|原始嵌入 12.07，Control 16.80
+caveats.0|线上指标是专有综合指标 Online Satisfied Engagement，表 1 注明报告的指标可能是所列名称的专有变体。
+caveats.1|论文说明因基线系统已使用 Semantic ID token 嵌入，报告的指标隔离的是仅新增 SiDec 组件带来的纯性能提升。
+caveats.2|论文将部署描述在大型视频分享平台，并称这些绝对百分比提升在 YouTube 的规模下高度统计显著，代表每日用户行为的实质变化。
+unknown_fields.0|A/B 流量占比与时长
+unknown_fields.1|线上收益的显著性水平
+unknown_fields.2|绝对服务延迟与 QPS
+unknown_fields.3|训练算力与硬件
+unknown_fields.4|官方代码
+code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
+version_note|读的是 arXiv 2607.24865 v1 预印本；RecSys 2026 的 DOI 10.1145/3773078.3831900 已在 Crossref 核对，但正式发表版本身未读到。
+deployment.scenario|观看页与首页多任务生产排序模型、以及基础 Transformer 检索模型中的 SiDec 内容重建流
+deployment.baseline|已使用 Semantic ID token 嵌入的生产系统；报告的收益隔离的是新增 SiDec 流
+deployment.training_compute|固定步数预算下的检索模型离线研究：Control 16.80 steps/s，原始嵌入 12.07，码本解码 14.53 到 15.41；生产训练算力未报告
+deployment.inference_cost|每物品存储从 d x 32 比特降到 K x log2 V 比特，典型 50-100 倍；重建成本被描述为不超过一个普通稀疏嵌入特征，token 在基线服务路径中已缓存
+deployment.notes.0|表 1 注明报告的指标可能是所列名称的专有变体。
+deployment.notes.1|论文称这些绝对提升在 YouTube 的规模下高度统计显著，并对新账户和长尾内容收益更大。

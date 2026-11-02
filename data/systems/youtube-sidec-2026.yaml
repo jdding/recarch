@@ -1,0 +1,144 @@
+id: youtube-sidec-2026
+name: SiDec
+company: Google / YouTube
+surface: Semantic-ID feature streams inside a multitask production ranking model on the YouTube watchpage and homepage, and inside a foundational transformer retrieval model
+year: 2026
+era: generative
+era_reason: "The core claim is a unified discrete token space: dense content embeddings are quantized into Semantic-ID tokens and reconstructed on demand, the same token infrastructure the generative-recommendation stack is built on."
+first_public: "2026-07"
+venue: "RecSys 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3773078.3831900"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Dual-purpose Semantic IDs compress dense content embeddings into tokens reconstructed on the fly; at YouTube they lifted satisfied engagement +0.80% on Watchpage and broke the I/O bottleneck."
+summary: "SiDec, from YouTube with Google DeepMind co-authors, makes one Semantic-ID token sequence serve two jobs inside the recommendation model. As collaborative identity, the tokens become hierarchical categorical features through unigram, overlapping-bigram, nested n-gram or Sentence-Piece representations. As content, a lightweight Semantic Decoder reconstructs the original dense content embedding from codebook lookups inside the model graph, so training logs and serving no longer store, transfer or join floating-point vectors. The framework was deployed in a multitask production ranking model, using the candidate video, the currently watched video and the watch history as Semantic-ID features, and in a foundational transformer retrieval model over the watch history. Because the production baselines already used Semantic-ID token embeddings, the reported online gains isolate the added content-reconstruction stream."
+paradigms:
+- semantic-id
+stages:
+- stage: rank
+  model_family: "Multitask production ranking model with dual-stream Semantic-ID features: nested n-gram or SPM collaborative identity plus the SiDec reconstruction stream"
+  details: "Three Semantic-ID feature groups: the candidate video, the video currently being watched and the user watch history. The SiDec stream reconstructs content embeddings on the fly and is described as cold-start friendly, robust to popularity bias and stable for items with zero interactions in the ranking training set."
+- stage: retrieval
+  model_family: "Foundational transformer retrieval model whose watch-history representation is replaced by SiDec-reconstructed content embeddings"
+  details: "The core architecture is a Transformer network utilizing relative attention mechanisms to capture multi-scale temporal dependencies; the decoded semantic embeddings are concatenated with other standard user and item features to form the input to a deep autoregressive network, which the paper says bridges the semantic gap of ID-based embeddings without violating strict latency and resource constraints."
+id_tokenization:
+  approach: "Residual quantization, RQ-VAE, of pre-trained content embeddings into K tokens from a shared codebook"
+  details: "Storage falls from d x 32 bits per item to K x log2 V bits, typically a 50-100x compression. The codebook is exported from the pre-trained quantizer; the decoder is an MLP or shallow Transformer over codebook embeddings, trained with MSE against the original embedding and frozen or fine-tuned at a small learning rate."
+features_signals:
+- "Semantic IDs of the candidate video, the currently watched video and the watch history"
+- "Reconstructed content embeddings from the Semantic Decoder"
+- "Unigram, overlapping bigram, nested n-gram and Sentence-Piece token representations for collaborative identity"
+- "Contrastive SSL between watch and candidate videos, cross-attention and multi-modal content representations in the surrounding architecture"
+training:
+  mode: "Fixed-step offline studies; production models deploy after offline validation"
+  objectives:
+  - "Next-item cross-entropy and CTR AUC for ranking; Hit Rate at 100 for retrieval"
+  - "Semantic Decoder trained with MSE reconstruction loss against the original content embedding"
+  notes: "The offline I/O study enforces an identical step budget across arms so models see the same compute. At L = 200 history items and d = 256, a raw dense history would need 51,200 floats, about 200 KB in FP32, per training example."
+serving_infra: "Dense content embeddings are no longer logged or joined: the K integer tokens are looked up from cache and the codebook decoding runs inside the model graph. The paper says reconstruction costs no more than adding a normal sparse embedding feature, and the tokens were already retrieved and cached in the baseline serving path."
+scale:
+- metric: Embedding compression
+  value: typically 50-100x against FP32 vectors
+  note: "paper, Sec 3.1"
+- metric: Deployment
+  value: production ranking and retrieval systems at a major video sharing platform
+  note: "paper, abstract and Sec 4.2"
+results_reported: "Online Satisfied Engagement, a proprietary composite of prolonged watch time and positive interactions, Table 1: Watchpage Ranking +0.09% sitewide and +0.80% watchpage; Homepage Ranking +0.08% sitewide and +0.22% homepage; the Retrieval Model +0.06% sitewide, +0.13% homepage and +0.09% watchpage. The table notes that reported metrics may represent proprietary variants of the listed descriptors, and the paper calls these absolute improvements highly statistically significant at YouTube's scale, with outsized benefit for nascent accounts and long-tail content. Offline I/O study on the retrieval model, Table 2: the Control reaches 16.80 steps/s at loss 2.766 and Hit Rate at 100 of 0.2811; ingesting raw 64-dim content embeddings lifts Hit Rate to 0.2844 but cuts throughput 28.2% to 12.07 steps/s; SID v0 codebook decoding recovers 15.41 steps/s, +27.7% over raw embeddings, at 0.2816; SID v1 with a 256-dim latent space reaches 0.2870 at 15.26 steps/s; SID v1 plus scaling reaches the best loss 2.681 and Hit Rate 0.2910 at 14.53 steps/s, a 20.4% throughput advantage over raw embeddings. Ranking ablations, Tables 3 and 4, in absolute CTR AUC points: keeping only candidate and watch SIDs -0.04%, only watch-history SIDs -0.03%, removing the lightweight decoder -0.01%, ablating the contrastive SSL loss -0.05%, cross-attention -0.08% and multi-modal content -0.06%."
+caveats:
+- "The online metric is a proprietary composite, Online Satisfied Engagement, and Table 1 notes that reported metrics may represent proprietary variants of the listed descriptors."
+- "The paper states that because the baseline systems already employ Semantic-ID token-based embeddings, the reported metrics isolate the pure performance lift generated solely by adding the SiDec component."
+- "The paper describes the deployment at a major video sharing platform and calls these absolute percentage improvements highly statistically significant at YouTube's massive scale, representing substantial shifts in daily user behavior."
+unknown_fields:
+- A/B traffic share and duration
+- Significance levels of the online gains
+- Absolute serving latency and QPS
+- Training compute and hardware
+- Official code
+sources:
+- title: "Tokens are All You Need: Dual-purpose Semantic IDs for Achieving LLM-Level I/O Efficiency in Recommendation Systems, RecSys 2026"
+  url: https://doi.org/10.1145/3773078.3831900
+  type: paper
+- title: "Tokens are All You Need, arXiv 2607.24865"
+  url: https://arxiv.org/abs/2607.24865
+  type: paper
+version_note: "Read from arXiv 2607.24865 v1, a preprint; the RecSys 2026 DOI 10.1145/3773078.3831900 was verified against Crossref, and the published camera-ready itself was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2607.24865
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, related work, methodology including representations and decoder, deployment, experiments with Tables 1 to 4, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; the RecSys 2026 published version was not available, arXiv v1 preprint read on 2026-11-02"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Compress dense content embeddings into Semantic-ID tokens and reconstruct them on demand inside the model, so one token sequence serves both collaborative identity and content."
+deployed_in: "YouTube watchpage and homepage ranking and a foundational retrieval model"
+scale_short: "50-100x compression of dense content embeddings at a major video platform"
+key_result: "Online Satisfied Engagement: +0.80% Watchpage ranking, +0.22% Homepage ranking, +0.13% Homepage retrieval"
+results_table:
+  online:
+  - setting: "Watchpage ranking, Online Satisfied Engagement"
+    method: SiDec
+    metric: "Satisfied Engagement, watchpage"
+    result: "+0.80%"
+    versus: "Production ranking with SID tokens, no SiDec"
+  - setting: "Homepage ranking, Online Satisfied Engagement"
+    method: SiDec
+    metric: "Satisfied Engagement, homepage"
+    result: "+0.22%"
+    versus: "Production ranking with SID tokens, no SiDec"
+  - setting: "Retrieval model, Online Satisfied Engagement"
+    method: SiDec
+    metric: "Satisfied Engagement, homepage"
+    result: "+0.13%"
+    versus: "Production retrieval with SID tokens, no SiDec"
+  offline:
+  - setting: "Retrieval model I/O study, fixed-step training"
+    method: "SID v1 + scaling"
+    metric: "Hit Rate @100"
+    result: "0.2910"
+    versus: "Raw embeddings 0.2844"
+  - setting: "Retrieval model I/O study, fixed-step training"
+    method: "SID v1 + scaling"
+    metric: "Training speed"
+    result: "14.53 steps/s"
+    versus: "Raw embeddings 12.07, control 16.80"
+deployment:
+  online_evidence: online_numbers
+  scenario: "SiDec content-reconstruction streams in a multitask production ranking model on watchpage and homepage and in a foundational transformer retrieval model"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: "The production systems, which already use Semantic-ID token-based embeddings; the reported gains isolate the added SiDec stream"
+  online_lifts:
+  - metric: "Satisfied Engagement, Watchpage ranking, watchpage"
+    value: "+0.80%"
+  - metric: "Satisfied Engagement, Watchpage ranking, sitewide"
+    value: "+0.09%"
+  - metric: "Satisfied Engagement, Homepage ranking, homepage"
+    value: "+0.22%"
+  - metric: "Satisfied Engagement, Homepage ranking, sitewide"
+    value: "+0.08%"
+  - metric: "Satisfied Engagement, retrieval, homepage"
+    value: "+0.13%"
+  training_compute: "Offline retrieval study under a fixed step budget: 16.80 steps/s control, 12.07 with raw embeddings, 14.53 to 15.41 with codebook decoding; production training compute not reported"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "Item storage falls from d x 32 bits to K x log2 V bits, typically 50-100x; reconstruction is described as costing no more than a normal sparse embedding feature, with tokens already cached in the baseline serving path"
+  hardware: not_reported
+  notes:
+  - "Table 1 notes that reported metrics may represent proprietary variants of the listed descriptors."
+  - "The paper describes the absolute improvements as highly statistically significant at YouTube's scale, with outsized benefit for nascent accounts and long-tail content."
+  fulltext_refs:
+  - "Table 1: Watchpage Ranking +0.09% sitewide, +0.80% watchpage; Homepage Ranking +0.08% sitewide, +0.22% homepage; Retrieval Model +0.06% sitewide, +0.13% homepage, +0.09% watchpage"
+  - "Table 2: 16.80, 12.07, 15.41, 15.26, 14.53 steps/s; losses 2.766, 2.723, 2.764, 2.758, 2.681; Hit Rate 0.2811, 0.2844, 0.2816, 0.2870, 0.2910"
+  - "Sec 3.1: storage d x 32 bits to K x log2 V bits, 50-100x compression; Sec 3.4.1: L = 200, d = 256 gives 51,200 floats, 200 KB FP32"
+  basis: full_text
+  checked_on: "2026-11-02"
