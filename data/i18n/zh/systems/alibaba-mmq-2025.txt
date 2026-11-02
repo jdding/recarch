@@ -33,15 +33,14 @@ results_table.online.0.versus|物品 ID 系统
 results_table.online.1.versus|物品 ID 系统
 results_table.offline.0.versus|最优基线，+0.04%
 results_table.offline.1.versus|最优基线，+0.33%
-caveats.0|所读 arXiv 文本是双栏非 ACM 排版的预印本；WSDM 2026 的 DOI 10.1145/3773966.3777923 已在 Crossref 核对，页码 788-797，正式版未读到。
-caveats.1|论文将该平台描述为东南亚头部电商广告平台，未给出名称。
-caveats.2|论文局限一节说明两阶段框架增加训练复杂度，且微调阶段依赖任务。
+caveats.0|论文将该平台描述为东南亚头部电商广告平台，未给出名称。
+caveats.1|论文局限一节说明两阶段框架增加训练复杂度，且微调阶段依赖任务。
 unknown_fields.0|平台名称
 unknown_fields.1|A/B 桶数与显著性水平
 unknown_fields.2|训练算力与硬件
 unknown_fields.3|官方代码
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|读的是 arXiv 2508.15281 v1 预印本；WSDM 2026 的 DOI 10.1145/3773966.3777923 已在 Crossref 核对，正式版本身未读到。
+version_note|读的是 arXiv 2508.15281 v1 预印本；WSDM 2026 的 DOI 10.1145/3773966.3777923 已在 Crossref 核对，正式版本身未读到；Crossref 登记页码 788-797。
 deployment.scenario|东南亚头部电商广告平台生成式检索系统的语义 ID tokenization
 deployment.ab_traffic|平台随机用户流量的 10%
 deployment.ab_duration|30 天，2025 年七月 6 日至八月 6 日

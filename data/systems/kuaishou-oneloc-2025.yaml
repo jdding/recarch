@@ -51,7 +51,6 @@ scale:
   note: "paper, Sec 5"
 results_reported: "Online A/B, Table 4, one week, which Sec 5 describes as run on Kuaishou's primary short-video recommendation scenario, at 10% treatment traffic against the production-level multi-stage pipeline with identical candidate pools: GMV +21.016%, order volume +17.891%, number of paying users +18.585% and new paying users +23.027%, all significant at p < 0.01 under two-tailed t-tests. Offline, Sec 4.2: on KuaiLLSR, OneLoc improves Recall@5 +13.46%, Recall@20 +10.44%, NDCG@5 +14.47% and NDCG@20 +12.97% over the second-best baseline; on the Foursquare global dataset the average gains are +13.18% Recall@5 and +16.34% NDCG@5. Ablations, Table 3: removing location scores drops Recall@5 from 0.3565 to 0.3476, removing the location gate to 0.3501, and removing geo-aware self-attention entirely to 0.3315. Scaling from 0.05B to 0.3B brings an average +6.96% recall and +7.29% NDCG."
 caveats:
-- "The arXiv text read is a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref with pages 735-744, and the published version was not read."
 - "The paper states that local life service is disabled when a user forbids the app from visiting her real-time location."
 - "Offline baselines include traditional and generative recommenders, but the online comparison is against the production multi-stage pipeline only."
 unknown_fields:
@@ -66,7 +65,7 @@ sources:
 - title: "OneLoc, arXiv 2508.14646"
   url: https://arxiv.org/abs/2508.14646
   type: paper
-version_note: "Read from arXiv 2508.14646, a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref, and the camera-ready was not read."
+version_note: "Read from arXiv 2508.14646, a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref, and the camera-ready was not read; Crossref lists pages 735-744."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2508.14646

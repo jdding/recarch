@@ -35,15 +35,14 @@ results_table.online.1.versus|生产多阶段管线
 results_table.online.2.versus|生产多阶段管线
 results_table.offline.0.versus|次优基线
 results_table.offline.1.versus|次优基线，平均
-caveats.0|所读 arXiv 文本是占位 ACM 模板的预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，页码 735-744，正式版未读到。
-caveats.1|论文说明当用户禁止 App 访问其实时位置时，本地生活服务会被停用。
-caveats.2|离线基线含传统与生成式推荐器，但线上仅与生产多阶段管线对比。
+caveats.0|论文说明当用户禁止 App 访问其实时位置时，本地生活服务会被停用。
+caveats.1|离线基线含传统与生成式推荐器，但线上仅与生产多阶段管线对比。
 unknown_fields.0|10% 实验组之外的 A/B 对照组流量占比
 unknown_fields.1|推理延迟数字
 unknown_fields.2|A800 之外的训练算力
 unknown_fields.3|官方代码
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|读的是 arXiv 2508.14646，占位 ACM 模板预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，camera-ready 未读到。
+version_note|读的是 arXiv 2508.14646，占位 ACM 模板预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，camera-ready 未读到；Crossref 登记页码 735-744。
 deployment.scenario|快手 App 的本地生活服务推荐，服务 4 亿日活用户的全部流量
 deployment.ab_traffic|实验组 10% 流量，对照组用生产管线
 deployment.ab_duration|一周

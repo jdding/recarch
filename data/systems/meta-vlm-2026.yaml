@@ -51,7 +51,6 @@ scale:
   note: "paper, Sec 3.3"
 results_reported: "System efficiency, Table 1, against the Fat Row baseline on three model tenants sharing one union dataset: primary write bandwidth -46.2% shared across tenants; primary read bandwidth Model A -70.3%, Model B -50.9%, Model C -47.7%; sequence lookup bandwidth added by late materialization, streaming, Model A +62.7%, Model B +16.2%, Model C +8.7%, batch, +24.6%, +6.5% and +3.4%; per-batch data loading latency Model A +9.7%, Model B -26.4%, Model C -36.2%. The immutable store delivers 3.4x read throughput per unit host resource; tuning the disaggregated preprocessing base batch adds 15% per-worker throughput; pipelined I/O prefetching adds 10% on heavy-lookup models; data-affinity bucketing and symmetric sharding cut batch read bandwidth by 60% and raise per-worker throughput by 28%. Model quality, Section 5.2: the Fat Row Wall sits at about 4K where data-service usage exceeds 0.75 of GPU training power; Platform A gains 1.2% cumulative Normalized Entropy from 4K to 64K, above 5% total, and Platform B gains 0.65% from 4K to 10K, where a 1% NE improvement is considered a success. Online A/B, Table 2, with anonymized metrics: Platform A at 4K to 16K lifts Metric-Topline +0.22%, Metrics-C +4.1%, Metrics-E-1 +2.3% and Metrics-E-2 +4.3%; Platform B at 4K to 10K lifts Metric-Topline +0.14%, Metrics-C +0.79%, Metrics-E-3 +1.4% and Metrics-E-4 +1.7%."
 caveats:
-- "The arXiv text read is a preprint; the published RecSys 2026 version was not read, and the DOI was verified against Crossref with pages 1654-1662."
 - "Online A/B metrics are anonymized into Metric-Topline, Metrics-C and Metrics-E categories following prior work, so surface names and metric identities are not public."
 - "The platforms are described as powered by distinct model architectures but are not named."
 unknown_fields:
@@ -66,7 +65,7 @@ sources:
 - title: "Versioned Late Materialization, arXiv 2604.24806"
   url: https://arxiv.org/abs/2604.24806
   type: paper
-version_note: "Read from arXiv 2604.24806 v2, a preprint; the RecSys 2026 DOI 10.1145/3773078.3831845 was verified against Crossref, and the published version itself was not read."
+version_note: "Read from arXiv 2604.24806 v2, a preprint; the RecSys 2026 DOI 10.1145/3773078.3831845 was verified against Crossref, and the published version itself was not read; Crossref lists pages 1654-1662."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2604.24806

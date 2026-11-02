@@ -50,7 +50,6 @@ scale:
   note: "paper, Sec 5"
 results_reported: "Online A/B, Sec 5, 30 days from July 6 to August 6, 2025 with 10% of random user traffic against the existing Item ID-based system: Advertising Revenue +0.90%, Conversion Rate +4.33%, Orders +3.52%. Offline ranking, Table 1a, against the best baseline: on the industrial dataset MMQ reaches AUC 0.7184 and GAUC 0.6081 with relative improvements +0.04% and +0.07%, reconstruction loss 0.5529 at +0.32% lower, codebook entropy 7.9560 at +2.08% and utilization 1.00; on Amazon Beauty AUC 0.6503 at +0.33% and GAUC 0.6020 at +0.31%. Offline generative retrieval, Table 1b, MMQ consistently surpasses modality-aligned and modality-separated quantization baselines in Recall and NDCG at 5 and 10 on both datasets. Ablations, Table 2: removing orthogonal regularization sharply lowers codebook utilization and entropy, and removing behavior-aware fine-tuning lowers Recall and NDCG in all settings; Figure 6 shows even a Specific-Only variant with 10 experts fails to match MMQ with 2 shared and 4 specific experts. Methods with semantic IDs achieve significant AUC improvements over the PPNet item-ID backbone on long-tail items."
 caveats:
-- "The arXiv text read is a preprint in a two-column non-ACM layout; the WSDM 2026 DOI 10.1145/3773966.3777923 was verified against Crossref with pages 788-797, and the published version was not read."
 - "The paper describes the platform as a leading e-commerce advertising platform in Southeast Asia without naming it."
 - "The paper's limitations section states the two-stage framework adds training complexity and the fine-tuning stage is task-dependent."
 unknown_fields:
@@ -65,7 +64,7 @@ sources:
 - title: "MMQ, arXiv 2508.15281"
   url: https://arxiv.org/abs/2508.15281
   type: paper
-version_note: "Read from arXiv 2508.15281 v1, a preprint; the WSDM 2026 DOI 10.1145/3773966.3777923 was verified against Crossref, and the published version itself was not read."
+version_note: "Read from arXiv 2508.15281 v1, a preprint; the WSDM 2026 DOI 10.1145/3773966.3777923 was verified against Crossref, and the published version itself was not read; Crossref lists pages 788-797."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2508.15281

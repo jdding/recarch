@@ -35,15 +35,14 @@ results_table.online.1.versus|4K Fat Row 基线
 results_table.online.2.versus|4K Fat Row 基线
 results_table.offline.0.versus|Fat Row 基线
 results_table.offline.1.versus|4K 到 64K，总计超过 5%
-caveats.0|所读 arXiv 文本是预印本；未读到 RecSys 2026 正式版，DOI 已在 Crossref 核对，页码 1654-1662。
-caveats.1|线上 A/B 指标沿用先前工作的做法做了匿名化，分为 Metric-Topline、Metrics-C 和 Metrics-E 三类，场景名与指标身份未公开。
-caveats.2|论文说明两个平台由不同模型架构驱动，但未给出平台名称。
+caveats.0|线上 A/B 指标沿用先前工作的做法做了匿名化，分为 Metric-Topline、Metrics-C 和 Metrics-E 三类，场景名与指标身份未公开。
+caveats.1|论文说明两个平台由不同模型架构驱动，但未给出平台名称。
 unknown_fields.0|A/B 流量占比与时长
 unknown_fields.1|三个租户与两个平台的模型身份
 unknown_fields.2|训练算力与硬件
 unknown_fields.3|官方代码
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|读的是 arXiv 2604.24806 v2 预印本；RecSys 2026 的 DOI 10.1145/3773078.3831845 已在 Crossref 核对，正式版本身未读到。
+version_note|读的是 arXiv 2604.24806 v2 预印本；RecSys 2026 的 DOI 10.1145/3773078.3831845 已在 Crossref 核对，正式版本身未读到；Crossref 登记页码 1654-1662。
 deployment.scenario|Meta 两个以上推荐场景生产排序模型的训练数据基础设施，服务 HSTU 类生成式推荐器
 deployment.baseline|4K 序列长度下的 Fat Row 范式
 deployment.training_compute|本身不是训练系统；分离式预处理让 GPU 保持算力受限，批大小调优带来每 worker 15%、流水线预取带来 10% 的吞吐提升
