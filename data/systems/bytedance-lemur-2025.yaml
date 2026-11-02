@@ -1,0 +1,140 @@
+id: bytedance-lemur-2025
+name: LEMUR
+company: ByteDance
+surface: Video ranking in Douyin Search; CTR is the probability that a user watches a returned video for more than five seconds after a query
+year: 2025
+era: deep
+era_reason: "End-to-end joint training of discriminative bidirectional multimodal encoders with a RankMixer ranking backbone; the claim is joint optimization of content and ranking objectives, not autoregressive or semantic-ID modeling."
+first_public: "2025-11"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://arxiv.org/abs/2511.10962"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: search
+evidence_level: production_described
+tldr: "LEMUR trains ByteDance's multimodal encoders end to end with the Douyin Search ranker and serves history from a memory bank; a 14-day A/B cut the query change rate by 0.843% with offline QAUC +0.81%."
+summary: "LEMUR is presented as the first large-scale fully end-to-end multimodal recommender system deployed on an industrial platform. Instead of pretraining a multimodal model and feeding frozen embeddings to the ranker, ByteDance trains bidirectional transformers over raw query and document text jointly with the RankMixer ranking model on Douyin Search, aligned by a session-masked query-document contrastive loss, SQDC. A memory bank stores document representations during training and serves user-history multimodal sequences by document ID, removing the prohibitive cost of recomputing sequence representations and the online transmission bottleneck; a LONGER-style decoder with cross-attention and a similarity module consumes these sequences. Sampling and cross-worker deduplication keep training tractable. After a 14-day A/B, LEMUR was fully deployed on Douyin Search and has run for over one month, with additional offline gains on the Douyin ads platform and an online gain on TikTok Search."
+paradigms:
+- dlrm
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: "RankMixer ranking backbone with jointly trained bidirectional query and document text transformers, an SQDC contrastive loss, a LONGER-style decoder over memory-bank multimodal sequences, and a cosine-similarity module"
+  details: "Query and document raw text are encoded by separate bidirectional transformers whose cls-token outputs are concatenated with other features and passed to RankMixer. The multimodal history sequence comes from the memory bank keyed by document ID, is read by a decoder whose cross-attention output passes through an FFN only, and is summarized by cosine similarities between the target document and each history document plus a ranked version of that similarity vector."
+id_tokenization:
+  approach: "Plain user and document IDs plus raw-text features; no semantic IDs"
+  details: "Document text combines the title, in-video OCR, ASR transcript and cover-image OCR, tokenized by an internal tokenizer; cls tokens carry the representations and type embeddings separate feature categories."
+features_signals:
+- "Query raw text, max length 10, average 4"
+- "Document text: title, OCR, ASR transcript and cover-image OCR"
+- "User search-history multimodal sequence retrieved from the memory bank, longest sequence 1000 items"
+- "Cosine similarity between the target document and each history document, plus its ranked version"
+- "User, query, document, cross and history features of the production stack"
+training:
+  mode: "Joint training with the ranking model; the recommendation model loads a checkpoint and the multimodal model cold-starts; 20% of samples run forward and backward through the transformer, the rest reuse memory-bank embeddings"
+  objectives:
+  - "Binary cross-entropy on the five-second watch label"
+  - "SQDC, an in-batch session-masked query-document contrastive loss with temperature 50"
+  notes: "Batch size 2048, query transformer 2 layers, document transformer 4 layers, memory-bank dimension 128, flash attention, mixed precision, and a custom all-gather based Dedup Join CUDA kernel that reuses duplicate document embeddings across workers."
+serving_infra: "At inference the multimodal embeddings are retrieved from the memory bank by document ID without activating the transformer, and RankMixer produces the logit. Each training task keeps its multimodal sequential representations on a dedicated parameter server, removing online transmission."
+scale:
+- metric: Offline dataset
+  value: 3 billion samples over 70 consecutive days
+  note: "paper, Sec 4.1.1"
+- metric: Feature space
+  value: billions of user IDs and hundreds of millions of document IDs
+  note: "paper, Sec 4.1.1"
+- metric: Longest user sequence
+  value: 1000 items
+  note: "paper, Sec 3.5"
+- metric: Deployment
+  value: fully deployed on Douyin Search, operating over one month
+  note: "paper, Sec 4.3"
+results_reported: "Offline on 70 days of Douyin Search logs, against DLRM-MLP at AUC 0.74071 and QAUC 0.63760: adding RankMixer gives +0.49% AUC and +0.59% QAUC, adding LONGER +0.89% and +1.04%, LEMUR-SQDC +1.22% and +1.51%, and LEMUR-SQDC with the memory bank +1.44% and +1.85%, Table 2; against the online baseline RankMixer+LONGER the final LEMUR gains AUC +0.55% and QAUC +0.81%, where 0.1% is already significant in this setting. Against a two-stage pretrained-then-frozen variant, Table 3, baseline QAUC 0.64393, two-stage 0.64470 at +0.12%, LEMUR 0.64914 at +0.81%, a 0.69% edge. Ablations, Table 5: stop-gradient -0.31%, without the long multimodal sequence -0.25%, without SQDC -0.17%, without cosine similarity -0.12%, without the session mask -0.10%, without the short sequence -0.09%, with the CIC loss -0.02%. Efficiency, Table 4: baseline 92M parameters and 1673G FLOPs; LEMUR without sampling 139M parameters and 4303G FLOPs at +0.81% QAUC; p=100 q=20 gives 3232G at +0.78%; the deployed p=20 q=20 gives 2439G at +0.76%; p=10 q=10 gives 2262G at +0.75%. SQDC temperature sweep, Table 6: 0.64831 at temperature 1, 0.64857 at 5, 0.64914 at 50 and 0.64869 at 100. A 14-day online A/B on Douyin Search reduced the query change rate by 0.843%, which the abstract words as a 0.843% reduction in query change rate decay, T-test significant, after which LEMUR was fully deployed and has operated for over one month. The Douyin ads platform reports +0.1% offline AUC and TikTok Search about 0.843% query change rate reduction. Memory-bank staleness similarity stabilizes around 0.95 and sequence coverage exceeds 90%, with current-document coverage above 98%."
+caveats:
+- "The arXiv v2 text read is a preprint in a placeholder ACM template; the final CIKM 2026 text was not read."
+- "The online A/B reports no traffic share, bucket counts or user numbers, and the query change rate is a search-experience proxy, not the five-second watch CTR the model optimizes."
+- "The headline +0.81% QAUC is against the online baseline RankMixer+LONGER; the +1.85% figure is against the much older DLRM-MLP."
+- "The Douyin ads result is offline AUC only; no online numbers are given for that scenario."
+- "No code release is cited, and none was found in the ByteDance GitHub organization or web search on 2026-11-02."
+unknown_fields:
+- A/B traffic share and bucket counts
+- Serving latency and QPS
+- Serving hardware
+- Exact parameter count of the deployed configuration
+- CIKM 2026 final text
+sources:
+- title: "LEMUR: Large scale End-to-end MUltimodal Recommendation, arXiv 2511.10962"
+  url: https://arxiv.org/abs/2511.10962
+  type: paper
+version_note: "Read from arXiv v2 dated 17 Nov 2025, a preprint in a placeholder ACM template with no DOI; CIKM 2026 acceptance is known from external announcements, and the camera-ready was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2511.10962
+  local_pdf: "full text read into local notes; file not redistributed"
+  sections_read: "Abstract, introduction, related work, methods including SQDC, memory bank, sequential modeling and efficiency, experiments with Tables 1 to 6 and Figure 3, other scenarios, discussion, appendix"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; arXiv v2 preprint only, read 2026-11-02"
+code:
+  status: none
+  checked_on: "2026-11-02"
+  repos: []
+  note: "No official code is cited in the paper, and a web and GitHub search found no release."
+core_idea: "Train the multimodal encoders jointly with the ranker and serve history from a memory bank, removing the frozen two-stage pipeline."
+deployed_in: "Douyin Search video ranking, fully deployed"
+scale_short: "3 billion samples over 70 days, hundreds of millions of documents"
+key_result: "14-day A/B on Douyin Search: query change rate -0.843%, T-test significant, offline QAUC +0.81%"
+results_table:
+  online:
+  - setting: "Douyin Search, 14-day A/B"
+    method: LEMUR
+    metric: Query change rate
+    result: "-0.843%"
+    versus: "Production baseline"
+  - setting: "TikTok Search, online A/B"
+    method: LEMUR
+    metric: Query change rate
+    result: "about -0.843%"
+    versus: "Production baseline"
+  offline:
+  - setting: "Douyin Search logs, 70 days"
+    method: "LEMUR-SQDC-MB"
+    metric: QAUC
+    result: "+1.85%"
+    versus: "DLRM-MLP 0.63760"
+  - setting: "Douyin Search logs, 70 days"
+    method: "Final LEMUR"
+    metric: QAUC
+    result: "+0.81%"
+    versus: "Online baseline RankMixer+LONGER"
+  - setting: "Two-stage comparison"
+    method: LEMUR
+    metric: QAUC
+    result: "0.64914"
+    versus: "Two-stage 0.64470"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Video ranking in Douyin Search, where CTR is watching a returned video for more than five seconds after a query; fully deployed and running over one month"
+  ab_traffic: not_reported
+  ab_duration: "14 days"
+  baseline: "The Douyin Search production baseline, the RankMixer+LONGER stack"
+  online_lifts:
+  - metric: "Query change rate, reduction"
+    value: "0.843%"
+  training_compute: "Without sampling 139M parameters and 4303G FLOPs at batch 2048 against 92M and 1673G for the baseline; the deployed 20% sampling runs 2439G FLOPs"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "At inference embeddings are fetched from the memory bank by document ID without activating the transformer; current-document coverage stays above 98%"
+  hardware: not_reported
+  notes:
+  - "The A/B result is statistically significant by T-test."
+  - "The Douyin ads platform reports +0.1% offline AUC; TikTok Search about 0.843% query change rate reduction."
+  fulltext_refs:
+  - "Sec 4.3: 14-day A/B, query change rate 0.843% better than baseline, T-test significant, fully deployed over one month"
+  - "Table 4: 92M and 1673G baseline, 139M and 4303G unsampled, 2439G at p=20 q=20"
+  - "Fig 3: staleness similarity about 0.95, sequence coverage above 90%, current-document coverage above 98%"
+  basis: full_text
+  checked_on: "2026-11-02"

@@ -1,0 +1,142 @@
+id: eleme-dte-2026
+name: DTE
+company: Ele.me / Taobao Shangou
+surface: Shangou advertisement recommendation for food delivery and instant retail in the Taobao App, ranking stage, impression-level click prediction
+year: 2026
+era: generative
+era_reason: "The ranker is a decoder-only Transformer that follows the HSTU generative-recommendation paradigm and models next-item prediction autoregressively; DTE is the temporal position encoding of that generative stack."
+first_public: "2026-08"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3799682.3840106"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "DTE splits time in a generative ranker into user-adaptive rhythms and a dense-order gate; a three-week Shangou A/B shows CTR +1.8% and RPM +3.0% with +0.3% latency."
+summary: "DTE is a temporal position-encoding framework for Transformer-based generative recommendation, built by Rajax Network Technology, the Ele.me company that operates Taobao Shangou of Alibaba, for food delivery and instant retail. Rather than conflating time with order, a personalized macro-temporal module mixes four primitives, recency decay, intra-day periodicity, weekly periodicity and a target-side burst signal, through a per-user softmax gate and injects the scalar into item embeddings, while a micro-sequential module adds a relative-order attention bias that a soft gate activates only when pairwise time gaps are small. DTE was deployed in the ranking stage of the Shangou advertisement recommendation system in the Taobao App and has served 100% of that traffic since January 2026."
+paradigms:
+- sequential-transformer
+stages:
+- stage: rank
+  model_family: "Decoder-only Transformer following HSTU with a lightweight MLP task tower, extended with the DTE macro-temporal input encoding and the time-gated micro-sequential attention bias"
+  details: "The macro module computes a scalar temporal signal as a softmax mixture of recency decay, intra-day and weekly sinusoidal periodicity and a burst-sensitive variation, personalizes the mixture weights with an MLP over the average-pooled user history, and adds the scalar to each item embedding through a learned projection vector. The micro module adds a negative distance bias scaled by a sigmoid gate on the pairwise time gap, so relative order is used mainly when interactions are temporally dense."
+id_tokenization:
+  approach: "Plain item ID embeddings; no semantic IDs and no item tokenizer"
+  details: "Items enter as base item embeddings. DTE changes how timestamps and order are encoded, not how items are identified."
+features_signals:
+- "Interaction timestamps: time gap to the current prediction, hour of day and weekday, as temporal primitives"
+- "Target-side traffic statistics per time segment, previous-day value and 30-day historical average, for the burst term"
+- "Average-pooled user history embedding, the input of the gating MLP that personalizes the temporal mixture"
+training:
+  mode: Offline
+  objectives:
+  - "Impression-level binary click prediction with a shared decoder-only backbone and a lightweight MLP task tower"
+  notes: "Industrial data split chronologically 85 to 15 by impression timestamp, history from a one-year production window, maximum sequence length 150, one block, eight attention heads, hidden size 64, Adam with batch size 1024 and learning rate 1e-4."
+serving_infra: "A plug-in for an existing Transformer ranking pipeline: pairwise time gaps are converted from milliseconds to seconds, the gate temperature is fixed at 10, and the paper reports offline inference latency of 3.02 ms and an online average serving latency moving from 15.4 ms to 15.5 ms."
+scale:
+- metric: Industrial dataset users
+  value: 400 M
+  note: "paper, Table 1"
+- metric: Industrial dataset items
+  value: 5 M
+  note: "paper, Table 1"
+- metric: Industrial dataset samples
+  value: 2.5 B impressions
+  note: "paper, Table 1"
+- metric: Production rollout
+  value: "100% of Shangou ad recommendation traffic since January 2026"
+  note: "paper, introduction and Sec 4.6"
+results_reported: "Offline on the industrial Shangou dataset DTE reaches GAUC 0.7098 and Logloss 0.2578, against 0.6982 and 0.2589 for BST+ALiBi, which Table 2 labels the production baseline, and 0.6978 for RAB, Table 2; on KuaiRand it reaches GAUC 0.9243 and Logloss 0.2972 against 0.9113 for RAB. Ablation on the industrial dataset, Table 3: removing the macro module drops GAUC to 0.6852, the micro module to 0.7006, recency to 0.6991, periodicity to 0.6975, the burst term to 0.7017 and the soft gate to 0.6987. Overhead, Table 4: DTE adds 238 parameters, 0.47 KB in FP16, with offline inference latency 3.02 ms, against 256 parameters and 3.09 ms for RAB, 9600 parameters and 3.18 ms for BST, and 327680 parameters and 3.76 ms for TiSASRec. A three-week online A/B with 20% treatment and 20% control user buckets reports CTR +1.8% and RPM +3.0% over the production baseline, significant at p < 0.01 with two-sided tests, while average serving latency rose +0.3% from 15.4 ms to 15.5 ms. DTE was then rolled out to 100% of the Shangou advertisement recommendation traffic in the Taobao App in January 2026, and no systematic regression was observed after the rollout."
+caveats:
+- "Table 2 labels BST+ALiBi the production baseline offline; the online A/B baseline is described only as the production baseline, and the paper does not say the two are identical."
+- "Efficiency figures are offline inference latency under the paper setup; serving cost appears only as the +0.3% average latency change, and serving QPS and hardware are not reported."
+- "The burst term is target-side traffic context, not user burstiness, and the paper itself treats it as an optional scenario-specific component."
+- "DTE is a position-encoding component; the underlying decoder-only production architecture follows HSTU and is cited rather than redescribed."
+- "The DOI page at ACM was not live on 2026-11-02, so numbers were checked against the author camera-ready on arXiv that carries the CIKM 2026 DOI."
+unknown_fields:
+- Serving QPS
+- Training compute and hardware
+- Exact A/B dates and confidence intervals
+- Whether the online A/B baseline is the same BST+ALiBi encoding labeled production baseline in Table 2
+- Serving hardware
+sources:
+- title: "Decoupled Temporal Encoding for Generative Recommendation, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840106
+  type: paper
+- title: "DTE, arXiv 2608.16274"
+  url: https://arxiv.org/abs/2608.16274
+  type: paper
+- title: "Official DTE implementation"
+  url: https://github.com/AlibabaResearch/DecoupledTemporalEncoding
+  type: source_code
+version_note: "Camera-ready read from arXiv 2608.16274, which carries the CIKM 2026 proceedings reference and DOI 10.1145/3799682.3840106; the DOI did not resolve at ACM on 2026-11-02, days before the conference."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2608.16274
+  local_pdf: "full text read into local notes; file not redistributed"
+  sections_read: "Abstract, introduction, related work, methodology, experiments including Tables 1 to 4 and Figures 2 to 4, online A/B, efficiency, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "camera-ready with proceedings DOI, read from arXiv on 2026-11-02; ACM page not yet live"
+code:
+  status: official_full
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/AlibabaResearch/DecoupledTemporalEncoding
+    owner: "AlibabaResearch, the authors' organization"
+    official: true
+    note: "Training code for the method: config, data loader, feature maps, layers, model and train scripts; no production platform or data."
+core_idea: "Encode user-adaptive temporal rhythms into item embeddings and gate a relative-order bias by time gap, giving a generative ranker both signals for 238 extra parameters."
+deployed_in: "Shangou advertisement ranking in the Taobao App, full traffic since January 2026"
+scale_short: "Industrial dataset of 400 M users, 5 M items and 2.5 B samples"
+key_result: "Three-week A/B at 20% buckets: CTR +1.8% and RPM +3.0% versus the production baseline, average serving latency +0.3% from 15.4 ms to 15.5 ms"
+results_table:
+  online:
+  - setting: "Shangou ad ranking, Taobao App, three-week A/B, 20% buckets"
+    method: DTE
+    metric: CTR
+    result: +1.8%
+    versus: "Production baseline encoding"
+  - setting: "Shangou ad ranking, Taobao App, three-week A/B, 20% buckets"
+    method: DTE
+    metric: RPM
+    result: +3.0%
+    versus: "Production baseline encoding"
+  offline:
+  - setting: "Industrial dataset, impression-level click prediction"
+    method: DTE
+    metric: GAUC
+    result: "0.7098"
+    versus: "BST+ALiBi 0.6982"
+  - setting: "KuaiRand, impression-level click prediction"
+    method: DTE
+    metric: GAUC
+    result: "0.9243"
+    versus: "RAB 0.9113"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Ranking stage of the Shangou advertisement recommendation system for food delivery and instant retail in the Taobao App; 100% of traffic since January 2026"
+  ab_traffic: "User-level randomization with a 20% treatment bucket and a 20% control bucket under the same serving pipeline"
+  ab_duration: "Three weeks, covering multiple complete weekly cycles"
+  baseline: "The production baseline; Table 2 labels BST+ALiBi the production baseline offline, but the online section does not say the A/B control is identical"
+  online_lifts:
+  - metric: CTR
+    value: +1.8%
+  - metric: RPM
+    value: +3.0%
+  training_compute: not_reported
+  serving_latency: "Average serving latency +0.3%, from 15.4 ms to 15.5 ms; offline inference latency 3.02 ms"
+  serving_qps: not_reported
+  inference_cost: "238 additional parameters, 0.47 KB in FP16"
+  hardware: not_reported
+  notes:
+  - "CTR and RPM improvements significant at p < 0.01, two-sided, and consistently positive across the test period."
+  - "Rolled out to 100% of Shangou ad recommendation traffic in January 2026; no systematic regression observed after rollout."
+  fulltext_refs:
+  - "Sec 4.6: three-week online A/B, 20% treatment and 20% control user buckets, CTR +1.8%, RPM +3.0%, p < 0.01 two-sided, latency 15.4 ms to 15.5 ms, rollout to 100% in January 2026"
+  - "Table 4: 238 parameters, 0.47 KB FP16, offline inference latency 3.02 ms"
+  - "Sec 4.1.1 and Table 1: industrial dataset of 400 M users, 5 M items, 2.5 B samples"
+  basis: full_text
+  checked_on: "2026-11-02"

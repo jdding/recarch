@@ -1,0 +1,56 @@
+surface|领先内容平台多阶段推荐管线中的 list-wise 重排阶段；从候选列表生成曝光序列
+era_reason|重排被改写为在固定全局词表上自回归生成 Semantic ID token 序列，并用 GRPO 对齐；生成式 token 生成是核心主张，不是判别式打分器。
+tldr|GloRank 用受限解码生成全局 Semantic ID 做重排，再用 GRPO 后训练；14 天 A/B 胜过已上线的 GoalRank，评论 +0.462%、观看时长 +0.095%。
+summary|GloRank 由快手科技作者与香港城市大学、UCSD 合作完成，用固定全局词表上的生成取代依赖位置的重排。物品表示为 RQ Semantic ID，重排因此变成锚定物品语义的自回归 token 生成，而不是选局部候选下标。论文证明后者会让输出层产生不可约的映射方差。监督预训练先模仿代理评估器挑出的高质量列表，GRPO 后训练再直接最大化列表收益，Trie 受限解码保证生成物品都在候选集内且不重复。在 7.8% 线上流量上与已部署的 GoalRank 重排器做了 14 天 A/B，所有监控的互动指标显著提升。
+core_idea|生成全局 Semantic ID 而不是选局部下标，让每个输出神经元始终对应同一物品，再用列表收益对齐生成器。
+deployed_in|领先内容平台的 list-wise 重排，线上 A/B 流量
+scale_short|在日活超过 4 亿、物品数千万级的平台上做 A/B
+key_result|7.8% 流量的 14 天 A/B 对比已上线 GoalRank：点赞 +0.286%、评论 +0.462%、观看时长 +0.095%，全部 p < 0.05
+results_reported|离线任务为从 50 个候选生成长度 6 的列表，表 2：工业电商数据集上 GloRank 达到 Precision 62.56、NDCG 90.15、MAP 84.84、F1 74.32，相对最优基线提升 3.99%、2.35%、3.39%、3.97%；Amazon Books 上为 83.75、90.08、85.10、86.97，提升 4.23%、6.13%、9.23%、4.23%；MovieLens-1M 上为 75.79、87.56、81.19、82.57，提升 3.03%、4.95%、6.60%、3.02%。消融见表 3：去掉预训练，Amazon Books 的 NDCG 崩到 24.13；去掉后训练，Amazon Books 的 MAP 降到 83.68，而 MovieLens-1M 上后训练带来 MAP 从 78.85 到 81.19 的 2.34% 提升和 NDCG 从 85.94 到 87.56 的 1.62% 提升。局部动作空间变体明显退化；在 Amazon Books 上从训练集移除 5% 物品的冷启动设定下，GoalRank 的 MAP 下降超过 88.4%，GloRank 只降 4.9%。线上见表 4：在日活超过 4 亿的内容平台上，以 7.8% 线上流量与等规模 GoalRank 对照组跑了 14 天，观看时长 +0.095%、有效观看 +0.111%、点赞 +0.286%、评论 +0.462%、转发 +0.447%，全部经 t 检验 p < 0.05 显著，正文另报告活跃设备 +0.030%。
+serving_infra|每请求在候选 Semantic ID 上构建 Trie 做受限解码；论文称因候选集远小于物品全集，构建与掩码开销可忽略。未报告服务延迟或吞吐数字。
+stages.0.model_family|T5 式 Transformer 编码器-解码器，读入候选与历史的 Semantic ID 序列，把重排后的列表生成为 SID token；由监督预训练加 GRPO 训练，解码时用候选 SID 上的 Trie 约束
+stages.0.details|输入是候选集合、用户历史与 rank 提示 token 拼接的 SID 序列。解码器在全局词表上生成 SID token；每请求的前缀树把不在候选 SID 有效分支上的 token 掩掉，并把已完整生成的物品剪枝以防重复。
+id_tokenization.approach|RQ Semantic ID，深度 4，码本大小 256
+id_tokenization.details|物品文本先序列化并用 Qwen3-Embedding-4B 编码，再由 RQ-Kmeans 量化为 4 个 token 的序列；全局词表是各层码本的并集，物品规模扩大时输出空间保持固定。
+features_signals.0|物品文本属性，Amazon 用标题、类目、描述、价格和品牌，MovieLens 用标题和题材
+features_signals.1|序列化为 Semantic ID 的用户交互历史
+features_signals.2|序列化为 Semantic ID 的候选列表
+features_signals.3|GRPO 后训练用的列表收益信号
+training.mode|两阶段：先在代理评估器选出的排列目标上做监督预训练，再用 GRPO 在列表收益上做强化后训练
+training.objectives.0|对选定最优排列的下一 token 预测交叉熵
+training.objectives.1|GRPO 组相对策略优化，组大小 20，温度 1.0；KL 惩罚系数取 0 效果最好
+training.notes|AdamW，预训练学习率 5e-4，后训练学习率 5e-6，权重衰减 0.01；推理用束大小 20 的 beam search；任务为从 50 个候选生成长度 6 的列表。
+scale.0.metric|A/B 平台
+scale.0.value|日活超过 4 亿，物品数千万级
+scale.1.metric|A/B 流量
+scale.1.value|7.8% 线上流量，等规模对照组
+scale.2.metric|工业离线数据集
+scale.2.value|200775 名用户、17014 个物品、5173698 次交互、589751 个列表
+results_table.online.0.setting|内容平台重排，14 天 A/B，7.8% 流量
+results_table.online.1.setting|内容平台重排，14 天 A/B，7.8% 流量
+results_table.online.2.setting|内容平台重排，14 天 A/B，7.8% 流量
+results_table.offline.0.setting|工业数据集，从 50 个候选生成长度 6 的列表
+results_table.online.0.versus|已上线的 GoalRank，等规模对照组
+results_table.online.1.versus|已上线的 GoalRank，等规模对照组
+results_table.online.2.versus|已上线的 GoalRank，等规模对照组
+results_table.offline.0.versus|最优基线，相对 +2.35%
+caveats.0|A/B 平台只被描述为领先内容平台；快手身份来自作者署名，未说明 A/B 之外的全量状态。
+caveats.1|所读 arXiv v1 是占位 ACM 模板的预印本；未读到 CIKM 2026 最终文本。
+caveats.2|工业离线数据集采自真实电商平台，有 200775 名用户，不是线上实验所在的内容平台。
+caveats.3|线上提升是低于 0.5% 的相对值，未给服务延迟、吞吐或成本数字。
+caveats.4|论文未给出官方代码；仅有第三方复现。
+unknown_fields.0|A/B 平台名称
+unknown_fields.1|A/B 之外的全量状态
+unknown_fields.2|服务延迟与 QPS
+unknown_fields.3|训练算力
+unknown_fields.4|官方代码
+code.repos.0.owner|第三方研究者 daiwk
+code.repos.0.note|reproductions 目录下有社区复现，不是官方发布也不是独立实现；论文未给出官方代码。
+version_note|读的是 2026 年四月 28 日的 arXiv v1，占位 ACM 模板、无 DOI；CIKM 2026 录用来自外部消息，未读到 camera-ready。
+deployment.scenario|日活超过 4 亿、物品数千万级的领先内容平台上的 list-wise 重排
+deployment.ab_traffic|7.8% 线上流量，等规模对照组
+deployment.ab_duration|14 天，覆盖周内波动
+deployment.baseline|GoalRank，生产系统中已部署的最优重排器
+deployment.inference_cost|在候选 Semantic ID 上做 Trie 受限解码；因候选集远小于物品全集，构建与掩码开销被描述为可忽略
+deployment.notes.0|表 4 的全部提升经 t 检验 p < 0.05 显著。
+deployment.notes.1|正文报告活跃设备 +0.030%。

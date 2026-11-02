@@ -1,0 +1,140 @@
+id: kuaishou-glorank-2026
+name: GloRank
+company: Kuaishou
+surface: List-wise reranking stage of a multi-stage recommendation pipeline on a leading content platform; generates an exposed list from a candidate slate
+year: 2026
+era: generative
+era_reason: "Reranking is reformulated as autoregressive generation of Semantic-ID token sequences over a fixed global vocabulary, with GRPO alignment; the generative token generation is the core claim, not a discriminative scorer."
+first_public: "2026-04"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://arxiv.org/abs/2604.25291"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "GloRank reranks by generating global Semantic IDs with constrained decoding and GRPO post-training; a 14-day A/B beats the deployed GoalRank with Comment +0.462% and Watch Time +0.095%."
+summary: "GloRank, built by authors from Kuaishou Technology with City University of Hong Kong and UCSD, replaces position-dependent reranking with generation over a fixed global vocabulary. Items are represented as RQ-based Semantic IDs, so reranking becomes autoregressive token generation anchored to item semantics instead of selecting local candidate indices, which the paper shows induces irreducible mapping-induced variance in the output layer. A supervised pre-training phase imitates high-quality lists selected by a proxy evaluator, GRPO post-training then maximizes list-wise rewards, and Trie-based constrained decoding keeps every generated item inside the candidate set without repetition. A 14-day online A/B on 7.8% of live traffic against the deployed GoalRank reranker reports significant gains on all monitored engagement metrics."
+paradigms:
+- semantic-id
+- rl-alignment
+stages:
+- stage: re-rank
+  model_family: "T5-style Transformer encoder-decoder that reads serialized candidate and history Semantic IDs and generates the reranked list as SID tokens, trained by supervised pre-training plus GRPO and decoded with a Trie over candidate SIDs"
+  details: "The input is the concatenated SID sequence of the candidate set, the user history and a rank prompt token. The decoder generates SID tokens over the global vocabulary; a per-request prefix tree masks tokens outside valid candidate SID branches and prunes each fully generated item to prevent duplicates."
+id_tokenization:
+  approach: "RQ-based Semantic IDs, depth 4, codebook size 256"
+  details: "Item text is serialized and encoded with Qwen3-Embedding-4B, then quantized by RQ-Kmeans into a sequence of 4 tokens; the global vocabulary is the union of the codebooks, keeping the output space fixed while the item corpus scales."
+features_signals:
+- "Item textual attributes, for Amazon title, categories, description, price and brand; for MovieLens title and genres"
+- "User interaction history serialized as Semantic IDs"
+- "The candidate slate serialized as Semantic IDs"
+- "List-wise reward signals for GRPO post-training"
+training:
+  mode: "Two-stage: supervised pre-training on permutation targets picked by a proxy evaluator, then GRPO reinforcement post-training on list-wise rewards"
+  objectives:
+  - "Next-token-prediction cross-entropy against the selected best permutation"
+  - "GRPO group-relative policy optimization with group size 20 and temperature 1.0; the KL penalty works best removed at coefficient 0"
+  notes: "AdamW with learning rate 5e-4 in pre-training and 5e-6 in post-training, weight decay 0.01; beam search with beam size 20 at inference; the task generates a list of length 6 from 50 candidates."
+serving_infra: "Per-request Trie constrained decoding over candidate Semantic IDs; the paper says construction and masking overhead is negligible because the candidate set is much smaller than the item universe. No serving latency or throughput numbers are reported."
+scale:
+- metric: A/B platform
+  value: over 400 million DAU and tens of millions of items
+  note: "paper, Sec 4.10"
+- metric: A/B traffic
+  value: "7.8% of live traffic, equal-size control"
+  note: "paper, Sec 4.10"
+- metric: Industrial offline dataset
+  value: "200,775 users, 17,014 items, 5,173,698 interactions, 589,751 lists"
+  note: "paper, Table 1"
+results_reported: "Offline, generating a list of length 6 from 50 candidates, Table 2: on the industrial e-commerce dataset GloRank reaches Precision 62.56, NDCG 90.15, MAP 84.84 and F1 74.32, with relative improvements over the best baseline of 3.99%, 2.35%, 3.39% and 3.97%; on Amazon Books 83.75, 90.08, 85.10 and 86.97, improving 4.23%, 6.13%, 9.23% and 4.23%; on MovieLens-1M 75.79, 87.56, 81.19 and 82.57, improving 3.03%, 4.95%, 6.60% and 3.02%. Ablation, Table 3: without pre-training, NDCG collapses to 24.13 on Amazon Books; without post-training, MAP falls to 83.68 on Amazon Books, while on MovieLens-1M post-training adds 2.34% MAP from 78.85 to 81.19 and 1.62% NDCG from 85.94 to 87.56. A local action space variant degrades sharply, and under a cold start on Amazon Books with 5% of items removed from training, GoalRank MAP drops by over 88.4% while GloRank loses only 4.9%. Online, Table 4: over 14 days on 7.8% of live traffic with an equal-size GoalRank control on a content platform serving over 400 million DAU, Watch Time +0.095%, Effective View +0.111%, Like +0.286%, Comment +0.462% and Forward +0.447%, all significant at p < 0.05 by t-test, with Active Devices +0.030% in the text."
+caveats:
+- "The A/B platform is described only as a leading content platform; Kuaishou comes from the author affiliation, and no rollout beyond the A/B is stated."
+- "The arXiv v1 text read is a preprint in a placeholder ACM template; the final CIKM 2026 text was not read."
+- "The industrial offline dataset is collected from a real-world e-commerce platform and has 200,775 users; it is not the content platform used online."
+- "Online gains are relative percentages below 0.5%, and no serving latency, throughput or cost numbers are given."
+- "No official code is cited; only a third-party reproduction exists."
+unknown_fields:
+- Name of the A/B platform
+- Rollout status beyond the A/B
+- Serving latency and QPS
+- Training compute
+- Official code
+sources:
+- title: "From Local Indices to Global Identifiers: Generative Reranking for Recommender Systems via Global Action Space, arXiv 2604.25291"
+  url: https://arxiv.org/abs/2604.25291
+  type: paper
+version_note: "Read from arXiv v1 dated 28 Apr 2026, a preprint in a placeholder ACM template with no DOI; CIKM 2026 acceptance is known from external announcements, and the camera-ready was not read."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2604.25291
+  local_pdf: "full text read into local notes; file not redistributed"
+  sections_read: "Abstract, introduction, theoretical analysis, methodology, experiments with Tables 1 to 4 and Figures 3 to 6, online experiments, related work, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "not read; arXiv v1 preprint only, read 2026-11-02"
+code:
+  status: third_party_only
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/daiwk/auto-research
+    owner: "daiwk, a third-party researcher"
+    official: false
+    note: "Contains a community reproduction of GloRank under the reproductions directory, not an official or standalone release; no official code is cited in the paper."
+core_idea: "Generate global Semantic IDs instead of picking local indices, so each output neuron always means the same item, and align the generator with list-wise rewards."
+deployed_in: "List-wise reranking on a leading content platform, live A/B traffic"
+scale_short: "A/B on a platform with over 400 million DAU and tens of millions of items"
+key_result: "14-day A/B at 7.8% traffic against the deployed GoalRank: Like +0.286%, Comment +0.462%, Watch Time +0.095%, all p < 0.05"
+results_table:
+  online:
+  - setting: "Content platform reranking, 14-day A/B, 7.8% traffic"
+    method: GloRank
+    metric: "Effective View"
+    result: "+0.111%"
+    versus: "Deployed GoalRank, equal-size control"
+  - setting: "Content platform reranking, 14-day A/B, 7.8% traffic"
+    method: GloRank
+    metric: Like
+    result: "+0.286%"
+    versus: "Deployed GoalRank, equal-size control"
+  - setting: "Content platform reranking, 14-day A/B, 7.8% traffic"
+    method: GloRank
+    metric: "Watch Time"
+    result: "+0.095%"
+    versus: "Deployed GoalRank, equal-size control"
+  offline:
+  - setting: "Industrial dataset, list of 6 from 50 candidates"
+    method: GloRank
+    metric: NDCG
+    result: "90.15"
+    versus: "Best baseline, relative +2.35%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "List-wise reranking on a leading content platform serving over 400 million DAU with tens of millions of items"
+  ab_traffic: "7.8% of total live traffic, with an equal-size control group"
+  ab_duration: "14 days to cover weekly fluctuations"
+  baseline: "GoalRank, the state-of-the-art reranker deployed in the production system"
+  online_lifts:
+  - metric: "Watch Time"
+    value: "+0.095%"
+  - metric: "Effective View"
+    value: "+0.111%"
+  - metric: Like
+    value: "+0.286%"
+  - metric: Comment
+    value: "+0.462%"
+  - metric: Forward
+    value: "+0.447%"
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "Trie constrained decoding over candidate Semantic IDs; construction and masking overhead described as negligible because the candidate set is much smaller than the item universe"
+  hardware: not_reported
+  notes:
+  - "All Table 4 improvements are statistically significant with student t-test p < 0.05."
+  - "Active Devices grew +0.030% in the text."
+  fulltext_refs:
+  - "Table 4 and Sec 4.10: Watch Time +0.095%, Effective View +0.111%, Like +0.286%, Comment +0.462%, Forward +0.447%, Active Devices +0.030%, 7.8% traffic, 14 days, over 400 million DAU"
+  basis: full_text
+  checked_on: "2026-11-02"

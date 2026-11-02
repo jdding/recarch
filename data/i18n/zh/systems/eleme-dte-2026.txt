@@ -1,0 +1,57 @@
+surface|淘宝 App 内闪购的广告推荐，覆盖外卖和即时零售，排序阶段，曝光级点击预测
+era_reason|排序器是遵循 HSTU 生成式推荐范式的 decoder-only Transformer，以自回归方式建模下一个物品；DTE 是这套生成式架构的时间位置编码。
+tldr|DTE 把生成式排序器里的时间拆成用户自适应节律和密集顺序门控；三周闪购 A/B 显示 CTR +1.8%、RPM +3.0%，延迟 +0.3%。
+summary|DTE 是面向 Transformer 生成式推荐的时间位置编码框架，由运营淘宝闪购的饿了么主体拉扎斯网络科技打造，服务外卖和即时零售场景。它不把时间与顺序混在一起：个性化宏观时间模块通过按用户的 softmax 门控混合近因衰减、日内周期、周周期和目标侧突发信号四类基元，把标量注入物品嵌入；微观顺序模块加入相对顺序注意力偏置，由软门控只在两两时间间隔很小时激活。DTE 已部署在淘宝 App 闪购广告推荐系统的排序阶段，自 2026 年一月起承接 100% 流量。
+core_idea|把用户自适应的时间节律编码进物品嵌入，并按时间间隔门控相对顺序偏置，让生成式排序器以 238 个额外参数同时获得两类信号。
+deployed_in|淘宝 App 闪购广告排序，自 2026 年一月起全量流量
+scale_short|工业数据集含 4 亿用户、500 万物品和 25 亿样本
+key_result|20% 桶位的三周 A/B：CTR +1.8%、RPM +3.0%，对比生产基线，平均服务延迟 +0.3%，从 15.4 ms 到 15.5 ms
+results_reported|工业闪购数据集离线结果，DTE 达到 GAUC 0.7098、Logloss 0.2578，表 2 标为生产基线的 BST+ALiBi 为 0.6982 和 0.2589，RAB 为 0.6978，见表 2；KuaiRand 上 DTE 达到 GAUC 0.9243、Logloss 0.2972，RAB 为 0.9113。工业数据集消融，表 3：去掉宏观模块 GAUC 降到 0.6852，去掉微观模块到 0.7006，去掉近因到 0.6991，去掉周期到 0.6975，去掉突发项到 0.7017，去掉软门控到 0.6987。开销，表 4：DTE 增加 238 个参数、FP16 下 0.47 KB，离线推理延迟 3.02 ms；RAB 为 256 个参数、3.09 ms，BST 为 9600 个参数、3.18 ms，TiSASRec 为 327680 个参数、3.76 ms。20% 实验桶加 20% 对照桶的三周线上 A/B 报告 CTR +1.8%、RPM +3.0%，优于生产基线，双侧检验 p < 0.01 显著，平均服务延迟 +0.3%，从 15.4 ms 升到 15.5 ms。随后 DTE 于 2026 年一月在淘宝 App 闪购广告推荐流量上 100% 上线，上线后未观察到系统性回退。
+serving_infra|作为即插即用模块接入现有 Transformer 排序管线：两两时间间隔从毫秒换算为秒，门控温度固定为 10；论文报告离线推理延迟 3.02 ms，线上平均服务延迟从 15.4 ms 到 15.5 ms。
+stages.0.model_family|遵循 HSTU 的 decoder-only Transformer 加轻量 MLP 任务塔，扩展了 DTE 宏观时间输入编码和时间门控的微观顺序注意力偏置
+stages.0.details|宏观模块把近因衰减、日内与周正弦周期、突发敏感变化做 softmax 混合，得到标量时间信号；混合权重由用户历史平均池化上的 MLP 个性化，再经可学习投影向量加到每个物品嵌入上。微观模块加入按两两时间间隔用 sigmoid 门控缩放的负距离偏置，使相对顺序主要在时间密集时生效。
+id_tokenization.approach|普通物品 ID 嵌入；无 Semantic ID，也无物品 tokenizer
+id_tokenization.details|物品以基础嵌入进入模型。DTE 改变的是时间戳与顺序的编码方式，不改变物品的表示方式。
+features_signals.0|交互时间戳：距当前预测的时间间隔、小时内时刻和星期几，作为时间基元
+features_signals.1|按时间段的目标侧流量统计：前一日取值和 30 天历史均值，用于突发项
+features_signals.2|用户历史平均池化嵌入，是门控 MLP 的输入，用于个性化时间混合权重
+training.mode|离线
+training.objectives.0|共享 decoder-only 骨干加轻量 MLP 任务塔的曝光级二分类点击预测
+training.notes|工业数据按曝光时间戳以 85 比 15 做时间顺序切分，历史取自一年生产窗口，最大序列长度 150，一个块、八个注意力头、隐层 64，Adam，batch size 1024，学习率 1e-4。
+scale.0.metric|工业数据集用户数
+scale.0.value|4 亿
+scale.1.metric|工业数据集物品数
+scale.1.value|500 万
+scale.2.metric|工业数据集样本数
+scale.2.value|25 亿条曝光
+scale.3.metric|生产上线
+scale.3.value|自 2026 年一月起 100% 闪购广告推荐流量
+results_table.online.0.setting|闪购广告排序，淘宝 App，三周 A/B，20% 桶
+results_table.online.1.setting|闪购广告排序，淘宝 App，三周 A/B，20% 桶
+results_table.offline.0.setting|工业数据集，曝光级点击预测
+results_table.offline.1.setting|KuaiRand，曝光级点击预测
+results_table.online.0.versus|生产基线位置编码
+results_table.online.1.versus|生产基线位置编码
+results_table.offline.0.versus|BST+ALiBi 0.6982
+results_table.offline.1.versus|RAB 0.9113
+caveats.0|离线表 2 把 BST+ALiBi 标为生产基线；线上 A/B 只说对照是生产基线，论文没说两者是同一个。
+caveats.1|效率数字是论文设置下的离线推理延迟；服务成本只以 +0.3% 平均延迟变化呈现，未报告服务 QPS 和硬件。
+caveats.2|突发项是目标侧流量上下文，不是用户侧突发性，论文自己也将其视为可选的场景特定组件。
+caveats.3|DTE 是位置编码组件；底层 decoder-only 生产架构遵循 HSTU，论文是引用而非重新描述。
+caveats.4|2026-11-02 时 ACM 的 DOI 页面尚未上线，数字核对的是 arXiv 上携带 CIKM 2026 DOI 的作者定稿版。
+unknown_fields.0|服务 QPS
+unknown_fields.1|训练算力与硬件
+unknown_fields.2|A/B 起止日期与置信区间
+unknown_fields.3|线上 A/B 对照是否就是表 2 中标为生产基线的 BST+ALiBi
+unknown_fields.4|服务硬件
+code.repos.0.owner|论文作者所在组织 AlibabaResearch
+code.repos.0.note|该方法的训练代码，含配置、数据加载、特征映射、网络层、模型与训练脚本；不含生产平台和数据。
+version_note|数字已对照 arXiv 2608.16274 的作者定稿版核对，该版本带 CIKM 2026 论文集引用和 DOI 10.1145/3799682.3840106；2026-11-02 时经 doi.org 跳转检查 DOI 尚未在 ACM 上线，会议在数日后召开。
+deployment.scenario|淘宝 App 内服务外卖和即时零售的闪购广告推荐系统排序阶段；自 2026 年一月起 100% 流量
+deployment.ab_traffic|用户级随机化，同一服务管线下 20% 实验桶加 20% 对照桶
+deployment.ab_duration|三周，覆盖多个完整周周期
+deployment.baseline|生产基线；离线表 2 把 BST+ALiBi 标为生产基线，但线上部分没说 A/B 对照与之相同
+deployment.serving_latency|平均服务延迟 +0.3%，从 15.4 ms 到 15.5 ms；离线推理延迟 3.02 ms
+deployment.inference_cost|238 个额外参数，FP16 下 0.47 KB
+deployment.notes.0|CTR 与 RPM 提升在双侧检验下 p < 0.01 显著，整个测试期内持续为正。
+deployment.notes.1|2026 年一月在闪购广告推荐流量上 100% 上线；上线后未观察到系统性回退。

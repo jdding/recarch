@@ -1,0 +1,60 @@
+surface|抖音搜索的视频排序；CTR 定义为用户提交查询后观看返回视频超过五秒的概率
+era_reason|判别式双向多模态编码器与 RankMixer 排序骨干的端到端联合训练；主张的是内容与排序目标的联合优化，不是自回归或 Semantic ID 建模。
+tldr|LEMUR 让字节的多模态编码器与抖音搜索排序器端到端联合训练，并用记忆库服务行为序列；14 天 A/B 查询改写率下降 0.843%，离线 QAUC +0.81%。
+summary|LEMUR 被呈现为首个大规模部署到工业平台的完全端到端多模态推荐系统。字节没有先预训练多模态模型再把冻结嵌入喂给排序器，而是在抖音搜索上用双向 Transformer 编码查询和文档原始文本，与 RankMixer 排序模型联合训练，并用会话掩码的查询-文档对比损失 SQDC 对齐。记忆库在训练时保存文档表示，按文档 ID 取回用户历史的多模态序列，免去重算序列表示的高昂开销和在线传输瓶颈；一个 LONGER 式的解码器配合交叉注意力和相似度模块消费这些序列。采样与跨 worker 去重让训练可控。经过 14 天 A/B，LEMUR 在抖音搜索全量部署并运行超过一个月，抖音广告平台另有离线收益，TikTok 搜索有线上收益。
+core_idea|让多模态编码器与排序器联合训练并用记忆库服务历史序列，去掉冻结的两阶段管线。
+deployed_in|抖音搜索视频排序，已全量部署
+scale_short|70 天 30 亿样本，数亿量级文档
+key_result|抖音搜索 14 天 A/B：查询改写率 -0.843%，T 检验显著，离线 QAUC +0.81%
+results_reported|抖音搜索 70 天日志的离线结果，以 DLRM-MLP 的 AUC 0.74071、QAUC 0.63760 为基点：加 RankMixer 提升 AUC +0.49%、QAUC +0.59%，加 LONGER +0.89% 和 +1.04%，LEMUR-SQDC +1.22% 和 +1.51%，带记忆库的 LEMUR-SQDC-MB +1.44% 和 +1.85%，见表 2；相对线上基线 RankMixer+LONGER，最终 LEMUR 提升 AUC +0.55%、QAUC +0.81%，该场景下 0.1% 已算显著。与两阶段先预训练后冻结的方案比，表 3，基线 QAUC 0.64393，两阶段 0.64470 即 +0.12%，LEMUR 0.64914 即 +0.81%，领先 0.69%。消融见表 5：stop-gradient -0.31%，去掉长多模态序列 -0.25%，去掉 SQDC -0.17%，去掉余弦相似度 -0.12%，去掉会话掩码 -0.10%，去掉短序列 -0.09%，加 CIC 损失 -0.02%。效率见表 4：基线 9200 万参数、1673G FLOPs；不采样的 LEMUR 1.39 亿参数、4303G FLOPs，QAUC +0.81%；p=100 q=20 为 3232G，+0.78%；部署采用 p=20 q=20，2439G，+0.76%；p=10 q=10 为 2262G，+0.75%。SQDC 温度扫描见表 6：温度 1 时 0.64831，5 时 0.64857，50 时 0.64914，100 时 0.64869。抖音搜索 14 天线上 A/B 使查询改写率下降 0.843%，摘要的原话是 query change rate decay 降低 0.843%，T 检验显著，随后 LEMUR 全量部署并运行超过一个月。抖音广告平台离线 AUC +0.1%，TikTok 搜索查询改写率约降 0.843%。记忆库陈旧度相似度稳定在 0.95 附近，序列覆盖率超过 90%，当前文档覆盖率高于 98%。
+serving_infra|推理时按文档 ID 直接从记忆库取多模态嵌入，不激活 Transformer，由 RankMixer 出 logit。每个训练任务把多模态序列表示留在专用参数服务器上，消除了在线传输。
+stages.0.model_family|RankMixer 排序骨干，联合训练的双向查询与文档文本 Transformer、SQDC 对比损失、读记忆库多模态序列的 LONGER 式解码器，以及余弦相似度模块
+stages.0.details|查询与文档原始文本分别由双向 Transformer 编码，cls token 输出与其他特征拼接后进入 RankMixer。多模态历史序列来自按文档 ID 索引的记忆库，由只对交叉注意力输出过 FFN 的解码器读取，并用目标文档与每个历史文档的余弦相似度及其排序版本概括。
+id_tokenization.approach|普通用户 ID 和文档 ID 加原始文本特征；无 Semantic ID
+id_tokenization.details|文档文本由标题、视频内 OCR、ASR 转写和封面图 OCR 组成，经内部 tokenizer 切词；cls token 承载表示，类型嵌入区分特征类别。
+features_signals.0|查询原始文本，最大长度 10，平均 4
+features_signals.1|文档文本：标题、OCR、ASR 转写和封面图 OCR
+features_signals.2|从记忆库取回的用户搜索历史多模态序列，最长 1000 个物品
+features_signals.3|目标文档与每个历史文档的余弦相似度及其排序版本
+features_signals.4|生产体系的用户、查询、文档、交叉与历史特征
+training.mode|与排序模型联合训练；排序模型加载 checkpoint，多模态模型冷启动；20% 样本做 Transformer 前向和反向，其余复用记忆库嵌入
+training.objectives.0|五秒观看标签上的二元交叉熵
+training.objectives.1|SQDC，批内会话掩码的查询-文档对比损失，温度 50
+training.notes|batch size 2048，查询 Transformer 2 层，文档 Transformer 4 层，记忆库维度 128，flash attention、混合精度，以及基于 all-gather 的 Dedup Join 定制 CUDA 核，跨 worker 复用重复文档嵌入。
+scale.0.metric|离线数据集
+scale.0.value|连续 70 天、30 亿样本
+scale.1.metric|特征空间
+scale.1.value|数十亿用户 ID，数亿文档 ID
+scale.2.metric|最长用户序列
+scale.2.value|1000 个物品
+scale.3.metric|部署状态
+scale.3.value|抖音搜索全量部署，运行超过一个月
+results_table.online.0.setting|抖音搜索，14 天 A/B
+results_table.online.1.setting|TikTok 搜索，线上 A/B
+results_table.offline.0.setting|抖音搜索日志，70 天
+results_table.offline.1.setting|抖音搜索日志，70 天
+results_table.offline.2.setting|两阶段对比
+results_table.online.0.versus|生产基线
+results_table.online.1.versus|生产基线
+results_table.offline.0.versus|DLRM-MLP 0.63760
+results_table.offline.1.versus|线上基线 RankMixer+LONGER
+results_table.offline.2.versus|两阶段 0.64470
+caveats.0|所读 arXiv v2 是占位 ACM 模板的预印本；未读到 CIKM 2026 最终文本。
+caveats.1|线上 A/B 未给流量占比、桶数或用户数，查询改写率是搜索体验代理指标，不是模型优化的五秒观看 CTR。
+caveats.2|标题里的 +0.81% QAUC 是相对线上基线 RankMixer+LONGER；+1.85% 是相对更老的 DLRM-MLP。
+caveats.3|抖音广告的结果只有离线 AUC，未给线上数字。
+caveats.4|论文未给出代码，2026-11-02 在字节 GitHub 组织和网络搜索中均未找到。
+unknown_fields.0|A/B 流量占比与桶数
+unknown_fields.1|服务延迟与 QPS
+unknown_fields.2|服务硬件
+unknown_fields.3|部署配置的确切参数量
+unknown_fields.4|CIKM 2026 最终文本
+code.note|论文未给出官方代码，GitHub 与网络搜索均未发现发布。
+version_note|读的是 2025 年十一月 17 日的 arXiv v2，占位 ACM 模板、无 DOI；CIKM 2026 录用来自外部消息，未读到 camera-ready。
+deployment.scenario|抖音搜索的视频排序，CTR 为查询后观看超过五秒的概率；已全量部署并运行超过一个月
+deployment.ab_duration|14 天
+deployment.baseline|抖音搜索生产基线，即 RankMixer+LONGER 体系
+deployment.training_compute|不采样时 1.39 亿参数、batch 2048 下 4303G FLOPs，基线为 9200 万参数、1673G；部署采用 20% 采样，2439G FLOPs
+deployment.inference_cost|推理时按文档 ID 从记忆库直接取嵌入，不激活 Transformer；当前文档覆盖率保持在 98% 以上
+deployment.notes.0|A/B 结果经 T 检验显著。
+deployment.notes.1|抖音广告平台离线 AUC +0.1%；TikTok 搜索查询改写率约降 0.843%。
