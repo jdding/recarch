@@ -1,54 +1,67 @@
-# RecArch v0.1
-Structured, sourced database of industrial recsys/search/ranking architectures. Static site, no backend.
+# RecArch：工业推荐系统架构图谱
 
-- Cards: `data/systems/*.yaml` (schema: `schema/schema.md`). Build validates them.
-- Build: `python3 build.py` (set `SITE_URL=https://yourdomain` for canonical URLs and sitemap) -> `dist/`
-- Serve: `cd dist && python3 -m http.server 8080`
-- Refresh candidates: `python3 scripts/refresh.py` -> `review_queue.jsonl` (pending only; never auto-publishes)
-- Placeholders (TODO): newsletter signup, sponsor page contact/pricing, SITE_URL domain.
+**[jdding.github.io/recarch](https://jdding.github.io/recarch/)** · [English](https://jdding.github.io/recarch/en/) · [订阅周报](https://recarch.beehiiv.com/subscribe) · [反馈与收录建议](https://github.com/jdding/recarch/issues/new/choose)
 
+RecArch 收录已在工业界上线的推荐、搜索与排序系统，每个系统整理成一张结构化卡片，帮助做架构选型的工程师快速了解：这个系统解决什么问题，怎么做的，在哪里上线，效果和代价各是多少。
 
-## Round 2
-Card counts are computed, never typed here: run `python3 scripts/stats.py`. Home page has an Era filter (classic / deep-learning / generative-LLM-scaling); since round 7 it uses the explicit `era` field, not the year.
-Admission audit: `python3 scripts/admission_audit.py`. Judged per system; merged cards use the summed citations of all versions (docs/admission.md section 4).
+> RecArch is a bilingual, sourced map of production recommender, search and ranking architectures. Each system gets one structured card with its deployment scene, A/B setup, baseline, online gains, and training and serving cost, all taken from the full text of its sources. Chinese is the default; the English site lives at `/en/`.
 
-## Publication rule (round 2b)
-A card is published only if it is based on the full text of its sources. Cards whose sources were read only at abstract / search-snippet level live in `data/drafts/` (not built) with `needs_fulltext: true` and a `fulltext_note`. Counts: `python3 scripts/stats.py`.
+## 每张卡片包含什么
 
-## Code coverage (round 6, checked 2026-10-30)
-Every card has a `code` block (schema/schema.md). Per-status counts: `python3 scripts/stats.py`. Home page chip "Has official code" = full + partial. Every listed repo URL returned HTTP 200 on 2026-10-30. "none" records a search result, not proof that no code exists.
+- **核心思路**：一句话 TL;DR 和简要说明，部分卡片附我们自己重绘的简化架构图。
+- **上线证据**：上线场景、流量和 A/B 时长、对照基线、线上指标涨幅。
+- **部署成本**：训练算力、推理延迟和成本。
+- **元数据**：公司、年份、会议、范式与阶段标签、证据等级、引用数、官方代码情况。
+- **版本历史**：多版本系统只保留一张卡，展示最新版本，旧版本列出名称和论文链接。
 
-## Round 7: year and era audit
-See `era_audit.md` (rules, per-card table, borderline cases). `year` = first public disclosure; `era` = dominant paradigm (explicit, validated). 2 wrong years fixed (Pixie 2017, Lattice 2023). `linkedin-ligr-2025` moved to `data/withdrawn/` (authors withdrew the paper). Published (venue) version is `primary_source` where one exists.
+站点还提供筛选与时间线视图、系统对比、专题对比页（如长序列建模、生成式召回）、更新日志和 Atom 订阅。
 
-## Round 8: update signals and subscribing (no external accounts)
+## 内容原则
 
-- Home page strip "Recently added & updated" with a this-week counter, `/changelog/` (all events by date), `/feed.xml` (Atom; cards added, updated, newsletter issues; `<link rel="alternate">` on every page).
-- Every card page shows Added / Last verified and a History list. Fields: see `schema/schema.md` ("Update signals"). Backfilled `added_on` dates are approximate.
-- `/newsletter/` archive and `/newsletter/<slug>/` issue pages are built from `data/newsletter/*.yaml` (template: `templates/newsletter_issue.example.yaml`). No issues exist yet, so the archive says so.
-- Home: hero sentence + Beehiiv embed, search box, Era / Stage / Paradigm-family chips, two toggles (production-deployed, official code), collapsed "More filters", List | Timeline view, filter state in the URL query (`?era=deep&prod=1&view=timeline`). Families/stage groups: `data/taxonomy.yaml` (validated by `build.py`). Card pages open with the `tldr` line plus Paper / Code buttons.
-- Subscribe boxes (home hero, every card, compare, changelog, newsletter, each issue) are the real Beehiiv embed: `newsletter.form_id`, `public_url`, `publication_id` and the loader `embed_url` come from `data/site.yaml`; every page also loads Beehiiv's `attribution.js` so UTM params are forwarded. Without JS the box falls back to a link to `https://recarch.beehiiv.com/subscribe`. The old stub `static/subscribe.js` was removed. Never test by submitting an address: it creates a real subscriber.
-- Workflow per release: add card or edit -> add `updates` entry + bump `last_verified` -> `python3 build.py` -> the strip, changelog, feed and sitemap update automatically.
+1. **只基于全文**：卡片必须读过来源全文，正式发表版本优先。只读过摘要的条目留在草稿区，不发布。
+2. **数字有出处**：所有数字都来自论文或官方技术文章原文。原文没有报告的写「未报告」，不估算，翻译也不新增数字。
+3. **只发布解读**：仓库和站点只包含我们的结构化解读与重绘图，不存放、不分发论文 PDF 或原文。
+4. **准入有标准**：收录、排期、复查与退出规则见 [`docs/admission.md`](docs/admission.md)。不再满足标准的卡片不在站点展示，数据文件保留在仓库中。
 
-## Round 9: citation counts, redrawn diagrams, home carousel (nothing deployed)
+发现错误或想推荐系统，请通过 [GitHub Issues](https://github.com/jdding/recarch/issues/new/choose) 提交，模板分「纠错」和「申请收录」两类。
 
-- **Citations** (`scripts/citations.py` -> `data/citations.json`, generated, committed). Lookup order per card: Semantic Scholar Graph API by DOI, then arXiv id, then a title search accepted only if title similarity >= 0.92 and year within 1; OpenAlex (`cited_by_count`) is the fallback. Google Scholar is never scraped. If S2 splits one work into a venue record and an arXiv record, the counts are summed and the entry carries a `note`. A second arXiv id that is a different paper (e.g. TransAct V2) is ignored and listed in `ignored_other_papers`. Cards with no paper (blog/code only), or whose only paper is related work, get no entry: the card page shows nothing (never "0"). Refresh weekly: `python3 scripts/citations.py` (`--only id1,id2`, `--dry`); a failed lookup keeps the previous value. Then `python3 build.py`.
-- **"Most cited" sort** on the home list view (`?sort=cites`); cards without a count go last in default order.
-- **Diagrams** (`data/diagrams/<id>.yaml`, pilot: youtube-dnn-2016, din-alibaba-2017, tiger-google-2023). Our own simplified redraw, rendered by `build.py` to inline SVG below the TL;DR. Format in `schema/schema.md`. `build.py` fails if the caption link is not one of the card's `sources[].url`.
-- **Home carousel** replaces the text strip: `carousel_size` (default 6) and `carousel_window_days` (default 7) in `data/site.yaml`. Tests: `python3 tests/carousel_fixture.py /tmp/car-fixtures && NODE_PATH=/tmp/jt/node_modules node tests/carousel.test.js /tmp/car-fixtures dist/static`, and `node tests/sort.test.js`.
-- Style lint: build.py warns (never fails) when a card name contains parentheses, or a displayed string has more than one parenthetical or one longer than 40 chars. Keep names to the bare method name; put company, year and venue in their own fields.
+## 本地构建
 
-## Round 10: admission standard adopted, status lifecycle, one system = one card (nothing deployed)
+需要 Python 3 和 PyYAML。
 
-- `docs/admission.md` is the adopted admission and scheduling standard (Chinese). Lane rule by venue year, 5 new + 1 upgrade a week with a trigger to 4 + 2, thresholds, cap 120.
-- `status` active / superseded / retired (`schema/schema.md`, "Status"). Six cards retired, listed in `docs/admission.md`. Their files stay in `data/systems/`; since 2026-10-31 they are not published on the site at all.
-- `version` / `versions` fields and the merge procedure (`schema/schema.md`, "Versions"). Merged: DCN + DCN V2 into `dcn-google` (presents DCN V2), OneRec + OneRec-V2 + OneRec-Think into `onerec-kuaishou` (presents OneRec-V2 by owner decision; the latest version is OneRec-Think). Old URLs are static redirect pages, old YAMLs are `superseded`. DCNv3 is a third-party paper, not merged.
-- Tests: `tests/retired.test.js` (non-active cards: no pages, no archive, no status events, no links). `tests/v2_order.test.js` checks that no redirect stubs exist.
+```bash
+pip install -r requirements.txt
+SITE_URL=https://jdding.github.io/recarch python3 build.py   # 生成 dist/，同时校验全部卡片
+cd dist && python3 -m http.server 8080
+```
 
-## Deploy
+当前卡片数量由脚本统计，不在文档中手写：`python3 scripts/stats.py`。
 
-Pushing to `main` runs `.github/workflows/pages.yml`: it builds with `SITE_URL=https://jdding.github.io/recarch`, runs the tests and deploys `dist/` to GitHub Pages. To go live, make the repo public, then set Settings > Pages > Source to GitHub Actions.
+## 仓库结构
 
-## Round 11: bilingual site (nothing deployed)
+| 路径 | 内容 |
+|---|---|
+| `data/systems/` | 每个系统一个 YAML 卡片，字段规范见 [`schema/schema.md`](schema/schema.md) |
+| `data/i18n/` | 中文翻译与界面文案 |
+| `data/topics/` | 专题对比页 |
+| `data/diagrams/` | 重绘架构图 |
+| `data/drafts/` | 尚未读到全文的草稿，不参与构建 |
+| `data/citations.json` | 引用数，脚本生成 |
+| `build.py` | 静态站点生成器，含数据校验 |
+| `scripts/` | 引用数刷新、候选发现、准入审计、统计 |
+| `tests/` | 页面与数据测试 |
+| `docs/` | 准入标准、开发说明、安全评审记录 |
 
-Chinese is the default language at the site root and English is at `/en/`, with a 中文 / EN toggle on every page. Translations live in `data/i18n/` (see the "Bilingual site" section of `schema/schema.md`), and the build fails if a required Chinese string is missing. New cards need `data/i18n/zh/systems/<id>.txt`; new newsletter issues need the `*_zh` fields; new topics need `data/i18n/zh/topics/<slug>.yaml`. `tests/i18n.test.js` covers twins, toggles, links, hreflang and untranslated UI. The existing tests that read `dist/` now default to `dist/en`. Chinese prose writes magnitudes with 万 and 亿 instead of English million and billion, and the build checks each conversion by value against the English source (`tests/zh_numbers.test.js`).
+## 开发与维护
+
+数据模型、构建校验、双语规则、测试命令、每周维护流程和部署方式见 [`docs/development.md`](docs/development.md)。
+
+推送到 `main` 后，GitHub Actions 会自动构建、跑测试并部署到 GitHub Pages。
+
+## 许可
+
+- **代码**：`build.py`、`scripts/`、`templates/`、`static/`、`tests/` 等代码以 [MIT](LICENSE) 许可发布。
+- **内容**：`data/` 下的卡片、翻译、专题与重绘架构图，以及站点上由它们生成的文字，以 [CC BY 4.0](LICENSE-CONTENT) 许可发布。转载或改编请注明出处「RecArch（jdding.github.io/recarch）」并附原链接。
+- 卡片引用的论文、技术博客及其中的图表、数据，版权归原作者和原机构所有，不在上述许可范围内。公司名称仅用于标识系统来源。
+
+© 2026 Ding Jiandong
