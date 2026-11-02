@@ -60,11 +60,14 @@ def load_site():
         assert e.get("title_zh") and (e.get("note_zh") or not e.get("note")), f"site event needs title_zh and note_zh: {e['title']}"
     return s
 
+SLUG_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # one path segment: no slash, no ".."
+
 def load_issues(card_ids):
     """Newsletter issues: data/newsletter/<slug>.yaml (see templates/newsletter_issue.example.yaml)."""
     out = []
     for f in sorted(glob.glob(os.path.join(ROOT, "data/newsletter/*.yaml"))):
         i = yaml.safe_load(open(f)); i["slug"] = os.path.basename(f)[:-5]
+        if not SLUG_RE.fullmatch(i["slug"]): sys.exit(f"newsletter {i['slug']}: slug must be lowercase words, digits and single hyphens")
         errs = [k for k in ("title", "date", "summary", "body", "title_zh", "summary_zh", "body_zh") if not i.get(k)]
         if errs or not valid_date(str(i.get("date"))): sys.exit(f"newsletter {i['slug']}: missing/invalid {errs or 'date'} (date must be a quoted YYYY-MM-DD string)")
         i["date"] = str(i["date"])
@@ -84,6 +87,7 @@ def load_cards():
         for k in REQ:
             if k not in c: errs.append(f"{n}: missing {k}")
         if c.get("id") != n[:-5]: errs.append(f"{n}: id must equal filename")
+        if not SLUG_RE.fullmatch(str(c.get("id") or "")): errs.append(f"{n}: id must be lowercase words, digits and single hyphens")
         if c.get("evidence_level") not in EVID: errs.append(f"{n}: bad evidence_level")
         if c.get("system_type") not in TYPES: errs.append(f"{n}: bad system_type")
         for p in c.get("paradigms", []):
@@ -543,6 +547,7 @@ FB_BODY = {
 def feedback_url(kind, card=None, path=""):
     """Prefilled GitHub new-issue link, nothing is created until the reader submits it. Title carries the card id, body is the bilingual template."""
     repo = str((SITE.get("feedback") or {}).get("repo") or FB_REPO_DEFAULT).rstrip("/")
+    _must_https(repo, {"github.com"}, "feedback.repo")
     body = FB_BODY[kind].replace("{card}", card or "").replace("{url}", abs_url(LANG, path) if card else "")
     q = {"title": FB_TITLE[kind] + (card or ""), "body": body, "labels": "error-report" if kind == "error" else "system-request"}
     return f"{repo}/issues/new?" + urlencode(q, quote_via=quote)
@@ -649,8 +654,18 @@ def timeline_html(cards, root):
 
 SITE = {}
 
+def _must_https(url, hosts, what):
+    """Scheme and host allowlist for URLs that are copied into HTML (links or script addresses). Returns the same string."""
+    parts = urlparse(url)
+    host = (parts.hostname or "").lower().rstrip(".")
+    if parts.scheme != "https" or host not in hosts or parts.username or parts.password:
+        raise SystemExit(f"{what} must be https on {', '.join(sorted(hosts))}: {url}")
+    return url
+
 def subscribe_url():
-    return str((SITE.get("newsletter") or {}).get("public_url") or "https://recarch.beehiiv.com").rstrip("/") + "/subscribe"
+    base = str((SITE.get("newsletter") or {}).get("public_url") or "https://recarch.beehiiv.com")
+    _must_https(base, {"recarch.beehiiv.com"}, "newsletter.public_url")
+    return base.rstrip("/") + "/subscribe"
 
 def subscribe_link():
     """Plain link to the hosted subscribe page, for pages that do not carry the form."""
@@ -666,7 +681,9 @@ def subscribe_box(source, heading=None, compact=False):
     nl = SITE.get("newsletter") or {}
     form_id = str(nl.get("form_id") or "")
     loader = str(nl.get("embed_url") or "https://subscribe-forms.beehiiv.com/v3/loader.js")
+    _must_https(loader, {"subscribe-forms.beehiiv.com"}, "newsletter.embed_url")
     attr = loader.rsplit("/", 2)[0].rstrip("/") + "/attribution.js"
+    _must_https(attr, {"subscribe-forms.beehiiv.com"}, "newsletter attribution script")
     heading = heading or T("sub.heading_default")
     return f"""<div class="nlband compact" data-source="{E(source)}"><h2>{E(heading)}</h2><p>{E(SUB_COPY)}</p>
 <p class="nl-actions"><a class="btn" href="{E(subscribe_url())}" target="_blank" rel="noopener">{E(T("sub.noscript"))}</a> <a href="{{ROOT}}feed.xml">{E(T("sub.rss"))}</a></p>
@@ -762,7 +779,7 @@ def newsletter_page(issues, cards):
     else:
         arch = f'<section class="blk"><h2>{E(T("nl.issues"))}</h2><p class="unk">{T("nl.none", feed=f'<a href="../feed.xml">{E(T("nl.none_feed"))}</a>')}</p></section>'
     body = f"""<div class="wrap"><article class="sys"><h1>{E(T('nl.h1'))}</h1><p class="lead">{E(SUB_COPY)} {E(T('nl.lead'))}</p>
-{subscribe_box("newsletter")}<p class="sub-fine">{T('nl.past', link=f'<a href="{E(str((SITE.get("newsletter") or {}).get("public_url") or "https://recarch.beehiiv.com"))}">recarch.beehiiv.com</a>')}</p>{arch}</article></div>""".replace("{ROOT}", root)
+{subscribe_box("newsletter")}<p class="sub-fine">{T('nl.past', link=f'<a href="{E(_must_https(str((SITE.get("newsletter") or {}).get("public_url") or "https://recarch.beehiiv.com"), {"recarch.beehiiv.com"}, "newsletter.public_url"))}">recarch.beehiiv.com</a>')}</p>{arch}</article></div>""".replace("{ROOT}", root)
     return page(T("nl.title"), T("nl.desc"), body, root, "newsletter/")
 
 def issue_page(i, by_id):
@@ -850,7 +867,9 @@ def load_diagrams(cards):
     d = os.path.join(ROOT, "data", "diagrams")
     ids = {c["id"]: c for c in cards}
     for f in sorted(glob.glob(os.path.join(d, "*.yaml"))):
-        i = os.path.basename(f)[:-5]; g = yaml.safe_load(open(f)); errs = []
+        i = os.path.basename(f)[:-5]
+        if not SLUG_RE.fullmatch(i): sys.exit(f"diagram {i}: id must be lowercase words, digits and single hyphens")
+        g = yaml.safe_load(open(f)); errs = []
         if i not in ids: sys.exit(f"diagram {i}: no such card")
         cap = g.get("caption") or {}
         for k in ("fig", "work", "url"):
@@ -1347,6 +1366,19 @@ def about_page(n):
 def write(path, content):
     p = os.path.join(OUT, path); os.makedirs(os.path.dirname(p), exist_ok=True)
     open(p, "w", encoding="utf-8").write(content)
+
+def _write_inside_out(path, content, _raw=write):
+    """Keep every generated file inside OUT (dist/, or whatever OUT is). A card id or slug of '..' must not escape it."""
+    rel = str(path).replace("\\", "/")
+    if not rel or rel.startswith("/") or "\x00" in rel or any(part == ".." for part in rel.split("/")):
+        raise SystemExit(f"refusing to write outside the build directory: {path}")
+    root = os.path.abspath(OUT)
+    dest = os.path.abspath(os.path.join(root, rel))
+    if os.path.commonpath([root, dest]) != root:
+        raise SystemExit(f"refusing to write outside the build directory: {path}")
+    _raw(rel, content)
+
+write = _write_inside_out
 
 def not_found_page(root, bilingual, en_html=""):
     """404. GitHub Pages serves the root 404.html at any depth, so links use the site's absolute base path: zh first, English below."""

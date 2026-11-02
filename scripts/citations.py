@@ -21,6 +21,31 @@ OUT = os.path.join(ROOT, "data", "citations.json")
 UA = {"User-Agent": "RecArch-citations/1.0 (static database; contact via site)"}
 S2 = "https://api.semanticscholar.org/graph/v1/paper/"
 FIELDS = "title,year,citationCount,externalIds,authors"
+ALLOWED_HOSTS = {"api.semanticscholar.org", "api.openalex.org"}
+
+def _check_url(url):
+    parts = urllib.parse.urlsplit(url)
+    host = (parts.hostname or "").lower().rstrip(".")
+    if parts.scheme != "https" or host not in ALLOWED_HOSTS or parts.username or parts.password:
+        raise ValueError(f"refusing URL outside the citation API allowlist: {url}")
+
+class _GuardRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _check_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+_OPENER = urllib.request.build_opener(_GuardRedirect)
+
+def _open(req, timeout):
+    _check_url(req.full_url)
+    return _OPENER.open(req, timeout=timeout)
+
+def _citations_path():
+    data = os.path.realpath(os.path.join(ROOT, "data"))
+    dest = os.path.realpath(OUT)
+    if os.path.commonpath([data, dest]) != data or os.path.basename(dest) != "citations.json":
+        raise SystemExit("citations output must stay at data/citations.json")
+    return dest
 
 # Cards deliberately without a count (reason is printed, not shown on the site).
 NO_PAPER = {
@@ -30,7 +55,7 @@ NO_PAPER = {
 def get(url, tries=6):
     for i in range(tries):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+            with _open(urllib.request.Request(url, headers=UA), 30) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
             if e.code == 404: return None
@@ -62,7 +87,7 @@ def s2_prefetch(queries):
         for attempt in range(6):
             try:
                 req = urllib.request.Request(S2 + "batch?fields=" + FIELDS, data=json.dumps({"ids": chunk}).encode(), headers={**UA, "Content-Type": "application/json"})
-                with urllib.request.urlopen(req, timeout=90) as r: recs = json.load(r)
+                with _open(req, 90) as r: recs = json.load(r)
                 for q, rec in zip(chunk, recs): S2CACHE[q] = rec
                 break
             except urllib.error.HTTPError as e:
@@ -179,7 +204,8 @@ def lookup_card(c, today):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--only"); ap.add_argument("--dry", action="store_true"); a = ap.parse_args()
     today = dt.date.today().isoformat()
-    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    out_path = _citations_path()
+    old = json.load(open(out_path)) if os.path.exists(out_path) else {}
     res = dict(old); problems = []
     qs = []
     for f in glob.glob(os.path.join(ROOT, "data/systems/*.yaml")):
@@ -200,7 +226,7 @@ def main():
         print(f"{cid}: {e['count']} ({e['source']}) {e['matched_title'][:60]}" + (" [" + " + ".join(f"{p['name']} {p['count']}" for p in e["papers"]) + "]" if len(e["papers"]) > 1 else "") + (" [venue+arXiv summed]" if e.get("note") else ""))
         res[cid] = e
     if not a.dry:
-        json.dump(dict(sorted(res.items())), open(OUT, "w"), indent=1, ensure_ascii=False); open(OUT, "a").write("\n")
+        json.dump(dict(sorted(res.items())), open(out_path, "w"), indent=1, ensure_ascii=False); open(out_path, "a").write("\n")
     print(f"{len(res)} cards with counts; problems: {problems}")
 
 if __name__ == "__main__": main()
