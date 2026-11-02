@@ -1,0 +1,53 @@
+surface|阿里十亿级推荐系统的多任务排序，预测点击、加购、收藏和购买
+era_reason|图增强的多任务 CTR 排序器：宏图专家与宏预测塔扩展了混合专家多任务学习，没有自回归或生成式主张。
+tldr|MGOE 把十亿级任务图合并成一张宏图，为多任务排序加上宏图专家；阿里 A/B 中 GMV 较 MMoE +16.46%。
+summary|MGOE 由高校与阿里集团合作完成并部署在阿里，被呈现为首个面向十亿级多任务推荐的图神经网络架构。宏任务合并图把不同任务的交互图合并成一个宏结构，让任务特定的图信息进入多任务排序器，而无需分别运行多个十亿级 GNN。宏图专家从合并后的图学习，宏预测塔借助按用户的宏任务查找表和跨任务级联读出，聚合微观与宏观信息。在阿里线上，它作为排序模型服务点击、加购、收藏、购买四个任务，替代了线上表现最好的排序模型。
+core_idea|把不同任务的十亿级图合并成一张宏图，用宏图专家为多任务排序供信息，而不必按任务各跑 GNN。
+deployed_in|阿里领先的十亿级推荐系统的多任务排序
+scale_short|A/B 覆盖约 5 亿用户和 12 亿物品
+key_result|阿里两周 A/B 对比 MMoE：GMV +16.46%、CVR +5.88%、PCTR +2.16%；对比 MacGNN GMV +7.74%
+results_reported|阿里平台线上 A/B，表 4，MGOE 作为排序模型两周平均相对变化：对比 MMoE，PCTR +2.16%、UCTR +1.63%、CVR +5.88%、GMV +16.46%、StayTime +4.12%；对比 MacGNN，PCTR +0.93%、UCTR +0.75%、CVR +3.69%、GMV +7.74%、StayTime +3.26%。离线见表 1，相对 10 个多任务基线中的最优者：平均 AUC 在 Taobao 提升 13.42%、QB-video 7.84%、QK-article 3.65%，平均 Logloss 分别改善 3.68%、5.23%、10.77%；Taobao 平均 AUC 0.6981，QB-video 0.7839，QK-article 0.8700，单任务最大增益是 Taobao 收藏任务 AUC 0.8016 即 +23.68%。消融见表 2，Taobao 平均 AUC：完整版 0.6936、去偏好分组 0.6919、去宏任务调整 0.6836、去级联 0.6927；QB-video：完整版 0.7715、去偏好分组 0.7700、去宏任务调整 0.7513、去级联 0.7640。效率见 4.5 节：参数 5.04M，比 PLE 的 13.29M 低约 62.08%，比 MMoCEG 的 12.22M 低 58.76%；GPU 显存 1194 MiB，比 MoGENet 低约 60.10%，比 MMoCEG 低 19.66%；Taobao 上推理时间比图基线快 45.13% 到 72.64%，QK-article 上最高快 80.49%。
+serving_infra|论文报告的是离线效率而非服务基础设施：Taobao 上平均推理时间比 POGCN 快 55.83%、比 MoGENet 快 72.64%、比 MMoCEG 快 45.13%；QK-article 上为 56.31%、80.49%、35.58%。未描述生产服务栈。
+stages.0.model_family|多任务混合专家排序器，含宏任务合并图、宏图专家和带宏任务调整与级联读出的宏预测塔
+stages.0.details|MTMG 用基于偏好的分组权重把各任务交互矩阵合并为宏节点与宏边。每个任务保留微观特征上的专家，宏图专家提供任务特定的宏嵌入；塔按任务聚合两者，最终预测乘上查找表给出的用户级宏任务调整。
+id_tokenization.approach|普通用户和物品 ID 嵌入；无 Semantic ID
+id_tokenization.details|离线设置中用户与物品以大小为 10 的嵌入进入模型；宏结构是对微观节点的划分，不是物品 tokenizer。
+features_signals.0|用户与物品嵌入及微观特征
+features_signals.1|点击、加购、收藏、购买四个任务的交互矩阵，合并进宏图
+features_signals.2|基于偏好的分组权重与温度加权的宏节点聚合
+features_signals.3|用于任务调整的用户宏任务查找表
+training.mode|离线
+training.objectives.0|按任务二元交叉熵加权求和，加 L1 与 L2 正则
+training.notes|PyTorch，Xavier 初始化，batch size 1024，Adam，学习率从 1e-2、5e-2、1e-3、5e-3 中搜索；温度在 Taobao 上 1.1 最优、QB-video 上 1.5 最优，宏用户节点取 20 最好。
+scale.0.metric|线上 A/B 规模
+scale.0.value|约 5 亿用户和 12 亿物品
+scale.1.metric|参数量
+scale.1.value|5.04M
+scale.2.metric|GPU 显存
+scale.2.value|1194 MiB
+results_table.online.0.setting|阿里平台，两周 A/B，排序模型
+results_table.online.1.setting|阿里平台，两周 A/B，排序模型
+results_table.online.2.setting|阿里平台，两周 A/B，排序模型
+results_table.offline.0.setting|Taobao 数据集，多任务平均
+results_table.offline.1.setting|QB-video 数据集，多任务平均
+results_table.online.0.versus|MMoE
+results_table.online.1.versus|MMoE
+results_table.online.2.versus|MacGNN
+results_table.offline.0.versus|10 个多任务基线中最优者，+13.42%
+results_table.offline.1.versus|10 个多任务基线中最优者，+7.84%
+caveats.0|效率对比是公开数据集上的离线基准，不是生产服务测量。
+caveats.1|论文说明 MacGNN 主要考虑点击任务，而 MMoE 与 MGOE 考虑点击、加购、收藏和购买。
+unknown_fields.0|A/B 流量占比与显著性水平
+unknown_fields.1|生产服务栈与延迟
+unknown_fields.2|生产模型的训练算力
+unknown_fields.3|A/B 运行在阿里哪个场景
+code.repos.0.owner|论文作者
+code.repos.0.note|MGOE 官方实现，含 code 与 data 目录，说明为 KDD 2026 源码；不含生产平台。
+version_note|读的是 arXiv 2506.10520 v5 的 PDF，该版本带完整 KDD 2026 ACM 引用和 DOI 10.1145/3770854.3783958；DOI 已在 Crossref 核对，ACM 页面本身检查时返回 403。arXiv v1 于 2025 年六月首发。
+deployment.scenario|阿里领先的十亿级推荐系统中，服务点击、加购、收藏、购买的多任务排序
+deployment.ab_duration|两周平均相对变化
+deployment.baseline|线上表现最好的排序模型 MMoE 与 MacGNN，分别被 MGOE 替代
+deployment.training_compute|离线 Taobao 设置：参数 5.04M，GPU 显存 1194 MiB；生产训练算力未报告
+deployment.serving_latency|仅离线基准：Taobao 上比图基线推理快 45.13% 到 72.64%；生产延迟未报告
+deployment.notes.0|线上规模约为 5 亿用户和 12 亿物品。
+deployment.notes.1|MacGNN 只覆盖点击任务，而 MMoE 与 MGOE 覆盖四个任务。

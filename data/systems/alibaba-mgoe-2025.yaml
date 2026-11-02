@@ -1,0 +1,147 @@
+id: alibaba-mgoe-2025
+name: MGOE
+company: Alibaba
+surface: Multi-task ranking for a leading billion-scale recommender system at Alibaba, predicting clicking, adding to cart, favoring and buying
+year: 2025
+era: deep
+era_reason: "A graph-augmented multi-task CTR ranker: macro graph experts and a macro prediction tower extend mixture-of-experts multi-task learning, with no autoregressive or generative claim."
+first_public: "2025-06"
+venue: "KDD 2026"
+venue_year: 2026
+published_version_checked: true
+primary_source: "https://doi.org/10.1145/3770854.3783958"
+added_on: "2026-11-02"
+last_verified: "2026-11-02"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "MGOE merges billion-scale task graphs into one macro graph and adds macro graph experts to multi-task ranking; the Alibaba A/B lifted GMV +16.46% over MMoE."
+summary: "MGOE, built by a university collaboration with Alibaba Group and deployed at Alibaba, is presented as the first graph neural network architecture for billion-scale multi-task recommendation. A Macro Task Merging Graph merges the interaction graphs of different tasks into one macro structure, so task-specific graph information enters a multi-task ranker without running separate billion-scale GNNs. Macro graph experts learn from the merged graph, and a Macro Prediction Tower aggregates micro and macro information with a per-user macro task lookup and cascading readout across tasks. Online at Alibaba it served as the ranking model for clicking, adding to cart, favoring and buying, replacing the online best-performed rankers."
+paradigms:
+- graph-neural-network
+- multi-task
+stages:
+- stage: rank
+  model_family: "Multi-task mixture-of-experts ranker with a Macro Task Merging Graph, macro graph experts and a Macro Prediction Tower with macro task adjustment and cascading readout"
+  details: "MTMG merges per-task interaction matrices into macro nodes and macro edges with preference-based grouping weights. Each task keeps experts over micro features while macro graph experts supply task-specific macro embeddings; the tower combines them per task, and the final prediction multiplies a user-specific macro task adjustment from the lookup table."
+id_tokenization:
+  approach: "Plain user and item IDs with embeddings; no semantic IDs"
+  details: "Users and items enter as embeddings of size 10 in the offline setup; the macro structure is a partition of micro nodes, not an item tokenizer."
+features_signals:
+- "User and item embeddings with micro features"
+- "Task interaction matrices for clicking, adding to cart, favoring and buying, merged into the macro graph"
+- "Preference-based grouping weights and a temperature-weighted macro node aggregation"
+- "User macro task lookup table for task adjustment"
+training:
+  mode: Offline
+  objectives:
+  - "Weighted sum of per-task binary cross-entropy with L1 and L2 regularization"
+  notes: "PyTorch, Xavier initialization, batch size 1024, Adam, learning rate searched from 1e-2, 5e-2, 1e-3 and 5e-3; temperature peaks at 1.1 on Taobao and 1.5 on QB-video, and 20 macro user nodes work best."
+serving_infra: "The paper reports offline efficiency rather than serving infrastructure: on Taobao, average inference time is 55.83% faster than POGCN, 72.64% faster than MoGENet and 45.13% faster than MMoCEG; on QK-article 56.31%, 80.49% and 35.58%. No production serving stack is described."
+scale:
+- metric: Online A/B population
+  value: about 0.5 billion users and 1.2 billion items
+  note: "paper, Sec 4.6"
+- metric: Parameter size
+  value: 5.04M
+  note: "paper, Sec 4.5.2"
+- metric: GPU memory
+  value: 1194 MiB
+  note: "paper, Sec 4.5.3, offline Taobao setup"
+results_reported: "Online A/B on the Alibaba platform, Table 4, two weeks of average relative variation with MGOE as the ranking model: against MMoE, PCTR +2.16%, UCTR +1.63%, CVR +5.88%, GMV +16.46%, StayTime +4.12%; against MacGNN, PCTR +0.93%, UCTR +0.75%, CVR +3.69%, GMV +7.74%, StayTime +3.26%. Offline, Table 1, against the best of 10 multi-task baselines: average AUC improvements of 13.42% on Taobao, 7.84% on QB-video and 3.65% on QK-article, with average Logloss gains of 3.68%, 5.23% and 10.77%; Taobao average AUC 0.6981, QB-video 0.7839, QK-article 0.8700, and the largest single-task gain is Favor AUC 0.8016 at +23.68% on Taobao. Ablations, Table 2, Taobao average AUC: full 0.6936, w/o preference 0.6919, w/o adjustment 0.6836, w/o cascading 0.6927; QB-video: full 0.7715, w/o preference 0.7700, w/o adjustment 0.7513, w/o cascading 0.7640. Efficiency, Sec 4.5: 5.04M parameters, about 62.08% below PLE at 13.29M and 58.76% below MMoCEG at 12.22M; 1194 MiB GPU memory, about 60.10% below MoGENet and 19.66% below MMoCEG; inference time 45.13% to 72.64% faster than graph baselines on Taobao and up to 80.49% faster on QK-article."
+caveats:
+- "The efficiency comparisons are offline benchmarks on the public datasets, not production serving measurements."
+- "The paper states that MacGNN mainly considers the clicking task, while MMoE and MGOE consider clicking, adding to cart, favoring, and buying."
+unknown_fields:
+- A/B traffic share and significance levels
+- Production serving stack and latency
+- Training compute for the production model
+- Which Alibaba surface ran the A/B
+sources:
+- title: "Macro Graph of Experts for Billion-Scale Multi-Task Recommendation, KDD 2026"
+  url: https://doi.org/10.1145/3770854.3783958
+  type: paper
+- title: "MGOE, arXiv 2506.10520"
+  url: https://arxiv.org/abs/2506.10520
+  type: paper
+- title: "Official MGOE implementation"
+  url: https://github.com/RainmannnnN/MGOE
+  type: source_code
+version_note: "Read from the arXiv 2506.10520 v5 PDF, which carries the full KDD 2026 ACM citation and DOI 10.1145/3770854.3783958; the DOI was verified against Crossref, and the ACM page itself returned 403 when checked. arXiv v1 was first posted in June 2025."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2506.10520
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, preliminaries, methodology, experiments including Tables 1 to 4 and Figures 3 to 5, efficiency study, online evaluation, related work, conclusion"
+  verified_on: "2026-11-02"
+  published_pdf: "camera-ready with proceedings DOI read from arXiv on 2026-11-02; ACM page not readable"
+code:
+  status: official_full
+  checked_on: "2026-11-02"
+  repos:
+  - url: https://github.com/RainmannnnN/MGOE
+    owner: "the paper authors"
+    official: true
+    note: "Official implementation of MGOE with code and data directories, described as the KDD 2026 source code; no production platform."
+core_idea: "Merge the billion-scale graphs of different tasks into one macro graph, and let macro graph experts feed multi-task ranking without running per-task GNNs."
+deployed_in: "Multi-task ranking in a leading billion-scale recommender system at Alibaba"
+scale_short: "A/B over about 0.5 billion users and 1.2 billion items"
+key_result: "Two-week A/B at Alibaba vs MMoE: GMV +16.46%, CVR +5.88%, PCTR +2.16%; vs MacGNN GMV +7.74%"
+results_table:
+  online:
+  - setting: "Alibaba platform, two-week A/B, ranking model"
+    method: MGOE
+    metric: GMV
+    result: "+16.46%"
+    versus: "MMoE"
+  - setting: "Alibaba platform, two-week A/B, ranking model"
+    method: MGOE
+    metric: CVR
+    result: "+5.88%"
+    versus: "MMoE"
+  - setting: "Alibaba platform, two-week A/B, ranking model"
+    method: MGOE
+    metric: PCTR
+    result: "+0.93%"
+    versus: "MacGNN"
+  offline:
+  - setting: "Taobao dataset, multi-task average"
+    method: MGOE
+    metric: AUC
+    result: "0.6981"
+    versus: "Best of 10 multi-task baselines, +13.42%"
+  - setting: "QB-video dataset, multi-task average"
+    method: MGOE
+    metric: AUC
+    result: "0.7839"
+    versus: "Best of 10 multi-task baselines, +7.84%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Multi-task ranking for clicking, adding to cart, favoring and buying in a leading billion-scale recommender system at Alibaba"
+  ab_traffic: not_reported
+  ab_duration: "Two weeks of average relative variation"
+  baseline: "The online best-performed ranking models, MMoE and MacGNN, each replaced by MGOE"
+  online_lifts:
+  - metric: "GMV vs MMoE"
+    value: "+16.46%"
+  - metric: "CVR vs MMoE"
+    value: "+5.88%"
+  - metric: "PCTR vs MMoE"
+    value: "+2.16%"
+  - metric: "UCTR vs MMoE"
+    value: "+1.63%"
+  - metric: "StayTime vs MMoE"
+    value: "+4.12%"
+  training_compute: "Offline Taobao setup: 5.04M parameters, 1194 MiB GPU memory; production training compute not reported"
+  serving_latency: "Offline benchmark only: 45.13% to 72.64% faster inference than graph baselines on Taobao; production latency not reported"
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - "The online population is about 0.5 billion users and 1.2 billion items."
+  - "MacGNN covers only the clicking task, while MMoE and MGOE cover four tasks."
+  fulltext_refs:
+  - "Table 4 and Sec 4.6: vs MMoE PCTR +2.16%, UCTR +1.63%, CVR +5.88%, GMV +16.46%, StayTime +4.12%; vs MacGNN +0.93%, +0.75%, +3.69%, +7.74%, +3.26%; two weeks, about 0.5 billion users, 1.2 billion items"
+  - "Sec 4.5: 5.04M parameters, 1194 MiB GPU, inference 55.83% faster than POGCN, 72.64% than MoGENet, 45.13% than MMoCEG on Taobao"
+  basis: full_text
+  checked_on: "2026-11-02"
