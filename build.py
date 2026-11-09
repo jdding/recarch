@@ -2,10 +2,11 @@
 """RecArch static site generator. Usage: python3 build.py   (env SITE_URL=https://example.com for canonical/sitemap URLs)"""
 import glob, html, json, os, posixpath, re, shutil, sys, datetime
 import yaml
+import ailayer   # AI-native layer: llms.txt, cards.json, per-card Markdown, FAQ gate, /ai/ page, optional analytics beacon
 from urllib.parse import urlparse, urlencode, quote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(ROOT, "dist")
+OUT = os.environ.get("RECARCH_OUT") or os.path.join(ROOT, "dist")   # RECARCH_OUT lets tests build into a temp dir
 SITE_URL = os.environ.get("SITE_URL", "https://recarch.example").rstrip("/")  # TODO: set real domain at launch
 E = html.escape
 
@@ -588,10 +589,10 @@ def page(title, desc, body, root, path, extra_head="", scripts="", noalt=False):
 <header class="site"><div class="wrap"><a class="logo" href="{root}">Rec<span>Arch</span></a>
 <nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a></nav>{lang_switch(root, path)}</div></header>
 <main id="main">{body}</main>
-<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a> &middot; {feedback_links()}</div></footer>
+<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a> &middot; <a href="{root}ai/">{E(T('nav.ai'))}</a> &middot; {feedback_links()}</div></footer>
 <script>{LANG_SWITCH_JS}</script>
 <script src="{sr}static/nl.js" defer></script>
-{scripts}</body></html>"""
+{scripts}{ailayer.analytics_snippet()}</body></html>"""
 
 def js_l10n():
     """Strings for the client scripts, injected as window.RECARCH_L10N. The scripts fall back to English when it is absent."""
@@ -1328,12 +1329,13 @@ def card_page(c):
 {details}
 {limits}
 <section class="blk" id="sources"><h2>{E(T('sec.sources'))}</h2>{srcs}{codeblk}</section>
+{ailayer.faq_section(c["id"], LANG, E)}
 {hist}</div></article></div>"""
     title = T("card.title", name=c["name"], company=c["company"], year=c["year"])
     desc = clip(T("card.desc", name=c["name"], company=c["company"], summary=c["summary"].strip()), 158)
     ld = {"@context":"https://schema.org","@type":"TechArticle","headline":c["name"],"inLanguage":LANG_TAG[LANG],"about":c["surface"],"datePublished":c["added_on"],"dateModified":c["last_verified"],
           "citation":[s_["url"] for s_ in c["sources"]],"publisher":{"@type":"Organization","name":"RecArch"}}
-    head = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' 
+    head = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>' + f'<link rel="alternate" type="text/markdown" href="{E(abs_url(LANG, "cards/" + c["id"] + ".md"))}">'
     return page(title, desc, body, root, f"systems/{c['id']}/", extra_head=head)
 
 NAMES = {}
@@ -1362,6 +1364,11 @@ def about_page(n):
 <section class="blk" id="feedback"><h2>{E(T('about.fb_h'))}</h2><p>{T('about.fb_p', error=f'<a href="{E(feedback_url("error"))}" target="_blank" rel="noopener nofollow">{E(T("fb.error"))}</a>', request=f'<a href="{E(feedback_url("request"))}" target="_blank" rel="noopener nofollow">{E(T("fb.request"))}</a>')}</p></section>
 {subscribe_link()}</article></div>"""
     return page(T("about.title"), T("about.desc"), body, root, "about/")
+
+def ai_page():
+    root = "../"
+    body = ailayer.ai_page_body(LANG, SITE_URL, E)
+    return page(ailayer.PAGE[LANG]["title"], ailayer.PAGE[LANG]["desc"], body, root, "ai/")
 
 def write(path, content):
     p = os.path.join(OUT, path); os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -1425,6 +1432,7 @@ def main():
     allc = load_cards(); SITE = load_site(); check_v2(allc); check_deployment(allc); TAXONOMY.update(load_taxonomy()); diag_en = load_diagrams(allc); CITES.update(load_citations(allc))
     by_id = {c["id"]: c for c in allc}; issues = load_issues(by_id)
     topics = load_topics(by_id)
+    ailayer.set_faq(ailayer.load_faq({c["id"] for c in allc if is_active(c)}))   # data/faq/<id>.yaml; only files with reviewed: true are published
     # Chinese data: every required string present, no number or parenthesis the English source does not have
     errs, warns = [], []
     zcards = [zh_card(c, errs, warns) for c in allc]
@@ -1438,6 +1446,7 @@ def main():
     if os.path.exists(OUT): shutil.rmtree(OUT)
     os.makedirs(OUT)
     shutil.copytree(os.path.join(ROOT, "static"), os.path.join(OUT, "static"))   # shared by both languages, at the site root
+    ailayer.render_skill(OUT)   # skill/recarch/SKILL.md, MCP URL from RECARCH_MCP_URL
     today = datetime.date.today().isoformat(); urls = []; lastmod = None
     for lang in LANGS:
         set_lang(lang); pre = lang_prefix(lang)
@@ -1457,10 +1466,12 @@ def main():
         for i in issues_l: w(f"newsletter/{i['slug']}/index.html", issue_page(i, by_idl))
         w("changelog/index.html", changelog_page(ev)); w("feed.xml", feed_xml(ev))
         w("about/index.html", about_page(len(cards)))
+        w("ai/index.html", ai_page())
+        ailayer.build_ai_outputs(w, lang, cards, topics_l, {"era": ERAS, "evid": EVID, "code": CODE_STATUS, "depev": DEP_EVID, "stage": STAGE_LABEL}, SITE_URL, T("nr"))
         w("data/systems.json", json.dumps(cards, ensure_ascii=False))   # active only: compare picker
         if lang == "zh":
             lastmod = {"home": ev[0]["date"] if ev else today, "ev": ev[0]["date"], "issue": issues[0]["date"] if issues else ev[0]["date"], "cards": {c["id"]: c["last_verified"] for c in cards}}
-            urls = [("", lastmod["home"])] + [(f"systems/{c['id']}/", c["last_verified"]) for c in cards] + [("changelog/", lastmod["ev"]), ("newsletter/", lastmod["issue"])] + [(f"newsletter/{i['slug']}/", i["date"]) for i in issues] + [("topics/", lastmod["ev"])] + [(f"topics/{t['slug']}/", lastmod["ev"]) for t in topics] + [("compare/", lastmod["ev"]), ("about/", lastmod["ev"])]
+            urls = [("", lastmod["home"])] + [(f"systems/{c['id']}/", c["last_verified"]) for c in cards] + [("changelog/", lastmod["ev"]), ("newsletter/", lastmod["issue"])] + [(f"newsletter/{i['slug']}/", i["date"]) for i in issues] + [("topics/", lastmod["ev"])] + [(f"topics/{t['slug']}/", lastmod["ev"]) for t in topics] + [("compare/", lastmod["ev"]), ("about/", lastmod["ev"]), ("ai/", lastmod["ev"])]
     # 404: GitHub Pages only serves the root file, so it is bilingual. en/404.html mirrors it for other hosts.
     base = (urlparse(SITE_URL).path.rstrip("/") + "/")
     set_lang("en"); en_404 = not_found_page(base + "en/", False); write("en/404.html", en_404)

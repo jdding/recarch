@@ -22,6 +22,9 @@ jobs:
       - name: Build site
         env:
           SITE_URL: https://jdding.github.io/recarch
+          # both stay empty (analytics off, placeholder MCP URL) until the owner sets these repository variables
+          RECARCH_CF_BEACON_TOKEN: ${{ vars.RECARCH_CF_BEACON_TOKEN }}
+          RECARCH_MCP_URL: ${{ vars.RECARCH_MCP_URL }}
         run: python3 build.py && touch dist/.nojekyll
       - uses: actions/setup-node@v4
         with:
@@ -32,6 +35,7 @@ jobs:
         run: |
           npm install --no-save --prefix /tmp/jt jsdom
           python3 tests/carousel_fixture.py /tmp/car-fixtures
+          python3 tests/faq_validator_test.py
           for t in tests/*.test.js; do NODE_PATH=/tmp/jt/node_modules node "$t"; done
       - uses: actions/upload-pages-artifact@v3
         with:

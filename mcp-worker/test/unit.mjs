@@ -1,0 +1,12 @@
+import { tokenize, buildIndex, search } from "../src/search.js";
+import { sessionHash } from "../src/log.js";
+import fs from "node:fs";
+let fails = 0; const ok = (c, m) => { console.log(c ? "ok  " : "FAIL", m); if (!c) fails++; };
+ok(tokenize("HSTU Wide-and-Deep 生成式召回").includes("生成"), "CJK bigrams");
+ok(tokenize("Qwen2.5-0.5B").includes("qwen2.5-0.5b"), "latin ids keep dots and hyphens");
+const en = JSON.parse(fs.readFileSync(new URL("../data/cards.en.json", import.meta.url), "utf8"));
+const ix = buildIndex(en.cards);
+for (const c of en.cards.slice(0, 20)) ok(search(ix, c.name, 3).some((h) => h.card.id === c.id), `name query finds ${c.id}`);
+const a = await sessionHash("1.2.3.4", "2026-11-02"), b = await sessionHash("1.2.3.4", "2026-11-03"), c2 = await sessionHash("1.2.3.4", "2026-11-02");
+ok(a === c2 && a !== b && !a.includes("1.2.3.4") && a.length === 16, "session hash is stable per day, changes per day, hides the IP");
+console.log(fails ? `${fails} FAILED` : "all passed"); process.exit(fails ? 1 : 0);

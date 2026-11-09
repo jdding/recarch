@@ -35,7 +35,8 @@ serving_infra: null
 scale:
   - {metric: Training pairs, value: "1.7 billion", note: "paper"}
 results_reported: Paper presents offline NDCG gains and online booking gains from the NN stages.
-caveats: [Paper explicitly documents failed approaches (listing ID embeddings, multi-task with long views).]
+caveats:
+- "Paper explicitly documents failed approaches: listing ID embeddings and multi-task learning with long views."
 unknown_fields: [candidate retrieval, latency, QPS]
 sources:
   - {title: "Applying Deep Learning to Airbnb Search, KDD 2019", url: "https://doi.org/10.1145/3292500.3330658", type: paper}

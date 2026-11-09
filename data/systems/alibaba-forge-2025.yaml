@@ -15,7 +15,7 @@ last_verified: "2026-11-01"
 updates: []
 system_type: recommendation
 evidence_level: production_described
-tldr: "Taobao's FORGE benchmarks how to build semantic IDs for generative retrieval; swapping its tuned SID recipe for the base recipe gave transaction count +0.35% in a 7-day A/B on Guess You Like."
+tldr: "Taobao's FORGE benchmarks how to build semantic IDs for generative retrieval; moving from the base SID recipe to its tuned Final recipe gave transaction count +0.35% in a 7-day A/B on Guess You Like."
 summary: 'FORGE is a benchmark and a dataset around one question: how should semantic IDs (SIDs) be built for a generative retrieval (GR) model. The SID pipeline has three steps. Feature extraction fuses text and image features of an item with a pretrained multimodal encoder and a QFormer, optionally with a contrastive loss over item-to-item co-occurrence. SID encoding quantizes the fused feature into three codewords with RQ-VAE, compared with random assignment, multiple VQ, OPQ and RQ-Kmeans. Post-processing limits how many items share one SID, by a KNN-based or a random-based rule. A decoder-only LLM such as Qwen2.5 or a T5 model reads the user history as SIDs and generates the target SID with a dynamic beam search that widens from 300 to 600 to 1200 beams. The paper also proposes two training-free SID quality metrics, Embedding HitRate and the Gini coefficient, and releases the AL-GR dataset. The tuned recipe was tested online on the Taobao homepage and then deployed at full scale.'
 paradigms:
 - generative-retrieval

@@ -1,0 +1,21 @@
+{
+  "name": "recarch-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only MCP server for RecArch cards, a Cloudflare Worker",
+  "scripts": {
+    "sync-data": "node scripts/sync-data.mjs",
+    "dev": "npm run sync-data && wrangler dev",
+    "deploy": "npm run sync-data && wrangler deploy",
+    "test": "node test/unit.mjs",
+    "test:client": "node test/client.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

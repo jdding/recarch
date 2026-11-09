@@ -14,6 +14,7 @@ nav.newsletter || Newsletter || 周报
 nav.rss_title || Atom feed || Atom 订阅源
 nav.sponsor || Sponsor || 赞助
 nav.method || Method || 方法
+nav.ai || Use in your AI || 在你的 AI 里用
 footer.text || RecArch · structured notes on how real companies build recommender, search and ranking systems. Every card cites its public sources; unknowns are marked unknown. || RecArch · 结构化整理真实公司如何构建推荐、搜索和排序系统。每张卡片都标注公开来源，未知信息一律标为未知。
 nr || not reported || 未报告
 

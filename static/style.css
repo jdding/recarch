@@ -338,3 +338,6 @@ table.cmp th[scope=row],th[scope=row]{color:#3f3f46}
 @media(max-width:640px){.nlband.compact{padding:14px 16px}.nlband.compact h2{font-size:18px}}
 .cmpmsg{flex-basis:100%;font-size:13px;color:#fde68a}.cmpbar{flex-wrap:wrap;justify-content:center}.cmp-note{background:#fffbeb;border:1px solid #fcd34d;color:#78350f;border-radius:8px;padding:8px 12px;margin:8px 0}
 table.cmp .rm{border:0;background:transparent;color:var(--mut);font-size:16px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:6px}table.cmp .rm:hover{background:#f4f4f5;color:var(--fg)}
+/* AI layer: reviewed FAQ and the "use in your AI" page */
+.faq-i{border-top:1px solid var(--line);padding:8px 0}.faq-i summary{cursor:pointer;font-weight:600}.faq-i p{margin:6px 0 2px}
+pre.code{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.5}

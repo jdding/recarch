@@ -17,7 +17,7 @@ for (const id of ids.filter((i) => !redirects.includes(i))) {
   const d = new JSDOM(fs.readFileSync(`${dist}/systems/${id}/index.html`, "utf8")).window.document;
   const art = d.querySelector("article.sys.v2");
   ok(!!art, `${id}: uses the v2 layout`); if (!art) continue;
-  const seen = [...art.querySelectorAll("[id]")].map((e) => e.id).filter((i) => [...base, "architecture"].includes(i));
+  const seen = [...art.querySelectorAll("[id]")].map((e) => e.id).filter((i) => [...base, "architecture", "faq"].includes(i));
   const hasArch = seen.includes("architecture");
   const hasLim = seen.includes("limitations");
   const hasDep = seen.includes("deployment");
@@ -28,6 +28,7 @@ for (const id of ids.filter((i) => !redirects.includes(i))) {
     ok(!!d.querySelector(".toc a[href='#deployment']"), `${id}: TOC links to deployment`);
   } else ok(!d.querySelector(".toc a[href='#deployment']"), `${id}: no TOC link without a deployment block`);
   if (hasArch) want.splice(2, 0, "architecture");
+  if (seen.includes("faq")) want.splice(want.indexOf("history"), 0, "faq"); // optional, only after a human review; ai_build_flags.test.js covers when it appears
   ok(eq(seen, want), `${id}: sections in order, got ${seen.join(" > ")}`);
   if (hasArch) {
     withDiagram.push(id);

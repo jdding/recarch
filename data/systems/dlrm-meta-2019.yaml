@@ -32,7 +32,8 @@ training:
 serving_infra: Paper characterises memory-capacity/bandwidth-bound embedding lookups and system implications.
 scale: []
 results_reported: Public-benchmark/system performance characterisation, not a production A/B.
-caveats: [Reference model, not a description of one production surface's full funnel.]
+caveats:
+- "Reference model, not a description of one production surface's full funnel."
 unknown_fields: [production surface, latency, production scale]
 sources:
   - {title: "Deep Learning Recommendation Model for Personalization and Recommendation Systems, arXiv 1906.00091", url: "https://arxiv.org/abs/1906.00091", type: paper}

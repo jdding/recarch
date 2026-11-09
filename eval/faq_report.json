@@ -1,0 +1,125 @@
+{
+ "candidates": 869,
+ "kept": 848,
+ "discarded": [
+  {
+   "id": "taobao-cq-sid-2026",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "alibaba-hisac-2026",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "kuaishou-onemall-2026",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "linkedin-semantic-search-2026",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "x-phoenix-for-you-2026",
+   "key": "scale",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "alibaba-bar-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "amap-intsr-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "bytedance-lemur-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "tencent-lfm4ads-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "meituan-mtgenrec-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "netflix-foundation-model-2025",
+   "key": "results",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "alibaba-urm-2025",
+   "key": "results",
+   "reason": "answer too long"
+  },
+  {
+   "id": "linkedin-lirank-2024",
+   "key": "training",
+   "reason": "parentheses in Chinese copy"
+  },
+  {
+   "id": "instagram-explore-2023",
+   "key": "results",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "twitter-x-for-you-2023",
+   "key": "results",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "uber-eats-two-tower-2023",
+   "key": "results",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "pinnerformer-2022",
+   "key": "caveats",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "pinsage-2018",
+   "key": "caveats",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "glmix-linkedin-2016",
+   "key": "caveats",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "google-ads-ftrl-2013",
+   "key": "caveats",
+   "reason": "card has no such field"
+  },
+  {
+   "id": "google-ads-ftrl-2013",
+   "key": "scale",
+   "reason": "card has no such field"
+  }
+ ],
+ "mode": "templates",
+ "adversarial": {
+  "out_of_scope": 20,
+  "unreported_trap": 30,
+  "cross_card": 15,
+  "prompt_injection": 20,
+  "pdf_request": 15
+ },
+ "cards": 106,
+ "discard_reasons": {
+  "answer too long": 10,
+  "card has no such field": 10,
+  "parentheses in Chinese copy": 1
+ }
+}

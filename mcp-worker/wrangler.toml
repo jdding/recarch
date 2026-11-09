@@ -1,0 +1,23 @@
+name = "recarch-mcp"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Disable workers.dev once a custom domain route exists, workers.dev is unreliable from mainland China.
+workers_dev = true
+
+# After the domain is on Cloudflare, uncomment and set the real zone:
+# routes = [{ pattern = "mcp.example.org", custom_domain = true }]
+
+[vars]
+SITE_URL = "https://jdding.github.io/recarch"
+# Set to "1" in `wrangler dev` only, exposes GET /_stats with in-memory counters.
+DEBUG_STATS = "0"
+
+# Optional, usage analytics. Create the dataset by enabling Workers Analytics Engine in the dashboard, then uncomment.
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "recarch_mcp"
+
+[observability]
+enabled = true
