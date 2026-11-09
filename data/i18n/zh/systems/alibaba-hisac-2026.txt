@@ -1,0 +1,70 @@
+surface|淘宝首页「猜你喜欢」信息流排序阶段的用户行为序列建模
+era_reason|以 RQ-VAE 层级码本做语义 ID 分词是核心机制；边界情况在于它服务的排序器是判别式注意力模型。
+tldr|HiSAC 把最长 10,000 条交互的用户历史压缩成个性化语义 ID 兴趣代理；在淘宝首页信息流上 CTR 提升 1.65%，服务延迟降低 40% 以上。
+summary|HiSAC 由阿里集团团队构建，会议程序页署名淘宝天猫集团，是一个序列压缩框架，把高活跃用户超过 10,000 条交互的超长行为历史压缩成紧凑的个性化兴趣表示，用于排序阶段。物品由冻结多模态编码器和 RQ-VAE 映射到全局层级码本上的多层语义 ID；层级投票机制在全局语义树上稀疏激活每用户兴趣代理，软路由注意力按相似度加权聚合全部历史信号，以控制量化误差并保留长尾偏好。系统部署于淘宝首页「猜你喜欢」，服务数亿日活用户，在对比线上最强前代压缩方法的两周 A/B 测试中取得 CTR +1.65%、CTCVR +2.24%、订单 +2.56%，端到端推理延迟降低 40% 以上至单次请求约 21 毫秒。
+core_idea|在层级语义码本上做稀疏激活的个性化兴趣代理，为排序阶段压缩超长行为序列。
+deployed_in|淘宝首页「猜你喜欢」的排序阶段序列建模
+scale_short|服务数亿日活用户，历史序列最长 10,000 条交互，单次请求约 21 毫秒
+key_result|淘宝首页两周 A/B：CTR +1.65%、IPV +1.93%、CTCVR +2.24%、订单 +2.56%；单次请求延迟从 100 毫秒以上降到约 21 毫秒
+results_reported|线上 A/B 见 4.7 节表 3：在淘宝首页「猜你喜欢」对比线上最强前代压缩方法的两周受控测试，IPV +1.93%、CTR +1.65%、CTCVR +2.24%、订单 +2.56%，论文称均统计显著，覆盖数亿日活用户。软路由长尾效应见 4.7 节：线上出现频次前 10% 的物品占 90% 以上曝光；HiSAC 下前 10% 之外物品的 CTR 提升 12.6%，每用户被曝光的不同物品类目数增加 5.7%。离线见 4.2 节表 1，工业数据集为 14 天淘宝交互日志、200M 用户、1B 物品、30B 条交互记录：序列长度 10k 时 HiSAC 达 AUC 0.6444、GAUC 0.5525，对未压缩 MHA 0.6419/0.5503 与最强通用基线 Aggregator 0.6438/0.5518；Taobao-MM 公开多模态基准有 8.79M 用户、35.4M 物品、最大序列长度 1,000，HiSAC 达 AUC 0.6704、GAUC 0.6114，对 MHA 0.6692/0.6096、Aggregator 0.6699/0.6101。替换三个前沿架构的原生压缩模块后：HiSAC + Longer 在 10k 达 AUC 0.6455、GAUC 0.5537，对 Longer 0.6448/0.5529；Taobao-MM 上 0.6733/0.6135，对 Longer 0.6714/0.6122。消融见 4.4 节表 2 的 10k 档：去掉多模态编码器 AUC 降 0.20 个百分点至 0.6424；软路由换成硬路由 AUC 降 0.15 个百分点至 0.6429；两个嵌入空间合一后 AUC 降到 0.6253；长尾物品上软路由对硬路由的 AUC 提升 18.4%。服务见 3.5 节：2000 个候选加 10k 长度历史时，未压缩 MHA 单次请求超过 100 毫秒，仅压缩降到约 35 毫秒，三项线上优化一起约 21 毫秒，较压缩基线降 40%，推荐质量无可测损失；缓存增强 MHA 把投影 FLOPs 削减约 72%、单次请求延迟降 38%，缓存命中率超 99%。离线指标为 3 个随机种子平均，标准差低于 0.0003。
+serving_infra|与 MHA 一起部署做压缩序列与候选物品的交叉建模，含三项线上优化：离线代理构造每日执行、不增加线上开销；每请求一次把 N 压到 K；缓存增强 MHA 的候选查询离线预计算并每 2 小时刷新。2000 个候选加 10k 长度历史时，单次请求延迟从未压缩 MHA 的 100 毫秒以上降到仅压缩约 35 毫秒，三项优化全开后约 21 毫秒，较压缩基线降 40%。
+stages.0.model_family|注意力 CTR 排序器内的序列压缩模块：冻结多模态编码器与 RQ-VAE 语义 ID、层级投票兴趣代理、软路由注意力，供 MHA 与候选物品交叉建模
+stages.0.details|最长 10,000 条交互的用户历史映射到码本之上的全局语义树；自底向上投票传播加自顶向下每层保留 top-k 子节点，留下 K 个稀疏激活兴趣代理，实验约 200 个；每个代理按相似度加权聚合全部历史，再由候选经 MHA 对压缩序列做交叉注意力。
+id_tokenization.approach|用残差量化 VAE 在冻结多模态嵌入上生成多层层级语义 ID
+id_tokenization.details|物品标题、类目标签、领域文本与商品图由冻结的 CLIP ViT-B/32 加 8 个可学习查询 token 的 Q-Former 编码，用对称 InfoNCE 训练。RQ-VAE 逐层量化融合嵌入，承诺损失 0.25，EMA 码本更新衰减 0.99；工业配置为 L=2 层各 512 个码字，公开基准用 200×2。用户历史成为 SID 序列，即穿过各层的离散路径。
+features_signals.0|经冻结多模态编码器的物品元数据文本与商品图
+features_signals.1|最长 10,000 条交互的用户行为序列
+features_signals.2|拼进可训练排序嵌入的类目与品牌侧特征
+features_signals.3|时间衰减特征
+features_signals.4|语义树上的投票票数作为代理权重
+training.mode|离线训练；SID 与代理离线每日构造，仅处理新增物品
+training.objectives.0|多模态编码器的对称 InfoNCE 对比训练
+training.objectives.1|RQ-VAE 重建加承诺损失与 EMA 码本更新
+training.objectives.2|可训练排序嵌入的 CTR 预估，用作聚合内容
+training.notes|稠密参数用 Adam、稀疏参数用 Adagrad，初始学习率 1e-3；所有压缩方法产 200 组；工业数据用 13 个训练日加末日验证；NVIDIA H20 GPU；离线指标为 3 个随机种子平均，标准差低于 0.0003。
+scale.0.metric|部署
+scale.0.value|淘宝首页「猜你喜欢」，服务数亿日活用户
+scale.1.metric|线上序列长度
+scale.1.value|高活跃用户历史超过 10,000 条交互；线上服务用 10k 长度历史
+scale.2.metric|工业数据集
+scale.2.value|14 天淘宝交互日志，200M 用户、1B 物品、30B 条交互记录
+scale.3.metric|服务延迟
+scale.3.value|2000 个候选加 10k 长度历史时单次请求约 21 毫秒，未压缩 MHA 超过 100 毫秒
+results_table.online.0.setting|淘宝首页「猜你喜欢」，两周 A/B
+results_table.online.1.setting|淘宝首页「猜你喜欢」，两周 A/B
+results_table.online.2.setting|淘宝首页「猜你喜欢」，两周 A/B
+results_table.online.3.setting|淘宝首页「猜你喜欢」，两周 A/B
+results_table.online.0.versus|线上最强前代压缩方法
+results_table.online.1.versus|线上最强前代压缩方法
+results_table.online.2.versus|线上最强前代压缩方法
+results_table.online.3.versus|线上最强前代压缩方法
+results_table.offline.0.setting|工业数据集，序列长度 10k
+results_table.offline.1.setting|工业数据集，序列长度 10k
+results_table.offline.2.setting|Taobao-MM 公开基准
+results_table.offline.3.setting|Taobao-MM 公开基准，替换 Longer 的原生压缩模块
+results_table.offline.0.versus|未压缩 MHA 0.6419，Aggregator 0.6438
+results_table.offline.1.versus|未压缩 MHA 0.5503，Aggregator 0.5518
+results_table.offline.2.versus|未压缩 MHA 0.6692，Aggregator 0.6699
+results_table.offline.3.versus|Longer 0.6714
+results_table.note|表 1 覆盖工业数据集 1k 到 10k 的序列长度档，另有 Taobao-MM 与 KuaiRec，增益随序列变长而扩大。离线指标为 3 个随机种子平均，标准差低于 0.0003。
+caveats.0|线上基线只被描述为线上最强前代压缩方法，论文未给名字。
+caveats.1|论文未报告两周 A/B 的流量占比、分桶数或用户数。
+caveats.2|延迟数字只针对 2000 个候选加 10k 长度历史的配置；服务硬件与 QPS 未报告。
+unknown_fields.0|A/B 流量占比与分桶方式
+unknown_fields.1|线上测试所用生产基线的名字
+unknown_fields.2|GPU 数量与 NVIDIA H20 以外的训练算力
+unknown_fields.3|服务硬件与服务 QPS
+unknown_fields.4|部署起始日期
+unknown_fields.5|显存或内存占用数字
+version_note|卡片基于 arXiv 2602.21009 v2，2026-07-03 发布；全文读自 v2 的 arXiv HTML 渲染版与同版 PDF。arXiv abs 页元数据标题为「...Ultra-long Sequence Modeling in Recommenders」，而 v2 正文标题块、CIKM 2026 程序页条目与 Crossref 记录均为「...in Recommendation Systems」。CIKM 2026 的 DOI 10.1145/3799682.3840124 已在 Crossref 注册，页码 8720-8727，纸本出版 2026-11-07；论文集放出前无法读 ACM 全文，会后 2026-11-07 至 11 期间需按 ACM 正式版复核，复核后标记为已核对正式版。
+code.note|2026-11-03 的 GitHub 与网络搜索未找到实现 HiSAC 的仓库；论文脚注给出 HuggingFace 上的公开 Taobao-MM 基准数据集，但没有发布模型代码。
+deployment.scenario|淘宝首页「猜你喜欢」排序阶段的用户行为序列压缩，与 MHA 一起部署做压缩序列与候选物品的交叉建模
+deployment.ab_duration|两周
+deployment.baseline|线上最强前代压缩方法，论文未给名字
+deployment.training_compute|训练用 NVIDIA H20 GPU；GPU 数量未报告
+deployment.serving_latency|2000 个候选加 10k 长度历史时，未压缩 MHA 单次请求超 100 毫秒；仅压缩约 35 毫秒；三项线上优化全开约 21 毫秒，较压缩基线降 40%
+deployment.inference_cost|缓存增强 MHA 削减投影 FLOPs 约 72%、单次请求延迟降 38%，缓存命中率超 99%；候选查询离线预计算并每 2 小时刷新；离线代理构造每日执行，不增加线上开销
+deployment.hardware|训练用 NVIDIA H20 GPU
+deployment.notes.0|表 3 全部提升论文称统计显著。
+deployment.notes.1|延迟数字只针对 2000 个候选、10k 长度历史的配置。
+deployment.notes.2|论文未报告 A/B 的流量占比与分桶数。

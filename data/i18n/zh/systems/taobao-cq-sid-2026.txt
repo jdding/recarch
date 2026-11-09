@@ -1,0 +1,62 @@
+surface|天猫 App 搜索多路召回阶段的生成式召回通道
+era_reason|语义 ID 生成式检索配 beam search 解码与强化学习对齐；生成式检索器本身是主角。
+tldr|淘宝 CQ-SID 把语义 ID 做成带类目约束的聚类标识并用 EG-GRPO 对齐召回与排序；天猫 App 两周 A/B：GMV +1.15%，UCTCVR +0.40%。
+summary|CQ-SID 出自阿里淘宝天猫集团，是部署在天猫 App 搜索多路召回阶段的生成式补充通道，论文将其定位为召回阶段补充而非端到端替代。三级 RQ-VAE 以 2048×1024×1024 的码本把物品编码为层级语义聚类标识而非一件一 ID：第一级码本受 1,711 个有效类目约束，query-item 对比学习塑造语义空间，超过 50 个物品的 SID 会拆组，beam search 因此保持很小。骨干 Qwen2.5-0.5B 经四个渐进阶段训练，从 item-to-SID 映射到个性化 user-and-query-to-SID 映射，EG-GRPO 强化学习把真实 SID 注入每个策略组作为伪生成输出，在稀疏点击奖励下稳定训练并把召回与下游排序对齐。
+core_idea|把语义 ID 当作层级聚类标识，用类目约束与 query-item 对比学习塑形，再以专家引导强化学习把召回与下游排序对齐。
+deployed_in|天猫 App 搜索召回阶段，多路召回中的生成式补充通道
+scale_short|把数亿物品语料过滤到约 2100 万，并以超过 200 QPS 服务天猫 App 搜索
+key_result|天猫 App 搜索多路召回两周 A/B：GMV +1.15%，UCTCVR +0.40%，均统计显著
+results_reported|摘要与 4 节，天猫 App 搜索日志离线评测：CQ-SID 相对 RQ-VAE 基线语义点击命中率最高提升 26.76%，个性化点击命中率提升 11.11%，同时把 beam search 规模削减一半以上而不损失召回质量。表 1 同 beam 语义点击命中率：CQ-SID beam 1 达 0.0758 对 RQ-VAE 0.0598，+26.76%；beam 10 达 0.3161 对 0.2579，+22.57%；beam 100 达 0.6181 对 0.5199，+18.89%；去掉类目约束的消融 beam 1 达 0.0680，+13.71%；去掉 query-item 对比损失 beam 1 为 0.0596，-0.33%。表 2 top-1K 截断：CQ-SID 峰值 0.4422 于 beam 30，RQ-VAE 峰值 0.4275 于 beam 65，相对提升 3.44% 且 beam 数量少 53.85%。表 3 个性化点击命中率：beam 1 为 0.1510 对 0.1359，+11.11%；beam 10 为 0.5206 对 0.4787，+8.75%；beam 50 为 0.7431 对 0.6912，+7.51%；beam 100 为 0.8062 对 0.7513，+7.31%；top-1K 截断 CQ-SID 峰值 0.7984 于 beam 160，RQ-VAE 峰值 0.7607 于 beam 195，相对提升 4.96% 且 beam 减少 17.95%。表 4 beam 10：EG-GRPO 取 K=2 把 clk@10 从 0.5206 提到 0.5221，pvr@10 从 0.4371 提到 0.4377，K=4 时 exp@10 达 0.8711；标准 GRPO 取 K=0 使 clk@10 降到 0.5196，pvr@10 降到 0.4360。4.5 节线上：多路召回阶段两周 A/B，GMV +1.15%、UCTCVR +0.40% 统计显著；全面部署后生成式召回通道占全部曝光 50.25%、全部点击 58.96%、全部购买 72.63%，系统在 8 块 GPU 上承载超过 200 QPS，可用性 99.9%，平均端到端延迟约 40 毫秒。
+serving_infra|部署在天猫 App 搜索多路召回阶段，动态 beam 大小在 [20, 50, 100]；8 块 GPU 承载超过 200 QPS，可用性 99.9%，平均端到端延迟约 40 毫秒；约 2100 万物品的线上物品池每日更新。
+stages.0.model_family|Qwen2.5-0.5B 自回归生成式检索器，beam search 解码语义聚类 ID
+stages.0.details|四个渐进阶段：item-to-SID SFT、query-to-SID 每条 query 随机采样 N=3 个 SID、融合用户特征与近期点击 SID 历史的个性化 user-and-query-to-SID、再以 EG-GRPO 做排序对齐精调；线上解码用 [20, 50, 100] 动态 beam。
+id_tokenization.approach|RQ-VAE 多级语义聚类 ID，有意允许碰撞而非一件一 ID
+id_tokenization.details|三级残差量化，码本大小 2048×1024×1024；第一级码本受 1,711 个有效类目约束，第二、三级用最近邻量化加 EMA 更新与码本重启策略；超过 50 个物品的 SID 拆成最多 100 组并在第三级码后追加组后缀。
+features_signals.0|物品标题
+features_signals.1|query 与批内 query-item 对比对
+features_signals.2|性别、年龄等用户特征与近期点击 SID 历史
+features_signals.3|下游排序反馈作为 RL 奖励：已购买或已点击、已曝光、合法 SID
+training.mode|四个渐进阶段的离线训练，随后强化学习精调；线上物品池每日更新
+training.objectives.0|RQ-VAE 重构损失加 commit 损失与双向 InfoNCE query-item 对比损失，β 1.0、γ 0.001、温度 0.1
+training.objectives.1|item-to-SID、query-to-SID 与个性化 user-and-query-to-SID 映射的下一 SID 预测 SFT
+training.objectives.2|组相对策略优化，奖励为已购买或已点击 1.0、已曝光 0.5、合法 SID 0.1、其余 0
+training.notes|CQ-SID 量化器训练 10 个 epoch，batch size 4096，学习率 1e-3，4 块 GPU；Item2SID 学习率 1e-4 训 2k 步，Query2SID 4e-5 训 2.5k 步，个性化阶段 4e-5 训 5k 步；EG-GRPO rollout batch 512，组大小 8，注入真实样本数 K 取 2 或 4，KL 权重 1.0，学习率 1e-6 训 1k 步。
+scale.0.metric|物品池
+scale.0.value|从数亿语料过滤出约 2100 万物品，每日更新
+scale.1.metric|训练数据
+scale.1.value|CQ-SID 量化器 37.5M 样本；LLM 阶段 Item2SID 21.0M、Query2SID 90.3M、个性化 UQ2SID 73.7M
+scale.2.metric|线上服务
+scale.2.value|8 块 GPU 承载超过 200 QPS，可用性 99.9%，平均端到端延迟约 40 毫秒
+scale.3.metric|通道贡献
+scale.3.value|占全部曝光 50.25%、全部点击 58.96%、全部购买 72.63%
+results_table.online.0.setting|天猫 App 搜索，两周 A/B，多路召回阶段
+results_table.online.1.setting|天猫 App 搜索，两周 A/B，多路召回阶段
+results_table.offline.0.setting|天猫 App 搜索日志，语义点击命中率，同 beam
+results_table.offline.1.setting|天猫 App 搜索日志，语义点击命中率，top-1K 截断
+results_table.offline.2.setting|天猫 App 搜索日志，个性化点击命中率，top-1K 截断
+results_table.online.0.versus|A/B 对照组，论文未指名
+results_table.online.1.versus|A/B 对照组，论文未指名
+results_table.offline.0.versus|RQ-VAE 0.0598
+results_table.offline.1.versus|RQ-VAE 在 beam 65 的 0.4275，相对提升 3.44%，beam 少 53.85%
+results_table.offline.2.versus|RQ-VAE 在 beam 195 的 0.7607，相对提升 4.96%
+results_table.note|表 4 beam 10 的排序对齐：EG-GRPO 取 K=2 把 clk@10 从 0.5206 提到 0.5221，pvr@10 从 0.4371 提到 0.4377，K=4 时 exp@10 达 0.8711；无注入样本的标准 GRPO 使 clk@10 降到 0.5196，pvr@10 降到 0.4360。
+caveats.0|4.2.2 节说明离线 top-1K 截断与线上实际采用粗排截断的召回流程不同。
+caveats.1|4.4 节解释 RL 增益较小：SFT 后已无多少提升空间，命中率是二元指标，EG-GRPO 还需在点击与曝光之间权衡。
+caveats.2|论文未报告 A/B 流量占比，也未指名对照组是哪个系统。
+caveats.3|曝光、点击与购买的通道占比是部署后的贡献数据，不是 A/B 提升数字。
+unknown_fields.0|A/B 流量占比与对照组身份
+unknown_fields.1|总算力与训练成本
+unknown_fields.2|GMV 与 UCTCVR 的绝对值
+unknown_fields.3|线上粗排截断的具体配置
+code.note|论文无代码链接；2026-11-03 的 GitHub 与网络检索未发现此处所述 CQ-SID 与 EG-GRPO 的官方或第三方实现，名为 EG-GRPO 的仓库属于另一篇不相关的自回归图像生成论文。
+version_note|本卡基于 arXiv 2605.14434 v1，截至写卡时为唯一已发布版本；正式发表全文在写卡时还不可读。会后请对照 ACM 正式版逐个复核数字，再将卡片标记为已对正式版核对。
+deployment.scenario|天猫 App 搜索多路召回阶段的生成式召回通道，已全量部署于搜索产品线
+deployment.ab_duration|两周
+deployment.training_compute|CQ-SID 量化器训 10 个 epoch 于 4 块 GPU；LLM 各阶段 2k 到 5k 步；总算力未汇总
+deployment.serving_latency|平均端到端延迟约 40 毫秒
+deployment.serving_qps|超过 200 QPS
+deployment.inference_cost|beam search 配 [20, 50, 100] 动态 beam；离线同等召回下聚类 SID 把 beam search 规模削减一半以上
+deployment.hardware|8 块 GPU 用于线上服务
+deployment.notes.0|论文说明离线 top-1K 截断与线上实际采用粗排截断的召回流程不同。
+deployment.notes.1|论文未报告 A/B 流量占比，也未指名对照组。
+deployment.notes.2|曝光、点击与购买的通道占比是部署后的贡献数据，不是 A/B 提升。

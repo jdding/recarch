@@ -1,40 +1,71 @@
-surface|在线广告平台的召回
-era_reason|把大模型用作生成式召回模型
-tldr|Qwen-7B 大模型根据用户特征加上目标的文字描述生成召回结果；阿里广告的一项核心指标线上提升超过 3%。
-summary|Universal Retrieval Model：默认基于 Qwen-7B 全参数微调的大模型，输入用户特征和召回目标的文字描述，从约 10^7 的候选池中生成一组 item，采用多 query 表示、把 item 映射矩阵分解为判别部分和可迁移部分，以及概率采样。采用异步方式服务，据报告使广告平台的一项核心指标在线上提升超过 3%。
-core_idea|微调后的大模型根据文字形式的召回目标和用户特征，生成一组 item。
-deployed_in|阿里广告平台的召回
-scale_short|候选池约 10^7 个 item
-key_result|在阿里广告平台的线上 A/B 中，核心指标 +3%，指标名称未给出
-results_reported|阿里广告平台的线上 A/B：核心指标 +3%。摘要没有说明是哪项指标，正文给出的是广告收入。公开数据集包括 Sports、Beauty、Toys 和 Yelp：按表 1，URM 比最强的基线平均高 46% 的 HR@5 和 29% 的 NDCG@5。离线的工业实验优于针对具体任务的专家召回模型。
-serving_infra|异步流程：用户行为按可配置的窗口聚合，线上为十分钟，每个窗口触发一次 URM 推理；引擎服务把用户特征与目标文本拼接，调用推理服务，对最终 item 采样，并持久化保存结果，供之后的在线召回阶段使用。论文称召回结果在数十毫秒内返回。
-stages.0.model_family|URM：带多 query 表示的大模型，报告的设置中有 M=128 个 query token；item 映射 W = U [V_dis + V_trans]^T，其中 |C| ~ 10^7，H=128，D=4096；目标以自然语言指令表达，涵盖多场景、多行为、长尾和意外发现
-stages.0.details|矩阵分解加采样把候选映射的开销从约 5000 GFLOPs 降到约 2 GFLOPs，论文设置为 tau=0.07，M=128，T=4，K=1000，最多 32 个邻居。1.5B 模型在序列长度 1024 下单次前向传播达到 50 ms，这是论文给出的在线召回上限。
-features_signals.0|item 和用户的文本特征
-scale.0.metric|候选集
-scale.0.value|约 10^7 个 item
-scale.1.value|Qwen-7B，默认的特征生成器；1.5B 模型在长度 1024 下前向传播为 50 ms
-results_table.online.0.setting|阿里广告平台 A/B
-results_table.offline.0.setting|Sports、Beauty、Toys、Yelp，见表 1
-results_table.offline.1.setting|Sports、Beauty、Toys、Yelp，见表 1
-results_table.online.0.metric|核心指标，名称未给出
-results_table.online.0.versus|线上召回
-results_table.offline.0.result|平均 +46%
-results_table.offline.1.result|平均 +29%
-results_table.offline.0.versus|最强基线
-results_table.offline.1.versus|最强基线
-caveats.0|召回结果按每个十分钟窗口异步预先算好，因此这不是针对每个请求的大模型推理。
-caveats.1|摘要和引言没有定义 +3% 背后的核心指标。正文说明它是广告收入。
-caveats.2|归属于阿里巴巴是依据作者署名和单位；论文只把该平台描述为「our advertising platform」。
-unknown_fields.0|A/B 流量占比
-unknown_fields.1|异步推理的 GPU 集群规模
-code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
-deployment.scenario|阿里广告平台的召回
-deployment.baseline|线上召回
-deployment.training_compute|Qwen-7B 在 64 张 NVIDIA H20 GPU 上训练：数据按 5% 采样后，五千万条训练样本用时 25 小时
-deployment.serving_latency|延迟在数十毫秒之内；1.5B 模型在序列长度 1024 下为 50 ms，即在线上限
-deployment.hardware|训练和延迟测试使用 NVIDIA H20 GPU
-deployment.notes.0|摘要没有说明核心指标。正文说明它是广告收入。
-deployment.notes.1|50 ms 这个数字是 1.5B 模型的基准测试，不是已部署的 7B 模型。
-deployment.online_lifts.0.metric|广告收入，即核心指标
-deployment.online_lifts.3.metric|长尾 item
+surface|阿里巴巴广告平台的检索，以 10 分钟窗口异步生成候选集
+era_reason|由文本目标驱动的 LLM 在完整候选空间上生成检索结果；生成式 LLM 技术栈是核心机制。
+tldr|URM 把微调后的 Qwen-7B LLM 变成由文本目标驱动的通用生成式检索器；线上 A/B 广告收入 +3.01%。
+summary|URM 即 Universal Retrieval Model：默认用 Qwen-7B 做全参数微调的 LLM，输入序列化用户特征、自然语言检索目标与一组固定可学习查询 token，经分解为判别与可迁移两部分的映射矩阵从约 10^7 个物品中生成候选，概率采样沿 ANN 邻居压缩生成开销。系统以 10 分钟窗口经 vLLM 单次预填充异步服务，取代各任务专属检索通道；广告平台线上 A/B 将广告收入提升 3.01%。
+core_idea|一个微调后的 LLM 按任意文本描述的目标在完整候选集上生成检索结果
+deployed_in|阿里巴巴广告平台的检索
+scale_short|候选池约 10^7 个物品
+key_result|线上 A/B，2025 年四月 28 日至五月 14 日：广告收入 +3.01%，CTR +0.78%，CVR +1.24%，长尾物品 +2.23%
+results_reported|线上见 5.5 节表 6，2025 年四月 28 日至五月 14 日：广告收入即只有正文点名的核心指标 +3.01%；CTR +0.78%；CVR +1.24%；长尾物品占比 +2.23%。同一关键指标摘要写 3%，引言写超过 3%。公开数据集见 5.1 节表 1，四个数据集：URM 较最强基线平均高 HR@5 46%、NDCG@5 29%；分数据集相对提升：Sports HR@5 +70.9%、NDCG@5 +49.7%，Beauty +50.3% 与 +38.1%，Toys +35.6% 与 +9.2%，Yelp +26.1% 与 +18.1%；Beauty 上 URM HR@5 0.0929，最强基线 IDGenRec 为 0.0618。工业数据见 5.2 节表 2，9 个目标的 R@1000 平均：URM 0.403，最强基线 PLE 多任务 Attention-DNN 为 0.363；URM 在 99 个模型目标组合中的 66 个上最优，平均相对提升 11.0%；Retrieval with Query 上 URM 无任务定制设计即达 0.835，专门三塔模型为 0.822。通用检索见 5.4 节表 5：场景目标带来超过 20% 的提升，RSA +20.5%、RSB +31.0%、RSC +30.2%；惊喜度目标把新品类物品占比从 18.8% 提到 46.2%，SR R@1000 相对提升 82.3%。消融：表 4 概率采样检索精度在 T=4 收敛于 91.0%，T=5 为 91.1%，T=1 为 0.2%；表 3 中 CPR R@1000 仅 Vdis 为 0.256，仅 Vtrans 为 0.152，Vdis+Vtrans 在全部物品上 0.263、未见物品上 0.130。效率：3.3 节采样把论文设定下映射 FLOPS 从 5000G 降到 2G；附录 B.4 表 7 在输入长度 1024 时 p99 延迟，1.5B 模型为 50 ms 即论文给出的线上上限，默认 7B 骨干为 233 ms。骨干见附录 C.2：LLaMA2-13B Beauty HR@5 0.0905，DeepSeek-V2-Lite 工业平均 0.394，接近 Qwen-7B。
+serving_infra|异步流程见图 2：用户行为触发 URM 推理；引擎服务把用户特征与目标文本拼接；推理服务从分布式哈希表读物品嵌入并调用 vLLM 做单次预填充；概率采样产出最终检索结果并持久化，供线上检索阶段使用。行为按可配置的 10 分钟线上窗口聚合；哈希表查找在几毫秒内，采样低于 10 ms。
+stages.0.model_family|LLM 特征生成器，默认 Qwen-7B，另验证 Qwen-1.8B、LLaMA2-13B 与 DeepSeek-V2-Lite 16B，M=128 个固定可学习查询 token，映射 W = U [Vdis + Vtrans]^T，H=128，D=4096
+stages.0.details|Multi-query representation 以 M 个查询 token 内积的最大值作为物品得分；矩阵分解把物品映射拆成全可学习的判别部分 Vdis 与由 General Text Embedding 得到的可迁移部分 Vtrans；概率采样在 ANN 邻居上跑 T=4 步，tau=0.07、K=1000、最多 32 个邻居，用单次 LLM 前向取代 Semantic ID 自回归。
+id_tokenization.approach|完整物品 ID，不用 Semantic ID
+id_tokenization.details|物品保留原始 ID。分布式哈希表把每个 ID 映射为唯一嵌入，再由一层 MLP 升到 token 维度；Vdis 用双塔模型 ID 嵌入初始化，Vtrans 是对物品序列化文本做可学习投影，文本含标题、类目、价格、店铺、近 7 天销量与点击率，由 General Text Embedding 模型产出，冷启动物品经由 U Vtrans^T 检索。
+features_signals.0|序列化用户特征：静态属性、统计特征与行为序列，空特征直接省略，序列只截断不填充
+features_signals.1|检索目标用自然语言文本表达，如多场景、多行为、长尾、惊喜度、长期兴趣与搜索
+features_signals.2|输入序列末尾附加固定可学习查询 token
+features_signals.3|物品侧序列化文本特征经 General Text Embedding 处理
+training.mode|对每日数据抽样 5% 后做离线监督微调，按小时聚合以适配 24 小时预算
+training.objectives.0|以 M 个查询表示得分最大值上的 NCE 损失为目标，每批 10,000 个负例按物品频次 3/4 次幂采样
+training.notes|AdamW，学习率 2e-5 配余弦衰减，权重衰减 0.05，batch size 8192，训练一个 epoch；预训练层学习率设为其余层的 1/10；Vdis 用双塔模型 ID 嵌入初始化；Qwen-7B 用 64 块 NVIDIA H20 GPU，25 小时处理 5000 万条训练样本。
+scale.0.metric|部署
+scale.0.value|阿里巴巴广告平台的检索，2025 年四月 28 日至五月 14 日线上 A/B
+scale.1.metric|候选集
+scale.1.value|约 10^7 个物品
+scale.2.metric|工业数据集
+scale.2.value|数亿条样本，用户行为序列中超过 10 亿的不同物品
+scale.3.metric|训练
+scale.3.value|Qwen-7B 用 64 块 NVIDIA H20 GPU，25 小时处理 5000 万条样本
+scale.4.metric|延迟
+scale.4.value|输入长度 1024 时 p99，1.5B 为 50 ms，7B 为 233 ms
+scale.5.metric|采样模块
+scale.5.value|在 1000 万物品候选空间内低于 10 ms
+results_table.online.0.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
+results_table.online.0.versus|平台现行服务
+results_table.online.1.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
+results_table.online.1.versus|平台现行服务
+results_table.online.2.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
+results_table.online.2.versus|平台现行服务
+results_table.online.3.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
+results_table.online.3.versus|平台现行服务
+results_table.offline.0.setting|Sports、Beauty、Toys、Yelp，表 1
+results_table.offline.1.setting|Sports、Beauty、Toys、Yelp，表 1
+results_table.offline.2.setting|工业数据，表 2，9 个目标的 R@1000 平均
+results_table.offline.2.versus|PLE 多任务 Attention-DNN 0.363
+results_table.other.0.setting|工业数据，表 5，惊喜度检索
+results_table.other.0.versus|CPR 目标下为 18.8%
+results_table.note|表 4 中概率采样的检索精度在 T=4 收敛于 91.0%；数十毫秒说法背后的 50 ms 是 1.5B 模型在输入长度 1024 的结果，默认 7B 骨干在同长度下表 7 显示 233 ms p99。摘要写收入提升 3%，表 6 给出 +3.01%。
+caveats.0|检索结果按 10 分钟窗口异步预计算，线上路径不是每次请求都跑一遍 LLM 推理。
+caveats.1|摘要写核心指标提升 3%，引言写超过 3%；5.5 节表 6 给出广告收入的精确值 +3.01%。
+caveats.2|数十毫秒说法背后的 50 ms 是 1.5B 模型在输入长度 1024 的测量值；默认 7B 骨干在同长度下表 7 显示 233 ms p99。
+caveats.3|附录 A.1 的局限性说明：LLM 推高训练与推理成本，用按小时聚合、5% 数据抽样和 10 分钟异步窗口缓解；URM 对新目标的适配只在接近训练目标时成立，全新目标仍然困难。
+caveats.4|候选集的精确数量因数据安全不予公开，且平台只被描述为我们的广告平台。
+caveats.5|论文说明公开数据集代码将在录用后发布。
+unknown_fields.0|A/B 流量占比与分桶方式
+unknown_fields.1|线上推理的 QPS 与 GPU 规模
+unknown_fields.2|A/B 之后 URM 检索是否服务全量流量
+unknown_fields.3|候选集的精确数量
+code.note|2026-11-03 检索未发现官方代码：论文与 arXiv 页面均无仓库链接，网页与 GitHub 搜索也没有结果。论文说明公开数据集代码将在录用后发布，ACM 论文集条目标注日期为 2026 年 11 月 6 日。这里记录的是一次搜索结果，不构成不存在代码的证明。
+updates.0.note|依据 arXiv v2 全文重写，补入 CIKM 2026 会议信息与 DOI、完整的离线与线上数字、服务与训练细节；旧卡缺会议字段且分词字段为空。
+version_note|卡片依据 arXiv 2502.03041 v2，即 2025-05-19 修订版，2026-11-03 全文读取；写作时正式版全文尚不可读。CIKM 2026 DOI 10.1145/3799682.3840090 已在 Crossref 核对，标题一致，页码 8319-8327，论文也出现在 CIKM 2026 官方 program 的 2A 场次。会后请逐个数字对照 ACM 正式版复核，然后将卡片标记为已对照正式版核对。
+deployment.scenario|阿里巴巴广告平台的检索：URM 检索结果以 10 分钟窗口异步生成并持久化，供线上检索阶段使用
+deployment.ab_duration|2025 年四月 28 日至五月 14 日
+deployment.baseline|A/B 测试中广告平台的现行服务；论文未明确写出对照组
+deployment.training_compute|Qwen-7B 用 64 块 NVIDIA H20 GPU，25 小时处理 5000 万条训练样本，先做 5% 数据抽样
+deployment.serving_latency|10 分钟异步窗口；哈希表查找在几毫秒内，采样低于 10 ms；输入长度 1024 时 p99，1.5B 为 50 ms，默认 7B 为 233 ms
+deployment.inference_cost|概率采样把论文设定下映射 FLOPS 从 5000G 降到 2G；论文自述的局限性说明 LLM 训练与推理成本仍高于传统推荐模型
+deployment.hardware|NVIDIA H20 GPU 用于训练与延迟测量
+deployment.notes.0|50 ms 是 1.5B 模型的数值；线上部署默认骨干为 Qwen-7B。
+deployment.notes.1|摘要给核心指标 3%；表 6 给 +3.01%。
+deployment.notes.2|候选集的精确数量因数据安全不予公开。

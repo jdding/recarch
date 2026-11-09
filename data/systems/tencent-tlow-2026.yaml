@@ -1,0 +1,135 @@
+id: tencent-tlow-2026
+name: Tlow
+company: Tencent
+surface: Flow-based item tokenizer feeding retrieval pathways on WeChat picture recommendation with image-text multimodal features
+year: 2026
+era: generative
+era_reason: "Item semantic embeddings are tokenized into discrete token IDs replacing random item IDs, the representation layer of the semantic-ID generative stack; the tokenizer is the contribution."
+first_public: "2026-08"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840087"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "Tlow normalizes item embeddings with a flow so tokenization is independent and parallel; WeChat A/B lifted new-picture CTR +1.94% and pathway UCTR +10.32%."
+summary: "Tlow, from Tsinghua University with Tencent Inc. co-authors, is a flow-based item tokenizer for recommendation. Where RQ-VAE suffers hierarchical codebook dependencies that slow decoding, and product-quantization-style independent tokenizers still face dimensional correlations and complex embedding distributions, a normalizing flow transforms raw semantic embeddings into a latent space conforming to a unified standard normal distribution, so dimensions become independent and the distribution simple, and independent tokenization on those latent embeddings yields semantically clear token IDs. A codebook-guidance mechanism aligns the codebook space with the token-embedding space to sharpen token semantics. Online, Tlow token IDs replace randomly assigned item IDs in a 12-layer Transformer decoder retrieval pathway on WeChat picture recommendation, trained on two weeks of logs with more than 70 and 200 million daily interaction records in single-domain and cross-domain scenarios."
+paradigms:
+- semantic-id
+stages:
+- stage: retrieval
+  model_family: "12-layer Transformer decoder over item embeddings as a supplemental retrieval pathway beside the primary DSSM real-time retrieval, with Tlow token IDs replacing item-ID embeddings"
+  details: "User and item embeddings live in dedicated servers; on access the Similarity Server dynamically pairs the user embedding with candidate items. Deployment uses 16 codebooks of size 256, so the sequential model learns only 4,096 token embeddings instead of tens of millions of item embeddings."
+id_tokenization:
+  approach: "Flow-based independent tokenization into 16 codebooks of size 256"
+  details: "A normalizing flow maps raw multimodal semantic embeddings to a standard normal latent space; independent tokenization on the latents produces parallel-decodable token IDs, and codebook guidance aligns codebook and token-embedding spaces."
+features_signals:
+- "Image-text multimodal semantic embeddings of pictures and articles"
+- "User click sequences of length 500 in the online deployment"
+training:
+  mode: "Flow trained on embeddings of about 1 million items; sequential models trained two weeks on identical datasets for both arms"
+  objectives:
+  - "Normalizing-flow likelihood to the standard normal latent space"
+  - "Sequential next-item prediction over token embeddings"
+  notes: "Tlow converges after training on roughly 1M item embeddings and generalizes to unseen items; tokenizing tens of millions of newly published items per day takes minutes on a single GPU."
+serving_infra: "Tokenization of new items runs in minutes per day on a single GPU; online serving retrieves user and item embeddings from dedicated servers and pairs them in the Similarity Server; the Tlow pathway runs beside the primary DSSM real-time retrieval."
+scale:
+- metric: Online platform
+  value: "WeChat picture recommendation, China's largest social media platform"
+  note: "paper, Sec 3.6.1"
+- metric: Training data
+  value: "two weeks, over 70 and 200 million interaction records per day in single-domain and cross-domain scenarios"
+  note: "paper, Sec 3.6.2"
+- metric: Token vocabulary
+  value: "4,096 token embeddings from 16 codebooks of 256, replacing tens of millions of item embeddings"
+  note: "paper, Sec 3.6.2"
+results_reported: "Online pathway comparison, Table 6: in single-domain the Tlow pathway shows CTR +4.79% and UCTR +10.32%, and on new items CTR +8.46% with UCTR +11.64%; in the cross-domain scenario CTR +6.23% and UCTR +7.20%, and on new items CTR +9.09% with UCTR +9.45%. Core A/B metrics beyond pathway comparison: in single-domain, 24-hour overall CTR +0.78% and newly-published-picture CTR +1.94%; in cross-domain, per-capita picture CTR +1.05% with a 1.15% decrease in top-tier accounts' exposure share, which the paper reads as long-tail benefit. The abstract summarizes global CTR +10.32% and new-item +11.64% for the retrieval model based on token IDs. Offline, four public datasets show tokenization and codebook guidance significantly improving recommendation performance, with cross-domain and multimodal evaluations confirming the benefit in a simplified embedding space."
+caveats:
+- "The paper reports only relative differences for online metric comparisons due to privacy considerations."
+unknown_fields:
+- A/B traffic share and duration beyond the two-week training note
+- Absolute serving latency and QPS
+- Flow training compute
+sources:
+- title: "Tlow: Flow-based Item Tokenizer for Recommendation, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840087
+  type: paper
+- title: "Tlow, arXiv 2608.24176"
+  url: https://arxiv.org/abs/2608.24176
+  type: paper
+- title: "Tlow code repository"
+  url: https://github.com/wjjln/Tlow
+  type: source_code
+version_note: "Read from arXiv 2608.24176 v1, which carries the CIKM 2026 ACM citation with DOI 10.1145/3799682.3840087; Crossref confirms that DOI with pages 8361-8368, but the ACM published full text was not read. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version. The abstract's 10.32% figure is the single-domain UCTR pathway comparison; the sitewide 24-hour CTR gain is 0.78%."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2608.24176
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, related work, flow-based tokenization, codebook guidance, offline experiments with public datasets, online setup, training and inference, online performance with Table 6 and Figure 4, conclusion"
+  verified_on: "2026-11-03"
+  published_pdf: "camera-ready with full ACM citation read from arXiv on 2026-11-03; ACM page not opened"
+code:
+  status: official_full
+  checked_on: "2026-11-03"
+  repos:
+  - url: https://github.com/wjjln/Tlow
+    owner: "the Tsinghua and Tencent authors"
+    official: true
+    note: "The paper states codes are available at this repository; production serving stack and WeChat data are not included."
+core_idea: "Normalize item embeddings to a standard normal latent space with a flow, so tokenization becomes independent, parallel and semantically clean."
+deployed_in: "WeChat picture recommendation as a supplemental retrieval pathway"
+scale_short: "WeChat scale, 4,096 token embeddings replacing tens of millions of item IDs"
+key_result: "A/B: newly-published-picture CTR +1.94% sitewide; pathway UCTR +10.32% single-domain, +11.64% on new items"
+results_table:
+  online:
+  - setting: "WeChat A/B, single-domain, 24-hour core metrics"
+    method: "Tlow token IDs"
+    metric: "New-picture CTR"
+    result: "+1.94%"
+    versus: "Random ID-based sequential retrieval"
+  - setting: "WeChat pathway comparison, single-domain"
+    method: "Tlow token IDs"
+    metric: UCTR
+    result: "+10.32%"
+    versus: "Random ID pathway, relative"
+  - setting: "WeChat pathway comparison, cross-domain"
+    method: "Tlow token IDs"
+    metric: CTR
+    result: "+6.23%"
+    versus: "Random ID pathway, relative"
+  offline:
+  - setting: "Four public datasets"
+    method: Tlow
+    metric: "Recommendation performance"
+    result: "significant improvements"
+    versus: "RQ-VAE and PQ-style tokenizers"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Tlow token IDs powering a Transformer-decoder retrieval pathway beside the primary DSSM retrieval on WeChat picture recommendation"
+  ab_traffic: not_reported
+  ab_duration: "Both arms trained two weeks on identical data; test duration not reported"
+  baseline: "The same sequential model using randomly assigned item-ID embeddings"
+  online_lifts:
+  - metric: "24-hour overall CTR, single-domain"
+    value: "+0.78%"
+  - metric: "New-picture CTR, single-domain"
+    value: "+1.94%"
+  - metric: "Per-capita picture CTR, cross-domain"
+    value: "+1.05%"
+  training_compute: "Flow trained on about 1M item embeddings; tokenizing tens of millions of new items per day takes minutes on one GPU"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: "Sequential model learns 4,096 token embeddings instead of tens of millions of item embeddings; tokenization of new items runs off the request path"
+  hardware: "A single GPU for daily tokenization of new items"
+  notes:
+  - "Pathway-level gains on new items reach UCTR +11.64% single-domain and +9.45% cross-domain."
+  - "Top-tier accounts' exposure share falls 1.15% in cross-domain, which the paper reads as long-tail benefit."
+  fulltext_refs:
+  - "Table 6: single-domain CTR +4.79%, UCTR +10.32%, new-item CTR +8.46%, UCTR +11.64%; cross-domain +6.23%, +7.20%, +9.09%, +9.45%"
+  - "Sec 3.6.3: 24-hour overall CTR +0.78%, new-picture CTR +1.94% single-domain; per-capita +1.05%, top-tier share -1.15% cross-domain"
+  - "Sec 3.6.2: 16 codebooks of 256, 4,096 token embeddings, two weeks, 70 and 200 million daily records, 1M-item flow training"
+  basis: full_text
+  checked_on: "2026-11-03"

@@ -1,0 +1,39 @@
+# Redrawn, simplified diagram. Source: OneMall, "One Architecture, More Scenarios" (CIKM 2026), Figs. 3-5.
+alt: "Left to right: user Exposure, Click and Buy sequences and item-side features enter the OneMall backbone; a Query-Former compresses each behavior sequence, Cross-Attention fuses the compressed interests with the Semantic ID query states, and a decoder-style Sparse MoE Transformer generates three-level Semantic IDs by beam search, decoded to candidate items. The Tokenizer column shows the offline pipeline: a fine-tuned LLM encoder trained with Item2Item contrastive tuning on commercial and watching corpora, then ResKmeansFSQ quantization with two Res-Kmeans layers plus a 16-bit FSQ layer, refreshed for live-streamings from the item tower as selling products change. A side loop sends generated candidates to the online ranking model, whose fused CTR, CTCVR and EGPM scores become advantages for DPO and GRPO updates of the policy retriever."
+caption:
+  fig: "Figs. 3-5"
+  work: "OneMall: One Architecture, More Scenarios -- End-to-End Generative Recommender Family at Kuaishou E-Commerce, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840095"
+  note: "Simplified; the exact equations, the loss-free load-balancing term and the reference-model synchronization are summarized only."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: seq, kind: input, text: ["User behavior sequences", "Exposure, Click and Buy streams"]}
+      - {id: item, kind: input, text: ["Item features", "category, price, shop, Selling-Product Semantic IDs"]}
+  - label: Tokenizer
+    boxes:
+      - {id: llm, kind: module, text: ["Fine-tuned LLM encoder", "Swin vision plus Qwen2.5 1.5B text, Item2Item contrastive tuning"]}
+      - {id: quant, kind: module, text: ["ResKmeansFSQ", "two Res-Kmeans layers plus 16-bit FSQ, 4096-code final layer"]}
+  - label: Backbone
+    boxes:
+      - {id: qformer, kind: module, text: ["Query-Former", "compresses each sequence to dozens of tokens"]}
+      - {id: cross, kind: module, text: ["Cross-Attention", "fuses compressed interests with SID query states"]}
+      - {id: moe, kind: module, text: ["Sparse MoE decoder", "0.5B total, 0.1B activated, causal self-attention, beam search"]}
+  - label: RL loop
+    boxes:
+      - {id: reward, kind: module, text: ["Ranking-model reward", "fused CTR, CTCVR, EGPM score"]}
+      - {id: policy, kind: module, text: ["DPO / GRPO", "advantage-normalized policy updates over NTP and contrastive losses"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Candidate items", "decoded Semantic IDs for Product-Card, Short-Video and Live-Streaming"]}
+edges:
+  - [seq, qformer]
+  - [item, llm]
+  - [llm, quant]
+  - [quant, cross]
+  - [qformer, cross]
+  - [cross, moe]
+  - [moe, out]
+  - [moe, reward]
+  - [reward, policy]
+  - [policy, moe]

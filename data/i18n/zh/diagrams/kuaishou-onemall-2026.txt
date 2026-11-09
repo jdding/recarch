@@ -1,0 +1,28 @@
+alt|从左到右：用户曝光、点击、购买序列与物品侧特征进入 OneMall 主干；Query-Former 压缩每条行为序列，Cross-Attention 把压缩后的兴趣与语义 ID 查询状态融合，decoder 风格的 Sparse MoE Transformer 用 beam search 生成三级语义 ID 并解码为候选物品。Tokenizer 列是离线管线：在商业与观看 Item2Item 语料上做对比微调的 LLM 编码器，再经 ResKmeansFSQ 量化，由两层 Res-Kmeans 加 16 比特 FSQ 层组成，直播物品随在售商品变化由物品塔刷新。侧环把生成的候选送给线上排序模型，其融合的 CTR、CTCVR、EGPM 打分转为优势信号，经 DPO 与 GRPO 更新策略检索器。
+caption.fig|图 3-5
+caption.note|简化版；精确公式、loss-free 负载均衡项与参考模型同步仅作概括。
+columns.0.label|输入
+columns.0.boxes.0.text.0|用户行为序列
+columns.0.boxes.0.text.1|曝光、点击、购买流
+columns.0.boxes.1.text.0|物品特征
+columns.0.boxes.1.text.1|类目、价格、店铺、在售商品语义 ID
+columns.1.label|=Tokenizer
+columns.1.boxes.0.text.0|微调 LLM 编码器
+columns.1.boxes.0.text.1|Swin 视觉编码加 Qwen2.5 1.5B 文本编码，Item2Item 对比微调
+columns.1.boxes.1.text.0|=ResKmeansFSQ
+columns.1.boxes.1.text.1|两层 Res-Kmeans 加 16 比特 FSQ，末层 4096 码
+columns.2.label|主干
+columns.2.boxes.0.text.0|=Query-Former
+columns.2.boxes.0.text.1|把每条序列压缩到几十个 token
+columns.2.boxes.1.text.0|=Cross-Attention
+columns.2.boxes.1.text.1|把压缩兴趣与语义 ID 查询状态融合
+columns.2.boxes.2.text.0|Sparse MoE 解码器
+columns.2.boxes.2.text.1|0.5B 总参数 0.1B 激活，因果自注意力加 beam search
+columns.3.label|RL 环
+columns.3.boxes.0.text.0|排序模型奖励
+columns.3.boxes.0.text.1|融合 CTR、CTCVR、EGPM 打分
+columns.3.boxes.1.text.0|DPO 与 GRPO
+columns.3.boxes.1.text.1|在 NTP 与对比损失之上做按组归一优势的策略更新
+columns.4.label|输出
+columns.4.boxes.0.text.0|候选物品
+columns.4.boxes.0.text.1|解码出的语义 ID 服务商品卡、短视频、直播场景

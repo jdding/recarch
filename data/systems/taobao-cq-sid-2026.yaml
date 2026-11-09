@@ -1,0 +1,148 @@
+id: taobao-cq-sid-2026
+name: CQ-SID
+company: Alibaba Taobao & Tmall Group
+surface: Generative recall channel in the multi-channel recall stage of TmallAPP search
+year: 2026
+era: generative
+era_reason: "Semantic-ID generative retrieval with beam search decoding and reinforcement-learning alignment; the generative retriever itself is the subject."
+first_public: "2026-05"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840110"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: search
+evidence_level: production_described
+tldr: "Taobao's CQ-SID turns semantic IDs into category-constrained cluster identifiers and aligns recall with ranking via EG-GRPO; two-week TmallAPP A/B: GMV +1.15%, UCTCVR +0.40%."
+summary: "CQ-SID, from Taobao & Tmall Group of Alibaba, is a generative recall channel deployed as a supplement in the multi-channel recall stage of TmallAPP search rather than an end-to-end replacement. A three-level RQ-VAE with codebook sizes 2048x1024x1024 maps items to hierarchical semantic cluster identifiers instead of unique item IDs: the first-level codebook is constrained by 1,711 valid categories, query-item contrastive learning shapes the space, and SIDs holding more than 50 items are split into groups, so beam search stays small. A Qwen2.5-0.5B backbone is trained through four progressive stages from item-to-SID mapping to personalized user-and-query-to-SID mapping, and EG-GRPO reinforcement learning injects ground-truth SIDs into each policy group as pseudo-generated outputs to stabilize training under sparse click rewards and align recall with downstream ranking."
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+- llm-based
+stages:
+- stage: retrieval
+  model_family: "Qwen2.5-0.5B autoregressive generative retriever decoding semantic cluster IDs with beam search"
+  details: "Four progressive stages: item-to-SID SFT, query-to-SID with N=3 randomly sampled SIDs per query, personalized user-and-query-to-SID with user features and recent click SID histories, then ranking-aligned refinement with EG-GRPO; online decoding uses dynamic beam sizes in [20, 50, 100]."
+id_tokenization:
+  approach: "Multi-level semantic cluster IDs from RQ-VAE, deliberately allowing collisions instead of one-item-one-ID"
+  details: "Three-level residual quantization with codebook sizes 2048x1024x1024; the first-level codebook is category-constrained over 1,711 valid categories, levels 2 and 3 use nearest-neighbor quantization with EMA updates and a codebook restart strategy; a SID holding more than 50 items is split into at most 100 groups and a group suffix is appended to the third-level code."
+features_signals:
+- "Item titles"
+- "Queries and in-batch query-item contrastive pairs"
+- "User features such as gender and age group plus recent click SID histories"
+- "Downstream ranking feedback used as the RL reward: purchased or clicked, exposed, valid SID"
+training:
+  mode: "Offline training in four progressive stages followed by reinforcement-learning refinement; the serving pool is updated daily"
+  objectives:
+  - "RQ-VAE reconstruction loss with commit loss and bidirectional InfoNCE query-item contrastive loss, beta 1.0, gamma 0.001, temperature 0.1"
+  - "Next-SID prediction SFT for item-to-SID, query-to-SID and personalized user-and-query-to-SID mapping"
+  - "Group-relative policy optimization with rewards 1.0 for purchased or clicked, 0.5 for exposed, 0.1 for valid SID, 0 otherwise"
+  notes: "CQ-SID quantizer: 10 epochs, batch size 4096, learning rate 1e-3, 4 GPUs; Item2SID learning rate 1e-4 for 2k steps, Query2SID 4e-5 for 2.5k steps, personalized stage 4e-5 for 5k steps; EG-GRPO rollout batch 512, group size 8, injected ground-truth samples K of 2 or 4, KL weight 1.0, learning rate 1e-6 for 1k steps."
+serving_infra: "Deployed in the multi-channel recall stage of TmallAPP search with dynamic beam sizes in [20, 50, 100]; serves over 200 QPS across 8 GPUs with 99.9% availability and approximately 40 ms average end-to-end latency; the serving pool of approximately 21 million items is updated daily."
+scale:
+- metric: Item pool
+  value: "approximately 21 million items filtered from a corpus of hundreds of millions, updated daily"
+  note: "paper, Sec 3.4"
+- metric: Training data
+  value: "CQ-SID quantizer 37.5M samples; LLM stages 21.0M Item2SID, 90.3M Query2SID, 73.7M personalized UQ2SID"
+  note: "paper, Sec 4.1"
+- metric: Serving
+  value: "over 200 QPS across 8 GPUs, 99.9% availability, approximately 40 ms average end-to-end latency"
+  note: "paper, Sec 4.5"
+- metric: Channel contribution
+  value: "50.25% of all exposures, 58.96% of all clicks, 72.63% of all purchases"
+  note: "paper, abstract and Sec 4.5"
+results_reported: "Abstract and Sec 4, offline on TmallAPP search logs: CQ-SID reaches up to 26.76% relative improvement in semantic click hitrate and 11.11% in personalized click hitrate over the RQ-VAE baseline, while reducing beam search size by more than half without compromising recall quality. Table 1, same beam size, semantic click hitrate: CQ-SID 0.0758 at beam 1 against 0.0598 for RQ-VAE (+26.76%), 0.3161 at beam 10 against 0.2579 (+22.57%), 0.6181 at beam 100 against 0.5199 (+18.89%); the ablation without the category constraint reaches 0.0680 (+13.71%) at beam 1 and dropping the query-item contrastive loss scores 0.0596 (-0.33%) at beam 1. Table 2, top-1K truncation: CQ-SID peaks at 0.4422 with beam 30 against 0.4275 with beam 65 for RQ-VAE, a 3.44% relative improvement with 53.85% fewer beams. Table 3, personalized click hitrate: 0.1510 vs 0.1359 at beam 1 (+11.11%), 0.5206 vs 0.4787 at beam 10 (+8.75%), 0.7431 vs 0.6912 at beam 50 (+7.51%), 0.8062 vs 0.7513 at beam 100 (+7.31%); at top-1K truncation CQ-SID peaks at 0.7984 with beam 160 against 0.7607 with beam 195 for RQ-VAE, a 4.96% relative improvement with a 17.95% beam reduction. Table 4 at beam 10: EG-GRPO with K=2 lifts clk@10 from 0.5206 to 0.5221 and pvr@10 from 0.4371 to 0.4377, with K=4 exp@10 reaches 0.8711, while standard GRPO with K=0 degrades clk@10 to 0.5196 and pvr@10 to 0.4360. Sec 4.5 online: a two-week A/B test in the multi-channel recall stage reports statistically significant GMV +1.15% and UCTCVR +0.40%; after full deployment the generative recall channel accounts for 50.25% of all exposures, 58.96% of all clicks and 72.63% of all purchases, with the system serving over 200 QPS across 8 GPUs at 99.9% availability and approximately 40 ms average end-to-end latency."
+caveats:
+- "Sec 4.2.2 states the offline top-1K truncation differs from the actual online recall process, which employs coarse-ranking truncation."
+- "Sec 4.4 explains the small RL gains: SFT already leaves narrow headroom for refinement, hitrate is a binary metric, and EG-GRPO must navigate a trade-off between click and exposure."
+- "The paper does not report the A/B traffic share and does not name the control arm."
+- "The exposure, click and purchase channel shares are post-deployment contribution figures, not A/B lifts."
+unknown_fields:
+- "A/B traffic share and the control arm identity"
+- "Total training compute and cost"
+- "Absolute GMV and UCTCVR values"
+- "Configuration of the online coarse-ranking truncation"
+sources:
+- title: "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840110
+  type: paper
+- title: "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL, arXiv 2605.14434"
+  url: https://arxiv.org/abs/2605.14434
+  type: paper
+version_note: "Based on arXiv 2605.14434 v1, the only version posted as of card time; the published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2605.14434v1
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, Sec 1 introduction, Sec 2 related work, Sec 3 methodology with Algorithms 1 and 2, Sec 4 experiments with Tables 1 to 4 including Sec 4.5 online A/B test, Sec 5 conclusion"
+  verified_on: "2026-11-03"
+  published_pdf: "ACM version behind DOI 10.1145/3799682.3840110 not readable at card time"
+code:
+  status: none
+  checked_on: "2026-11-03"
+  repos: []
+  note: "No code link in the paper; GitHub and web search on 2026-11-03 found no official or third-party implementation of the CQ-SID and EG-GRPO described here. The one repository named EG-GRPO belongs to an unrelated autoregressive image generation paper."
+core_idea: "Treat semantic IDs as hierarchical cluster identifiers shaped by category constraints and query-item contrastive learning, then align recall with downstream ranking through expert-guided reinforcement learning."
+deployed_in: "TmallAPP search recall stage, generative recall supplement channel among multi-channel retrieval"
+scale_short: "Filters a corpus of hundreds of millions of items to approximately 21 million and serves TmallAPP search at over 200 QPS"
+key_result: "Two-week A/B in TmallAPP search multi-channel recall: GMV +1.15%, UCTCVR +0.40%, both statistically significant"
+results_table:
+  online:
+  - setting: "TmallAPP search, two-week A/B, multi-channel recall stage"
+    method: CQ-SID
+    metric: GMV
+    result: "+1.15%"
+    versus: "A/B control arm, not named in the paper"
+  - setting: "TmallAPP search, two-week A/B, multi-channel recall stage"
+    method: CQ-SID
+    metric: UCTCVR
+    result: "+0.40%"
+    versus: "A/B control arm, not named in the paper"
+  offline:
+  - setting: "TmallAPP search logs, semantic click hitrate, same beam size"
+    method: CQ-SID
+    metric: "Hitrate at beam 1"
+    result: "0.0758"
+    versus: "RQ-VAE 0.0598"
+  - setting: "TmallAPP search logs, semantic click hitrate, top-1K truncation"
+    method: CQ-SID
+    metric: "Peak hitrate, beam 30"
+    result: "0.4422"
+    versus: "RQ-VAE 0.4275 at beam 65, 3.44% relative improvement with 53.85% fewer beams"
+  - setting: "TmallAPP search logs, personalized click hitrate, top-1K truncation"
+    method: CQ-SID
+    metric: "Peak hitrate, beam 160"
+    result: "0.7984"
+    versus: "RQ-VAE 0.7607 at beam 195, 4.96% relative improvement"
+  note: "Table 4, ranking alignment at beam 10: EG-GRPO with K=2 lifts clk@10 from 0.5206 to 0.5221 and pvr@10 from 0.4371 to 0.4377, with K=4 exp@10 reaches 0.8711, while standard GRPO without injected samples degrades clk@10 to 0.5196 and pvr@10 to 0.4360."
+deployment:
+  online_evidence: online_numbers
+  scenario: "Generative recall channel in the multi-channel recall stage of TmallAPP search, fully deployed in the search product line"
+  ab_traffic: not_reported
+  ab_duration: "Two weeks"
+  baseline: not_reported
+  online_lifts:
+  - metric: GMV
+    value: "+1.15%"
+  - metric: UCTCVR
+    value: "+0.40%"
+  training_compute: "CQ-SID quantizer trained 10 epochs on 4 GPUs; LLM stages 2k to 5k steps; total compute not aggregated"
+  serving_latency: "Approximately 40 ms average end-to-end latency"
+  serving_qps: "Over 200 QPS"
+  inference_cost: "Beam search with dynamic beam sizes in [20, 50, 100]; offline, cluster SIDs cut beam search size by more than half at comparable recall"
+  hardware: "8 GPUs for online serving"
+  notes:
+  - "The paper states the offline top-1K truncation differs from the actual online recall process that employs coarse-ranking truncation."
+  - "The paper does not report the A/B traffic share and does not name the control arm."
+  - "The exposure, click and purchase channel shares are post-deployment contribution figures, not A/B lifts."
+  fulltext_refs:
+  - "Sec 4.5: deployed in production search on TmallAPP; two-week online A/B with GMV +1.15% and UCTCVR +0.40%; dynamic beam sizes in [20, 50, 100], over 200 QPS across 8 GPUs, 99.9% availability, approximately 40 ms average end-to-end latency; 50.25% of exposures, 58.96% of clicks, 72.63% of purchases"
+  - "Sec 4.1: 37.5M samples for CQ-SID, 21.0M Item2SID, 90.3M Query2SID, 73.7M personalized UQ2SID, test sets 201k and 170k"
+  - "Sec 3.1.2: 1,711 valid categories; three-level codebook sizes 2048x1024x1024"
+  - "Sec 3.4: pool of approximately 21 million items filtered from hundreds of millions, dynamically updated daily"
+  basis: full_text
+  checked_on: "2026-11-03"

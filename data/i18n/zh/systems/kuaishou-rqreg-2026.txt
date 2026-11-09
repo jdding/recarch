@@ -1,0 +1,49 @@
+surface|快手广告推荐系统排序阶段的 GMV 预测
+era_reason|连续目标被分解为粗到细的残差量化码层级并作为码序列自回归预测；量化码上的序列生成是核心机制。
+tldr|RQ-Reg 把 GMV 预测变成粗到细码生成；快手广告 7 天 10% A/B 广告主价值 +4.19%、长尾 +4.76%。
+summary|RQ-Reg 来自快手科技，是基于残差量化的工业推荐连续值预测框架，覆盖观看时长、生命周期价值与交易总额。残差量化 K-means 把目标值分解为有序码的层级，每级精修上一级的残差，模型以序列回归的方式从粗到细自回归预测。序数感知的表示学习目标让码嵌入空间与目标值的序结构对齐，使量化码获得连续表示；计划采样稳定训练。部署在快手两阶段广告排序器的 GMV 预测模型中，该场景 GMV 分布在热门价位上尖峰聚集；RQ-Reg 在大规模线上 A/B 中取代了 WLR 生产基线。
+core_idea|把连续目标分解为粗到细的量化码并自回归生成，用序数目标让码嵌入保持连续。
+deployed_in|快手广告排序器的 GMV 预测模型
+scale_short|4 亿日活平台；每臂 10% 流量约 4000 万用户，七天
+key_result|7 天 A/B 对 WLR 基线：ADVV +4.19%、长尾 +4.76%、AUC +0.12%
+results_reported|线上 A/B 见表 7，每臂 10% 流量共七天，基线为 WLR 生产模型：整体 AUC +0.12%、广告主价值 ADVV +4.19%；长尾商品价位上 AUC +0.23%、ADVV +4.76%。图 5 逐日轨迹：第 1 至 7 天 ADVV 增益一致且统计显著；第 8 天实验桶切回 WLR，第 9 至 13 天 A/A 测试的 ADVV 明显回落，论文以此作为增益来自模型的证据。离线方面，表 1 与表 2：RQ-Reg 在观看时长与 LTV 基准上优于回归、分类与序数基线；表 3 消融显示去掉表示目标或计划采样一致退化；表 5：RQ K-means 胜过 K-means 与动态分位；表 6：重建 MAE 1.33e-3 对动态分位 3.28e-3 且码长更短固定；图 3：随 RQ 级数增加误差与 MAE 单调下降，L 至 3 后趋平。
+serving_infra|部署为第二阶段排序器的 GMV 模型；推理复杂度随码长线性增长，对比生成式回归基线的二次增长。更多服务细节未报告。
+stages.0.model_family|两阶段广告排序器中的 GMV 预测模型：3×32 RQ 码本加 LSTM 骨干，预测粗到细码序列并重建为 GMV 估计
+stages.0.details|最终排序分由购买概率模型与本 GMV 模型联合决定；RQ K-means 重建误差 1.33e-3 对动态分位启发式的 3.28e-3，推理随码长线性而非二次增长。
+id_tokenization.approach|连续目标值上的残差量化 K-means 码，而非物品
+id_tokenization.details|tokenization 作用于标签空间：每个 GMV 值映射为 3 个 32 码本层级的 L 个有序码；离线研究中 L 至 3 及以上趋平。
+features_signals.0|广告排序器的用户与上下文特征
+features_signals.1|商品价格及其在 GMV 分布中的尖峰聚集
+features_signals.2|连续目标值的序结构
+training.mode|带计划采样的序列回归，k 0.1、t0 10，回归损失权重 1.0、表示损失权重 0.1
+training.objectives.0|RQ 码序列上的自回归预测加回归重建损失
+training.objectives.1|序数感知表示学习目标对齐码嵌入与目标排序，温度 2.0
+training.notes|Huber 损失 delta 按数据集调整；消融显示去掉表示目标或计划采样均一致退化。
+scale.0.metric|平台
+scale.0.value|快手短视频平台，超 4 亿日活，日数十亿曝光
+scale.1.metric|A/B 规模
+scale.1.value|每臂 10% 流量，每模型约 4000 万独立用户，七天
+scale.2.metric|码本
+scale.2.value|部署配置为 3 层 RQ 每层 32 码
+results_table.online.0.setting|快手广告，7 天 A/B，每臂 10%
+results_table.online.1.setting|快手广告，7 天 A/B，长尾价位
+results_table.offline.0.setting|KuaiRec 重建
+results_table.online.0.versus|WLR 生产基线
+results_table.online.1.versus|WLR 生产基线
+results_table.offline.0.versus|动态分位 3.28e-3
+caveats.0|论文报告相对生产基线的提升；绝对 AUC 与 ADVV 值未公布。
+caveats.1|A/B 每臂 10% 流量，两臂各约 4000 万用户；此之外的桶构造未描述。
+unknown_fields.0|绝对 AUC 与 ADVV 值
+unknown_fields.1|服务延迟与 QPS
+unknown_fields.2|训练算力
+code.repos.0.owner|快手论文作者
+code.repos.0.note|仓库随论文提供；不含生产服务栈与广告主数据。
+version_note|读的是 arXiv 2602.23012 v2。CIKM 2026 长文 DOI 10.1145/3799682.3840900 已在 Crossref 注册，页码 875-884，但未读 ACM 正式版全文。会后请对照 ACM 正式版逐个复核数字，再把卡标记为已对照正式版核对。
+deployment.scenario|快手广告系统第二阶段排序中的 GMV 预测，与购买概率模型并行
+deployment.ab_traffic|每臂 10% 流量，每模型约 4000 万独立用户
+deployment.ab_duration|七天，随后切回基线再做 5 天 A/A 留白
+deployment.baseline|WLR 生产连续值模型
+deployment.serving_latency|推理随码长线性增长；绝对延迟未报告
+deployment.inference_cost|较二次增长的生成式回归基线，码长更短固定且重建误差更低
+deployment.notes.0|七天 A/B 的逐日 ADVV 增益全部统计显著。
+deployment.notes.1|第 8 天切回与 5 天 A/A 回落是论文的因果检验。

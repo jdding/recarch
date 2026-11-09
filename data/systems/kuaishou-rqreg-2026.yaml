@@ -1,0 +1,135 @@
+id: kuaishou-rqreg-2026
+name: RQ-Reg
+company: Kuaishou
+surface: GMV prediction in the ranking stage of Kuaishou's advertising recommendation system
+year: 2026
+era: generative
+era_reason: "Continuous targets are decomposed into a coarse-to-fine hierarchy of residual-quantization codes and predicted autoregressively as a code sequence; sequential generation over quantization codes is the core mechanism."
+first_public: "2026-02"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840900"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "RQ-Reg turns GMV prediction into coarse-to-fine code generation; a 7-day 10% A/B on Kuaishou ads lifted advertiser value +4.19% and long-tail +4.76%."
+summary: "RQ-Reg, from Kuaishou Technology, is a residual-quantization-based framework for predicting continuous values such as watch-time, lifetime value and gross merchandise value in industrial recommendation. A residual-quantization K-means decomposes the target value into a hierarchy of ordered codes, each refining the residual left by the previous level, and the model autoregressively predicts codes from coarse to fine with sequential regression. An ordinal-aware representation learning objective aligns the code embedding space with the ordinal structure of target values, giving quantization codes continuous representations; scheduled sampling stabilizes training. Deployed in the GMV prediction model of Kuaishou's two-stage advertising ranker, where GMV distributions cluster sharply at popular price points, RQ-Reg replaced a WLR production baseline in a large-scale online A/B test."
+paradigms:
+- generative-retrieval
+- multi-task
+stages:
+- stage: rank
+  model_family: "GMV prediction model inside the two-stage advertising ranker, a 3 by 32 RQ codebook with an LSTM backbone, predicting a coarse-to-fine code sequence whose reconstruction is the GMV estimate"
+  details: "The final ranking score combines a purchase-probability model and this GMV model; RQ K-means achieves reconstruction error 1.33e-3 against 3.28e-3 for the dynamic-quantile heuristic of Generative Recommendation, with linear rather than quadratic inference scaling in code length."
+id_tokenization:
+  approach: "Residual-quantization K-means codes over continuous target values, not items"
+  details: "The tokenization applies to the label space: each GMV value maps to L ordered codes from 3 codebook levels of 32; levels plateau at L of 3 and above in the offline study."
+features_signals:
+- "User and context features of the advertising ranker"
+- "Product price and its sharp clustering in the GMV distribution"
+- "Ordinal structure of the continuous target values"
+training:
+  mode: "Sequential regression with scheduled sampling, k 0.1 and t0 10, regression loss weight 1.0 and representation loss weight 0.1"
+  objectives:
+  - "Autoregressive code prediction over the RQ code sequence plus a regression reconstruction loss"
+  - "Ordinal-aware representation learning objective aligning code embeddings with target ranking, temperature 2.0"
+  notes: "Huber loss delta varies by dataset; ablations show removing the representation objective or scheduled sampling degrades performance consistently."
+serving_infra: "Deployed as the GMV model of the second-stage ranker; inference complexity scales linearly with code length, in contrast to the quadratic scaling of the Generative Regression baseline. Further serving details are not reported."
+scale:
+- metric: Platform
+  value: "Kuaishou short-video platform, over 400 million DAU, billions of daily impressions"
+  note: "paper, Sec 4.3"
+- metric: A/B scale
+  value: "10% of traffic per arm, about 40 million unique users per model, seven days"
+  note: "paper, Sec 4.3.1"
+- metric: Codebook
+  value: "3 RQ levels of 32 codes in the deployed configuration"
+  note: "paper, Sec 4.3.1"
+results_reported: "Online A/B, Table 7, seven days at 10% per arm against the WLR production baseline: overall AUC +0.12% and advertiser value ADVV +4.19%; on long-tailed commodity prices AUC +0.23% and ADVV +4.76%. Figure 5 daily trajectory: ADVV gains stay consistent and statistically significant across days 1 to 7; on day 8 the experimental bucket switched back to WLR, and the A/A test on days 9 to 13 shows a clear drop in ADVV, which the paper offers as evidence the gains come from the model. Offline, Table 1 and Table 2: RQ-Reg compares favorably against regression, classification and ordinal baselines on watch-time and LTV benchmarks; Table 3 ablations show consistent degradation without the representation objective or scheduled sampling; Table 5: RQ K-means beats K-means and dynamic quantile; Table 6: reconstruction MAE 1.33e-3 against 3.28e-3 for dynamic quantile with shorter fixed code length; Figure 3: error and MAE decrease monotonically with RQ levels up to plateau at L 3 and above."
+caveats:
+- "The paper reports relative lifts over the production baseline; absolute AUC and ADVV values are not published."
+- "The A/B allocates 10% of traffic to each arm, matching arms at about 40 million users; bucket construction beyond that is not described."
+unknown_fields:
+- Absolute AUC and ADVV values
+- Serving latency and QPS
+- Training compute
+sources:
+- title: "RQ-Reg, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840900
+  type: paper
+- title: "RQ-Reg: A Residual-Quantization-Based Framework for Continuous Value Prediction in Recommender Systems, arXiv 2602.23012"
+  url: https://arxiv.org/abs/2602.23012
+  type: paper
+- title: "RQ-Reg code repository"
+  url: https://github.com/rpcui/RQ-Reg
+  type: source_code
+version_note: "Read from arXiv 2602.23012 v2. The CIKM 2026 full-paper DOI 10.1145/3799682.3840900 is registered on Crossref with pages 875-884, but the ACM published full text was not read. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.23012
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, introduction, GMV distribution analysis, RQ decomposition, sequential regression, representation objective, offline experiments with Tables 1 to 6 and Figures 1 to 4, online experiment with Table 7 and Figure 5, conclusion, hyperparameter appendix"
+  verified_on: "2026-11-03"
+  published_pdf: "not read; CIKM 2026 proceedings not yet published, arXiv v2 read on 2026-11-03"
+code:
+  status: official_full
+  checked_on: "2026-11-03"
+  repos:
+  - url: https://github.com/rpcui/RQ-Reg
+    owner: "the Kuaishou authors"
+    official: true
+    note: "The repository accompanies the paper; production serving stack and advertiser data are not included."
+core_idea: "Decompose a continuous target into coarse-to-fine quantization codes and generate them autoregressively, with an ordinal objective keeping code embeddings continuous."
+deployed_in: "Kuaishou advertising ranker, GMV prediction model"
+scale_short: "400 million DAU platform; 10% per arm, about 40 million users, seven days"
+key_result: "7-day A/B vs WLR baseline: ADVV +4.19%, long-tail +4.76%, AUC +0.12%"
+results_table:
+  online:
+  - setting: "Kuaishou advertising, 7-day A/B, 10% per arm"
+    method: "RQ-Reg GMV model"
+    metric: ADVV
+    result: "+4.19%"
+    versus: "WLR production baseline"
+  - setting: "Kuaishou advertising, 7-day A/B, long-tail prices"
+    method: "RQ-Reg GMV model"
+    metric: ADVV
+    result: "+4.76%"
+    versus: "WLR production baseline"
+  offline:
+  - setting: "KuaiRec reconstruction"
+    method: "RQ K-means"
+    metric: "Reconstruction MAE"
+    result: "1.33e-3"
+    versus: "Dynamic quantile 3.28e-3"
+deployment:
+  online_evidence: online_numbers
+  scenario: "GMV prediction inside the second-stage ranking of Kuaishou's advertising system, alongside a purchase-probability model"
+  ab_traffic: "10% of traffic per arm, about 40 million unique users per model"
+  ab_duration: "Seven days, followed by a 5-day A/A holdout after switching back"
+  baseline: "WLR, the production continuous-value model"
+  online_lifts:
+  - metric: "ADVV, overall"
+    value: "+4.19%"
+  - metric: "ADVV, long-tail prices"
+    value: "+4.76%"
+  - metric: "AUC, overall"
+    value: "+0.12%"
+  - metric: "AUC, long-tail prices"
+    value: "+0.23%"
+  training_compute: not_reported
+  serving_latency: "Inference scales linearly with code length; absolute latency not reported"
+  serving_qps: not_reported
+  inference_cost: "Shorter fixed code length than the quadratic-scaling Generative Regression baseline at lower reconstruction error"
+  hardware: not_reported
+  notes:
+  - "Daily ADVV gains stay statistically significant across all seven A/B days."
+  - "The day-8 switch-back and 5-day A/A drop serve as the paper's causal check."
+  fulltext_refs:
+  - "Table 7: AUC +0.12% overall, +0.23% long-tail; ADVV +4.19% overall, +4.76% long-tail"
+  - "Sec 4.3.1: 10% per arm, 40 million users per model, 7 days, 3x32 codebook, LSTM backbone, WLR baseline"
+  - "Figure 5: days 1-7 consistent gains, day 8 switch, days 9-13 A/A drop"
+  basis: full_text
+  checked_on: "2026-11-03"

@@ -1,0 +1,34 @@
+# Redrawn, simplified diagram. Source: HiSAC, "Hierarchical Sparse Activation Compression for Ultra-long Sequence Modeling in Recommendation Systems" (CIKM 2026), Fig. 1 and Fig. 2.
+alt: "Left to right: a user behavior history of up to 10,000 interactions with item text and product image is tokenized offline by a frozen multimodal encoder and RQ-VAE into multi-level semantic IDs over 2 codebook levels of 512 entries; the SID sequence is projected onto a global semantic tree where bottom-up voting and top-down pruning keep the top-k per level, leaving about 200 sparsely activated interest-agents weighted by vote counts; Soft-Routing Attention aggregates every historical item into the compressed sequence using similarity from frozen semantic embeddings and content from trainable ranking embeddings; in serving, MHA cross modeling lets the candidates attend the compressed sequence, with candidate query caches refreshed every 2 hours, and CTR prediction is produced."
+caption:
+  fig: "Fig. 1"
+  work: "HiSAC: Hierarchical Sparse Activation Compression for Ultra-long Sequence Modeling in Recommendation Systems, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840124"
+  note: "Simplified; the three serving optimizations of Fig. 2 are summarized in the serving column, and per-level vote counts are not drawn."
+columns:
+  - label: Input
+    boxes:
+      - {id: hist, kind: input, text: ["User behavior history", "up to 10,000 interactions with item text and product image"]}
+  - label: Offline tokenization
+    boxes:
+      - {id: enc, kind: module, text: ["Frozen multimodal encoder", "CLIP ViT-B/32 with Q-Former fusion, trained with InfoNCE"]}
+      - {id: rq, kind: module, text: ["RQ-VAE codebooks", "2 levels of 512 entries, multi-level semantic IDs"]}
+  - label: Sparse activation
+    boxes:
+      - {id: tree, kind: module, text: ["Global semantic tree", "bottom-up vote propagation, top-down pruning keeps top-k per level"]}
+      - {id: ag, kind: module, text: ["Interest-agents", "about 200 sparsely activated per user, weighted by vote counts"]}
+  - label: Compression
+    boxes:
+      - {id: sra, kind: module, text: ["Soft-Routing Attention", "similarity from frozen semantic embeddings, content from trainable ranking embeddings"]}
+  - label: Serving
+    boxes:
+      - {id: mha, kind: module, text: ["MHA cross modeling", "compressed sequence cross-attends candidates; query cache refreshed every 2 hours"]}
+      - {id: out, kind: output, text: ["CTR prediction", "serving on Taobao homepage feed"]}
+edges:
+  - [hist, enc]
+  - [enc, rq]
+  - [rq, tree]
+  - [tree, ag]
+  - [ag, sra]
+  - [sra, mha]
+  - [mha, out]

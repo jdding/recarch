@@ -1,0 +1,167 @@
+id: alibaba-mine-then-train-2026
+name: Mine-Then-Train
+company: Alibaba Taobao & Tmall Group
+surface: Item multimodal representations feeding the CTR prediction model of Taobao display advertising
+year: 2026
+era: deep
+era_reason: "A CLIP-family multimodal encoder is fine-tuned as a feature provider for an ID-based CTR ranker; no generative or LLM component is central."
+first_public: "2026-08"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840096"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "Mines multimodally interpretable triplets from CTR clicks and fine-tunes the SCL encoder for Taobao display advertising; long-term A/B gives CTR +1.5% and RPM +0.5%."
+summary: "Mine-Then-Train is Taobao & Tmall Group's method for learning native multimodal representations for CTR prediction in Taobao display advertising. The paper first shows that end-to-end multimodal training on top of the production SCL encoder fails: every E2EM variant degrades GAUC because raw CTR clicks mix multimodal and non-multimodal factors, giving ambiguous supervision. Instead, the method trains an annotation model that scores click relevance from raw item images and titles, mines 30 million multimodally interpretable triplets, and fine-tunes the SCL encoder with a triplet margin loss; a long-term A/B test in Taobao display advertising starting early 2026 delivered CTR +1.5% and RPM +0.5%."
+paradigms:
+- attention-ctr
+- semantic-id
+stages:
+- stage: rank
+  model_family: "ID-based CTR prediction model of Taobao display advertising, MUSE in the E2EM study and the newer production model cited as EST in the NMRL experiments, consuming SCL multimodal representations through SimTier, SA-TA similarity features and linear-layer direct fusion"
+  details: "The CTR prediction model itself is not modified; only the multimodal encoder that feeds it is fine-tuned on mined data."
+id_tokenization:
+  approach: "Sparse item ID embeddings alongside frozen SCL multimodal representations; the mining stage adds RK-Means semantic IDs with a learnable 3x8192 SID decode codebook"
+  details: "In the annotation model, a TaskRes-style residual tuning module keeps the SCL encoder frozen and learns SID embeddings from a zero-initialized decode codebook as CTR-specific residuals, so preference information stays tied to multimodally interpretable item SIDs."
+features_signals:
+- "Raw multimodal content of target and history items, main images and titles, encoded by the frozen Chinese CLIP ViT-B/16 SCL encoder"
+- "Target-versus-history multimodal similarity passed to the CTR model as SimTier and SA-TA features"
+- "Multimodal representations fused with item ID embeddings through a linear layer"
+- "Annotation model click-relevance scores integrated as features during mining and diagnosis"
+- "User age, gender and click-history sequence features; category, brand and item ID of the target item"
+training:
+  mode: "Offline mining and encoder fine-tuning; the online pipeline is unchanged"
+  objectives:
+  - "Triplet margin loss with margin 0.1 on mined triplets to learn click-preference-aligned similarity ranking"
+  - "SCL MoCo-style contrastive loss as a regularizer to prevent forgetting e-commerce semantics"
+  notes: "Mining thresholds: pairwise multimodal similarity 0.3, SCL similarity gap 0.05, annotation-score margin 0.15. The annotation model itself is trained end-to-end by the CTR loss while only its SID decode codebook is learnable. Human evaluation on 1000 high-confidence and 1000 low-confidence triplets shows win rates of 85% versus 42%."
+serving_infra: "Since only the multimodal encoder is optimized and no other module changes, the system reuses the SCL encoder's online deployment pipeline in Taobao display advertising."
+scale:
+- metric: Deployment
+  value: "Integrated into Taobao's display advertising system in early 2026, evaluated with a long-term A/B test"
+  note: "paper, Sec 6.3"
+- metric: E2EM study dataset
+  value: "84 million users, 88 million products and 1.9 billion samples over one week from Taobao"
+  note: "paper, Sec 3.1"
+- metric: NMRL experiment dataset
+  value: "one-month CTR dataset from the Taobao display advertising system"
+  note: "paper, Sec 6.1"
+- metric: Mined fine-tuning data
+  value: "30 million high-quality triplets"
+  note: "paper, Sec 5.2"
+- metric: E2EM training cost at batch 32, sequence length 50
+  value: "peak GPU memory 3.37 GB rising to 5.71 GB target-side and 84.56 GB target-and-sequence; average step time 1.02 s rising to 1.94 s and 7.32 s"
+  note: "paper, Sec 4.3 Table 5, measured with CLIP ViT-B/16 and MUSE; diagnosis of the rejected alternative"
+results_reported: "Deployment, Sec 6.3: Native Multimodal Representation entered Taobao's display advertising system in early 2026 and a long-term A/B test showed a 1.5% CTR improvement and a 0.5% RPM improvement, restated in the conclusion. Offline, Sec 6.2 Table 6, relative lifts over the baseline that already includes SCL representations: adding annotation-model scores gives GAUC +0.13% and AUC +0.08%, and the full NMRL method gives GAUC +0.22% and AUC +0.11%. Diagnosis of the rejected end-to-end alternative: Sec 3.2 Figure 2 shows the E2EM encoder drops GAUC below the production SCL encoder; Sec 3.3 Table 1 on the Taobao-MM benchmark gives GAUC 0.6154 for the frozen MUSE baseline, 0.6139 for target-side E2EM, 0.6128 with LEMUR's memory bank and 0.6124 for target-and-sequence E2EM; Sec 3.3 Table 2 shows no optimizer or learning rate choice among SGD, Adam and AdamW at 2e-3 to 2e-5 beats 0.6154. Sec 4.1 Table 3 measures that multimodal similarity alone predicts clicks only slightly above random, MultiModal-Mean GAUC 0.541 and MultiModal-Max GAUC 0.536; Sec 4.2 Table 4 finds E2EM gradient cosine similarities of 0.016 and 0.006 against 0.144 and 0.849 for SCL, and Sec 4.2 reports that adding SCL loss to co-training drops CTR GAUC by 0.17 percentage points and SCL Top-1 accuracy by 5 pt. Mining quality, Sec 5.2: the annotation score alone lifts GAUC by 0.13%, and human voting on triplets with annotation-score margin above 0.15 versus below 0.05 gives Item 1 win rates of 85% versus 42%."
+caveats:
+- "The paper describes the online evaluation only as a long-term A/B test; no traffic share, bucket design or duration is given."
+- "The paper's stated limitations of the annotation model are that click-relevance scores can be inaccurate for some item pairs because it is trained directly on CTR data, and that preferences are learned solely through SID embeddings whose learning resembles ID-style memorization without direct access to raw multimodal content, limiting generalization."
+- "The CTR prediction model differs between studies: the E2EM diagnosis uses MUSE while the NMRL experiments use a newer production model cited as Liu et al. 2026, so Table 1 and Table 6 numbers come from different model setups, and the Taobao-MM benchmark is a lighter-weight proxy."
+- "The paper's GenAI usage disclosure states generative AI tools were used only to polish writing and readability, with no scientific content generated."
+unknown_fields:
+- "A/B traffic share, bucket count and test duration"
+- "Training compute, GPU counts and fine-tuning duration of the proposed method"
+- "Serving latency, QPS and hardware of the display advertising system"
+- "Absolute AUC and GAUC values of the NMRL experiments, reported only as relative lifts"
+- "Inference cost change of the updated encoder in production"
+sources:
+- title: "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840096
+  type: paper
+- title: "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios, arXiv 2608.24091"
+  url: https://arxiv.org/abs/2608.24091
+  type: paper
+- title: "CIKM 2026 program, session 2A Industrial Recommender Systems II, Applied Research"
+  url: https://cikm2026.diag.uniroma1.it/program
+  type: press
+version_note: "Read from arXiv 2608.24091 v2 dated 2026-09-12, whose header already carries the CIKM 2026 proceedings line with DOI 10.1145/3799682.3840096. Crossref registers that DOI for CIKM 2026 with pages 8704-8711 and a matching title, but the ACM published full text was not readable before the conference; numbers should be re-verified against the camera-ready after CIKM 2026, November 7-11, 2026, because camera-ready pagination may differ, and the card should then be marked as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2608.24091
+  local_pdf: "full text read from arXiv HTML v2, file not redistributed"
+  sections_read: "Abstract, Sec 1 introduction, Sec 2 preliminaries, Sec 3 E2EM experiments with Figure 2 and Tables 1-2, Sec 4 failure analysis with Tables 3-5, Sec 5 Mine-Then-Train method with Figures 5-6, Sec 6 experiments with Table 6 and Sec 6.3 online A/B, Sec 7 related work, Sec 8 conclusion, GenAI usage disclosure"
+  verified_on: "2026-11-03"
+  published_pdf: "ACM published version not opened; Crossref record for the DOI checked with matching title and pages 8704-8711"
+code:
+  status: none
+  checked_on: "2026-11-03"
+  repos: []
+  note: "Web and GitHub search on the check date found no official or third-party implementation; the paper does not mention a code release."
+core_idea: "Mine multimodally interpretable click triplets from CTR data first, then fine-tune the multimodal encoder on them so its representations match click preferences."
+deployed_in: "Taobao display advertising CTR prediction"
+scale_short: "Mining produced 30 million high-quality triplets; online A/B delivered CTR +1.5% and RPM +0.5%"
+key_result: "Long-term A/B in Taobao display advertising: CTR +1.5%, RPM +0.5%"
+results_table:
+  online:
+  - setting: "Taobao display advertising, long-term A/B test, integrated early 2026"
+    method: NMRL
+    metric: CTR
+    result: "+1.5%"
+    versus: "Control arm of the same A/B test"
+  - setting: "Taobao display advertising, long-term A/B test, integrated early 2026"
+    method: NMRL
+    metric: RPM
+    result: "+0.5%"
+    versus: "Control arm of the same A/B test"
+  offline:
+  - setting: "One-month Taobao display advertising CTR dataset"
+    method: "Add Annotation Score"
+    metric: GAUC
+    result: "+0.13%"
+    versus: "Baseline including SCL representations"
+  - setting: "One-month Taobao display advertising CTR dataset"
+    method: "Add Annotation Score"
+    metric: AUC
+    result: "+0.08%"
+    versus: "Baseline including SCL representations"
+  - setting: "One-month Taobao display advertising CTR dataset"
+    method: NMRL
+    metric: GAUC
+    result: "+0.22%"
+    versus: "Baseline including SCL representations"
+  - setting: "One-month Taobao display advertising CTR dataset"
+    method: NMRL
+    metric: AUC
+    result: "+0.11%"
+    versus: "Baseline including SCL representations"
+  - setting: "Taobao-MM benchmark, E2EM diagnosis, Section 3.3"
+    method: "Tar E2EM"
+    metric: GAUC
+    result: "0.6139"
+    versus: "Frozen MUSE baseline 0.6154"
+  - setting: "Taobao-MM benchmark, E2EM diagnosis, Section 3.3"
+    method: "Tar and Seq E2EM"
+    metric: GAUC
+    result: "0.6124"
+    versus: "Frozen MUSE baseline 0.6154"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Item multimodal representations in the CTR prediction model of Taobao display advertising; the encoder is fine-tuned with Mine-Then-Train and was integrated in early 2026, evaluated through a long-term A/B test"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: "Control arm of the same long-term A/B test; the control configuration is unspecified in the paper"
+  online_lifts:
+  - metric: CTR
+    value: "+1.5%"
+  - metric: RPM
+    value: "+0.5%"
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - "The paper states only the multimodal encoder is optimized, so the SCL encoder's deployment pipeline is reused unchanged."
+  - "The online section gives no traffic share, bucket count or duration for the long-term A/B test."
+  - "Table 5 training-cost figures belong to the E2EM diagnosis, the rejected alternative, not to Mine-Then-Train's own training."
+  fulltext_refs:
+  - "Sec 6.3: NMR integrated into Taobao's display advertising system in early 2026, long-term A/B test, 1.5% CTR improvement and 0.5% RPM improvement"
+  - "Sec 6.2 Table 6: Add Annotation Score GAUC +0.13% AUC +0.08%, NMRL GAUC +0.22% AUC +0.11% relative to baseline"
+  - "Sec 4.3 Table 5: E2EM peak GPU memory 3.37 to 84.56 GB and step time 1.02 to 7.32 s at batch 32, sequence length 50"
+  - "Sec 1: SCL representations brought a percentage-level GAUC improvement, and a 0.1% GAUC lift is recognized as a convincing result at this scale"
+  basis: full_text
+  checked_on: "2026-11-03"

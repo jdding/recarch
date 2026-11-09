@@ -1,0 +1,38 @@
+# Redrawn, simplified diagram. Source: LFM4Ads, "Large Foundation Model for Ads Recommendation" (CIKM 2026), Fig. 2.
+alt: "Left to right: user features and item features enter LFM4Ads, a triple-tower model with shared user and item towers and a dual-branch mix tower holding a content branch and an ad branch; the user tower emits a UR, the item tower an IR, and the ad branch's penultimate MLP layer emits CRs that are aggregated by time-decayed exponential moving averages; the representations then flow to three downstream usages, feature-level non-linear gating, the module-level Isomorphic Interaction Module, and model-level standalone retrieval with adapters and cosine similarity, which power ranking and matching launches."
+caption:
+  fig: "Fig. 2"
+  work: "LFM4Ads: Large Foundation Model for Ads Recommendation, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840163"
+  note: "Simplified; the internal layers of the mix tower branches and the online transfer system of Fig 4 are only summarized, and the aggregation equations are omitted."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: user, kind: input, text: ["User features", "multi-value behavior sequences, content and ad domains"]}
+      - {id: item, kind: input, text: ["Item features", "title, LLM abstract, commercial tags"]}
+  - label: LFM4Ads
+    boxes:
+      - {id: towers, kind: module, text: ["Shared user and item towers", "user tower emits UR, item tower emits IR"]}
+      - {id: mix, kind: module, text: ["Mix tower, dual branch", "content branch and ad branch, penultimate MLP layer for CRs"]}
+  - label: Representations
+    boxes:
+      - {id: agg, kind: module, text: ["UR, IR, CR", "CRs aggregated by time-decayed exponential moving average"]}
+  - label: Downstream usage
+    boxes:
+      - {id: feat, kind: module, text: ["Feature level", "non-linear gating of downstream embeddings"]}
+      - {id: module, kind: module, text: ["Module level", "Isomorphic Interaction Module, downstream-trained mix-tower replica"]}
+      - {id: retrieval, kind: module, text: ["Model level", "standalone retrieval, adapters plus cosine similarity"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Ranking and matching launches", "pCTR, pCVR, pLTV ranking and matching tasks"]}
+edges:
+  - [user, towers]
+  - [item, towers]
+  - [towers, mix]
+  - [mix, agg]
+  - [agg, feat]
+  - [agg, module]
+  - [agg, retrieval]
+  - [feat, out]
+  - [module, out]
+  - [retrieval, out]

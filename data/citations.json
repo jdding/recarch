@@ -71,6 +71,30 @@
    }
   ]
  },
+ "alibaba-bar-2025": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/584ccd65c12fa0aabaf766acac3b81af82f90716",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2508.05206"
+  ],
+  "papers": [
+   {
+    "name": "BAR",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/584ccd65c12fa0aabaf766acac3b81af82f90716",
+    "matched_title": "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2508.05206"
+    ]
+   }
+  ]
+ },
  "alibaba-degre-2026": {
   "count": 4,
   "source": "Semantic Scholar",
@@ -119,6 +143,30 @@
    }
   ]
  },
+ "alibaba-hisac-2026": {
+  "count": 7,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/1878382ff7e2ced6e9ca9079154682efdfa7e087",
+  "fetched_on": "2026-11-03",
+  "matched_title": "HiSAC: Hierarchical Sparse Activation Compression for Ultra-long Sequence Modeling in Recommenders",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2602.21009"
+  ],
+  "papers": [
+   {
+    "name": "HiSAC",
+    "count": 7,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/1878382ff7e2ced6e9ca9079154682efdfa7e087",
+    "matched_title": "HiSAC: Hierarchical Sparse Activation Compression for Ultra-long Sequence Modeling in Recommenders",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2602.21009"
+    ]
+   }
+  ]
+ },
  "alibaba-lum-2025": {
   "count": 29,
   "source": "Semantic Scholar",
@@ -143,6 +191,30 @@
    }
   ]
  },
+ "alibaba-mine-then-train-2026": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7204235348",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2608.24091"
+  ],
+  "papers": [
+   {
+    "name": "Mine-Then-Train",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7204235348",
+    "matched_title": "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2608.24091"
+    ]
+   }
+  ]
+ },
  "alibaba-mmq-2025": {
   "count": 32,
   "source": "Semantic Scholar",
@@ -163,6 +235,30 @@
     "matched_year": 2025,
     "ids": [
      "doi:10.1145/3773966.3777923"
+    ]
+   }
+  ]
+ },
+ "alibaba-muse-2025": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7111122563",
+  "fetched_on": "2026-11-03",
+  "matched_title": "MUSE: A Simple Yet Effective Multimodal Search-Based Framework for Lifelong User Interest Modeling",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2512.07216"
+  ],
+  "papers": [
+   {
+    "name": "MUSE",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7111122563",
+    "matched_title": "MUSE: A Simple Yet Effective Multimodal Search-Based Framework for Lifelong User Interest Modeling",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2512.07216"
     ]
    }
   ]
@@ -216,10 +312,10 @@
   ]
  },
  "alibaba-urm-2025": {
-  "count": 13,
-  "source": "Semantic Scholar",
-  "source_url": "https://www.semanticscholar.org/paper/62dc2137eb859b54eb74c522340df6b9e240d401",
-  "fetched_on": "2026-11-02",
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W4407213747",
+  "fetched_on": "2026-11-03",
   "matched_title": "Large Language Model as Universal Retriever in Industrial-Scale Recommender System",
   "matched_year": 2025,
   "ids": [
@@ -228,9 +324,9 @@
   "papers": [
    {
     "name": "URM",
-    "count": 13,
-    "source": "Semantic Scholar",
-    "source_url": "https://www.semanticscholar.org/paper/62dc2137eb859b54eb74c522340df6b9e240d401",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W4407213747",
     "matched_title": "Large Language Model as Universal Retriever in Industrial-Scale Recommender System",
     "matched_year": 2025,
     "ids": [
@@ -283,6 +379,30 @@
     "matched_year": 2026,
     "ids": [
      "doi:10.1145/3773078.3831863"
+    ]
+   }
+  ]
+ },
+ "amap-intsr-2025": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7083420337",
+  "fetched_on": "2026-11-03",
+  "matched_title": "IntSR: An Integrated Generative Framework for Search and Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2509.21179"
+  ],
+  "papers": [
+   {
+    "name": "IntSR",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7083420337",
+    "matched_title": "IntSR: An Integrated Generative Framework for Search and Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2509.21179"
     ]
    }
   ]
@@ -971,6 +1091,30 @@
    }
   ]
  },
+ "kuaishou-onemall-2026": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7126194588",
+  "fetched_on": "2026-11-03",
+  "matched_title": "OneMall: One Architecture, More Scenarios -- End-to-End Generative Recommender Family at Kuaishou E-Commerce",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2601.21770"
+  ],
+  "papers": [
+   {
+    "name": "OneMall",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7126194588",
+    "matched_title": "OneMall: One Architecture, More Scenarios -- End-to-End Generative Recommender Family at Kuaishou E-Commerce",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2601.21770"
+    ]
+   }
+  ]
+ },
  "kuaishou-onerec-think-2025": {
   "count": 91,
   "source": "Semantic Scholar",
@@ -1183,6 +1327,30 @@
     "matched_year": 2024,
     "ids": [
      "doi:10.1145/3637528.3671561"
+    ]
+   }
+  ]
+ },
+ "linkedin-semantic-search-2026": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7128513156",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Semantic Search At LinkedIn",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2602.07309"
+  ],
+  "papers": [
+   {
+    "name": "Semantic Search",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7128513156",
+    "matched_title": "Semantic Search At LinkedIn",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2602.07309"
     ]
    }
   ]
@@ -1997,6 +2165,30 @@
    }
   ]
  },
+ "taobao-cq-sid-2026": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W7161280307",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL",
+  "matched_year": 2026,
+  "ids": [
+   "arxiv:2605.14434"
+  ],
+  "papers": [
+   {
+    "name": "CQ-SID",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W7161280307",
+    "matched_title": "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2605.14434"
+    ]
+   }
+  ]
+ },
  "taobao-nextgen-2026": {
   "count": 0,
   "source": "Semantic Scholar",
@@ -2065,6 +2257,30 @@
     "matched_year": 2025,
     "ids": [
      "arxiv:2512.24787"
+    ]
+   }
+  ]
+ },
+ "tencent-lfm4ads-2025": {
+  "count": 0,
+  "source": "OpenAlex",
+  "source_url": "https://openalex.org/W4416050276",
+  "fetched_on": "2026-11-03",
+  "matched_title": "Large Foundation Model for Ads Recommendation",
+  "matched_year": 2025,
+  "ids": [
+   "arxiv:2508.14948"
+  ],
+  "papers": [
+   {
+    "name": "LFM4Ads",
+    "count": 0,
+    "source": "OpenAlex",
+    "source_url": "https://openalex.org/W4416050276",
+    "matched_title": "Large Foundation Model for Ads Recommendation",
+    "matched_year": 2025,
+    "ids": [
+     "arxiv:2508.14948"
     ]
    }
   ]

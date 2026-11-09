@@ -1,0 +1,49 @@
+surface|微信图片推荐中带图文多模态特征的流式物品 tokenizer，供检索通路使用
+era_reason|物品语义嵌入被 tokenize 成离散 token ID 取代随机物品 ID，是 Semantic ID 生成式技术栈的表示层；tokenizer 即贡献本身。
+tldr|Tlow 用流把物品嵌入归一化，tokenization 独立且可并行；微信 A/B 新图 CTR +1.94%，通路 UCTR +10.32%。
+summary|Tlow 来自清华大学与腾讯，是面向推荐的流式物品 tokenizer。RQ-VAE 受层级码本依赖拖慢解码，乘积量化式独立 tokenizer 又受维度相关与分布复杂之困；归一化流把原始语义嵌入变换到统一标准正态分布的隐空间，维度独立、分布简单，在隐嵌入上做独立 tokenization 即得语义清晰的 token ID。码本引导机制对齐码本空间与 token 嵌入空间，进一步锐化 token 语义。在线侧，Tlow token ID 在微信图片推荐中取代随机物品 ID，供一条 12 层 Transformer 解码器检索通路使用，训练用两周日志，单域与跨域场景的日交互记录分别超过 70M 与 200M 条。
+core_idea|用流把物品嵌入归一化到标准正态隐空间，使 tokenization 独立、可并行且语义干净。
+deployed_in|微信图片推荐，作为补充检索通路
+scale_short|微信规模，4096 个 token 嵌入取代数千万物品 ID
+key_result|A/B：全站新发布图片 CTR +1.94%；通路 UCTR 单域 +10.32%、新物品 +11.64%
+results_reported|在线通路对比见表 6：单域下 Tlow 通路 CTR +4.79%、UCTR +10.32%，新物品 CTR +8.46%、UCTR +11.64%；跨域场景 CTR +6.23%、UCTR +7.20%，新物品 CTR +9.09%、UCTR +9.45%。通路之外的核心 A/B 指标：单域 24 小时整体 CTR +0.78%、新发布图片 CTR +1.94%；跨域人均图片 CTR +1.05%，头部账号曝光份额下降 1.15%，论文解读为长尾受益。摘要把基于 token ID 的检索模型概括为全球 CTR +10.32%、新物品 +11.64%。离线在四个公开数据集上 tokenization 与码本引导显著提升推荐表现，跨域与多模态评估确认在简化嵌入空间中的收益。
+serving_infra|新物品 tokenization 每日在单张 GPU 上数分钟完成；在线服务从专用服务器取用户与物品嵌入，由 Similarity Server 动态配对；Tlow 通路与主 DSSM 实时检索并行。
+stages.0.model_family|物品嵌入上的 12 层 Transformer 解码器作为补充检索通路，与主 DSSM 实时检索并行，Tlow token ID 取代物品 ID 嵌入
+stages.0.details|用户与物品嵌入存于专用服务器；访问时 Similarity Server 动态配对用户嵌入与候选物品。部署用 16 个大小 256 的码本，序列模型只需学 4096 个 token 嵌入，而非数千万物品嵌入。
+id_tokenization.approach|流式独立 tokenization，16 个 256 码本
+id_tokenization.details|归一化流把多模态语义嵌入映射到标准正态隐空间；隐嵌入上的独立 tokenization 产出可并行解码的 token ID；码本引导对齐码本与 token 嵌入空间。
+features_signals.0|图片与文章的图文多模态语义嵌入
+features_signals.1|在线部署中长度 500 的用户点击序列
+training.mode|流在约 100 万物品嵌入上训练；序列模型两组用同一数据各训两周
+training.objectives.0|到标准正态隐空间的归一化流似然
+training.objectives.1|token 嵌入上的序列下一物品预测
+training.notes|Tlow 在约 100 万物品嵌入上收敛并泛化到未见物品；每日数千万新物品的 tokenization 在单张 GPU 上数分钟完成。
+scale.0.metric|在线平台
+scale.0.value|微信图片推荐，中国最大社交媒体平台
+scale.1.metric|训练数据
+scale.1.value|两周，单域与跨域日交互分别超 70M 与 200M 条
+scale.2.metric|token 词表
+scale.2.value|16 个 256 码本共 4096 个 token 嵌入，取代数千万物品嵌入
+results_table.online.0.setting|微信 A/B，单域，24 小时核心指标
+results_table.online.1.setting|微信通路对比，单域
+results_table.online.2.setting|微信通路对比，跨域
+results_table.offline.0.setting|四个公开数据集
+results_table.online.0.versus|随机 ID 序列检索
+results_table.online.1.versus|随机 ID 通路，相对值
+results_table.online.2.versus|随机 ID 通路，相对值
+results_table.offline.0.versus|RQ-VAE 与 PQ 式 tokenizer
+caveats.0|论文因隐私考虑，在线指标对比只报告相对差异。
+unknown_fields.0|两周训练说明之外的 A/B 流量占比与时长
+unknown_fields.1|绝对服务延迟与 QPS
+unknown_fields.2|流训练算力
+code.repos.0.owner|清华与腾讯论文作者
+code.repos.0.note|论文说明代码在该仓库提供；不含生产服务栈与微信数据。
+version_note|读的是 arXiv 2608.24176 v1，带 CIKM 2026 ACM 引用与 DOI 10.1145/3799682.3840087；Crossref 确认该 DOI，页码 8361-8368，但未读 ACM 正式版全文。会后请对照 ACM 正式版逐个复核数字，再把卡标记为已对照正式版核对。摘要的 10.32% 是单域场景的通路 UCTR 对比，全站 24 小时 CTR 收益为 0.78%。
+deployment.scenario|Tlow token ID 驱动的 Transformer 解码器检索通路，与主 DSSM 检索并行于微信图片推荐
+deployment.ab_duration|两组用同一数据各训两周；测试时长未报告
+deployment.baseline|同一序列模型使用随机分配的物品 ID 嵌入
+deployment.training_compute|流在约 100 万物品嵌入上训练；每日数千万新物品 tokenization 在单张 GPU 数分钟完成
+deployment.inference_cost|序列模型学 4096 个 token 嵌入而非数千万物品嵌入；新物品 tokenization 在请求路径之外
+deployment.hardware|单张 GPU 用于每日新物品 tokenization
+deployment.notes.0|新物品通路收益达单域 UCTR +11.64%、跨域 +9.45%。
+deployment.notes.1|跨域头部账号曝光份额下降 1.15%，论文解读为长尾受益。

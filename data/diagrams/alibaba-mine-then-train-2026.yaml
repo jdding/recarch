@@ -1,0 +1,30 @@
+# Redrawn, simplified diagram. Source: Mine-Then-Train, "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios" (CIKM 2026), Fig. 5 with Sec 5.2-5.3.
+alt: "Left to right: Taobao display advertising CTR logs with raw item images and titles feed a multimodal annotation model built on the frozen SCL encoder plus a learnable SID decode codebook that scores click relevance; triplets mined from the scores under similarity and margin thresholds are kept, 30 million of them, and used to fine-tune the SCL encoder with triplet margin loss plus SCL contrastive regularization; the resulting native representations serve the production CTR prediction model through SimTier and SA-TA similarity features and linear-layer fusion with ID embeddings; the long-term online A/B test reports CTR +1.5% and RPM +0.5%."
+caption:
+  fig: "Fig. 5"
+  work: "Native Multimodal Representation Learning for Click-Through Rate Prediction in E-Commerce Scenarios, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840096"
+  note: "Simplified; the E2EM diagnosis experiments of Sections 3 and 4, the human evaluation of Section 5.2 and the annotation-score feature variant are not drawn."
+columns:
+  - label: Input data
+    boxes:
+      - {id: ctr, kind: input, text: ["Taobao display advertising CTR logs", "clicks with raw item images and titles"]}
+  - label: Mining
+    boxes:
+      - {id: anno, kind: module, text: ["Multimodal annotation model", "frozen SCL encoder, learnable SID decode codebook, click-relevance score"]}
+      - {id: mine, kind: module, text: ["Triplet mining", "threshold filters on similarity and annotation-score margin, keeps 30 million triplets"]}
+  - label: Training
+    boxes:
+      - {id: ft, kind: module, text: ["Fine-tune SCL encoder", "triplet margin loss plus SCL contrastive regularizer"]}
+  - label: Serving
+    boxes:
+      - {id: ctrmodel, kind: module, text: ["CTR prediction model", "SimTier and SA-TA similarity features, linear-layer fusion with ID embeddings"]}
+  - label: Output
+    boxes:
+      - {id: ab, kind: output, text: ["Online A/B", "A/B lifts: CTR +1.5%, RPM +0.5%"]}
+edges:
+  - [ctr, anno]
+  - [anno, mine]
+  - [mine, ft]
+  - [ft, ctrmodel]
+  - [ctrmodel, ab]

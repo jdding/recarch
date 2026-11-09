@@ -1,0 +1,79 @@
+surface|腾讯广告排序与检索的表示供给，覆盖朋友圈、视频号、搜索广告、DSP 与互联网服务业务
+era_reason|判别式三塔排序基础模型的规模放大，以基础模型规模支撑表示迁移；无自回归推荐，也无语义 ID。
+tldr|腾讯 4TB 广告基础模型把用户、物品和交叉表示迁移到下游排序与检索；2024 年四季度以来上线 10+ 次，整体 GMV 提升 2.45%。
+summary|LFM4Ads 是腾讯的广告推荐生产基础模型，把三类可用表示，用户表示、物品表示和用户物品交叉表示，按三种粒度迁移进下游任务：经非线性交互作特征用、经同构交互模块作模块用、作独立检索模型用。模型在每日数百亿样本上训练，内容域与广告域样本占比 80% 与 20%，参数达 4TB，含 6.3B 稀疏特征、约 1800 个特征；自 2024 年四季度以来在朋友圈、视频号、搜索广告、DSP 与互联网服务业务上线 10+ 次，整体 GMV 提升 2.45%。
+core_idea|把大型广告基础模型的三类表示按特征、模块和模型三个层级迁移进下游任务。
+deployed_in|腾讯广告平台，2024 年第 4 季度以来上线 10+ 次，含朋友圈与视频号
+scale_short|4TB 参数，服务每日数百亿样本，覆盖 10+ 次上线
+key_result|2024 年第 4 季度以来 10+ 次上线，平台整体 GMV 提升 2.45%，估算年收入增加数亿美元；线上消融显示相对无 LFM 表示的基线 GMV 提升 1.35%。
+results_reported|部署见摘要与 5.2 节：自 2024 年四季度起在含朋友圈、视频号在内的广告场景完成 10+ 次生产上线；场景 GMV 提升 2.16% 与 1.18%，任务级 pCTR、pCVR、pLTV 提升 0.18%、1.33%、0.44%，平台整体 GMV 提升 2.45%，估算年收入增加数亿美元。线上消融见表 1，线上任务 AUC：基线 0.8515；同分支 SUM 0.8501；双分支 SUM 0.8520，GMV 提升 0.79%；线性融合版 LFM4Ads 0.8521，AUC 相对 SUM 仅提高 0.0001；去聚合版 LFM4Ads 0.8513；完整 LFM4Ads 0.8525，相对双分支 SUM 额外获得 0.005 AUC 提升，GMV 提升 1.35%；同分支 SUM、线性融合与去聚合变体标注为 No Launch。论文说明工业推荐系统里 0.001 的 AUC 提升即视为显著。特征级上线见 5.2.1 节：朋友圈 pCTR 任务 GMV +0.42%、pCVR 任务 GMV +2.53%；视频号匹配任务 GMV +0.70%；搜索广告匹配 +1.75%，DSP pCTR +0.76%，互联网服务 pLTV +0.93%。模块级上线见 5.2.2 节：整体 GMV 增加 1.88%。模型级用法见 5.2.3 节：视频号 5% 线上 A/B 中 GMV 持平，CTR 与 CTCTR 分别提升 1.83% 与 3.34%，快滑降低 0.36%，平均停留时长提升 1.66%。扩展性见 5.1.2 节：共 3 个迭代版本，每次升级模型规模增长 3 倍以上，主任务 AUC 提升超过 0.3%，下游模型 AUC 至少提升 0.05%。跨域分析见 5.3.6 节：纯内容 LFM 相对基线 AUC +0.031，纯广告 +0.042，合并 +0.052，较单域方法高 23%-68%。特征重要性见 5.3.1 节：遮蔽 LFM 嵌入使朋友圈 pCTR 下降 2.54%、pCVR 下降 0.56%，而遮蔽第二重要特征仅造成 0.61% 的 AUC 下降，影响仅为前者的 24%。嵌入稳定性见 5.3.2 节：76.0% 的用户嵌入 5 分钟余弦相似度大于 0.99，95.7% 大于 0.95。
+serving_infra|在线系统见图 4，通过更新链路把 UR、IR、CR 表示迁移到下游任务，以均值、方差、L1 范数和极值监控表示健康度，越阈即熔断并可从每日快照回滚。LEE 评估框架把下游验证从一周以上缩短到数小时。服务吞吐为 500K QPS，FLOPS 为 1.45B。
+stages.0.model_family|三塔嵌入与 DNN 基础模型，含用户塔、物品塔与带内容、广告双分支的混合塔
+stages.0.details|用户塔的 UR 与物品塔的 IR 为双分支共享；CR 取自广告分支混合塔的 MLP 倒数第二层，论文发现该层最优，并按时间衰减的指数移动平均聚合为用户级与物品级形态。下游排序器经门控非线性特征交互或同构交互模块消费这些表示，后者是混合塔结构的下游重训副本，与 DCN-V2 专家拼接。
+stages.1.model_family|基于 LFM4Ads UR 与 IR 的独立双适配器检索模型
+stages.1.details|两个适配器把 UR 与 IR 投影到共享空间，以余弦相似度打分并用 InfoNCE 目标训练；该模型级用法在视频号匹配任务中经历 5% 线上 A/B 部署。
+id_tokenization.approach|原始稀疏 ID 嵌入，无语义 ID
+id_tokenization.details|模型含 6.3B 稀疏特征，覆盖约 1800 个特征。用户特征中 87% 为多值特征，含约 50 条行为序列，平均摊平后每样本超过 60000 个值。内容行为序列覆盖 4 个月，广告序列覆盖近 2 年，最大长度均为 2000。
+features_signals.0|用户多值特征，87% 为多值，含约 50 条行为序列
+features_signals.1|覆盖 4 个月的内容域行为序列，含点赞、评论、分享与播放，最大长度 2000
+features_signals.2|覆盖近 2 年的广告域行为序列，含点击、点赞与转化，最大长度 2000
+features_signals.3|由单独训练的 7B 参数多模态 LLM 生成的摘要与商业标签来增强物品特征
+features_signals.4|内容与广告域样本占每日样本的 80% 与 20%，带供双分支混合塔使用的场景与任务标签
+training.mode|在每日数百亿样本上离线预训练，周期性地把表示迁移进下游任务；在线系统按标签更新 LFM4Ads 与下游模型，内容流表示按不定节律刷新
+training.objectives.0|双分支混合塔上的 CTR 式预测，内容与广告分支共享用户塔与物品塔
+training.objectives.1|独立检索适配器的 InfoNCE 对比目标
+training.notes|用于物品特征增强的 7B 参数多模态 LLM 以双目标对比学习与 listwise 排序优化训练。训练硬件与训练算力未报告。
+scale.0.metric|每日训练样本
+scale.0.value|每日数百亿条，内容域与广告域占 80% 与 20%
+scale.1.metric|参数规模
+scale.1.value|4TB
+scale.2.metric|稀疏特征
+scale.2.value|6.3B
+scale.3.metric|单样本特征数
+scale.3.value|约 1800
+scale.4.metric|服务吞吐
+scale.4.value|500K QPS
+scale.5.metric|推理算力
+scale.5.value|论文表述为 FLOPS 1.45B
+scale.6.metric|上线次数
+scale.6.value|2024 年第 4 季度起 10+ 次
+results_table.online.0.setting|腾讯广告平台，2024 年第 4 季度以来 10+ 次上线，场景含朋友圈与视频号
+results_table.online.0.versus|每次 LFM4Ads 上线前的平台状态
+results_table.online.1.setting|场景上线，朋友圈与视频号
+results_table.online.1.versus|上线前的下游模型
+results_table.online.2.setting|线上消融，表 1
+results_table.online.2.versus|基线 0.8515；双分支 SUM 0.8520，GMV +0.79%
+results_table.online.3.setting|模型级用法，视频号匹配，5% 线上 A/B
+results_table.online.3.versus|无独立检索的 A/B 对照组
+results_table.online.4.setting|特征级上线，朋友圈排序
+results_table.online.4.versus|表示迁移前的任务模型
+results_table.online.5.setting|特征级上线，视频号匹配、搜索广告匹配、DSP pCTR、互联网服务 pLTV
+results_table.online.5.versus|表示迁移前的任务模型
+results_table.online.6.setting|使用同构交互模块的模块级上线
+results_table.online.6.versus|表示迁移前的任务模型
+results_table.other.0.setting|跨域对比，5.3.6 节
+results_table.other.0.versus|下游基线
+results_table.other.1.setting|特征遮蔽，5.3.1 节
+results_table.other.1.versus|带 LFM 嵌入的完整模型
+results_table.other.2.setting|嵌入稳定性，5.3.2 节
+results_table.other.2.versus|非对比性结果
+results_table.note|表 1 各行标注为线上性能评估结果；论文没有纯离线的公开基准表，跨域、遮蔽与稳定性分析因此列在其他一栏。
+caveats.0|论文说明模型级独立检索的 5% 线上 A/B 中 GMV 持平，提升只体现在用户体验指标上。
+caveats.1|表 1 将同分支 SUM、线性融合变体与去聚合变体标注为 No Launch；只有双分支 SUM 与完整 LFM4Ads 完成上线。
+caveats.2|论文说明工业推荐系统里 0.001 的 AUC 提升即视为显著，这是相对双分支 SUM 0.005 提升的语境。
+caveats.3|图 5 以图形方式给出各层与各维度的 CR 抽取结果；正文没有给出每层或每个输出维度的数值。
+unknown_fields.0|线上 A/B 测试时长
+unknown_fields.1|表 1 线上评估的流量占比
+unknown_fields.2|训练硬件与训练算力
+unknown_fields.3|服务延迟
+version_note|卡内数字核对自 arXiv 2508.14948 v1，首发于 2025-08-20。CIKM 2026 camera-ready 已在 Crossref 注册为 DOI 10.1145/3799682.3840163，标题与页码 8310-8318 已核对，但写卡时正式版全文尚不可读，camera-ready 的标题、数字与措辞可能不同。会后需逐数字对照 ACM 正式版复核，并标记已核对正式版。
+code.repos.0.owner|ZhuangQu，个人账号，其用户名与 README 中 our paper 的表述指向论文作者 Tianqu Zhuang；不是腾讯的组织级发布，论文正文也没有链接该仓库
+code.repos.0.note|基于公开数据集 KuaiRand-1K 的 Python 复现流程，含模型、训练与绘图脚本；不含生产数据与模型权重，且 AUC 取 100 次试验平均的 KuaiRand 实验不在 arXiv v1 正文里。
+deployment.scenario|腾讯工业级广告平台；UR、IR、CR 表示供给朋友圈、视频号、搜索广告、DSP 与互联网服务业务的下游排序与检索任务，2024 年第 4 季度起部署
+deployment.ab_traffic|仅视频号模型级用法 A/B 写明占 5% 流量；其余线上评估的流量占比未说明
+deployment.ab_duration|所报线上测试未给出时长；论文说明全量下游评估需超过 1 周，LEE 框架把验证缩短到数小时
+deployment.baseline|不含 LFM 表示的下游模型，即表 1 的基线；场景上线对应上线前的下游模型
+deployment.serving_qps|表示服务吞吐 500K QPS
+deployment.inference_cost|FLOPS 论文表述为 1.45B；模块级用法选用 DCN-V2 专家以降低在线推理复杂度
+deployment.notes.0|论文除 Gross Merchandise Value 展开外未定义 GMV，也未给出各次上线的度量窗口。
+deployment.notes.1|模型级用法的 GMV 结果为持平，其价值体现在用户体验指标上。

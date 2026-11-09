@@ -1,0 +1,201 @@
+id: tencent-lfm4ads-2025
+name: LFM4Ads
+company: Tencent
+surface: Representation supply for Tencent advertising ranking and retrieval across Weixin Moments, Channels, Search Ads, DSP and Internet Service
+year: 2025
+era: deep
+era_reason: "A scaled discriminative triple-tower ranking model whose foundation-model scale feeds representation transfer; no autoregressive recommendation and no semantic IDs."
+first_public: "2025-08"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840163"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "Tencent's 4TB ads foundation model transfers user, item and cross representations to downstream ranking and retrieval; 10+ launches since Q4 2024 with a 2.45% overall GMV lift."
+summary: "LFM4Ads is Tencent's production foundation model for ads recommendation that transfers all three available representations, user representations, item representations and user-item cross representations, into downstream tasks at three granularities: as features through non-linear interaction, as modules through an Isomorphic Interaction Module, and as standalone retrieval models. The model trains on tens of billions of daily samples, 80% from the content domain and 20% from the ad domain, holds 4TB of parameters with 6.3B sparse features across approximately 1,800 features, and since Q4 2024 has powered 10+ launches across Weixin Moments, Channels, Search Ads, DSP and Internet Service with an overall GMV lift of 2.45%."
+paradigms:
+- foundation-model
+- dlrm
+- embedding-based-retrieval
+stages:
+- stage: rank
+  model_family: "Triple-tower embedding and DNN foundation model, with a user tower, an item tower and a dual-branch mix tower holding content and ad branches"
+  details: "URs from the user tower and IRs from the item tower are shared across both branches; CRs are extracted from the ad branch's mix tower at the penultimate MLP layer, the layer the paper finds optimal, and aggregated to user-level and item-level form with a time-decayed exponential moving average. Downstream rankers consume the representations through gated non-linear feature interaction or through the Isomorphic Interaction Module, a downstream-trained replica of the mix-tower structure concatenated with DCN-V2 experts."
+- stage: retrieval
+  model_family: "Standalone dual-adapter retrieval model built on LFM4Ads URs and IRs"
+  details: "Two adapters project UR and IR into a shared space and score by cosine similarity with an InfoNCE objective; this model-level usage was deployed in Weixin Channels matching during a 5% online A/B test."
+id_tokenization:
+  approach: "Raw sparse ID embeddings, no semantic IDs"
+  details: "The model carries 6.3B sparse features across approximately 1,800 features. 87% of user features are multi-value, including around 50 behavior sequences, which flatten to more than 60,000 values per sample on average. Content behavior sequences cover a 4-month window and ad sequences cover the last 2 years, each with a maximum length of 2,000."
+features_signals:
+- "User multi-value features, 87% multi-value with around 50 behavior sequences"
+- "Content-domain behavior sequences over 4 months covering likes, comments, shares and plays, maximum length 2,000"
+- "Ad-domain behavior sequences over the last 2 years covering clicks, likes and conversions, maximum length 2,000"
+- "Item features enriched by a separately trained 7-billion-parameter multimodal LLM that generates abstracts and commercial tags"
+- "Content and ad domain samples at 80% and 20% of the daily mix, with scenario and task labels for the dual-branch mix tower"
+training:
+  mode: "Offline pretraining on tens of billions of daily samples with periodic transfer of representations into downstream tasks; the online system updates LFM4Ads and downstream models on labels and refreshes content-stream representations on an irregular cadence"
+  objectives:
+  - "CTR-style prediction on the dual-branch mix tower with separate content and ad branches sharing the user and item towers"
+  - "InfoNCE contrastive objective for the standalone retrieval adapters"
+  notes: "The 7-billion-parameter multimodal LLM used for item feature enrichment was trained with dual-objective contrastive learning and listwise ranking. Training hardware and training compute are not reported."
+serving_infra: "An online system, shown in Fig. 4, transfers UR, IR and CR representations to downstream tasks through an update loop, monitors representation health on mean, variance, L1 norm and extreme values, halts on threshold breach and rolls back from daily snapshots. The LEE evaluation framework shortens downstream validation from over 1 week to mere hours. Serving is stated at 500K QPS with 1.45B FLOPS."
+scale:
+- metric: Daily training samples
+  value: "Tens of billions per day, 80% content domain and 20% ad domain"
+  note: "paper, abstract and Sec 4.1"
+- metric: Parameters
+  value: "4TB"
+  note: "paper, Sec 4.2; abstract says terabyte-scale"
+- metric: Sparse features
+  value: "6.3B"
+  note: "paper, Sec 4.2; stated as 270% larger than the largest downstream task"
+- metric: Features per sample
+  value: "approximately 1,800"
+  note: "paper, Sec 4.1; abstract says approximately two thousand"
+- metric: Serving throughput
+  value: "500K QPS"
+  note: "paper, Sec 4.2"
+- metric: Inference compute
+  value: "FLOPS 1.45B as stated"
+  note: "paper, Sec 4.2"
+- metric: Launches
+  value: "10+ since Q4 2024"
+  note: "paper, abstract and Sec 5.2"
+results_reported: "Deployment, abstract and Sec 5.2: since Q4 2024, 10+ successful production launches across advertising scenarios including Weixin Moments and Channels; scenario GMV lifts of 2.16% and 1.18%, task-level pCTR, pCVR and pLTV lifts of 0.18%, 1.33% and 0.44%, an overall platform GMV lift of 2.45% and estimated annual revenue increases in the hundreds of millions of dollars. Online ablation, Table 1, online task AUC: baseline 0.8515; SUM with the same branch 0.8501; dual-branch SUM 0.8520 with a 0.79% GMV lift; LFM4Ads with linear fusion 0.8521, improving AUC by only 0.0001 over SUM; LFM4Ads without aggregation 0.8513; full LFM4Ads 0.8525, an additional 0.005 AUC gain over dual-branch SUM with a 1.35% GMV lift; the same-branch SUM, linear-fusion and no-aggregation variants were marked No Launch. The paper notes a 0.001 AUC lift is considered significant in industrial recommenders. Feature-level launches, Sec 5.2.1: Weixin Moments pCTR task GMV +0.42% and pCVR task GMV +2.53%; Weixin Channels matching GMV +0.70%; Search Ads matching +1.75%, DSP pCTR +0.76% and Internet Service pLTV +0.93%. Module-level launches, Sec 5.2.2: an overall GMV increase of 1.88%. Model-level usage, Sec 5.2.3: during a 5% online A/B test in Weixin Channels the GMV is neutral, while CTR and CTCTR are lifted by 1.83% and 3.34%, quick-slip is reduced by 0.36% and average dwell time is lifted by 1.66%. Scalability, Sec 5.1.2: 3 iterative versions, each upgrade growing model size by more than 3 times, main-task AUC improved by over 0.3% and downstream AUC by at least 0.05%. Cross-domain analysis, Sec 5.3.6: content-only LFM +0.031 AUC over baseline, ads-only +0.042, combined +0.052, outperforming single-domain approaches by 23%-68%. Feature importance, Sec 5.3.1: masking LFM embeddings cuts Weixin Moments pCTR by 2.54% and pCVR by 0.56%, while masking the second most important feature causes only a 0.61% AUC decline, 24% of the impact. Embedding stability, Sec 5.3.2: 76.0% of user embeddings have a 5-minute cosine similarity larger than 0.99 and 95.7% are larger than 0.95."
+caveats:
+- "The paper states that during the 5% online A/B test of model-level standalone retrieval the GMV was neutral, with improvements only in user experience metrics."
+- "Table 1 marks the same-branch SUM, the linear-fusion variant and the no-aggregation variant as No Launch; only dual-branch SUM and full LFM4Ads were launched."
+- "The paper notes a 0.001 AUC lift is considered significant in industrial recommenders, as context for the 0.005 gain over dual-branch SUM."
+- "Figure 5 shows per-layer and per-dimension CR extraction results graphically; the text gives no numeric values per layer or per output dimension."
+unknown_fields:
+- "Online A/B test durations"
+- "Traffic share of the Table 1 online evaluation"
+- "Training hardware and training compute"
+- "Serving latency"
+sources:
+- title: "LFM4Ads: Large Foundation Model for Ads Recommendation, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840163"
+  type: paper
+- title: "LFM4Ads, arXiv 2508.14948"
+  url: https://arxiv.org/abs/2508.14948
+  type: paper
+version_note: "Card numbers were checked against arXiv 2508.14948 v1, first posted 2025-08-20. The CIKM 2026 camera-ready is registered at DOI 10.1145/3799682.3840163 with title and page range 8310-8318 verified on Crossref, but the published full text was not readable at card time, so the camera-ready title, numbers and wording may differ. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.14948
+  local_pdf: "full text read through the HTML version at arxiv.org/html/2508.14948v1, file not redistributed"
+  sections_read: "Abstract, introduction, background, methodology Sec 3.1-3.4 with Fig 2 and Fig 3, online deployment Sec 4.1-4.3 with Fig 4, evaluation Sec 5.1-5.3 with Table 1 and Fig 5-7, conclusion"
+  verified_on: "2026-11-03"
+  published_pdf: "not read; DOI registered on Crossref on 2026-11-03, published full text not yet accessible at card time"
+code:
+  status: official_partial
+  checked_on: "2026-11-03"
+  repos:
+  - url: https://github.com/ZhuangQu/LFM4Ads
+    owner: "ZhuangQu, a personal account whose handle and the README's reference to our paper point at co-author Tianqu Zhuang; not an organizational Tencent release, and the paper text does not link this repository"
+    official: true
+    note: "Python reproduction pipeline with model, training and plotting scripts over the public KuaiRand-1K dataset; no production data or model weights, and the KuaiRand experiment with AUC averaged over 100 trials is not part of the arXiv v1 text."
+core_idea: "Transfer all three representations from a large ads foundation model into downstream tasks at feature, module and model level."
+deployed_in: "Tencent advertising platform, 10+ launches since Q4 2024 including Weixin Moments and Channels"
+scale_short: "4TB parameters serving tens of billions of daily samples across 10+ launches"
+key_result: "10+ launches since Q4 2024 with an overall GMV lift of 2.45% across the platform, estimated at hundreds of millions of dollars of annual revenue; the online ablation shows a 1.35% GMV lift over the baseline without LFM representations"
+results_table:
+  online:
+  - setting: "Tencent advertising platform, 10+ launches since Q4 2024, scenarios including Weixin Moments and Channels"
+    method: LFM4Ads
+    metric: "Overall GMV"
+    result: "+2.45%"
+    versus: "Platform state before each LFM4Ads launch"
+  - setting: "Scenario launches, Weixin Moments and Weixin Channels"
+    method: LFM4Ads
+    metric: "Scenario GMV"
+    result: "+2.16% Moments, +1.18% Channels"
+    versus: "Pre-launch downstream models"
+  - setting: "Online ablation, Table 1"
+    method: LFM4Ads
+    metric: "Online task AUC and GMV"
+    result: "AUC 0.8525, GMV +1.35%"
+    versus: "Baseline 0.8515; dual-branch SUM 0.8520 with GMV +0.79%"
+  - setting: "Model-level usage, Weixin Channels matching, 5% online A/B"
+    method: "LFM4Ads standalone retrieval"
+    metric: "CTR, CTCTR, dwell time, quick-slip"
+    result: "CTR +1.83%, CTCTR +3.34%, dwell +1.66%, quick-slip -0.36%, GMV neutral"
+    versus: "A/B control arm without standalone retrieval"
+  - setting: "Feature-level launches, Weixin Moments ranking"
+    method: "LFM4Ads CR features"
+    metric: "GMV"
+    result: "+0.42% pCTR task, +2.53% pCVR task"
+    versus: "Task models before representation transfer"
+  - setting: "Feature-level launches, Channels matching, Search Ads matching, DSP pCTR, Internet Service pLTV"
+    method: "LFM4Ads CR features"
+    metric: "GMV"
+    result: "+0.70%, +1.75%, +0.76%, +0.93%"
+    versus: "Task models before representation transfer"
+  - setting: "Module-level launches with the Isomorphic Interaction Module"
+    method: LFM4Ads
+    metric: "Overall GMV"
+    result: "+1.88%"
+    versus: "Task models before representation transfer"
+  offline: []
+  other:
+  - setting: "Cross-domain comparison, Sec 5.3.6"
+    method: "LFM4Ads content-only, ads-only and combined variants"
+    metric: "AUC improvement over baseline"
+    result: "+0.031 content-only, +0.042 ads-only, +0.052 combined, 23%-68% over single-domain"
+    versus: "Downstream baseline"
+  - setting: "Feature masking, Sec 5.3.1"
+    method: "LFM embeddings removed"
+    metric: "AUC and Weixin Moments pCTR, pCVR"
+    result: "pCTR -2.54%, pCVR -0.56%; masking the second most important feature causes only a 0.61% AUC decline, 24% of the impact"
+    versus: "Full model with LFM embeddings"
+  - setting: "Embedding stability, Sec 5.3.2"
+    method: "LFM user embeddings"
+    metric: "Share of embeddings with 5-minute cosine similarity above threshold"
+    result: "76.0% above 0.99, 95.7% above 0.95"
+    versus: "Not a comparative result"
+  note: "Table 1 rows are captioned as online performance evaluation results; the paper reports no purely offline public-benchmark table, so the cross-domain, masking and stability analyses are listed as other."
+deployment:
+  online_evidence: online_numbers
+  scenario: "Tencent industrial-scale advertising platform; UR, IR and CR representations served to downstream ranking and retrieval tasks in Weixin Moments, Channels, Search Ads, DSP and Internet Service, deployed since Q4 2024"
+  ab_traffic: "5% of traffic stated only for the model-level usage A/B test in Weixin Channels; traffic shares for the other online evaluations are unstated"
+  ab_duration: "No duration is given for the reported online tests; the paper notes full-scale downstream evaluation takes over 1 week and the LEE framework reduces validation to mere hours"
+  baseline: "Downstream models without LFM representations, as in the Table 1 baseline; pre-launch downstream models for the scenario launches"
+  online_lifts:
+  - metric: Overall GMV
+    value: "+2.45%"
+  - metric: "Scenario GMV, Weixin Moments"
+    value: "+2.16%"
+  - metric: "Scenario GMV, Weixin Channels"
+    value: "+1.18%"
+  - metric: "Online ablation GMV"
+    value: "+1.35%"
+  - metric: "CTR, model-level usage"
+    value: "+1.83%"
+  - metric: "CTCTR, model-level usage"
+    value: "+3.34%"
+  - metric: "Average dwell time, model-level usage"
+    value: "+1.66%"
+  - metric: "Quick-slip, model-level usage"
+    value: "-0.36%"
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: "500K QPS for representation serving"
+  inference_cost: "FLOPS stated at 1.45B; module-level usage uses DCN-V2 experts chosen for low online inference complexity"
+  hardware: not_reported
+  notes:
+  - "The paper does not define GMV beyond the Gross Merchandise Value expansion and does not state per-launch measurement windows."
+  - "The model-level usage GMV result is neutral, so its value rests on user experience metrics."
+  fulltext_refs:
+  - "Sec 4.2: 4TB parameters, 6.3B sparse features, FLOPS 1.45B and QPS 500K"
+  - "Sec 4.3.3: full-scale evaluation over 1 week, LEE reduces validation to mere hours"
+  - "Abstract and Sec 5.2: Q4 2024 deployment, 10+ launches, 2.45% overall GMV, 2.16% and 1.18% scenario lifts, 0.18%, 1.33% and 0.44% task lifts, hundreds of millions of dollars annual revenue"
+  - "Table 1 and Sec 5.1.1: AUC 0.8515 to 0.8525, SUM dual-branch 0.8520 with +0.79% GMV, LFM4Ads +1.35% GMV, 0.0001 linear-fusion delta, 0.005 additional AUC, 0.001 significance threshold"
+  - "Sec 5.2.1-5.2.3: +0.42% and +2.53% Moments, +0.70% Channels matching, +1.75%, +0.76% and +0.93% Search Ads, DSP and Internet Service, +1.88% module-level, 5% A/B with CTR +1.83%, CTCTR +3.34%, quick-slip -0.36%, dwell +1.66%"
+  - "Sec 5.1.2, 5.3.1, 5.3.2, 5.3.6: 3 versions with 3x model growth and 0.3% and 0.05% AUC, masking -2.54% and -0.56% and 0.61% and 24%, stability 76.0% and 95.7%, cross-domain 0.031, 0.042, 0.052 and 23%-68%"
+  basis: full_text
+  checked_on: "2026-11-03"

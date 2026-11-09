@@ -1,0 +1,17 @@
+alt|从左到右：序列化用户特征与文本检索目标进入引擎服务，引擎服务聚合 10 分钟行为窗口并异步触发 URM；推理服务从分布式哈希表读取物品嵌入，用 Qwen-7B 骨干与可学习查询 token 做一次 vLLM 预填充；概率采样沿 ANN 邻居走 T=4 步生成检索结果；结果持久化存储，供线上检索阶段消费。
+caption.fig|图 2
+caption.note|简化绘制；训练与线上 A/B 评测未画出。
+columns.0.label|输入
+columns.0.boxes.0.text.0|用户特征与目标文本
+columns.0.boxes.0.text.1|序列化用户特征、目标文本、可学习查询 token
+columns.1.label|异步触发
+columns.1.boxes.0.text.0|引擎服务
+columns.1.boxes.0.text.1|由用户行为触发，聚合 10 分钟行为窗口
+columns.2.label|推理
+columns.2.boxes.0.text.0|vLLM 单次预填充
+columns.2.boxes.0.text.1|Qwen-7B 骨干，物品嵌入来自分布式哈希表，M 个查询表示
+columns.2.boxes.1.text.0|概率采样
+columns.2.boxes.1.text.1|ANN 邻居，T=4 步，低于 10 ms
+columns.3.label|输出
+columns.3.boxes.0.text.0|持久化检索结果
+columns.3.boxes.0.text.1|存储后供线上检索阶段消费

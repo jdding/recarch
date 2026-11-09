@@ -1,0 +1,151 @@
+id: alibaba-bar-2025
+name: BAR
+company: Alibaba
+surface: Retrieval stage of Alibaba's display advertising platform, whose primary bid-agnostic ad value channel BAR replaces
+year: 2025
+era: deep
+era_reason: "A cross-attention model-based retriever trained with learning-to-rank losses; the generative stack plays no role."
+first_public: "2025-08"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840091"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+version_note: "Read from arXiv 2508.05206 v2 dated 2026-08-22, the accepted version carrying the final CIKM 2026 note and DOI 10.1145/3799682.3840091, which Crossref confirms with pages 8377-8385. The ACM published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+system_type: ads
+evidence_level: production_described
+tldr: "BAR brings bid signals into ad retrieval scoring with near-line embedding refreshes; a month-long A/B on Alibaba display advertising lifted platform revenue 4.32%."
+summary: "BAR, built by the Taobao & Tmall Group of Alibaba, is a model-based retrieval framework that closes the multi-stage gap between ad retrieval and the bidding-driven ranking stages by scoring ads on predicted eCPM instead of CTR alone, so ad bid value enters the retrieval scoring function. Three components carry this: Bidding-Aware Modeling adds a monotonicity-constrained bid objective plus pCTR and pBid distillation tasks, a Task-Attentive Refinement module gives user-interest and commercial signals dedicated heads, and Asynchronous Near-Line Inference refreshes pre-computed ad embeddings per ad within seconds of an advertiser action. Replacing the incumbent bid-agnostic retriever across Alibaba's display advertising platform lifted platform revenue 4.32% over a month-long A/B test at a stable user experience."
+paradigms:
+- attention-ctr
+- learning-to-rank
+- multi-task
+stages:
+- stage: retrieval
+  model_family: "Model-based retriever with cross-attention user-ad interaction over an HNSW graph index and NANN beam retrieval; a SASRec two-tower EBR instantiation validates the transferable objectives offline"
+  details: "The lower encoder joins a user network, a cross-attention behavior-sequence network and an ad network; a Task-Attentive Refinement module adds pCTR, pBid and eCPM heads over the fused representation, and only the eCPM head drives top-k retrieval online."
+id_tokenization:
+  approach: "Categorical and bucketized numerical features embedded by lookup into one embedding space; ad identity carried by a 64-dimensional ad embedding"
+  details: "Every feature embeds into 32 dimensions; the ad network compresses ad features into the 64-dimensional z_a, capped by HNSW indexing accuracy, the interaction embedding z_seq,a is also 64-dimensional and the user embedding z_u exceeds 1000 dimensions. Baseline embeddings are pre-computed in daily full batches; under BAR the near-line service refreshes them per ad."
+features_signals:
+- "Bid signals per Table 1: bid_type, bid_constraint, budget_left_ratio, time_left_ratio, default_bid_value"
+- "User profile, context and the last 100 clicked items as behavior sequence"
+- "Ranking-stage logs: impression ads and ads that reached ranking with their eCPM, i.e. pCTR times pBid times 1000"
+training:
+  mode: "Offline training, one epoch per model; model weights do not train online, only ad embeddings refresh near-line"
+  objectives:
+  - "Pairwise learning-to-rank logistic loss over impression and ranking-log pairs"
+  - "Bidding-aware objective: logistic monotonicity loss on synthetic bid-feature perturbations"
+  - "Distillation auxiliary losses for pCTR and normalized pBid regression on the shared backbone"
+  notes: "AdamW on NVIDIA H20 GPUs in TensorFlow on XDL, features embedded in 32 dimensions; MBR uses learning rate 4.8e-3, weight decay 1e-4, batch size 30,000 and about 1,500 GPU hours at lambda1=0.5 and lambda2=1.0; the SASRec EBR follows its own hyperparameters with about 750 GPU hours at lambda1=0.1 and lambda2=0.5."
+serving_infra: "Online serving answers each request with the User-Side Graph and a dynamic HNSW index with M=64 neighbors per node, traversed with NANN beam retrieval where every visited ad is scored by the eCPM head. The Ad-Side Graph runs separately on a near-line service: when bid events such as budget or constraint changes arrive at about 10^4 QPS it recomputes the affected ad's embedding and neighbors, pushing updates of a 64-256 dimensional embedding plus a 32-128 dimensional neighbor list below 1 MB, swapped in within 0.5 ms at P99.9 under a per-entry readers-writer spinlock, with read QPS in the millions."
+scale:
+- metric: "Deployment"
+  value: "Full-scale across Alibaba's display advertising platform, multiple business scenarios serving billions of users"
+  note: "paper, Abstract and Sec 4.3"
+- metric: "Training data"
+  value: "An 8-day sample from June 28 to July 5, 2025: 3 billion sessions, 200 million unique users, 50 million unique ads"
+  note: "paper, Sec 4.1"
+- metric: "Serving"
+  value: "500 QPS per instance under a 40 ms latency constraint; bid-change events arrive at about 10^4 QPS"
+  note: "paper, Sec 4.3 and Sec 3.5"
+results_reported: "Online, Sec 4.3: a month-long A/B test on 10% of Alibaba display advertising traffic, corroborated over the same horizon by a 50% scaled comparison and a 5% reverse holdout. Platform Revenue +4.32% with 95% CI [3.93%, 4.71%] at p<0.0001; RPM +3.78% with 95% CI [3.37%, 4.15%] at p<0.0001; CTR +0.31% and ROI +0.01%, both stable. Responsiveness, Sec 4.3.2 with h=3 hour windows: in the ad value channel RIR rises from 2.5% to 30.4% and IIR from 42.2% to 83.5%; across all retrieval channels RIR rises from 7.6% to 14.2% and IIR from 64.1% to 86.3%, gains of 6.6 and 22.2 percentage points. Serving cost, Sec 4.3: under a 40 ms latency constraint BAR sustains 500 QPS against 600 QPS for the baseline, a 17% throughput reduction attributable to the 20% GFlops increase of the TAR module. Bid types, Sec 4.3.3: offline Recall improves 6.5% for OCPC, 6.2% for Max Return and 5.9% for Multi-constrained bidding; online cost share gains 1.1 points for OCPC and gives up 0.3 and 0.8 for Max Return and Multi-constrained bidding. Ecosystem, Sec 4.3.4: long-tail ads with fewer than 1k user clicks per day gain 1.6% impression share and 0.7% cost share, with no drift over the month-long horizon. Offline, Tables 2, 3, 4 and 6, on an 8-day production sample from June 28 to July 5, 2025 with 3 billion sessions, 200 million users and 50 million ads: MBR Recall@2000 reaches 54.9% with PairAcc 96.1%, versus 52.6% and 80.2% without the bidding-aware objective, 50.9% and 50.0% without bid features, and 51.5% for the concatenation baseline of Table 4; dropping the distillation objective lowers Recall@2000 from 54.9% to 54.1% on MBR and from 38.7% to 37.9% on the SASRec EBR, which otherwise reaches 38.7% Recall@2000 and 94.3% PairAcc versus 36.5% and 65.6% without the objective and 36.4% and 50.0% without bid features. Cumulative build-up, Table 6: base 37.8%, plus LTR on impression and ranking logs 48.1% at +10.3%, the pre-existing production baseline, plus raw bid features +0.1%, plus the monotonicity objective +2.7%, plus distillation +0.6%, plus TAR +3.4% to 54.9%; replacing the LTR loss with sampled softmax direct value prediction yields 42.3%. TAR efficiency, Table 4: 68.2% Recall-all@2000 at 1.2x GFlops, against 66.8% at 4x GFlops for widening the interaction and ad embeddings from 64 to 1024 dimensions and 64.3% for the concatenation baseline at 1.0x. TAR head correlations, Table 5: the pCTR head correlates 67.2% with pCTR and -32.5% with the bid, the pBid head 70.2% with the bid and -32.7% with pCTR, and the eCPM head sits between them at 36.9% with eCPM, 15.8% with pCTR and 26.7% with the bid."
+caveats:
+- "The paper states the online revenue gain is the joint effect of the three components: a month-long per-component traffic split was not affordable in production, so the attribution of individual components rests on offline evidence and the responsiveness metrics."
+- "Recall is scored against the exposure of the incumbent system and PairAcc against the authors' own monotonicity prior; the paper notes the online results are what ultimately test them, and the perturbation magnitudes are not verified against logged bid-change distributions."
+- "The 17% throughput reduction is a real infrastructure cost at scale, scoped to the bidding-aware channel that consumes 10% of the retrieval candidate quota while contributing over half of the final impressions."
+- "The Task-Attentive Refinement module is inapplicable to the SASRec EBR instantiation by construction, so EBR receives only the bidding-aware and distillation objectives."
+- "The paper notes retrieval stays multi-channel, with parallel multi-modal and LLM-based channels injecting candidates no bid signal would select, and observed no echo-chamber drift over the month-long horizon."
+unknown_fields:
+- "Online test buckets and user counts beyond the 10% traffic split"
+- "Absolute platform revenue and impression volumes"
+- "Measured serving latency and tail latency figures; the paper gives the 40 ms constraint, not measurements"
+- "Serving fleet size and hardware beyond the NVIDIA H20 training GPUs"
+sources:
+- title: "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840091"
+  type: paper
+- title: "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising, arXiv 2508.05206"
+  url: "https://arxiv.org/abs/2508.05206"
+  type: paper
+code:
+  status: none
+  checked_on: "2026-11-03"
+  repos: []
+  note: "GitHub and web search on 2026-11-03 found no official or third-party implementation; the paper does not mention a code release."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2508.05206
+  local_pdf: "full text read from arXiv HTML v2, file not redistributed"
+  sections_read: "Abstract, Sec 1 introduction, Sec 2 related work with Table 1, Sec 3 methodology with Figures 3 and 4, Sec 4 experiments with Tables 2-6 and Figures 5-6, Sec 5 conclusion"
+  verified_on: "2026-11-03"
+  published_pdf: "ACM version not opened; DOI and pages 8377-8385 verified via Crossref on 2026-11-03"
+core_idea: "Score retrieval on predicted eCPM and keep ad embeddings fresh so the first funnel stage agrees with bid-driven ranking."
+deployed_in: "Alibaba display advertising platform retrieval stage, full deployment"
+scale_short: "3 billion sessions of training data, 500 QPS per instance under a 40 ms latency constraint"
+key_result: "Month-long A/B: platform revenue +4.32%, RPM +3.78%, RIR 7.6% to 14.2% and IIR 64.1% to 86.3% across all retrieval channels, CTR stable at +0.31%"
+results_table:
+  online:
+  - setting: "Alibaba display advertising, month-long A/B on 10% of traffic"
+    method: BAR
+    metric: "Platform Revenue"
+    result: "+4.32%"
+    versus: "Incumbent bid-agnostic production retriever"
+  - setting: "Alibaba display advertising, month-long A/B on 10% of traffic"
+    method: BAR
+    metric: RPM
+    result: "+3.78%"
+    versus: "Incumbent bid-agnostic production retriever"
+  offline:
+  - setting: "Production test set, MBR architecture"
+    method: BAR
+    metric: "Recall@2000"
+    result: "54.9%"
+    versus: "Concatenation baseline of Table 4 at 51.5%"
+  - setting: "Production test set, MBR architecture"
+    method: BAR
+    metric: PairAcc
+    result: "96.1%"
+    versus: "w/o BAO at 80.2%"
+  - setting: "Production test set, SASRec EBR architecture"
+    method: BAR
+    metric: "Recall@2000"
+    result: "38.7%"
+    versus: "w/o BAO at 36.5%"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Retrieval stage of Alibaba's display advertising platform; the bid-agnostic primary ad value channel of the multi-channel retriever was replaced by BAR, all other settings identical"
+  ab_traffic: "10% of online traffic randomly partitioned into two groups; corroborated over the same month by a 50% scaled comparison and a 5% reverse holdout"
+  ab_duration: "One month"
+  baseline: "The incumbent production retriever: same MBR backbone, same pairwise LTR objective, same data, but no bid features, no BAO or TAR, and ad embeddings pre-computed in daily full batches; it corresponds exactly to the + R_u & LTR configuration of Table 6"
+  online_lifts:
+  - metric: "Platform Revenue"
+    value: "+4.32%"
+  - metric: RPM
+    value: "+3.78%"
+  - metric: CTR
+    value: "+0.31%"
+  - metric: ROI
+    value: "+0.01%"
+  - metric: RIR
+    value: "7.6% to 14.2% across all retrieval channels"
+  - metric: IIR
+    value: "64.1% to 86.3% across all retrieval channels"
+  training_compute: "About 1,500 GPU hours on NVIDIA H20 GPUs for MBR and about 750 GPU hours for the SASRec instantiation, one epoch each"
+  serving_latency: "Runs under a 40 ms latency constraint; near-line embedding swaps complete within 0.5 ms at P99.9 and ad representations converge within seconds of an advertiser action"
+  serving_qps: "500 QPS sustained against 600 QPS for the baseline, a 17% throughput reduction"
+  inference_cost: "The 20% GFlops increase of the TAR module drives the throughput reduction; near-line updates stay below 1 MB per event, with events arriving at about 10^4 QPS"
+  hardware: "NVIDIA H20 GPUs for training"
+  notes:
+  - "The revenue gain is the joint effect of the three components; the bidding-aware channel consumes 10% of the retrieval candidate quota while contributing over half of the final impressions."
+  fulltext_refs:
+  - "Sec 4.3: month-long A/B on 10% of traffic, plus a 50% scaled comparison and a 5% reverse holdout"
+  - "Sec 4.3.1: Platform Revenue +4.32%, 95% CI [3.93%, 4.71%], p<0.0001; RPM +3.78%, 95% CI [3.37%, 4.15%]; CTR +0.31%; ROI +0.01%"
+  - "Sec 4.3.2: ad value channel RIR 2.5% to 30.4%, IIR 42.2% to 83.5%; all channels RIR 7.6% to 14.2%, IIR 64.1% to 86.3%, gains 6.6 and 22.2 percentage points, h=3"
+  - "Sec 4.3: 40 ms constraint, 500 QPS vs 600 QPS, 17% throughput reduction, 20% GFlops increase"
+  - "Sec 3.5: bid events at about 10^4 QPS, updates of a 64-256 D embedding plus 32-128 D neighbor list below 1 MB, writes within 0.5 ms at P99.9"
+  - "Sec 4.1: NVIDIA H20 GPUs, one epoch, about 1,500 GPU hours for MBR and 750 for EBR"
+  basis: full_text
+  checked_on: "2026-11-03"

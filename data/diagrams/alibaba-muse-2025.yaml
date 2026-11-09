@@ -1,0 +1,32 @@
+# Redrawn, simplified diagram. Source: MUSE (CIKM 2026), Fig. 1 overview, with serving asynchrony from Fig. 4.
+alt: "Left to right: a lifelong behavior history of up to 100K behaviors per user, plus ID embeddings and frozen SCL multimodal embeddings fetched by table lookup, feed a GSU that is pre-fetched asynchronously during the matching stage and cached in GPU memory; the GSU scores behaviors by cosine similarity and keeps the top-K; the ESU compresses the similarity sequence into a SimTier histogram and fuses multimodal similarity into SA-TA target attention over ID embeddings; the two outputs concatenate into the lifelong interest representation for the CTR prediction tower."
+caption:
+  fig: "Fig. 1"
+  work: "MUSE: A Simple Yet Effective Multimodal Search-Based Framework for Lifelong User Interest Modeling, CIKM 2026"
+  url: "https://arxiv.org/abs/2512.07216"
+  note: "Simplified; the alternative embeddings OpenCLIP and I2I compared in the paper, and the serving asynchrony of Fig. 4, are only summarized in the GSU box."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: hist, kind: input, text: ["Lifelong behavior history", "up to 100K behaviors per user"]}
+      - {id: emb, kind: input, text: ["Frozen embeddings", "SCL multimodal vectors by table lookup, plus item ID embeddings"]}
+  - label: GSU
+    boxes:
+      - {id: prefetch, kind: module, text: ["Asynchronous pre-fetch", "runs during matching, cached in GPU memory"]}
+      - {id: gsu, kind: module, text: ["Cosine similarity, Top-K", "lightweight inner product, no learned scorer"]}
+  - label: ESU
+    boxes:
+      - {id: simtier, kind: module, text: ["SimTier", "similarity sequence into an N-tier histogram"]}
+      - {id: sata, kind: module, text: ["SA-TA", "ID target attention fused with multimodal similarity by learnable scalars"]}
+  - label: Output
+    boxes:
+      - {id: ctr, kind: output, text: ["CTR prediction", "concatenated interest representation into the prediction tower"]}
+edges:
+  - [hist, prefetch]
+  - [emb, prefetch]
+  - [prefetch, gsu]
+  - [gsu, simtier]
+  - [gsu, sata]
+  - [emb, sata]
+  - [simtier, ctr]
+  - [sata, ctr]

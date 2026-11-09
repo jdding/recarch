@@ -1,0 +1,174 @@
+id: amap-intsr-2025
+name: IntSR
+company: Alibaba Amap
+surface: "Amap search and recommendation surfaces served by one generative model: homepage POI recommendation, digital assets Explore Feed and travel mode suggestion"
+year: 2025
+era: generative
+era_reason: "An autoregressive generative sequence model unifying search and recommendation through query placeholders, with retrieval and ranking formulated as conditional generation; the generative stack is the subject."
+first_public: "2025-09"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840093"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "IntSR unifies search and recommendation in one autoregressive generative model with query placeholders and temporal candidate alignment; Amap A/B: GMV +9.34%, CTR +2.76%, ACC +7.04%."
+summary: "IntSR, built by the AMAP team at Alibaba Group, is a generative framework that unifies search and recommendation together with their retrieval and ranking sub-tasks in a single autoregressive sequence model. The paper observes that the four tasks differ only in how the query is formed: search conditions on explicit natural-language requests embedded by a frozen Qwen3-0.6B LLM, recommendation retrieval uses a shared universal token, and ranking embeds target candidate items into query placeholders. A Query-Driven Block built on HSTU computes attention for the query placeholders separately with a customized mask combining causal, session-wise and invalid-Q terms, and a KV-cache two-stage computation reduces ranking complexity from O(c'N^2) to O(c'J(N+1)); DSFNet turns spatiotemporal context, page context, task tag and user profiles into multi-scenario weights. Because an industrial corpus changes over time, temporal candidate alignment restricts negative sampling to items that existed at the interaction timestamp, which improves all three mainstream sampling strategies it was applied to. IntSR is deployed in Amap production for POIs, digital assets and travel modes, serving hundreds of millions of daily active users, with core components fully operational at scale for over 6 months."
+paradigms:
+- generative-retrieval
+- sequential-transformer
+- llm-based
+stages:
+- stage: single-stage
+  model_family: "HSTU-based Query-Driven Block stack with a DSFNet multi-scenario block; frozen Qwen3-0.6B embeds natural-language search queries"
+  details: "Query placeholders mark positions to predict: user search requests, positive and negative target item sets, or one shared universal token. Attention is computed separately for the original sequence and the query sequence, with positional and ALiBi temporal relative bias and SiLU gating. The mask combines causal, session-wise and invalid-Q terms so offline training matches online serving. Public experiments stack 3 QDBs with embedding size 32; the industrial digital-assets model uses 3 QDBs, sequence length 500 and embedding dimension 128."
+id_tokenization:
+  approach: "Item ID embeddings with dense multimodal integration; no semantic IDs"
+  details: "Items enter the sequence as tokens whose embeddings integrate multi-modal information. The paper instead concentrates on the time-varying vocabulary: negative sampling is constrained to the item set available at the interaction timestamp, so positives are only compared with co-existing negatives."
+features_signals:
+- "Spatiotemporal scenario tokens: geohash-encoded location and discretized time"
+- "Feedback tokens for interaction types such as purchases and clicks"
+- "Natural-language search queries plus a query pool of item descriptions, paraphrases, keywords and synthesized user-style expressions, embedded by frozen Qwen3-0.6B"
+- "Page context, search-versus-recommendation task tag and user profiles, feeding DSFNet scenario weights"
+training:
+  mode: "Supervised autoregressive training; public-dataset experiments are offline while the production side is described with streaming training time slices"
+  objectives:
+  - "Conditional generation for the four tasks: recommendation retrieval and ranking, search retrieval and ranking"
+  - "InfoNCE loss with temporal candidate alignment, restricting negatives to items available at the interaction timestamp"
+  notes: "Public datasets: LR 1e-3, batch 32, 99 random negatives per user, and 30 historical behaviors visible per action; Amazon Kindle Store holds 68223 users and 61934 items and KuaiSAR 22700 users and 673415 items (Table 6). Industrial digital-assets model: Adam at LR 1e-4, batch 64, on 8 NVIDIA H20 GPUs with 96 GB memory, sequence length 500, embedding dimension 128, DSFNet with 2 scenarios and 3 layers (Appendix F). Table 3 uses 20 negatives."
+serving_infra: "Deployed in Amap production across POI, digital assets and travel mode scenarios, serving hundreds of millions of daily active users, with core components fully operational at scale for over 6 months. Ranking inference uses a KV-cache two-stage candidate logit computation that the paper states reduces ranking attention complexity from O(c'N^2) to O(c'J(N+1)); no latency or throughput figures are published."
+scale:
+- metric: Deployment
+  value: "Amap production across POI, digital assets and travel mode scenarios, serving hundreds of millions of daily active users; core components fully operational at scale for over 6 months"
+  note: "paper, Sec 1"
+- metric: Online A/B control
+  value: "10% of users randomly selected as the control group on the production baseline model"
+  note: "paper, Sec 4.5"
+- metric: Industrial dataset
+  value: "Amap Digital Assets: 52M users, 819 items, mean 12 and median 2 interactions"
+  note: "paper, Table 6"
+- metric: Public datasets
+  value: "Amazon Kindle Store 68223 users and 61934 items; KuaiSAR 22700 users and 673415 items"
+  note: "paper, Table 6"
+- metric: Industrial training
+  value: "8 NVIDIA H20 GPUs with 96 GB memory, Adam at LR 1e-4, batch 64, sequence length 500, embedding dimension 128, 3 QDB layers, DSFNet with 2 scenarios and 3 layers"
+  note: "paper, Appendix F"
+results_reported: "Online A/B, Sec 4.5, control group of 10% of users routed to the production baseline model: digital assets GMV +9.34% relative in Amap's Explore Feed, POI recommendation CTR +2.76% relative on the Amap homepage, travel mode suggestion ACC +7.04%. Deployment context, Sec 1: deployed across POIs, digital assets and travel modes, serving hundreds of millions of daily active users, with core components fully operational at scale for over 6 months. Offline, Tables 1 and 2 on Amazon Kindle Store and KuaiSAR with 99 random negatives per user. Search task, Table 1, Amazon: IntSR HR@1 0.5678, HR@5 0.8266, N@5 0.7091, N@10 0.7305 against UniSAR HR@1 0.5343; KuaiSAR: IntSR HR@1 0.5685, HR@5 0.7950, HR@10 0.8516, N@5 0.6945, N@10 0.7128 against UniSAR 0.5282; on Amazon search HR@10, TEM and CoPPS reach 0.9051 and UniSAR 0.8977 ahead of 0.8920 for IntSR. Recommendation task, Table 2: IntSR HR@1 0.3740 on Amazon against HSTU 0.3446 and UniSAR 0.3010, and 0.2179 on KuaiSAR against UniSAR 0.1990 and HSTU 0.1881. Temporal candidate alignment, Table 3, Amap Digital Assets with 20 negatives: aligned sampling lifts HR@1 for every strategy, RNS 0.1426 to 0.1810, PNS best 0.1430 to 0.1760, HNS 0.1569 to 0.1842, with aligned HNS best overall at HR@1 0.1842, HR@5 0.4305, HR@10 0.5601, N@5 0.3112, N@10 0.3533. Ablation, Table 4, Amazon: removing the session-wise mask drops search HR@1 from 0.5678 to 0.2024, the largest drop; removing search queries drops search HR@1 to 0.4023 and recommendation HR@1 to 0.3325; removing DSFNet, relative bias and scenario tokens gives search HR@1 0.5560, 0.5050 and 0.5516."
+caveats:
+- "The paper claims state-of-the-art on most but not all metrics: on Amazon search HR@10, TEM and CoPPS reach 0.9051 and UniSAR 0.8977 against 0.8920 for IntSR in Table 1."
+- "The online A/B section reports relative lifts only, with a 10% control group; no absolute values, duration or significance levels are given."
+- "The paper notes that due to preprocessing and filtering, the dataset statistics in Table 6 should not be interpreted as a reflection of the actual user population or the entire item corpora."
+- "Amazon Kindle Store search queries and behaviors are synthesized from the recommendation behaviors following Ai et al. 2017, and the paper applies a mask mechanism against label leakage during training and inference; on KuaiSAR, sparse search behaviors after 5-core filtering lead the paper to train with recommendation loss first and fine-tune with search loss."
+unknown_fields:
+- "A/B duration, treatment traffic share and significance levels"
+- "Absolute online metric values; only relative lifts are reported"
+- "Serving latency and QPS in production"
+- "Training compute for the public-dataset experiments"
+- "Rollout dates for the deployed scenarios"
+sources:
+- title: "IntSR: A Deployed Generative System for Integrated Search and Recommendation at Amap, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840093
+  type: paper
+- title: "IntSR: An Integrated Generative Framework for Search and Recommendation, arXiv 2509.21179"
+  url: https://arxiv.org/abs/2509.21179
+  type: paper
+- title: "CIKM 2026 accepted papers program, Applied Research Papers"
+  url: https://cikm2026.diag.uniroma1.it/program
+  type: documentation
+version_note: "Read from arXiv 2509.21179 v2 dated 2025-09-26. The CIKM 2026 camera-ready carries the different title IntSR: A Deployed Generative System for Integrated Search and Recommendation at Amap; its DOI 10.1145/3799682.3840093 was verified against Crossref with pages 8671-8678 on 2026-11-03, but the published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2509.21179
+  local_pdf: "full text read via arXiv HTML, file not redistributed"
+  sections_read: "Abstract, Sec 1 introduction, Sec 2 preliminaries, Sec 3 methodology with QDB, masks, DSFNet and temporal alignment, Sec 4 experiments with Tables 1 to 4, Sec 5 related works, Sec 6 conclusion, appendices A to F with Tables 5 and 6"
+  verified_on: "2026-11-03"
+code:
+  status: official_partial
+  checked_on: "2026-11-03"
+  repos:
+  - url: https://github.com/AMAP-ML/DreamX-Rec
+    owner: "the AMAP-ML GitHub organization of the Amap team"
+    official: true
+    note: "Official repo of the same research line; it states IntSR itself has not yet been open-sourced and ships the companion IntTravel, IntHQ, IntRR and IntBMoE works, so no IntSR implementation is included."
+core_idea: "One autoregressive model serves search and recommendation by conditioning on query placeholders, with temporal candidate alignment fixing the time-varying vocabulary."
+deployed_in: "Amap homepage POI recommendation, digital assets Explore Feed and travel mode suggestion, serving hundreds of millions of daily active users"
+scale_short: "Hundreds of millions of daily active users across POI, digital asset and travel mode scenarios"
+key_result: "Online A/B against the production baseline with a 10% control group: digital assets GMV +9.34%, POI recommendation CTR +2.76%, travel mode ACC +7.04%"
+results_table:
+  online:
+  - setting: "Amap digital assets Explore Feed, online A/B"
+    method: IntSR
+    metric: GMV
+    result: "+9.34%"
+    versus: "Production baseline model"
+  - setting: "Amap homepage, POI recommendation, online A/B"
+    method: IntSR
+    metric: CTR
+    result: "+2.76%"
+    versus: "Production baseline model"
+  - setting: "Travel mode suggestion, online A/B"
+    method: IntSR
+    metric: ACC
+    result: "+7.04%"
+    versus: "Production baseline model"
+  offline:
+  - setting: "Amazon Kindle Store, search task, 99 random negatives per user"
+    method: IntSR
+    metric: "HR@1"
+    result: "0.5678"
+    versus: "UniSAR 0.5343"
+  - setting: "KuaiSAR, search task, 99 random negatives per user"
+    method: IntSR
+    metric: "HR@1"
+    result: "0.5685"
+    versus: "UniSAR 0.5282"
+  - setting: "Amazon Kindle Store, recommendation task, 99 random negatives per user"
+    method: IntSR
+    metric: "HR@1"
+    result: "0.3740"
+    versus: "HSTU 0.3446"
+  - setting: "KuaiSAR, recommendation task, 99 random negatives per user"
+    method: IntSR
+    metric: "HR@1"
+    result: "0.2179"
+    versus: "UniSAR 0.1990"
+  - setting: "Amap Digital Assets, HNS negative sampling with temporal candidate alignment"
+    method: IntSR
+    metric: "HR@1"
+    result: "0.1842"
+    versus: "HNS without alignment 0.1569"
+  note: "Baseline numbers marked with a dagger in Tables 1 and 2 are quoted from the original papers. IntSR is best on most but not all metrics: on Amazon search HR@10, TEM and CoPPS reach 0.9051 and UniSAR 0.8977 against 0.8920 for IntSR."
+deployment:
+  online_evidence: online_numbers
+  scenario: "Three Amap product scenarios: digital assets Explore Feed, homepage POI recommendation and travel mode suggestion; production deployment across POIs, digital assets and travel modes serving hundreds of millions of DAU"
+  ab_traffic: "Control group of 10% of users, randomly selected and routed to the production baseline model"
+  ab_duration: not_reported
+  baseline: "The production baseline model"
+  online_lifts:
+  - metric: "Digital assets GMV, relative"
+    value: "+9.34%"
+  - metric: "POI recommendation CTR, relative"
+    value: "+2.76%"
+  - metric: "Travel mode suggestion ACC"
+    value: "+7.04%"
+  training_compute: "Adam at LR 1e-4, batch 64, on 8 NVIDIA H20 GPUs with 96 GB memory for the industrial digital-assets model; public runs at LR 1e-3 and batch 32"
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: "8 NVIDIA H20 GPUs with 96 GB memory stated for industrial training; serving hardware not described"
+  notes:
+  - "Online lifts are relative; only the 10% control share is stated, with no duration and no significance levels."
+  - "Ranking attention is computed separately for query placeholders with a KV cache, cutting complexity from O(c'N^2) to O(c'J(N+1)); the paper gives no absolute latency or cost figures."
+  - "Session-wise masking keeps offline training consistent with online serving, letting the system predict purchases on page access without prior browsing or clicks."
+  fulltext_refs:
+  - "Abstract and Sec 4.5: digital assets GMV +9.34% in Amap's Explore Feed, POI recommendation CTR +2.76% on the homepage, travel mode suggestion ACC +7.04%, control group 10% of users on the production baseline"
+  - "Sec 1: deployed across POIs, digital assets and travel modes, hundreds of millions of daily active users, core components fully operational at scale for over 6 months"
+  - "Table 1: Amazon search IntSR HR@1 0.5678, N@10 0.7305; KuaiSAR search HR@1 0.5685, N@10 0.7128; Table 2: Amazon rec HR@1 0.3740, KuaiSAR rec HR@1 0.2179"
+  - "Table 3: HNS 0.1569 to aligned 0.1842 HR@1, best aligned row 0.1842, 0.4305, 0.5601, 0.3112, 0.3533, 20 negatives"
+  - "Appendix F: Adam, LR 1e-4, 8 NVIDIA H20 GPUs with 96 GB memory, h=3, N=500, d=128, batch 64, DSFNet 2 scenarios and 3 layers"
+  - "Table 6: Amap Digital Assets 52M users, 819 items, mean 12, median 2"
+  basis: full_text
+  checked_on: "2026-11-03"

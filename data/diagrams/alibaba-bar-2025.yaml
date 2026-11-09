@@ -1,0 +1,36 @@
+# Redrawn, simplified diagram. Source: BAR, "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising" (CIKM 2026), Fig. 3 and Fig. 4.
+alt: "Left to right: user and ad features feed an offline trained model whose Ad-Side Graph builds a batch HNSW index; a near-line service refreshes per-ad embeddings on bid events; the online service runs the User-Side Graph and the dynamic index behind task-attentive heads and returns top-k ads to the downstream stages."
+caption:
+  fig: "Fig. 3 and Fig. 4"
+  work: "Bidding-Aware Retrieval for Multi-Stage Consistency in Online Advertising, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840091"
+  note: "Simplified redraw; the paper colors modules yellow, red and purple for online, near-line and offline, collapsed here into columns, and the per-entry readers-writer spinlock is not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: user, kind: input, text: ["User features", "profile, context, behavior sequence of the last 100 clicked items"]}
+      - {id: ad, kind: input, text: ["Ad features", "metadata and bid signals: bid type, bid constraint, budget left ratio, time left ratio, default bid value"]}
+  - label: Offline
+    boxes:
+      - {id: train, kind: module, text: ["Model training", "pairwise LTR loss, bidding-aware monotonicity loss, distillation losses"]}
+      - {id: index, kind: module, text: ["Batch embedding and index build", "Ad-Side Graph over the full corpus, HNSW with M=64 neighbors"]}
+  - label: Near-line
+    boxes:
+      - {id: near, kind: module, text: ["Event-driven embedding refresh", "bid events at about 10^4 QPS; updates below 1 MB swap within 0.5 ms at P99.9"]}
+  - label: Online
+    boxes:
+      - {id: tar, kind: module, text: ["Task-Attentive Refinement", "pCTR, pBid and eCPM heads; only the eCPM head serves"]}
+      - {id: serve, kind: module, text: ["User-Side Graph and dynamic index", "NANN beam retrieval over HNSW, 40 ms constraint, 500 QPS"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Top-k ads", "candidate pool for pre-ranking, ranking and re-ranking"]}
+edges:
+  - [user, train]
+  - [ad, train]
+  - [train, index]
+  - [index, near]
+  - [near, serve]
+  - [user, tar]
+  - [ad, tar]
+  - [tar, serve]
+  - [serve, out]

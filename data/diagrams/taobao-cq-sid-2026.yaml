@@ -1,0 +1,32 @@
+# Redrawn, simplified diagram. Source: CQ-SID, "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL" (CIKM 2026), Fig. 1.
+alt: "Left to right: the item corpus feeds a category-constrained three-level RQ-VAE that writes hierarchical semantic cluster IDs; the Qwen backbone is trained in progressive stages from item-to-SID to personalized user-and-query-to-SID and refined with EG-GRPO, which injects ground-truth SIDs into each policy group; at serving time the user and query drive beam search over the cluster IDs and the recalled candidates join the multi-channel recall stage as a supplement ahead of downstream ranking."
+caption:
+  fig: "Fig. 1"
+  work: "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840110"
+  note: "Simplified; SID grouping post-processing and the four training stages are each summarized as one box."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: items, kind: input, text: ["Item corpus", "filtered daily to the serving pool"]}
+      - {id: user, kind: input, text: ["User and query", "profile plus recent click SID history"]}
+  - label: Offline quantizer
+    boxes:
+      - {id: rqvae, kind: module, text: ["Category-constrained RQ-VAE", "3-level codebooks 2048x1024x1024, query-item contrastive loss"]}
+  - label: Offline training
+    boxes:
+      - {id: sft, kind: module, text: ["Progressive SFT", "item-to-SID, query-to-SID, personalized user-and-query-to-SID"]}
+      - {id: grpo, kind: module, text: ["EG-GRPO", "ground-truth SIDs injected into each policy group, ranking-aligned rewards"]}
+  - label: Online serving
+    boxes:
+      - {id: serve, kind: module, text: ["Beam search decoding", "dynamic beam sizes, prefix pruning over cluster IDs"]}
+  - label: Output
+    boxes:
+      - {id: recall, kind: output, text: ["Recall candidates", "supplement channel in multi-channel recall, feeding downstream ranking"]}
+edges:
+  - [items, rqvae]
+  - [rqvae, sft]
+  - [sft, grpo]
+  - [grpo, serve]
+  - [user, serve]
+  - [serve, recall]

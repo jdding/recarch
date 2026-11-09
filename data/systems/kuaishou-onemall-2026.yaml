@@ -1,0 +1,161 @@
+id: kuaishou-onemall-2026
+name: OneMall
+company: Kuaishou
+surface: End-to-end generative retrieval for Kuaishou e-commerce across Product-Card, Short-Video and Live-Streaming item distribution scenarios
+year: 2026
+era: generative
+era_reason: "An autoregressive semantic-ID retriever with a decoder-style Sparse MoE backbone, LLM-aligned tokenizers and ranking-model-reward RL post-training; the generative stack is the subject."
+first_public: "2026-01"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840095"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "OneMall unifies Kuaishou e-commerce retrieval with a business-aware Semantic ID tokenizer, a sparse MoE decoder and ranking-reward RL; A/B lifts GMV up to +14.71% and serves over 400 million DAU."
+summary: "OneMall is Kuaishou's end-to-end generative recommendation framework for e-commerce, unifying the Product-Card, Short-Video and Live-Streaming item distribution scenarios in one training pipeline aligned to the LLM pre-training and post-training recipe. The tokenizer extends QARM's Res-Kmeans with an FSQ final layer, quantizing item embeddings from a fine-tuned LLM into three-level Semantic IDs; product-cards quantize the commercial embedding alone, short-videos concatenate commercial and watching embeddings, and live-streamings quantize the two-tower item-tower embedding with real-time selling-product Semantic IDs as an extra feature, because their sold products change over time. The backbone compresses Exposure, Click and Buy sequences with Query-Former blocks, fuses them through Cross-Attention, and generates Semantic IDs with a decoder-style Sparse MoE Transformer, deployed at 0.5B total with 0.1B activated parameters. An RL pipeline treats the online ranking model as the reward model, fuses its CTR, CTCVR and EGPM outputs into one score, and optimizes the retriever with DPO and GRPO. The system is deployed serving over 400 million daily active users."
+paradigms:
+- generative-retrieval
+- semantic-id
+- rl-alignment
+stages:
+- stage: retrieval
+  model_family: "Decoder-style Sparse MoE Transformer with Query-Former sequence compression, Cross-Attention multi-behavior fusion and causal self-attention; deployed as OneMall-0.5B-A0.1B with 12 experts and top-2 routing, decoding three-level Semantic IDs by beam search"
+  details: "Query-Former compresses one sequence per behavior, with query token number around 10, input sequence length around 500 and embedding dimension around 128; Cross-Attention fuses the compressed interests into the Semantic ID query states; the Sparse MoE decoder balances expert load with the loss-free mechanism, configured 12/2 experts at 0.5B-A0.1B and 24/2 at 1.3B-A0.1B."
+id_tokenization:
+  approach: "Three-level Semantic IDs: two Res-Kmeans layers plus a 16-bit FSQ layer with a 4096 code, over LLM-aligned item embeddings, extending QARM's Res-Kmeans into ResKmeansFSQ"
+  details: "Item embeddings come from an LLM fine-tuned with InfoNCE on commercial Item2Item corpora and watching Item2Item corpora, using a Swin-Transformer vision encoder and a Qwen2.5 1.5B text encoder with the ViT frozen. The commercial corpus caps each item at no more than 40 occurrences and holds 70 million samples; the watching corpus holds 12 million samples. Product-cards quantize the product embedding alone; short-videos concatenate the product and video embeddings; live-streamings quantize the two-tower item-tower embedding with real-time selling-product Semantic IDs as an additional feature and a lower item-tower learning rate. Table 5 shows ResKmeansFSQ cuts code conflict from 36% to 11%."
+features_signals:
+- "Exposure, Click and Buy behavior sequences, each compressed by its own Query-Former"
+- "Item-side attributes such as product category, price and shop information, fed to an item tower for the auxiliary contrastive task"
+- "Multimodal tokenizer inputs: product main image 224*224 and title; short-video sample 6 frames 224*224 with title, OCR and ASR"
+- "Real-time selling-product Semantic IDs as an additional feature for live-streaming items"
+- "Ranking-model outputs CTR, CTCVR and EGPM fused into the RL reward"
+training:
+  mode: "Next-token-prediction pre-training followed by RL post-training, in streaming training aligned to the LLM pre-train and post-train recipe; the online ranking model serves as the reward model"
+  objectives:
+  - "Autoregressive next-item Semantic ID generation as the main objective"
+  - "Two-tower style in-batch contrastive task as the auxiliary objective, on the final Semantic ID state against the item embedding, reaching over 98% accuracy@1"
+  - "DPO and GRPO policy optimization against the fused ranking reward, with loss weight NTP plus 0.5 times RL"
+  notes: "RL samples 2% of training traffic with beam size 768; reward fusion weights are 1.0, 30.0 and 1.0 for CTR, CTCVR and EGPM; expert load balancing uses the loss-free mechanism; the total loss is NTP plus contrastive plus 0.5 times the RL loss."
+serving_infra: "Serves candidate generation across the Product-Card, Short-Video and Live-Streaming scenarios; online inference runs beam search only, since the contrastive task reaches over 98% accuracy@1. The paper caps activated parameters at 0.1B citing online serving compute constraints; latency, throughput and hardware figures are not given."
+scale:
+- metric: Deployment
+  value: "Kuaishou e-commerce Product-Card, Short-Video and Live-Streaming scenarios, serving over 400 million daily active users"
+  note: "paper, abstract and Sec 1"
+- metric: Model capacity
+  value: "deployed generation scales from 0.05B to 1.3B total parameters, activated parameters capped at 0.1B by online serving compute constraints, expanded through Sparse MoE"
+  note: "paper, Sec 4.1 and Sec 4.2"
+- metric: Tokenizer corpora
+  value: "Product-Card commercial corpus of 70 million Item2Item samples; Short-Video watching corpus of 12 million samples"
+  note: "paper, Sec 3.1.1"
+results_reported: "Deployment: OneMall serves over 400 million daily active users across the Product-Card, Short-Video and Live-Streaming scenarios of Kuaishou e-commerce, abstract and Sec 1. Online A/B, Table 3 and Sec 4.3: Product-Card +2.851% Exposure, +13.01% Click, +8.35% Order and +14.71% GMV; Short-Video +15.32% Exposure, +5.76% Click, +11.65% Order and +10.33% GMV; Live-Streaming +2.78% Exposure, +2.53% Click, +4.47% Order and +4.90% GMV; the abstract rounds these GMV figures to +14.7%, +10.3% and +4.9%. Offline scaling on the E-commerce Short-Video scenario, Table 1 and Sec 4.1: from 0.05B to 1.3B-A0.1B, Acc-SID1/2/3 improve 14.5%/43.9%/61.0% to 16.2%/51.7%/71.7% and HR@50/100/500 improve 32.9%/41.3%/60.5% to 45.6%/57.3%/76.0%, with the dense 0.1B to sparse 0.5B-A0.1B transition the largest step at +10% HR@50, 34.7% to 44.7%. Simulation replay on 0.5B-A0.1B with identical input features, Table 2: OneMall reaches HR@50/100/500 of 34.3%/40.9%/59.3% on Product-Card against SASRec-0.5B-A0.1B 23.2%/30.4%/45.1% and TIGER-0.5B-A0.1B 29.5%/37.1%/53.7%, 44.7%/56.0%/74.2% on Short-Video against 30.2%/41.9%/66.3% and 35.1%/47.8%/72.5%, and 65.9%/69.1%/80.5% on Live-Streaming against 53.9%/58.8%/68.4% and 57.3%/63.5%/73.7%. RL ablation, Table 4: GRPO beats DPO and Base across Top10/100/500, for example Top10 CTR 7.874% for GRPO against 7.834% for DPO and 7.816% for Base, and GRPO over DPO gives +0.040% CTR, +0.012% CTCVR and +0.228% GPM at Top10. Tokenizer ablation on 0.3B-A0.1B, Table 5: ResKmeansFSQ cuts code conflict from 36% to 11% and lifts exclusive codes from 86% to 95%, and the auxiliary contrastive loss adds +1.5%/+1.7%/+1.7% on HR@50/100/500. Query-Former ablation, Table 6: compressing to SeqLen 160 at 9.2 GFLOPs lands within +0.5%/+0.3%/+0.4% of the SeqLen 1205 version at 34.4 GFLOPs. The in-batch contrastive task reaches over 98% accuracy@1, so online inference uses beam search only, Sec 3.2."
+caveats:
+- "The paper does not name the online control arm and gives no A/B traffic share or duration."
+- "Table 4 states neither offline nor online measurement for its CTR, CTCVR, GPM and Reward figures."
+- "The paper has no limitations section; the conclusion lists future work on unifying retrieval and ranking, text-based reasoning and a shared backbone for multi-service data scaling."
+unknown_fields:
+- "Online A/B traffic share, test duration and the control-arm configuration"
+- "Serving latency, throughput and hardware"
+- "Training compute"
+sources:
+- title: "OneMall: One Architecture, More Scenarios -- End-to-End Generative Recommender Family at Kuaishou E-Commerce, CIKM 2026, DOI 10.1145/3799682.3840095"
+  url: https://doi.org/10.1145/3799682.3840095
+  type: paper
+- title: "OneMall: One Architecture, More Scenarios -- End-to-End Generative Recommender Family at Kuaishou E-Commerce, arXiv 2601.21770"
+  url: https://arxiv.org/abs/2601.21770
+  type: paper
+version_note: "Read from arXiv 2601.21770 v2 dated 2026-02-02, full text from the arXiv HTML rendering with the abstract, Table 3 and Section 4 spot-checked against the v2 PDF. The ACM version is registered in Crossref under DOI 10.1145/3799682.3840095 with pages 8768-8775, but the published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version. The arXiv abs page for v2 still displays the v1 abstract, whose +13.01% product-card GMV, +15.32% Short-Video Orders and +2.78% Live-Streaming Orders correspond to other cells of Table 3; the v2 abstract and body give +14.7%, +10.3% and +4.9% GMV, and the card follows the v2 full text."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2601.21770
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, Sec 1 introduction, Sec 2 preliminary and Res-Kmeans tokenizer, Sec 3 e-commerce tokenizer, decoder-only architecture and RL policy, Sec 4 experiments with Tables 1-6, Sec 5 conclusion, references"
+  verified_on: "2026-11-03"
+  published_pdf: "ACM version registered in Crossref with DOI 10.1145/3799682.3840095 and pages 8768-8775, not opened; card based on arXiv v2"
+code:
+  status: none
+  checked_on: "2026-11-03"
+  repos: []
+  note: "The paper names no code release; a GitHub search found no OneMall repository as of 2026-11-03."
+core_idea: "Tokenize items into three-level business-aware Semantic IDs, generate candidates with a sparse MoE decoder, and train the retriever against ranking-model rewards with DPO and GRPO."
+deployed_in: "Kuaishou e-commerce candidate generation across Product-Card, Short-Video and Live-Streaming"
+scale_short: "Serving over 400 million DAU across the three e-commerce scenarios"
+key_result: "Online A/B GMV: +14.71% Product-Card, +10.33% Short-Video, +4.90% Live-Streaming, deployed serving over 400 million DAU"
+results_table:
+  online:
+  - setting: "Kuaishou e-commerce online A/B, Product-Card scenario"
+    method: OneMall
+    metric: GMV
+    result: "+14.71%"
+    versus: "Control arm of the A/B test, not described in the paper"
+  - setting: "Kuaishou e-commerce online A/B, Short-Video scenario"
+    method: OneMall
+    metric: GMV
+    result: "+10.33%"
+    versus: "Control arm of the A/B test, not described in the paper"
+  - setting: "Kuaishou e-commerce online A/B, Live-Streaming scenario"
+    method: OneMall
+    metric: GMV
+    result: "+4.90%"
+    versus: "Control arm of the A/B test, not described in the paper"
+  offline:
+  - setting: "E-commerce Short-Video scaling validation, 0.05B to 1.3B-A0.1B"
+    method: OneMall-1.3B-A0.1B
+    metric: "HR@50 / HR@500"
+    result: "45.6% / 76.0%"
+    versus: "OneMall-0.05B 32.9% / 60.5%"
+  - setting: "Replayed online traffic, Product-Card, 0.5B-A0.1B"
+    method: OneMall-0.5B-A0.1B
+    metric: "HR@50 / HR@500"
+    result: "34.3% / 59.3%"
+    versus: "SASRec-0.5B-A0.1B 23.2% / 45.1%; TIGER-0.5B-A0.1B 29.5% / 53.7%"
+  - setting: "Replayed online traffic, Live-Streaming, 0.5B-A0.1B"
+    method: OneMall-0.5B-A0.1B
+    metric: "HR@50 / HR@500"
+    result: "65.9% / 80.5%"
+    versus: "SASRec-0.5B-A0.1B 53.9% / 68.4%; TIGER-0.5B-A0.1B 57.3% / 73.7%"
+  other:
+  - setting: "RL ablation, Top10 beam segment, measurement type not stated in the paper"
+    method: GRPO
+    metric: CTR
+    result: "7.874%"
+    versus: "Base 7.816%; DPO 7.834%"
+  note: "The RL ablation in Table 4 reports CTR, CTCVR, GPM and Reward across Top10, Top100 and Top500 beam segments, with GRPO ahead of DPO and Base in every segment. Table 5 on the 0.3B-A0.1B variant cuts code conflict from 36% to 11% and adds +1.5%/+1.7%/+1.7% HR from the auxiliary contrastive loss; Table 6 keeps hit rate within +0.5%/+0.3%/+0.4% while cutting GFLOPs from 34.4 to 9.2. A/B traffic share, duration and the control-arm configuration are not reported."
+deployment:
+  online_evidence: online_numbers
+  scenario: "End-to-end generative retrieval serving Kuaishou e-commerce across the Product-Card, Short-Video and Live-Streaming scenarios, deployed and serving over 400 million daily active users"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts:
+  - metric: "GMV, Product-Card"
+    value: "+14.71%"
+  - metric: "GMV, Short-Video"
+    value: "+10.33%"
+  - metric: "GMV, Live-Streaming"
+    value: "+4.90%"
+  - metric: "Click, Product-Card"
+    value: "+13.01%"
+  - metric: "Order, Short-Video"
+    value: "+11.65%"
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - "The paper caps activated parameters at 0.1B citing computational resource constraints in online serving and scales total parameters to 1.3B through Sparse MoE."
+  - "Query-Former compression cuts per-sample GFLOPs from 34.4 to 9.2 in the Table 6 ablation, described as calculation cost per sample; serving cost, latency and throughput are not stated."
+  - "The RL pipeline samples 2% of training traffic with beam size 768; no A/B traffic share or duration is given."
+  fulltext_refs:
+  - "Abstract and Sec 1: deployed, serving over 400 million daily active users at Kuaishou"
+  - "Sec 4.1: scaling from 0.05B to 1.3B total parameters, activated parameters limited to 0.1B due to computational resource constraints in online serving"
+  - "Table 3 and Sec 4.3: Product-Card +2.851% Exposure, +13.01% Click, +8.35% Order, +14.71% GMV; Short-Video +15.32% Exposure, +5.76% Click, +11.65% Order, +10.33% GMV; Live-Streaming +2.78% Exposure, +2.53% Click, +4.47% Order, +4.90% GMV"
+  - "Sec 4.4: RL on 2% of training traffic with beam size 768 for candidate generation"
+  - "Table 6: QFormer SeqLen 160 at 9.2 GFLOPs against SeqLen 1205 at 34.4 GFLOPs"
+  basis: full_text
+  checked_on: "2026-11-03"

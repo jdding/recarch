@@ -1,0 +1,21 @@
+alt|从左到右：输入序列把场景 token、物品 token 和反馈 token 与查询占位符交错排列，查询占位符携带冻结 Qwen3-0.6B LLM 嵌入的用户搜索词、共享通用 token 或目标候选物品；基于 HSTU 的 Query-Driven Block 堆栈在因果、会话内与非法 Q 组成的定制掩码下对查询占位符分离计算注意力；DSFNet 用时空上下文、页面上下文、任务标签和用户画像导出逐场景权重与场景感知特征过滤；输出覆盖推荐召回与排序加搜索召回与排序，训练时负例只从交互时刻已存在的物品中采样。
+caption.fig|Fig. 2
+caption.note|简化重绘；Fig. 8 和 Fig. 9 的具体掩码矩阵与 Fig. 7 的两阶段 KV cache logit 计算仅作概括。
+columns.0.label|输入
+columns.0.boxes.0.text.0|行为序列
+columns.0.boxes.0.text.1|S 场景 token、I 物品 token、F 反馈 token
+columns.0.boxes.1.text.0|查询占位符
+columns.0.boxes.1.text.1|冻结 Qwen3-0.6B LLM 嵌入的搜索词、共享通用 token 或目标候选物品
+columns.1.label|序列编码
+columns.1.boxes.0.text.0|Query-Driven Block 堆栈
+columns.1.boxes.0.text.1|基于 HSTU 的 3 层，对查询占位符分离注意力，配 KV cache
+columns.1.boxes.1.text.0|定制掩码
+columns.1.boxes.1.text.1|因果、会话内、非法 Q
+columns.2.label|多场景
+columns.2.boxes.0.text.0|=
+columns.2.boxes.0.text.1|由时空上下文、页面上下文、任务标签、用户画像导出逐场景权重与特征过滤
+columns.3.label|任务与训练
+columns.3.boxes.0.text.0|条件生成
+columns.3.boxes.0.text.1|推荐召回与排序，搜索召回与排序
+columns.3.boxes.1.text.0|时间对齐候选采样
+columns.3.boxes.1.text.1|负例只取交互时刻已存在的物品

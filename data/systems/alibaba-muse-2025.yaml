@@ -1,0 +1,165 @@
+id: alibaba-muse-2025
+name: MUSE
+company: Alibaba
+surface: CTR prediction in the Taobao display advertising ranking stage, modeling lifelong user behavior sequences of up to 100K interactions
+year: 2025
+era: deep
+era_reason: "Two-stage GSU and ESU discriminative CTR model; multimodal embeddings feed cosine retrieval, similarity histograms and fused attention, with no generative component."
+first_public: "2025-12"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840125"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: ads
+evidence_level: production_described
+tldr: "MUSE brings frozen multimodal embeddings into both stages of lifelong interest modeling; Taobao display advertising A/B: CTR +12.6%, RPM +5.1%, ROI +11.4%."
+summary: "MUSE, built by Wuhan University together with Alibaba's Taobao display advertising team, is a two-stage lifelong user interest modeling framework for CTR prediction that injects high-quality multimodal item embeddings into both stages. A lightweight GSU retrieves the top-K relevant behaviors from histories of up to 100K interactions by cosine similarity over frozen SCL embeddings, while the ESU combines a SimTier histogram of the multimodal similarity sequence with SA-TA, a target attention whose ID scores are fused with multimodal similarity. Deployed in the Taobao display advertising ranking stage since mid-2025 for the majority of traffic, it also open-sources the first large-scale public dataset pairing ultra-long behavior sequences with high-quality multimodal embeddings."
+paradigms:
+- embedding-based-retrieval
+- attention-ctr
+stages:
+- stage: rank
+  model_family: "Two-stage lifelong interest model in the ranker: cosine-similarity GSU over frozen SCL embeddings plus a multimodal-enhanced ESU with the SimTier histogram and SA-TA fused target attention"
+  details: "MUSE sits in the ranking stage; the GSU pre-fetch runs asynchronously during the matching stage so it is off the critical path, while Top-K selection and the ESU run inside ranking. SimTier bins the target-behavior similarity sequence over the range from -1 to 1 into an N-tier histogram; SA-TA fuses ID attention scores with the multimodal similarity vector through learnable scalars."
+id_tokenization:
+  approach: "Frozen multimodal item embeddings plus ID embeddings; no semantic IDs"
+  details: "Items map to frozen pre-trained embeddings accessed by table lookup; SCL is chosen after comparison with OpenCLIP pre-trained on 200M image-text pairs and a co-occurrence I2I model. The ESU keeps ID embeddings for collaborative signals; the open dataset ships a 128-dimensional SCL embedding per item."
+features_signals:
+- "Frozen SCL multimodal embeddings for target and behavior items"
+- "ID embeddings of target and behavior items"
+- "Multimodal cosine similarity sequence between the target item and retrieved behaviors"
+- "Hundreds of engineered features carried by each production sample"
+training:
+  mode: "Offline training, one epoch on the experiment datasets"
+  objectives:
+  - "CTR prediction on binary click labels"
+  notes: "All compared methods share the same network architecture and one epoch of training; the production experiment trains on six days of impression logs and tests on the final day. The open-source training uses Adam with learning rate 2.0e-3 for embeddings and 2.0e-4 for DNN parameters at batch size 8,000; the GSU retrieves 50 behaviors and sequences are capped at 5,000 for production experiments and 1,000 for open-source ones. SCL embeddings stay frozen."
+serving_infra: "Ranking-stage deployment in Taobao display advertising. GSU feature and embedding fetching is decoupled from the critical ranking path: the GSU server pre-fetches the user behavior sequence and multimodal embeddings from remote storage asynchronously in parallel with the matching stage and caches them in GPU memory, so pre-fetch latency is typically fully hidden. During ranking, similarity computation and Top-K selection run in parallel with other feature processing, and the ESU applies SimTier and SA-TA for the final CTR prediction."
+scale:
+- metric: Behavior sequence length
+  value: "up to 100K interactions online; production offline experiments cap at 5,000"
+  note: "paper, abstract, Sec 5 and Sec 7.1.2"
+- metric: Production dataset
+  value: "3.71B samples, 0.19B users, 23.6B distinct items"
+  note: "paper, Table 4; one week of impression logs"
+- metric: Open-source dataset
+  value: "99.0M samples, 8.79M users, 35.4M distinct items, max sequence 1K"
+  note: "paper, Table 4; the Sec 6.2 text instead states 107M samples, 8.86M users and 275M unique items"
+- metric: Traffic share
+  value: "majority of traffic since mid-2025"
+  note: "paper, Sec 5"
+results_reported: "Online, Sec 7.5 Table 6: a long-term A/B test in Taobao display advertising with MUSE at 100K sequence length against a production baseline based on SIM with 5K behavior length gave CTR +12.6%, RPM +5.1% and ROI +11.4%; deployment since mid-2025 handles the majority of traffic, Sec 5. Offline, Table 5, GAUC on production data truncated from 100K to 5K: MUSE 0.6377, +1.69% over the DIN base 0.6271, ahead of SIM-Hard 0.6351, SIM-Soft 0.6356, TWIN 0.6304 and MISS 0.6308; on the open-source dataset with 1K sequences, MUSE 0.6154, +1.18% over the base 0.6082. Ablations on production data: Table 1 GSU embeddings lift GAUC from 0.6356 with ID embeddings to 0.6377 with SCL, +0.33%, while Table 2 shows added retrieval complexity moves GAUC only between 0.6369 and 0.6379; Table 3 ESU designs go from 0.6301 with plain Target Attention to 0.6377 with SA-TA plus SimTier, +1.21%; Sec 7.3 Figure 5 reports +0.38% GAUC when the sequence extends from 5K to 100K."
+caveats:
+- "The offline comparison truncates production sequences from 100K to 5K interactions to accelerate experimentation; the online system runs 100K, per the Table 5 caption."
+- "The online test is described only as a long-term A/B test; the paper gives no traffic share, bucket split or duration."
+- "Open-source dataset statistics disagree inside the paper: Table 4 says 99.0M samples, 8.79M users and 35.4M distinct items while the Sec 6.2 text says 107M samples, 8.86M users and 275M unique items."
+- "SCL embeddings are frozen through training and inference, so item representations do not adapt to the CTR task; this is the design the paper itself selects and recommends."
+unknown_fields:
+- "A/B traffic share, duration and bucket split"
+- "Training compute and hardware"
+- "Serving latency, QPS or cost figures"
+- "Top-K value used in the production deployment"
+sources:
+- title: "MUSE: A Simple Yet Effective Multimodal Search-Based Framework for Lifelong User Interest Modeling, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840125
+  type: paper
+- title: "MUSE, arXiv 2512.07216"
+  url: https://arxiv.org/abs/2512.07216
+  type: paper
+- title: "MUSE official code repository"
+  url: https://github.com/alimama-tech/MUSE
+  type: source_code
+- title: "MUSE project and dataset page"
+  url: https://taobao-mm.github.io
+  type: documentation
+- title: "TAOBAO-MM open-source dataset on Hugging Face"
+  url: https://huggingface.co/datasets/TaoBao-MM/Taobao-MM
+  type: documentation
+version_note: "Card written from arXiv 2512.07216 v1, first posted on 2025-12-08 and still the only version; the published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2512.07216
+  local_pdf: "full text read from the arXiv HTML rendition of v1, file not redistributed"
+  sections_read: "Abstract, Secs 1 to 9 with Tables 1 to 6 and Figure captions 1 to 7, Appendix A.1"
+  verified_on: "2026-11-03"
+  published_pdf: "ACM version pages 8646-8653 per Crossref, published 2026-11-06; PDF not readable at card time"
+code:
+  status: official_full
+  checked_on: "2026-11-03"
+  repos:
+  - url: https://github.com/alimama-tech/MUSE
+    owner: "Alimama tech of Alibaba, the paper authors' team"
+    official: true
+    note: "Official PyTorch implementation named by the paper at TaoBao-MM/MUSE, which redirects to this repository; holds training and inference code, configs and preprocessing for the open-source dataset. Production data and the SCL embedding training pipeline are not included. The Hugging Face dataset linked from the README lives at TaoBao-MM/Taobao-MM, while the paper footnote names Taobao-MM2, which is not accessible."
+core_idea: "Keep the GSU a plain cosine similarity over frozen multimodal embeddings and spend the complexity budget in the ESU on similarity histograms and semantic-aware fused attention"
+deployed_in: "Taobao display advertising ranking stage"
+scale_short: "Serves the majority of Taobao display advertising traffic on behavior sequences of up to 100K interactions"
+key_result: "Long-term A/B in Taobao display advertising: CTR +12.6%, RPM +5.1%, ROI +11.4% over the production SIM baseline with 5K behavior length"
+results_table:
+  online:
+  - setting: "Taobao display advertising, long-term A/B"
+    method: MUSE
+    metric: CTR
+    result: "+12.6%"
+    versus: "Production SIM baseline with 5K behavior length"
+  - setting: "Taobao display advertising, long-term A/B"
+    method: MUSE
+    metric: RPM
+    result: "+5.1%"
+    versus: "Production SIM baseline with 5K behavior length"
+  - setting: "Taobao display advertising, long-term A/B"
+    method: MUSE
+    metric: ROI
+    result: "+11.4%"
+    versus: "Production SIM baseline with 5K behavior length"
+  offline:
+  - setting: "Production data with sequences truncated to 5K"
+    method: MUSE
+    metric: GAUC
+    result: "0.6377"
+    versus: "DIN base 0.6271"
+  - setting: "Open-source data, 1K max sequence"
+    method: MUSE
+    metric: GAUC
+    result: "0.6154"
+    versus: "DIN base 0.6082"
+  - setting: "GSU ablation, SCL versus ID embeddings"
+    method: MUSE
+    metric: GAUC
+    result: "0.6377"
+    versus: "ID embeddings 0.6356"
+  - setting: "ESU ablation, SA-TA plus SimTier"
+    method: MUSE
+    metric: GAUC
+    result: "0.6377"
+    versus: "Target Attention 0.6301"
+deployment:
+  online_evidence: online_numbers
+  scenario: "Ranking stage of Taobao display advertising, modeling lifelong behavior sequences of up to 100K interactions; deployed since mid-2025 and handling the majority of traffic"
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: "Production baseline based on SIM with a 5K behavior length"
+  online_lifts:
+  - metric: CTR
+    value: "+12.6%"
+  - metric: RPM
+    value: "+5.1%"
+  - metric: ROI
+    value: "+11.4%"
+  training_compute: not_reported
+  serving_latency: "Negligible incremental latency; GSU fetching is asynchronous during matching and cached in GPU memory, and similarity plus Top-K selection overlap other ranking feature processing"
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: "GSU embedding cache held in GPU memory; no specific accelerator models named"
+  notes:
+  - "The paper describes the online test only as a long-term A/B test; no traffic share or duration is given."
+  - "Offline experiments truncate production sequences from 100K to 5K interactions to accelerate experimentation, while the online system runs 100K."
+  fulltext_refs:
+  - "Sec 7.5 and Table 6: long-term A/B, MUSE at 100K versus a production baseline based on SIM with 5K behavior length, CTR +12.6%, RPM +5.1%, ROI +11.4%, implemented mid-2025"
+  - "Sec 5: ranking-stage deployment, asynchronous GSU pre-fetch in parallel with matching cached in GPU memory, negligible incremental latency, majority of traffic since mid-2025"
+  - "Sec 1: deployed since mid-2025, up to 100K-length sequences, negligible latency overhead"
+  basis: full_text
+  checked_on: "2026-11-03"

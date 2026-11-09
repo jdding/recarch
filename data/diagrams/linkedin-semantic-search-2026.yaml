@@ -1,0 +1,38 @@
+# Redrawn, simplified diagram. Source: "Semantic Search At LinkedIn" (CIKM 2026), Fig. 5 and the modeling and infrastructure sections.
+alt: "Left to right: a member query goes to the Query Understanding layer; GPU exhaustive retrieval embeds queries and documents with a contrastive LLM bi-encoder, pre-filters by attributes, scans up to 1.3B documents and keeps the top 1000 with retrieval-as-ranking scoring; the SLM ranker reranks the top 250 and a calibration layer outputs global and position-conditional scores; scores pass through the middle tier, where cache hits return directly and misses are scored by the prefill-only inference engine; ranked results then flow to business logic and policy. Searcher context joins the ranking prompt directly."
+caption:
+  fig: "Fig. 5"
+  work: "Semantic Search At LinkedIn, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840152"
+  note: "Simplified; the serving tier executes the retrieval and ranking boxes across columns, and Query Understanding signals condition every downstream stage."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: q, kind: input, text: ["Member query", "free-form text with structured filters"]}
+      - {id: ctx, kind: input, text: ["Searcher context", "profile, activity history, RL-trained member summary"]}
+  - label: Query understanding
+    boxes:
+      - {id: qu, kind: module, text: ["Query Understanding layer", "routing decisions, normalized attributes, query reformulations"]}
+  - label: Retrieval
+    boxes:
+      - {id: retr, kind: module, text: ["GPU exhaustive retrieval", "contrastive LLM bi-encoder, attribute pre-filter, up to 1.3B documents, top 1000, RAR scoring with personalization features"]}
+  - label: Ranking
+    boxes:
+      - {id: rank, kind: module, text: ["SLM ranker", "multi-teacher distilled, pruned to 375M, MixLM embedding tokens, reranks top 250"]}
+      - {id: cal, kind: module, text: ["Calibration layer", "global and position-conditional scores"]}
+  - label: Serving
+    boxes:
+      - {id: mid, kind: module, text: ["Middle tier", "score cache with over 50% hits, scoring-depth control, traffic shaping"]}
+      - {id: inf, kind: module, text: ["Prefill-only inference", "SGLang, shared-prefix caching, piecewise CUDA graphs"]}
+  - label: Output
+    boxes:
+      - {id: out, kind: output, text: ["Ranked results", "relevance and engagement scores, then business logic and policy"]}
+edges:
+  - [q, qu]
+  - [qu, retr]
+  - [ctx, rank]
+  - [retr, rank]
+  - [rank, cal]
+  - [cal, mid]
+  - [mid, inf]
+  - [mid, out]

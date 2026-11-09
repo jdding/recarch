@@ -1,0 +1,65 @@
+surface|喂给淘宝展示广告 CTR 预测模型的物品多模态表征
+era_reason|核心是给基于 ID 的 CTR 排序模型供给特征的 CLIP 系多模态编码器微调；没有生成式或 LLM 组件唱主角。
+tldr|从 CTR 点击中挖掘多模态可解释三元组并微调 SCL 编码器服务淘宝展示广告；长期 A/B 给出 CTR +1.5%、RPM +0.5%。
+summary|Mine-Then-Train 是淘天集团提出的面向淘宝展示广告 CTR 预测的原生多模态表征学习方法。论文先证明在已上线的 SCL 编码器之上做端到端多模态训练并不可行：所有 E2EM 变体的 GAUC 都出现退化，原因是原始 CTR 点击混杂多模态与非多模态因素，监督信号含糊。该方法改为训练一个从物品原图与标题打分点击相关性的标注模型，挖掘出 3000 万条多模态可解释三元组，再用 triplet margin loss 微调 SCL 编码器；2026 年初起在淘宝展示广告的长期 A/B 测试带来 CTR +1.5%、RPM +0.5%。
+core_idea|先从 CTR 数据挖掘多模态可解释点击三元组，再用它们微调多模态编码器，让表征对齐点击偏好。
+deployed_in|淘宝展示广告 CTR 预测
+scale_short|挖掘产出 3000 万条高质量三元组；线上 A/B 给出 CTR +1.5%、RPM +0.5%
+key_result|淘宝展示广告长期 A/B：CTR +1.5%，RPM +0.5%
+results_reported|部署见 6.3 节：原生多模态表征于 2026 年初进入淘宝展示广告系统，长期 A/B 测试显示 CTR 提升 1.5%、RPM 提升 0.5%，结论部分重述。离线见 6.2 节表 6，相对已含 SCL 表征的基线：接入标注模型打分 GAUC +0.13%、AUC +0.08%，完整 NMRL 方法 GAUC +0.22%、AUC +0.11%。对被否决的端到端方案的诊断：3.2 节图 2 显示 E2EM 编码器的 GAUC 掉到生产 SCL 编码器之下；3.3 节表 1 在 Taobao-MM 基准上，冻结 MUSE 基线 GAUC 0.6154，target 侧 E2EM 0.6139，加 LEMUR 的 memory bank 0.6128，target 与序列双侧 E2EM 0.6124；3.3 节表 2 显示 SGD、Adam、AdamW 配 2e-3 到 2e-5 的学习率没有任何组合超过 0.6154。4.1 节表 3 量得多模态相似度单独预测点击只略高于随机，MultiModal-Mean GAUC 0.541、MultiModal-Max GAUC 0.536；4.2 节表 4 发现 E2EM 的梯度余弦相似度为 0.016 和 0.006，而 SCL 为 0.144 和 0.849；4.2 节还报告共训引入 SCL 损失后 CTR GAUC 掉 0.17 个百分点、SCL Top-1 准确率掉 5 个百分点。挖掘质量见 5.2 节：标注打分单独接入即带来 GAUC +0.13%，对标注分差 0.15 以上与 0.05 以下的三元组人工投票，物品 1 胜率分别为 85% 与 42%。
+serving_infra|只优化多模态编码器、不改其他模块，系统直接沿用 SCL 编码器在淘宝展示广告的线上部署链路。
+stages.0.model_family|淘宝展示广告基于 ID 的 CTR 预测模型，E2EM 研究用 MUSE，NMRL 实验用引用为 EST 的更新版生产模型，通过 SimTier、SA-TA 相似度特征与线性层直接融合消费 SCL 多模态表征
+stages.0.details|CTR 预测模型本身不改，只微调喂给它的多模态编码器。
+id_tokenization.approach|稀疏物品 ID embedding 配冻结 SCL 多模态表征；挖掘阶段加 RK-Means 语义 ID 与可学习 3x8192 SID 解码码本
+id_tokenization.details|标注模型用 TaskRes 式残差微调，SCL 编码器保持冻结，从零初始化的解码码本学习 SID embedding 作为 CTR 专属残差，使偏好信息绑定在多模态可解释的物品 SID 上。
+features_signals.0|目标物品与行为序列物品的原图与标题，经冻结的 Chinese CLIP ViT-B/16 SCL 编码器编码
+features_signals.1|目标物品与历史物品的多模态相似度，以 SimTier 与 SA-TA 特征进入 CTR 模型
+features_signals.2|多模态表征与物品 ID embedding 经线性层融合
+features_signals.3|挖掘与诊断阶段将标注模型的点击相关性打分作为特征接入
+features_signals.4|用户年龄、性别与点击历史序列特征；目标物品的类目、品牌与物品 ID
+training.mode|离线挖掘与编码器微调，线上链路不变
+training.objectives.0|在挖掘三元组上以 0.1 的 margin 用 triplet margin loss 学习对齐点击偏好的相似度排序
+training.objectives.1|以 SCL 的 MoCo 式对比损失作正则，防止遗忘电商语义
+training.notes|挖掘阈值：pairwise 多模态相似度 0.3、SCL 相似度差 0.05、标注分差 0.15。标注模型本身由 CTR 损失端到端训练，可学习的只有 SID 解码码本。对 1000 条高置信与 1000 条低置信三元组的人工评估显示胜率 85% 对 42%。
+scale.0.metric|部署
+scale.0.value|2026 年初接入淘宝展示广告系统，用长期 A/B 测试评估
+scale.1.metric|E2EM 研究数据集
+scale.1.value|一周内 8400 万用户、8800 万商品、19 亿样本，来自淘宝
+scale.2.metric|NMRL 实验数据集
+scale.2.value|淘宝展示广告系统一个月的 CTR 数据
+scale.3.metric|挖掘微调数据
+scale.3.value|3000 万条高质量三元组
+scale.4.metric|E2EM 训练成本 batch 32 序列长度 50
+scale.4.value|峰值显存 3.37 GB，target 侧升至 5.71 GB，target 与序列双侧升至 84.56 GB；平均步时 1.02 s 升至 1.94 s 与 7.32 s
+results_table.online.0.setting|淘宝展示广告长期 A/B 测试，2026 年初接入
+results_table.online.0.versus|同一 A/B 测试的对照组
+results_table.online.1.setting|淘宝展示广告长期 A/B 测试，2026 年初接入
+results_table.online.1.versus|同一 A/B 测试的对照组
+results_table.offline.0.setting|淘宝展示广告一个月 CTR 数据集
+results_table.offline.0.versus|含 SCL 表征的基线
+results_table.offline.1.setting|淘宝展示广告一个月 CTR 数据集
+results_table.offline.1.versus|含 SCL 表征的基线
+results_table.offline.2.setting|淘宝展示广告一个月 CTR 数据集
+results_table.offline.2.versus|含 SCL 表征的基线
+results_table.offline.3.setting|淘宝展示广告一个月 CTR 数据集
+results_table.offline.3.versus|含 SCL 表征的基线
+results_table.offline.4.setting|Taobao-MM 基准，E2EM 诊断，3.3 节
+results_table.offline.4.versus|冻结 MUSE 基线 0.6154
+results_table.offline.5.setting|Taobao-MM 基准，E2EM 诊断，3.3 节
+results_table.offline.5.versus|冻结 MUSE 基线 0.6154
+caveats.0|论文对线上评估只说长期 A/B 测试；未给流量占比、分桶设计或持续时长。
+caveats.1|论文自己说明标注模型的两点局限：直接在 CTR 数据上训练使部分物品对的点击相关性打分可能不准；偏好只经 SID embedding 学习，机制近似 ID 式记忆、接触不到物品原始多模态内容，泛化受限。
+caveats.2|两项研究的 CTR 预测模型不同：E2EM 诊断用 MUSE，NMRL 实验用引用为 Liu et al. 2026 的更新生产模型，表 1 与表 6 的数字来自不同模型设定，Taobao-MM 基准也只是轻量代理。
+caveats.3|论文的 GenAI 使用声明说明生成式 AI 仅用于润色文字与可读性，未生成任何科学内容。
+unknown_fields.0|A/B 流量占比、分桶数与测试时长
+unknown_fields.1|所提方法的训练算力、GPU 数量与微调时长
+unknown_fields.2|展示广告系统的服务延迟、QPS 与硬件
+unknown_fields.3|NMRL 实验的绝对 AUC 与 GAUC，论文只给相对提升
+unknown_fields.4|更新后编码器在生产中的推理成本变化
+version_note|读的是 arXiv 2608.24091 v2，2026-09-12 更新，页眉已带 CIKM 2026 论文集条目与 DOI 10.1145/3799682.3840096。Crossref 已注册该 DOI，CIKM 2026 页码 8704-8711、标题一致，但会前 ACM 正式全文尚不可读；CIKM 2026 于 2026 年 11 月 7 至 11 日举办，会后应按 camera-ready 复核数字，正式版页码可能不同，复核后应标记为已核对正式版。
+code.note|截至核对日未找到官方或第三方实现；论文未提及代码发布。
+deployment.scenario|淘宝展示广告 CTR 预测模型中的物品多模态表征；编码器经 Mine-Then-Train 微调并于 2026 年初接入，用长期 A/B 测试评估
+deployment.baseline|同一长期 A/B 测试的对照组；对照配置在论文中未说明
+deployment.notes.0|论文说明只优化多模态编码器、其余模块不动，线上沿用 SCL 编码器部署链路。
+deployment.notes.1|线上章节未给出长期 A/B 的流量占比、分桶数或持续时长。
+deployment.notes.2|表 5 的训练成本数字属于 E2EM 诊断即被否决的方案，不是 Mine-Then-Train 自己的训练成本。

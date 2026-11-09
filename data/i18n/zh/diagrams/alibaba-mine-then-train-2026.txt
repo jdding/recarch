@@ -1,0 +1,20 @@
+alt|自左向右：带物品原图与标题的淘宝展示广告 CTR 日志，输入到由冻结 SCL 编码器加可学习 SID 解码码本构成的多模态标注模型，对点击相关性打分；打分结果按相似度与标注分差阈值筛出三元组，共保留 3000 万条，用于以 triplet margin loss 加 SCL 对比正则微调 SCL 编码器；产出的原生表征经 SimTier 与 SA-TA 相似度特征及与 ID embedding 的线性层融合，服务生产 CTR 预测模型；长期线上 A/B 报告 CTR +1.5%、RPM +0.5%。
+caption.fig|图 5
+caption.note|简化绘制；第 3、4 节的 E2EM 诊断实验、5.2 节的人工评估与标注打分特征变体未画出。
+columns.0.label|输入数据
+columns.0.boxes.0.text.0|淘宝展示广告 CTR 日志
+columns.0.boxes.0.text.1|点击行为附物品原图与标题
+columns.1.label|挖掘
+columns.1.boxes.0.text.0|多模态标注模型
+columns.1.boxes.0.text.1|冻结 SCL 编码器、可学习 SID 解码码本、点击相关性打分
+columns.1.boxes.1.text.0|三元组挖掘
+columns.1.boxes.1.text.1|按相似度与标注分差阈值过滤，保留 3000 万条三元组
+columns.2.label|训练
+columns.2.boxes.0.text.0|微调 SCL 编码器
+columns.2.boxes.0.text.1|triplet margin loss 加 SCL 对比正则
+columns.3.label|服务
+columns.3.boxes.0.text.0|CTR 预测模型
+columns.3.boxes.0.text.1|SimTier 与 SA-TA 相似度特征、与 ID embedding 线性层融合
+columns.4.label|输出
+columns.4.boxes.0.text.0|线上 A/B
+columns.4.boxes.0.text.1|A/B 提升：CTR +1.5%、RPM +0.5%

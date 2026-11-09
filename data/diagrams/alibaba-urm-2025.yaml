@@ -1,0 +1,26 @@
+# Redrawn, simplified diagram. Source: URM, "Large Language Model as Universal Retriever in Industrial-Scale Recommender System" (CIKM 2026), Fig. 2.
+alt: "Left to right: serialized user features and a text retrieval objective enter an engine service that aggregates a 10-minute behavior window and triggers URM asynchronously; the inference service loads item embeddings from a distributed hashtable and runs a single vLLM prefill over the Qwen-7B backbone with learnable query tokens; probabilistic sampling walks ANN neighbors for T=4 steps to produce the retrieval results; results are stored persistently and consumed by the online retrieval stage."
+caption:
+  fig: "Fig. 2"
+  work: "Large Language Model as Universal Retriever in Industrial-Scale Recommender System, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840090"
+  note: "Simplified; training and the online A/B evaluation are not drawn."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: input, kind: input, text: ["User and objective text", "serialized user features, objective text, learnable query tokens"]}
+  - label: Async trigger
+    boxes:
+      - {id: engine, kind: module, text: ["Engine service", "triggered by user actions, aggregates a 10-minute behavior window"]}
+  - label: Inference
+    boxes:
+      - {id: vllm, kind: module, text: ["vLLM single prefill", "Qwen-7B backbone, item embeddings from a distributed hashtable, M query representations"]}
+      - {id: sampling, kind: module, text: ["Probabilistic sampling", "ANN neighbors, T=4 steps, under 10 ms"]}
+  - label: Output
+    boxes:
+      - {id: results, kind: output, text: ["Persistent retrieval results", "stored, consumed by the online retrieval stage"]}
+edges:
+  - [input, engine]
+  - [engine, vllm]
+  - [vllm, sampling]
+  - [sampling, results]

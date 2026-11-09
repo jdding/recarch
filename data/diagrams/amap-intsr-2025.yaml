@@ -1,0 +1,30 @@
+# Redrawn, simplified diagram. Source: IntSR, "IntSR: A Deployed Generative System for Integrated Search and Recommendation at Amap" (CIKM 2026), Fig. 2.
+alt: "Left to right: the input sequence interleaves scenario tokens, item tokens and feedback tokens with query placeholders that carry either a user search query embedded by a frozen Qwen3-0.6B LLM, a shared universal token, or target candidate items; a stack of Query-Driven Blocks on HSTU encodes the sequence with split attention for the query placeholders under a customized mask combining causal, session-wise and invalid-Q terms; a DSFNet block derives per-scenario weights and scenario-aware feature filtering from spatiotemporal context, page context, task tag and user profiles; the output covers recommendation retrieval and ranking plus search retrieval and ranking, and training restricts negative sampling to items available at the interaction timestamp."
+caption:
+  fig: "Fig. 2"
+  work: "IntSR: A Deployed Generative System for Integrated Search and Recommendation at Amap, CIKM 2026"
+  url: "https://doi.org/10.1145/3799682.3840093"
+  note: "Simplified; the exact mask matrices of Figs. 8 and 9 and the two-stage KV-cache logit computation of Fig. 7 are summarized only."
+columns:
+  - label: Inputs
+    boxes:
+      - {id: seq, kind: input, text: ["Behavior sequence", "S scenario tokens, I item tokens, F feedback tokens"]}
+      - {id: q, kind: input, text: ["Query placeholders", "search query via frozen Qwen3-0.6B, shared universal token, or target candidate items"]}
+  - label: Sequence encoder
+    boxes:
+      - {id: qdb, kind: module, text: ["Query-Driven Block stack", "3 blocks on HSTU, split attention for query placeholders, KV cache"]}
+      - {id: mask, kind: module, text: ["Customized mask", "causal, session-wise, invalid Q"]}
+  - label: Multi-scenario
+    boxes:
+      - {id: dsf, kind: module, text: ["DSFNet", "per-scenario weights and feature filtering from spatiotemporal context, page context, task tag, user profiles"]}
+  - label: Tasks and training
+    boxes:
+      - {id: tasks, kind: output, text: ["Conditional generation", "recommendation retrieval and ranking, search retrieval and ranking"]}
+      - {id: align, kind: module, text: ["Temporal candidate alignment", "negatives sampled only from items available at the interaction timestamp"]}
+edges:
+  - [seq, qdb]
+  - [q, qdb]
+  - [mask, qdb]
+  - [qdb, dsf]
+  - [dsf, tasks]
+  - [align, tasks]

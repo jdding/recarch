@@ -1,0 +1,170 @@
+id: alibaba-hisac-2026
+name: HiSAC
+company: Alibaba
+surface: Ranking-stage user behavior sequence modeling on Taobao's "Guess What You Like" homepage feed
+year: 2026
+era: generative
+era_reason: "Semantic-ID tokenization with RQ-VAE hierarchical codebooks is the core mechanism; borderline because the serving ranker it feeds is discriminative attention."
+first_public: "2026-02"
+venue: "CIKM 2026"
+venue_year: 2026
+published_version_checked: false
+primary_source: "https://doi.org/10.1145/3799682.3840124"
+added_on: "2026-11-03"
+last_verified: "2026-11-03"
+updates: []
+system_type: recommendation
+evidence_level: production_described
+tldr: "HiSAC compresses histories of up to 10,000 interactions into personalized semantic-ID interest agents; on Taobao's homepage feed it lifted CTR 1.65% and cut serving latency by over 40%."
+summary: "HiSAC, built by an Alibaba Group team listed as Taobao and Tmall Group of Alibaba on the conference program, is a sequence compression framework that turns ultra-long user behavior histories, exceeding 10,000 interactions for highly active users, into compact personalized interest representations for the ranking stage. Items are tokenized into multi-level semantic IDs by a frozen multimodal encoder and RQ-VAE over a global hierarchical codebook; a hierarchical voting mechanism sparsely activates per-user interest-agents on a global semantic tree, and a Soft-Routing Attention aggregates all historical signals weighted by similarity to limit quantization error and preserve long-tail preferences. Deployed on Taobao's \"Guess What You Like\" homepage serving hundreds of millions of daily active users, it delivered a 1.65% CTR uplift, a 2.24% CTCVR improvement and 2.56% more orders in a two-week A/B test against the strongest prior compression method in production, while reducing end-to-end inference latency by over 40% to about 21 ms per request."
+paradigms:
+- semantic-id
+- attention-ctr
+stages:
+- stage: rank
+  model_family: "Sequence compression module inside an attention-CTR ranker: frozen multimodal encoder and RQ-VAE semantic IDs, hierarchical voting interest-agents, soft-routing attention feeding MHA cross modeling over candidates"
+  details: "User histories of up to 10,000 interactions map onto a global semantic tree over the codebook; bottom-up vote propagation and top-down pruning keeping the top-k children per level leave K sparsely activated interest-agents, about 200 in the experiments; each agent aggregates the entire history by similarity weighting, then candidates cross-attend the compressed sequence through MHA."
+id_tokenization:
+  approach: "Multi-level hierarchical semantic IDs from Residual Quantized VAE over frozen multimodal embeddings"
+  details: "Item title, category labels, domain-specific text and the product image are encoded by a frozen CLIP ViT-B/32 with a Q-Former of 8 learnable query tokens, trained with symmetric InfoNCE. RQ-VAE quantizes the fused embedding level by level with commitment loss 0.25 and EMA codebook updates with decay 0.99; the industrial configuration is L=2 levels of 512 entries each and the public benchmarks use 200 x 2. A user history becomes a sequence of SIDs, the discrete path through the levels."
+features_signals:
+- "Item metadata text and product image through a frozen multimodal encoder"
+- "User behavior sequence of up to 10,000 interactions"
+- "Category and brand item-side features concatenated to the trainable ranking embedding"
+- "Time-decay feature"
+- "Vote counts over the semantic tree as agent weights"
+training:
+  mode: "Offline training; SIDs and agents are constructed offline daily with only newly added items processed"
+  objectives:
+  - "Symmetric InfoNCE contrastive training of the multimodal encoder"
+  - "RQ-VAE reconstruction with commitment loss and EMA codebook updates"
+  - "CTR prediction for the trainable ranking embeddings used as aggregation content"
+  notes: "Adam for dense and Adagrad for sparse parameters, initial learning rate 1e-3; all compression methods produce 200 groups; industrial data uses 13 training days and one validation day; NVIDIA H20 GPUs; offline metrics averaged over 3 seeds with standard deviation below 0.0003."
+serving_infra: "Deployed with MHA for cross modeling between the compressed sequence and candidates, with three production optimizations: offline agent construction daily at no additional online cost, request-level compression of N to K once per request, and cache-enhanced MHA with candidate queries precomputed offline and refreshed every 2 hours. With 2,000 candidates and 10k-length histories, per-request latency drops from over 100 ms for vanilla MHA to about 35 ms with compression alone and about 21 ms with all three optimizations, a 40% reduction over the compressed baseline."
+scale:
+- metric: Deployment
+  value: "Taobao homepage \"Guess What You Like\", serving hundreds of millions of daily active users"
+  note: "paper, abstract, Sec 1 and Sec 4.7"
+- metric: Online sequence length
+  value: "Histories of highly active users exceed 10,000 interactions; production serving uses 10k-length histories"
+  note: "paper, Sec 1, Sec 3.1 and Sec 3.5"
+- metric: Industrial dataset
+  value: "14 days of Taobao interaction logs, 200M users, 1B items, 30B interaction records"
+  note: "paper, Sec 4.1"
+- metric: Serving latency
+  value: "About 21 ms per request at 2,000 candidates with 10k-length histories, versus over 100 ms for vanilla MHA"
+  note: "paper, Sec 3.5"
+results_reported: "Online A/B, Sec 4.7 Table 3: a controlled two-week test on Taobao's \"Guess What You Like\" homepage against the strongest prior compression method in production gives IPV +1.93%, CTR +1.65%, CTCVR +2.24% and orders +2.56%, all reported statistically significant, serving hundreds of millions of daily active users. Soft-routing long-tail effect, Sec 4.7: in production the top 10% most frequent items capture over 90% of exposure; under HiSAC the CTR of items outside this top 10% improves by 12.6% and the average number of distinct item categories surfaced per user increases by 5.7%. Offline, Sec 4.2 Table 1, industrial dataset of 14 days of Taobao logs with 200M users, 1B items and 30B interaction records: at sequence length 10k HiSAC reaches AUC 0.6444 and GAUC 0.5525 versus uncompressed MHA 0.6419/0.5503 and the best generic baseline Aggregator 0.6438/0.5518; on Taobao-MM, a public multimodal benchmark with 8.79M users, 35.4M items and maximum sequence length 1,000, HiSAC reaches AUC 0.6704 and GAUC 0.6114 versus MHA 0.6692/0.6096 and Aggregator 0.6699/0.6101. Integrated into state-of-the-art architectures by replacing their native compression: HiSAC + Longer reaches AUC 0.6455 and GAUC 0.5537 at 10k versus Longer 0.6448/0.5529, and on Taobao-MM 0.6733/0.6135 versus Longer 0.6714/0.6122. Ablations, Sec 4.4 Table 2 at 10k: removing the multimodal encoder drops AUC by 0.20 p.p. to 0.6424, replacing soft with hard routing drops AUC by 0.15 p.p. to 0.6429, collapsing the two embedding spaces into one drops AUC to 0.6253; on long-tail items soft routing improves AUC by 18.4% over hard routing. Serving, Sec 3.5: with 2,000 candidates and 10k-length histories vanilla MHA exceeds 100 ms per request, HiSAC compression alone reduces this to about 35 ms, and the three production optimizations together reach about 21 ms, a 40% reduction over the compressed baseline, with no measurable loss in recommendation quality; cache-enhanced MHA cuts projection FLOPs by about 72% and per-request latency by 38% at a cache hit rate above 99%. Offline metrics are averaged over 3 seeds with standard deviation below 0.0003."
+caveats:
+- "The online baseline is described only as the strongest prior compression method in production; the paper does not name it."
+- "The paper reports no traffic share, bucket counts or user counts for the two-week A/B test."
+- "Latency figures are stated for a configuration of 2,000 candidates and 10k-length histories; serving hardware and QPS are not reported."
+unknown_fields:
+- A/B traffic share and bucket assignment
+- Name of the production baseline for the online test
+- GPU count and training compute beyond NVIDIA H20
+- Serving hardware and serving QPS
+- Deployment start date
+- Memory footprint figures
+sources:
+- title: "HiSAC: Hierarchical Sparse Activation Compression for Ultra-long Sequence Modeling in Recommendation Systems, CIKM 2026"
+  url: https://doi.org/10.1145/3799682.3840124
+  type: paper
+- title: "HiSAC, arXiv 2602.21009"
+  url: https://arxiv.org/abs/2602.21009
+  type: paper
+- title: "HiSAC, arXiv full text HTML v2"
+  url: https://arxiv.org/html/2602.21009v2
+  type: paper
+version_note: "Card based on arXiv 2602.21009 v2, posted 2026-07-03; full text read from the arXiv HTML rendering of v2 and the same-version PDF. The arXiv abs metadata titles the paper \"...Ultra-long Sequence Modeling in Recommenders\" while the v2 title block, the CIKM 2026 program entry and the Crossref record read \"...in Recommendation Systems\". The CIKM 2026 DOI 10.1145/3799682.3840124 is registered on Crossref with pages 8720-8727 and print publication 2026-11-07; the ACM full text was not readable before the proceedings release, and the card should be re-verified against the ACM version after the conference, 2026-11-07 to 11, then marked as checked against the published version."
+needs_fulltext: false
+fulltext:
+  pdf_url: https://arxiv.org/pdf/2602.21009v2
+  local_pdf: "full text read, file not redistributed"
+  sections_read: "Abstract, Sections 1 to 5, Tables 1 to 3, Figures 1 to 6, GenAI usage disclosure"
+  verified_on: "2026-11-03"
+  published_pdf: "Crossref record for DOI 10.1145/3799682.3840124 verified with pages 8720-8727; ACM full text not opened, print publication 2026-11-07"
+code:
+  status: none
+  checked_on: "2026-11-03"
+  repos: []
+  note: "GitHub and web search on 2026-11-03 found no repository implementing HiSAC; the paper footnotes a public Taobao-MM benchmark dataset on HuggingFace but releases no model code."
+core_idea: "Sparsely activated personalized interest agents over a hierarchical semantic codebook compress ultra-long behavior sequences for the ranking stage."
+deployed_in: "Ranking-stage sequence modeling on Taobao homepage \"Guess What You Like\""
+scale_short: "Serves hundreds of millions of daily active users with histories up to 10,000 interactions at about 21 ms per request"
+key_result: "Two-week A/B on Taobao homepage: CTR +1.65%, IPV +1.93%, CTCVR +2.24%, orders +2.56%; per-request latency from over 100 ms to about 21 ms"
+results_table:
+  online:
+  - setting: "Taobao homepage \"Guess What You Like\", two-week A/B"
+    method: HiSAC
+    metric: CTR
+    result: "+1.65%"
+    versus: "Strongest prior compression method in production"
+  - setting: "Taobao homepage \"Guess What You Like\", two-week A/B"
+    method: HiSAC
+    metric: IPV
+    result: "+1.93%"
+    versus: "Strongest prior compression method in production"
+  - setting: "Taobao homepage \"Guess What You Like\", two-week A/B"
+    method: HiSAC
+    metric: CTCVR
+    result: "+2.24%"
+    versus: "Strongest prior compression method in production"
+  - setting: "Taobao homepage \"Guess What You Like\", two-week A/B"
+    method: HiSAC
+    metric: Orders
+    result: "+2.56%"
+    versus: "Strongest prior compression method in production"
+  offline:
+  - setting: "Industrial dataset, sequence length 10k"
+    method: HiSAC
+    metric: AUC
+    result: "0.6444"
+    versus: "Uncompressed MHA 0.6419, Aggregator 0.6438"
+  - setting: "Industrial dataset, sequence length 10k"
+    method: HiSAC
+    metric: GAUC
+    result: "0.5525"
+    versus: "Uncompressed MHA 0.5503, Aggregator 0.5518"
+  - setting: "Taobao-MM public benchmark"
+    method: HiSAC
+    metric: AUC
+    result: "0.6704"
+    versus: "Uncompressed MHA 0.6692, Aggregator 0.6699"
+  - setting: "Taobao-MM public benchmark, native compression replaced in Longer"
+    method: "HiSAC + Longer"
+    metric: AUC
+    result: "0.6733"
+    versus: "Longer 0.6714"
+  note: "Table 1 spans sequence lengths from 1k to 10k on the industrial dataset plus Taobao-MM and KuaiRec, and gains widen with length. Offline metrics are averaged over 3 seeds with standard deviation below 0.0003."
+deployment:
+  online_evidence: online_numbers
+  scenario: "Ranking-stage user behavior sequence compression on Taobao's \"Guess What You Like\" homepage, deployed with MHA for cross modeling between compressed sequences and candidates"
+  ab_traffic: not_reported
+  ab_duration: "Two weeks"
+  baseline: "The strongest prior compression method in production, not named in the paper"
+  online_lifts:
+  - metric: IPV
+    value: "+1.93%"
+  - metric: CTR
+    value: "+1.65%"
+  - metric: CTCVR
+    value: "+2.24%"
+  - metric: Orders
+    value: "+2.56%"
+  training_compute: "NVIDIA H20 GPUs stated for training; GPU count not reported"
+  serving_latency: "With 2,000 candidates and 10k-length histories, vanilla MHA exceeds 100 ms per request; HiSAC compression alone about 35 ms; with the three production optimizations about 21 ms, a 40% reduction over the compressed baseline"
+  serving_qps: not_reported
+  inference_cost: "Cache-enhanced MHA cuts projection FLOPs by about 72% and per-request latency by 38% at a cache hit rate above 99%; candidate queries precomputed offline and refreshed every 2 hours; offline agent construction daily adds no online cost"
+  hardware: "NVIDIA H20 GPUs, stated for training"
+  notes:
+  - "All improvements in Table 3 are reported as statistically significant."
+  - "Latency figures are stated for the 2,000-candidate, 10k-history configuration."
+  - "The paper reports no traffic share or bucket counts for the A/B test."
+  fulltext_refs:
+  - "Sec 4.7: a controlled two-week A/B test on Taobao's \"Guess What You Like\" homepage against the strongest prior compression method in production; Table 3: IPV +1.93%, CTR +1.65%, CTCVR +2.24%, Orders +2.56%, all statistically significant"
+  - "Sec 4.7: top 10% of items capture over 90% of exposure; CTR outside the top 10% improves by 12.6%; distinct categories per user +5.7%"
+  - "Sec 3.5: with 2,000 candidates and 10k-length histories vanilla MHA exceeds 100 ms, HiSAC compression alone about 35 ms, all three optimizations about 21 ms, a 40% reduction; projection FLOPs cut by about 72%, per-request latency by 38%, cache hit rate above 99%, candidate queries refreshed every 2 hours"
+  - "Sec 4.1: NVIDIA H20 GPUs, Adam and Adagrad, initial learning rate 1e-3, 3 seeds with standard deviation below 0.0003"
+  basis: full_text
+  checked_on: "2026-11-03"

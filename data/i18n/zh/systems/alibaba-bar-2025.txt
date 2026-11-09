@@ -1,0 +1,61 @@
+surface|阿里展示广告平台的检索阶段，BAR 取代其中不带出价感知的主 ad value 通道
+era_reason|以交叉注意力模型式检索器配合学习排序损失训练；生成式技术栈不在其中。
+tldr|BAR 把出价信号引入广告检索打分并以近线刷新广告向量；阿里展示广告一个月 A/B 平台收入提升 4.32%。
+summary|BAR 由阿里巴巴淘天集团打造，是一套模型式检索框架，按预估 eCPM 而非仅按 CTR 给广告排序，让出价价值进入检索打分函数，弥合广告检索与出价驱动的排序阶段之间的多阶段不一致。三个组件支撑这一目标：Bidding-Aware Modeling 加入单调性约束的出价目标与 pCTR、pBid 蒸馏任务；Task-Attentive Refinement 模块给用户兴趣信号与商业信号各配专用头；Asynchronous Near-Line Inference 在广告主操作后数秒内按广告刷新预计算的广告向量。在阿里展示广告平台以 BAR 取代不带出价感知的现役检索器后，一个月 A/B 平台收入提升 4.32%，用户体验保持稳定。
+core_idea|让检索按预估 eCPM 打分并保持广告向量新鲜，使漏斗第一级与出价驱动的排序一致。
+deployed_in|阿里展示广告平台检索阶段，全量部署
+scale_short|30 亿会话的训练数据，40 毫秒延迟约束下单实例 500 QPS
+key_result|一个月 A/B：平台收入 +4.32%，RPM +3.78%，全检索渠道 RIR 从 7.6% 至 14.2%、IIR 从 64.1% 至 86.3%，CTR 稳定在 +0.31%
+results_reported|线上见 4.3 节：在阿里展示广告 10% 流量上进行为期一个月的 A/B，同周期另有 50% 放量对比与 5% 反向留出实验相互印证。Platform Revenue +4.32%，95% 置信区间 [3.93%, 4.71%]，p<0.0001；RPM +3.78%，95% 置信区间 [3.37%, 4.15%]，p<0.0001；CTR +0.31%、ROI +0.01%，均保持稳定。响应性见 4.3.2 节，h=3 小时窗口：ad value 通道内 RIR 从 2.5% 升至 30.4%，IIR 从 42.2% 升至 83.5%；全检索渠道 RIR 从 7.6% 升至 14.2%，IIR 从 64.1% 升至 86.3%，即 6.6 与 22.2 个百分点提升。服务成本见 4.3 节：40 毫秒延迟约束下 BAR 维持 500 QPS，基线为 600 QPS，17% 吞吐下降全部来自 TAR 模块 20% 的 GFlops 增加。出价方式见 4.3.3 节：离线 Recall 在 OCPC 提升 6.5%、Max Return 提升 6.2%、Multi-constrained bidding 提升 5.9%；线上成本份额 OCPC 增加 1.1 个百分点，Max Return 与 Multi-constrained bidding 分别让出 0.3 与 0.8。生态见 4.3.4 节：每日点击少于 1k 的长尾广告曝光份额提升 1.6%、成本份额提升 0.7%，一个月内未见漂移。离线见表 2、表 3、表 4 与表 6，基于 2025 年六月二十八日至七月五日共 8 天、含 30 亿会话、2 亿用户与 5000 万广告的生产样本：MBR Recall@2000 达 54.9%、PairAcc 96.1%，去掉出价感知目标为 52.6% 与 80.2%，去掉出价特征为 50.9% 与 50.0%，表 4 的拼接基线为 51.5%；去掉蒸馏目标使 MBR 的 Recall@2000 从 54.9% 降至 54.1%，SASRec EBR 从 38.7% 降至 37.9%，EBR 本身达 Recall@2000 38.7%、PairAcc 94.3%，去掉目标为 36.5% 与 65.6%，去掉出价特征为 36.4% 与 50.0%。累积贡献见表 6：基础 37.8%，加曝光与排序日志上的 LTR 为 48.1%、即 +10.3%，为 BAR 之前已上线的生产基线；再加原始出价特征 +0.1%，加单调性目标 +2.7%，加蒸馏 +0.6%，加 TAR +3.4% 至 54.9%；把 LTR 损失换成基于曝光的 sampled softmax 直接价值预测为 42.3%。TAR 效率见表 4：Recall-all@2000 达 68.2% 而 GFlops 为 1.2x，对照方案把交互与广告向量从 64 维扩到 1024 维，Recall-all@2000 为 66.8% 但 GFlops 达 4x，拼接基线为 64.3% 与 1.0x。TAR 各头相关性见表 5：pCTR 头与 pCTR 相关 67.2%、与出价 -32.5%；pBid 头与出价相关 70.2%、与 pCTR -32.7%；eCPM 头居中，与 eCPM 36.9%、与 pCTR 15.8%、与出价 26.7%。
+serving_infra|线上服务以用户侧图与动态 HNSW 索引应答每个请求，索引每节点 M=64 个邻居，按 NANN beam 检索遍历，每个访问到的广告由 eCPM 头打分。广告侧图单独部署在近线服务上：预算或约束变更等出价事件以约 10^4 QPS 到达时，重算受影响广告的向量与邻居，推送 64 到 256 维向量加 32 到 128 维邻居列表、小于 1 MB 的更新，在每条目的读写自旋锁保护下 0.5 毫秒内于 P99.9 完成换入，读 QPS 高达数百万。
+stages.0.model_family|基于模型打分的检索器，用户-广告交叉注意力交互加 HNSW 图索引与 NANN beam 检索；另以 SASRec 双塔 EBR 实例离线验证可迁移的目标函数
+stages.0.details|底层编码器由用户网络、行为序列交叉注意力网络与广告网络组成；Task-Attentive Refinement 模块在融合表示上接 pCTR、pBid 与 eCPM 三个头，线上仅 eCPM 头驱动 top-k 检索。
+id_tokenization.approach|类别与分桶数值特征经查表嵌入同一向量空间，广告身份由 64 维广告向量承载
+id_tokenization.details|每个特征嵌入为 32 维；广告网络把广告特征压缩为 64 维的 z_a，上限来自 HNSW 索引精度，交互向量 z_seq,a 同为 64 维，用户向量 z_u 超过 1000 维。基线的向量按每日全量批预计算，BAR 下由近线服务按广告刷新。
+features_signals.0|表 1 的出价信号：bid_type、bid_constraint、budget_left_ratio、time_left_ratio、default_bid_value
+features_signals.1|用户画像、上下文与最近 100 次点击的行为序列
+features_signals.2|排序阶段日志：曝光广告与到达排序的广告及其 eCPM，即 pCTR 乘 pBid 乘 1000
+training.mode|离线训练，每个模型单轮；模型权重不在线训练，仅广告向量在近线刷新
+training.objectives.0|曝光与排序日志样本对上的 pairwise 学习排序 logistic 损失
+training.objectives.1|出价感知目标：对合成的出价特征扰动施加 logistic 单调性损失
+training.objectives.2|共享骨干上的蒸馏辅助损失，回归 pCTR 与归一化 pBid
+training.notes|NVIDIA H20 GPU 上以 TensorFlow 于 XDL 训练，AdamW 优化器，特征嵌入 32 维；MBR 学习率 4.8e-3、权重衰减 1e-4、batch size 30,000、约 1,500 GPU 小时，lambda1=0.5、lambda2=1.0；SASRec EBR 沿用自身超参，约 750 GPU 小时，lambda1=0.1、lambda2=0.5。
+scale.0.metric|部署
+scale.0.value|阿里展示广告平台全量部署，多个业务场景服务数十亿用户
+scale.1.metric|训练数据
+scale.1.value|2025 年六月二十八日至七月五日共 8 天的生产样本：30 亿会话、2 亿独立用户、5000 万独立广告
+scale.2.metric|服务
+scale.2.value|40 毫秒延迟约束下单实例 500 QPS；出价变更事件约 10^4 QPS 到达
+results_table.online.0.setting|阿里展示广告，10% 流量上的一个月 A/B
+results_table.online.1.setting|阿里展示广告，10% 流量上的一个月 A/B
+results_table.online.0.versus|不带出价感知的现役生产检索器
+results_table.online.1.versus|不带出价感知的现役生产检索器
+results_table.offline.0.setting|生产测试集，MBR 架构
+results_table.offline.1.setting|生产测试集，MBR 架构
+results_table.offline.2.setting|生产测试集，SASRec EBR 架构
+results_table.offline.0.versus|表 4 拼接基线 51.5%
+results_table.offline.1.versus|w/o BAO 为 80.2%
+results_table.offline.2.versus|w/o BAO 为 36.5%
+caveats.0|论文说明线上收入提升是三个组件的联合效果：一个月内无法承受按组件拆分流量，组件归因依赖离线证据与响应性指标。
+caveats.1|Recall 以现役系统的曝光为参照、PairAcc 以作者自己的单调性先验为参照；论文指出真正检验它们的是线上结果，且扰动幅度未对照日志中的出价变化分布核验。
+caveats.2|17% 的吞吐下降在当前规模是真实的基础设施成本，但范围限于出价感知通道，该通道占检索候选配额的 10%，同时贡献最终曝光的一半以上。
+caveats.3|Task-Attentive Refinement 模块对 SASRec EBR 实例结构上不适用，EBR 只接收出价感知与蒸馏两个目标。
+caveats.4|论文说明检索保持多通道，多模态与基于 LLM 的并行通道持续注入出价信号不会选择的候选，一个月内未见回音室漂移。
+unknown_fields.0|线上测试除 10% 流量拆分外的分桶与用户数
+unknown_fields.1|平台收入与曝光量的绝对值
+unknown_fields.2|实测服务延迟与尾延迟数字，论文只给 40 毫秒约束
+unknown_fields.3|服务集群规模与 H20 训练卡之外的硬件
+code.note|2026-11-03 在 GitHub 与网页检索均未发现官方或第三方实现；论文未提及开源代码。
+version_note|读的是 arXiv 2508.05206 v2，2026-08-22 更新的已接收版，带最终 CIKM 2026 标注与 DOI 10.1145/3799682.3840091，Crossref 已核对页码 8377-8385。写卡时 ACM 正式版全文尚不可读。会后请对照 ACM 正式版逐数字复核，再把卡标记为已对照正式版。
+deployment.scenario|阿里展示广告平台的检索阶段，多通道检索中不带出价感知的主 ad value 通道被 BAR 取代，其余设置完全一致
+deployment.ab_traffic|10% 线上流量随机分成两组；同周期以 50% 放量对比与 5% 反向留出实验相互印证
+deployment.ab_duration|一个月
+deployment.baseline|现役生产检索器：同样 MBR 骨干、同样 pairwise LTR 目标、同样数据，但无出价特征、无 BAO 与 TAR，向量按每日全量批预计算；对应表 6 的 + R_u & LTR 配置
+deployment.online_lifts.4.value|7.6% 至 14.2%，全检索渠道
+deployment.online_lifts.5.value|64.1% 至 86.3%，全检索渠道
+deployment.training_compute|MBR 约 1,500 GPU 小时，SASRec 实例约 750 GPU 小时，均单轮，NVIDIA H20 GPU
+deployment.serving_latency|运行在 40 毫秒延迟约束下；近线向量换入 0.5 毫秒内于 P99.9 完成，广告表示在广告主操作后数秒内收敛
+deployment.serving_qps|BAR 维持 500 QPS，基线 600 QPS，17% 吞吐下降
+deployment.inference_cost|TAR 模块 20% 的 GFlops 增加是吞吐下降的原因；近线更新单事件小于 1 MB，事件到达约 10^4 QPS
+deployment.hardware|训练用 NVIDIA H20 GPU
+deployment.notes.0|收入提升为三个组件的联合效果；出价感知通道占检索候选配额的 10%，贡献最终曝光的一半以上。

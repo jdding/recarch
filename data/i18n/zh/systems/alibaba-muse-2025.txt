@@ -1,0 +1,60 @@
+surface|淘宝展示广告排序阶段的 CTR 预估，建模最长 100K 次交互的用户终身行为序列
+era_reason|GSU 与 ESU 两段式判别式 CTR 模型；多模态 embedding 服务于余弦检索、相似度直方图与融合注意力，无生成式组件。
+tldr|MUSE 把冻结的多模态 embedding 引入终身兴趣建模的两个阶段；淘宝展示广告 A/B：CTR +12.6%、RPM +5.1%、ROI +11.4%。
+summary|MUSE 由武汉大学与淘宝展示广告团队共建，是面向 CTR 预估的两段式终身用户兴趣建模框架，把高质量多模态物品 embedding 引入两个阶段。GSU 用冻结 SCL embedding 上的余弦相似度，从最长 100K 次交互的历史里召回 top-K 相关行为；ESU 把多模态相似度序列的 SimTier 直方图与 SA-TA 结合，后者将 ID 注意力分数与多模态相似度融合。框架自 2025 年年中起部署在淘宝展示广告排序阶段并承担大部分流量，同时开源了首个把超长行为序列与高质量多模态 embedding 配对的大规模公开数据集。
+core_idea|GSU 保持为冻结多模态 embedding 上的朴素余弦相似度，把复杂度预算花在 ESU 的相似度直方图与语义感知融合注意力上
+deployed_in|淘宝展示广告排序阶段
+scale_short|在最长 100K 次交互的行为序列上承担淘宝展示广告的大部分流量
+key_result|淘宝展示广告长期 A/B：对行为长度 5K 的生产 SIM 基线，CTR +12.6%、RPM +5.1%、ROI +11.4%
+results_reported|线上，7.5 节表 6：淘宝展示广告长期 A/B，MUSE 序列长度 100K 对基于 SIM、行为长度 5K 的生产基线，CTR +12.6%、RPM +5.1%、ROI +11.4%；自 2025 年年中部署以来承担大部分流量，见 5 节。离线，表 5，生产数据 GAUC、序列从 100K 截断到 5K：MUSE 0.6377，较 DIN 基线 0.6271 提升 +1.69%，高于 SIM-Hard 0.6351、SIM-Soft 0.6356、TWIN 0.6304 与 MISS 0.6308；开源数据集 1K 序列上，MUSE 0.6154，较基线 0.6082 提升 +1.18%。消融在生产数据上：表 1 中 GSU embedding 将 GAUC 从 ID embedding 的 0.6356 提到 SCL 的 0.6377，+0.33%；表 2 显示增加检索复杂度后 GAUC 只在 0.6369 到 0.6379 之间变动；表 3 中 ESU 设计从纯 Target Attention 的 0.6301 到 SA-TA 加 SimTier 的 0.6377，+1.21%；7.3 节图 5 报告序列从 5K 延长到 100K 时 GAUC +0.38%。
+serving_infra|部署在淘宝展示广告的排序阶段。GSU 的特征与 embedding 拉取从排序关键路径解耦：GSU 服务在 matching 阶段并行异步预取用户行为序列与多模态 embedding 并缓存进 GPU 显存，预取通常快于 matching，延迟完全被隐藏。排序阶段内相似度计算与 top-K 选择和其他特征处理并行，ESU 用 SimTier 与 SA-TA 产出最终 CTR 预估。
+stages.0.model_family|排序模型内的两段式终身兴趣建模：冻结 SCL embedding 上的余弦相似度 GSU，加上带 SimTier 直方图与 SA-TA 融合目标注意力的多模态增强 ESU
+stages.0.details|MUSE 位于排序阶段；GSU 预取在 matching 阶段异步执行，不占关键路径，top-K 选择与 ESU 在排序内运行。SimTier 把目标与行为的相似度序列在 -1 到 1 的范围内分成 N 档做直方图；SA-TA 以可学习标量把 ID 注意力分数与多模态相似度向量融合。
+id_tokenization.approach|冻结的多模态物品 embedding 加 ID embedding；不使用 Semantic ID
+id_tokenization.details|物品映射为查表访问的冻结预训练 embedding；对比预训练于 200M 图文对的 OpenCLIP 与共现 I2I 模型后选用 SCL。ESU 保留 ID embedding 承载协同信号；开源数据集为每个物品提供 128 维 SCL embedding。
+features_signals.0|目标物品与行为物品的冻结 SCL 多模态 embedding
+features_signals.1|目标物品与行为物品的 ID embedding
+features_signals.2|目标物品与召回行为之间的多模态余弦相似度序列
+features_signals.3|每个生产样本携带数百个工程特征
+training.mode|离线训练，实验数据集上训练一个 epoch
+training.objectives.0|二元点击标签上的 CTR 预估
+training.notes|各对比方法共享同一网络结构并训练一个 epoch；生产实验以六天曝光日志训练、最后一天测试。开源数据训练用 Adam，embedding 学习率 2.0e-3、DNN 参数 2.0e-4，batch size 8,000；GSU 召回 50 个行为，生产实验序列截断到 5,000、开源数据 1,000。SCL embedding 保持冻结。
+scale.0.metric|行为序列长度
+scale.0.value|线上最多 100K 次交互；生产离线实验截断到 5,000
+scale.1.metric|生产数据集
+scale.1.value|3.71B 样本、0.19B 用户、23.6B 个去重物品
+scale.2.metric|开源数据集
+scale.2.value|99.0M 样本、8.79M 用户、35.4M 个去重物品、最长序列 1K
+scale.3.metric|流量占比
+scale.3.value|自 2025 年年中起承担大部分流量
+results_table.online.0.setting|淘宝展示广告，长期 A/B
+results_table.online.1.setting|淘宝展示广告，长期 A/B
+results_table.online.2.setting|淘宝展示广告，长期 A/B
+results_table.offline.0.setting|生产数据，序列截断到 5K
+results_table.offline.1.setting|开源数据，最长序列 1K
+results_table.offline.2.setting|GSU 消融，SCL 对 ID embedding
+results_table.offline.3.setting|ESU 消融，SA-TA 加 SimTier
+results_table.online.0.versus|行为长度 5K 的生产 SIM 基线
+results_table.online.1.versus|行为长度 5K 的生产 SIM 基线
+results_table.online.2.versus|行为长度 5K 的生产 SIM 基线
+results_table.offline.0.versus|DIN 基线 0.6271
+results_table.offline.1.versus|DIN 基线 0.6082
+results_table.offline.2.versus|ID embedding 基线 0.6356
+results_table.offline.3.versus|Target Attention 基线 0.6301
+caveats.0|离线对比为加速实验把生产序列从 100K 截断到 5K，线上系统则运行 100K，见表 5 说明。
+caveats.1|线上测试仅描述为长期 A/B；论文未给出流量占比、分桶或时长。
+caveats.2|开源数据集统计在论文内部不一致：表 4 为 99.0M 样本、8.79M 用户、35.4M 个去重物品，而 6.2 节正文为 107M 样本、8.86M 用户、275M 个去重物品。
+caveats.3|SCL embedding 在训练与推理中均保持冻结，物品表示不随 CTR 任务更新；这是论文自己选择并推荐的设计。
+unknown_fields.0|A/B 流量占比、时长与分桶
+unknown_fields.1|训练算力与硬件
+unknown_fields.2|服务延迟、QPS 或成本数字
+unknown_fields.3|生产部署使用的 top-K 取值
+version_note|写卡读的是 arXiv 2512.07216 v1，首发于 2025-12-08 且仍是唯一版本；写卡时正式版全文尚不可读。会后逐数字复核正式版，复核后标记为已核对正式版。
+code.repos.0.owner|阿里妈妈 Alimama tech，论文作者团队
+code.repos.0.note|论文在 TaoBao-MM/MUSE 命名的官方 PyTorch 实现，现重定向到本仓库；含开源数据集的训练推理代码、配置与预处理。不含生产数据与 SCL embedding 训练流程。README 链接的 Hugging Face 数据集在 TaoBao-MM/Taobao-MM，而论文脚注写的是 Taobao-MM2，该页不可访问。
+deployment.scenario|淘宝展示广告排序阶段，建模最长 100K 次交互的终身行为序列；自 2025 年年中起部署并承担大部分流量
+deployment.baseline|基于 SIM、行为长度 5K 的生产基线
+deployment.serving_latency|增量延迟可忽略；GSU 拉取在 matching 期间异步进行并缓存进 GPU 显存，相似度与 top-K 选择与其他排序特征处理并行
+deployment.hardware|GSU embedding 缓存放在 GPU 显存；论文未指明具体加速卡型号
+deployment.notes.0|论文对线上测试仅描述为长期 A/B；未给出流量占比或时长。
+deployment.notes.1|离线实验为加速实验把生产序列从 100K 截断到 5K，线上系统运行 100K。

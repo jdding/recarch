@@ -1,0 +1,26 @@
+alt|从左到右：会员查询进入 Query Understanding 层；GPU 穷举检索用对比式 LLM 双塔编码器嵌入查询与文档，按属性预过滤，在最多 1.3B 文档上扫描并取前 1000，用 retrieval-as-ranking 打分；SLM 排序模型重排前 250，校准层输出全局与按位置条件的分数；分数进中间层，命中缓存直接返回，未命中由仅预填充推理引擎打分；排序结果再进业务逻辑与政策。搜索者上下文直接进入排序提示。
+caption.note|已简化；服务层跨列执行检索与排序各模块，Query Understanding 信号约束所有下游阶段。
+columns.0.label|输入
+columns.0.boxes.0.text.0|会员查询
+columns.0.boxes.0.text.1|自由文本加结构化筛选
+columns.0.boxes.1.text.0|搜索者上下文
+columns.0.boxes.1.text.1|资料、活动历史、强化学习训练的会员摘要
+columns.1.label|查询理解
+columns.1.boxes.0.text.0|Query Understanding 层
+columns.1.boxes.0.text.1|路由决策、归一化属性、查询改写
+columns.2.label|检索
+columns.2.boxes.0.text.0|GPU 穷举检索
+columns.2.boxes.0.text.1|对比式 LLM 双塔编码器，属性预过滤，最多 1.3B 文档，取前 1000，带个性化特征的 RAR 打分
+columns.3.label|排序
+columns.3.boxes.0.text.0|SLM 排序模型
+columns.3.boxes.0.text.1|多教师蒸馏，剪枝到 375M，MixLM 嵌入 token，重排前 250
+columns.3.boxes.1.text.0|校准层
+columns.3.boxes.1.text.1|全局与按位置条件的分数
+columns.4.label|服务
+columns.4.boxes.0.text.0|中间层
+columns.4.boxes.0.text.1|分数缓存命中率超 50%，打分深度控制，流量整形
+columns.4.boxes.1.text.0|仅预填充推理
+columns.4.boxes.1.text.1|SGLang，共享前缀缓存，分段 CUDA graph
+columns.5.label|输出
+columns.5.boxes.0.text.0|排序结果
+columns.5.boxes.0.text.1|相关性与互动分数，再进业务逻辑与政策

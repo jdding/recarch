@@ -1,0 +1,69 @@
+surface|一套生成式模型服务的高德搜索与推荐场景：首页 POI 推荐、数字资产 Explore Feed 与出行方式建议
+era_reason|以查询占位符统一搜索与推荐的自回归生成式序列模型，召回与排序都表述为条件生成；生成式技术栈本身是主角。
+tldr|IntSR 用查询占位符与时间对齐候选采样把搜索和推荐统一进一个自回归生成式模型；高德 A/B：GMV +9.34%、CTR +2.76%、ACC +7.04%。
+summary|IntSR 由阿里集团高德团队提出，是一个把搜索与推荐连同各自召回与排序子任务统一进单一自回归序列模型的生成式框架。论文观察到四类任务的差异只在查询如何构成：搜索以冻结的 Qwen3-0.6B LLM 嵌入显式自然语言请求，推荐召回用共享通用 token，排序则把目标候选物品填进查询占位符。基于 HSTU 的 Query-Driven Block 对查询占位符单独计算注意力，配合因果、会话内与非法 Q 三种掩码；KV cache 两阶段计算把排序复杂度从 O[c'N^2] 降到 O[c'J[N+1]]；DSFNet 把时空上下文、页面上下文、任务标签和用户画像转成多场景权重。由于工业语料随时间变化，时间对齐候选采样把负例限制在交互时刻已存在的物品上，论文对其应用的三种主流采样策略都有提升。IntSR 已部署在高德生产的 POI、数字资产与出行方式场景，服务数亿日活用户，多个核心组件在全量规模稳定运行超过 6 个月。
+core_idea|一个自回归模型靠查询占位符同时服务搜索与推荐，用时间对齐候选采样解决语料随时间变化的问题。
+deployed_in|高德首页 POI 推荐、数字资产 Explore Feed 与出行方式建议，服务数亿日活用户
+scale_short|服务数亿日活用户，覆盖 POI、数字资产与出行方式场景
+key_result|线上 A/B 对比生产基线模型、对照组 10% 用户：数字资产 GMV +9.34%、POI 推荐 CTR +2.76%、出行方式 ACC +7.04%
+results_reported|线上 A/B 见 4.5 节，对照组为 10% 用户、路由到生产基线模型：高德数字资产 Explore Feed 的 GMV 相对提升 +9.34%，高德首页 POI 推荐 CTR 相对提升 +2.76%，出行方式建议 ACC 提升 +7.04%。部署背景见第 1 节：已部署于 POI、数字资产与出行方式场景，服务数亿日活用户，多个核心组件在全量规模稳定运行超过 6 个月。离线见表 1 与表 2，Amazon Kindle Store 与 KuaiSAR，每用户 99 个随机负例。搜索任务表 1 Amazon：IntSR HR@1 0.5678、HR@5 0.8266、N@5 0.7091、N@10 0.7305，对比 UniSAR HR@1 0.5343；KuaiSAR：IntSR HR@1 0.5685、HR@5 0.7950、HR@10 0.8516、N@5 0.6945、N@10 0.7128，对比 UniSAR 0.5282；Amazon 搜索 HR@10 上 TEM 与 CoPPS 达 0.9051、UniSAR 达 0.8977，高于 IntSR 的 0.8920。推荐任务表 2：IntSR 在 Amazon HR@1 0.3740 对 HSTU 0.3446 与 UniSAR 0.3010，在 KuaiSAR 0.2179 对 UniSAR 0.1990 与 HSTU 0.1881。时间对齐候选采样见表 3，高德数字资产、20 个负例：对齐采样让每种策略的 HR@1 都提升，RNS 从 0.1426 到 0.1810，PNS 最优 0.1430 到 0.1760，HNS 从 0.1569 到 0.1842，对齐后的 HNS 综合最优，HR@1 0.1842、HR@5 0.4305、HR@10 0.5601、N@5 0.3112、N@10 0.3533。消融见表 4 Amazon：去掉会话内掩码使搜索 HR@1 从 0.5678 跌到 0.2024，跌幅最大；去掉搜索词使搜索 HR@1 降到 0.4023、推荐 HR@1 降到 0.3325；去掉 DSFNet、相对偏置和场景 token 的搜索 HR@1 分别为 0.5560、0.5050 和 0.5516。
+serving_infra|部署在高德生产的 POI、数字资产与出行方式场景，服务数亿日活用户，多个核心组件在全量规模稳定运行超过 6 个月。排序推理用 KV cache 两阶段候选 logit 计算，论文称把排序注意力复杂度从 O[c'N^2] 降到 O[c'J[N+1]]；未公布延迟或吞吐数字。
+stages.0.model_family|基于 HSTU 的 Query-Driven Block 堆栈加 DSFNet 多场景模块；冻结的 Qwen3-0.6B 嵌入自然语言搜索词
+stages.0.details|查询占位符标记需要预测的位置：用户搜索请求、正负目标物品集合，或一个共享通用 token。注意力对原序列与查询序列分开计算，带位置与 ALiBi 时间相对偏置和 SiLU 门控。掩码组合因果、会话内与非法 Q 三项，使离线训练与线上服务一致。公开实验堆 3 个 QDB、嵌入维度 32；工业数字资产模型用 3 个 QDB、序列长度 500、嵌入维度 128。
+id_tokenization.approach|物品 ID 嵌入并稠密融合多模态信息；无 Semantic ID
+id_tokenization.details|物品以 token 形式进入序列，其嵌入融合多模态信息；论文的重心是时变词表：负采样被限制在交互时刻可用的物品集合内，使正样本只与同时存在的负例比较。
+features_signals.0|时空场景 token：geohash 编码位置与离散化时间
+features_signals.1|表示购买、点击等交互类型的反馈 token
+features_signals.2|自然语言搜索词加查询池：物品描述与改写、关键词和模拟用户搜索习惯的表达，由冻结的 Qwen3-0.6B 嵌入
+features_signals.3|页面上下文、搜索与推荐任务标签和用户画像，供 DSFNet 生成场景权重
+training.mode|监督自回归训练；公开数据集实验为离线，生产侧按流式训练时间切片描述
+training.objectives.0|四类任务的条件生成：推荐召回与排序、搜索召回与排序
+training.objectives.1|带时间对齐候选的 InfoNCE 损失，负例限于交互时刻可用的物品
+training.notes|公开数据集：学习率 1e-3、batch 32、每用户 99 个随机负例、每动作可见 30 条历史行为；Amazon Kindle Store 有 68223 用户与 61934 物品，KuaiSAR 有 22700 用户与 673415 物品，见表 6。工业数字资产模型：Adam 学习率 1e-4、batch 64，在 8 张 96 GB 显存的 NVIDIA H20 GPU 上训练，序列长度 500、嵌入维度 128，DSFNet 设 2 个场景、3 层，见附录 F。表 3 用 20 个负例。
+scale.0.metric|部署
+scale.0.value|高德生产的 POI、数字资产与出行方式场景，服务数亿日活用户；多个核心组件在全量规模稳定运行超过 6 个月
+scale.1.metric|线上 A/B 对照
+scale.1.value|随机选 10% 用户作对照组，路由到生产基线模型
+scale.2.metric|工业数据集
+scale.2.value|高德数字资产：5200 万用户、819 个物品，人均交互均值 12、中位数 2
+scale.3.metric|公开数据集
+scale.3.value|Amazon Kindle Store 68223 用户与 61934 物品；KuaiSAR 22700 用户与 673415 物品
+scale.4.metric|工业训练配置
+scale.4.value|8 张 96 GB 显存的 NVIDIA H20 GPU，Adam 学习率 1e-4，batch 64，序列长度 500，嵌入维度 128，3 层 QDB，DSFNet 2 个场景 3 层
+results_table.online.0.setting|高德数字资产 Explore Feed，线上 A/B
+results_table.online.1.setting|高德首页 POI 推荐，线上 A/B
+results_table.online.2.setting|出行方式建议，线上 A/B
+results_table.offline.0.setting|Amazon Kindle Store 搜索任务，每用户 99 个随机负例
+results_table.offline.1.setting|KuaiSAR 搜索任务，每用户 99 个随机负例
+results_table.offline.2.setting|Amazon Kindle Store 推荐任务，每用户 99 个随机负例
+results_table.offline.3.setting|KuaiSAR 推荐任务，每用户 99 个随机负例
+results_table.offline.4.setting|高德数字资产数据集，HNS 负采样加时间对齐候选采样
+results_table.online.0.versus|生产基线模型
+results_table.online.1.versus|生产基线模型
+results_table.online.2.versus|生产基线模型
+results_table.offline.0.versus|=
+results_table.offline.1.versus|=
+results_table.offline.2.versus|=
+results_table.offline.3.versus|=
+results_table.offline.4.versus|无时间对齐的 HNS 0.1569
+results_table.note|表 1 与表 2 中带剑号的基线数字直接引自原论文。IntSR 在多数但非全部指标上最优：Amazon 搜索 HR@10 上 TEM 与 CoPPS 达 0.9051、UniSAR 达 0.8977，IntSR 为 0.8920。
+caveats.0|论文只主张多数指标上最优而非全部：Amazon 搜索 HR@10 上 TEM 与 CoPPS 达 0.9051、UniSAR 达 0.8977，IntSR 为 0.8920，见表 1。
+caveats.1|线上 A/B 只给相对提升与 10% 对照组流量，未给绝对值、持续时间或显著性水平。
+caveats.2|论文说明表 6 的数据统计经预处理与过滤，不应解读为真实用户群体或全部物品语料的反映。
+caveats.3|Amazon Kindle Store 的搜索词与行为按 Ai 等 2017 的方法由推荐行为合成，论文用掩码机制避免训练与推理时的标签泄漏；KuaiSAR 在 5-core 过滤后搜索行为稀疏，论文先以推荐损失训练再用搜索损失微调。
+unknown_fields.0|A/B 持续时间、实验组流量与显著性水平
+unknown_fields.1|线上指标的绝对值，只报告了相对提升
+unknown_fields.2|生产环境的延迟与 QPS
+unknown_fields.3|公开数据集实验的训练算力
+unknown_fields.4|各场景的全量上线时间
+code.repos.0.owner|高德团队的 AMAP-ML GitHub 组织
+code.repos.0.note|同一研究系列的官方仓库；其中说明 IntSR 本体尚未开源，当前包含同系列的 IntTravel、IntHQ、IntRR 与 IntBMoE，不含 IntSR 实现。
+version_note|读的是 arXiv 2509.21179 v2，2025-09-26 版本。CIKM 2026 正式版标题不同，为 IntSR: A Deployed Generative System for Integrated Search and Recommendation at Amap；其 DOI 10.1145/3799682.3840093 已于 2026-11-03 在 Crossref 核对，页码 8671-8678，但写卡时正式版全文尚不可读。会后请将所有数字对照 ACM 正式版复核，再把卡片标记为已对照正式版检查。
+deployment.scenario|高德三类产品场景：数字资产 Explore Feed、首页 POI 推荐与出行方式建议；生产部署覆盖 POI、数字资产与出行方式，服务数亿日活用户
+deployment.ab_traffic|对照组为随机选出的 10% 用户，路由到生产基线模型
+deployment.baseline|生产基线模型
+deployment.training_compute|工业数字资产模型以 Adam 学习率 1e-4、batch 64 在 8 张 96 GB 显存的 NVIDIA H20 GPU 上训练；公开实验为学习率 1e-3、batch 32
+deployment.hardware|论文给出工业训练用 8 张 96 GB 显存的 NVIDIA H20 GPU；服务硬件未描述
+deployment.notes.0|线上提升为相对值；只给出 10% 对照流量，无持续时间与显著性水平。
+deployment.notes.1|排序注意力对查询占位符分离计算并配 KV cache，复杂度从 O[c'N^2] 降到 O[c'J[N+1]]；论文未给绝对延迟或成本数字。
+deployment.notes.2|会话内掩码保证离线训练与线上服务一致，使系统能在用户进入页面时直接预测购买而无需先前的浏览点击。

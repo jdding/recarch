@@ -1,0 +1,83 @@
+surface|LinkedIn AI Job Search 与 AI People Search 的检索与排序
+era_reason|从 LLM 相关性裁判到蒸馏出的 SLM 排序模型再到仅预填充的 LLM 推理设施，全栈以 LLM 为中心。
+tldr|LinkedIn 把 LLM 相关性与互动教师蒸馏进紧凑的 SLM 排序模型服务 Semantic Search；Job Search NDCG@10 +7.73%，Poor Match Rate@10 -46.88%，上线后 DAU 超 +1.2%。
+summary|Semantic Search 是 LinkedIn 面向 AI Job Search 与 AI People Search 的基于 LLM 的搜索栈。Query Understanding 层把短查询转成确定性信号；8B 相关性 oracle 裁判在 SAGE 评估框架治理下为训练数据打分级相关性标签，并监督检索与排序。检索在带属性预过滤的 GPU 穷举栈上跑对比式 LLM 双塔编码器，语料最多 1.3B 文档，取前 1000 候选；GPU retrieval-as-ranking 打分加入个性化与互动特征，在 People Search 中把原来按网络距离拆分的多条检索路径并为一次检索调用。生产排序模型是 0.6B decoder-only SLM，重排前 250 条结果，从相关性特化模型热启动，经多教师蒸馏从相关性与互动教师联合蒸馏，再剪枝到 375M 参数，以 MixLM 文本-嵌入混合输入部署在已开源进 sglang 项目的仅预填充打分优化推理栈上。上线后 Job Search NDCG@10 提升 +7.73%，Poor Match Rate@10 下降 -46.88%，People Search NDCG@10 提升超过 10%，系统上线以来带来 +1.2% 以上的 DAU 提升。
+core_idea|把相关性与互动教师蒸馏进一个紧凑的 SLM 排序模型，用仅预填充的 GPU 推理服务，让基于 LLM 的语义搜索能在生产规模运行。
+deployed_in|LinkedIn AI Job Search 与 AI People Search 的检索与排序
+scale_short|检索最多 1.3B 文档，生产重排前 250 条，MixLM 在 500 毫秒预算下每秒每 GPU 22000 条
+key_result|上线后 DAU 超 +1.2%；Job Search NDCG@10 +7.73%，Poor Match Rate@10 -46.88%，对比此前的 DLRM 风格基线
+results_reported|线上见 3 节：对比此前的 DLRM 风格排序基线，Job Search NDCG@10 提升 +7.73%，Poor Match Rate@10 即 PMR@10 降低 -46.88%；People Search NDCG@10 提升超过 10%；上线以来 Semantic Search 带来 +1.2% 以上的 DAU 提升。服务运营见 2.5.5 节：超过 50% 的打分请求由分布式缓存直接服务，中位与平均延迟降低约 8-10%；中间层重试策略增加约 10% 吞吐；Dynamic Scoring Depth 控制器在高峰把平均打分深度从 250 降到 130，每查询 GPU 计算省 48%；流量整形把有效 GPU 吞吐提高约 25%。离线排序质量：Job Search 仅相关性学生 SLM 从 ordinal 标签 SFT 的 NDCG@10 0.7583 出发，经软标签蒸馏、chat 模板、排序损失、0.6B 底座升级、相关性教师蒸馏与 40× 数据量达到 0.9432，加职位描述摘要加模型剪枝后为 0.9218，见表 1；多教师蒸馏学生 NDCG@10 达 0.9150，对其相关性教师为 0.9484，见表 5；按位置条件的校准把 Click AUROC 从 0.6704 提到 0.7095，见 2.1.4 节。检索见表 8：4B 微调双塔编码器 NDCG@50 达 0.834，对比 8B 全参数变体 0.842；People Search 中 GPU RAR 把 Click AUC 提升 +1.7%，从 0.595 到 0.603，相关性 NDCG@10 提升 +1.28%，从 0.78 到 0.79，见 2.2.5 节。单张 H100 上固定 500 毫秒延迟预算的吞吐：全文 SLM 每秒每 GPU 290 条，摘要加剪枝 2200 条即 7.5×，MixLM 每秒每 GPU 22000 条、NDCG@10 0.9239，约为摘要模型的 10×、约为原文模型的 76×，见 2.3.3 节，摘要写的是超过 75×；推理栈单独把 375M 剪枝排序模型从每秒每 GPU 750 条扩到 2200 条，累计 2.93×，见表 10、12 与 13。
+serving_infra|在 SGLang 上做打分优化的仅预填充推理，并已开源进 sglang 项目：单次前向、无解码无采样、只返回末位 token logits；批内前缀缓存与 Multi-Item Scoring 摊销共享查询前缀；分段 CUDA graph 执行；多进程 gRPC 服务并用 gc.freeze 稳住尾延迟；为 MixLM 嵌入 token 提供原生混合输入推理。中间层把已打分实体 ID 缓存进分布式 Couchbase 存储，用重试执行延迟预算，用基于 PID 的控制器按查询调整打分深度，并把流量整形进空闲窗口。检索服务把查询与文档双塔部署在带属性预过滤的 GPU 穷举栈上，降低嵌入维度，支持双槽多模型部署做受控 A/B 灰度。
+stages.0.model_family|对比式 LLM 双塔编码器嵌入，由 GPU retrieval-as-ranking 距离模型打分，部署在带属性预过滤的 GPU 穷举检索栈上
+stages.0.details|检索从最多 1.3B 文档的语料中取前 1000 候选。GPU RAR 用个性化与互动特征对全语料打分并联合优化相关性与互动；在 People Search 中它把原来按不同网络距离分开调用的多条生产检索路径并为一次检索调用。
+stages.1.model_family|decoder-only SLM 重排器，学生 0.6B、剪枝到 375M 参数，由 8B 相关性 oracle 教师与 1.7B 多任务互动教师经多教师蒸馏得到
+stages.1.details|对结构化提示做逐点打分：系统前缀加共享搜索者上下文加候选文档加后缀。模型输出末位 token 的 Yes/No 相关性概率与互动分数，再由带全局概率和 25 个排名位条件向量的后处理校准层校准。生产环境重排检索返回的前 250 条。
+id_tokenization.approach|结构化原文提示与嵌入表示，没有物品 ID 或 Semantic ID
+id_tokenization.details|候选由结构化属性加精选文本表示，如职位名称、公司、地点、资历与 curated text，放进 chat 模板提示；相关性从末位 token 的 Yes/No logits 读出。检索用双塔嵌入的余弦相似度打分。MixLM 用专用编码器把大部分物品文本替换为近线缓存的习得嵌入 token。
+features_signals.0|Query Understanding 输出：路由决策、归一化属性与查询改写，全阶段共享
+features_signals.1|提示前缀中的共享搜索者上下文：搜索者资料与互动
+features_signals.2|由强化学习训练的摘要器生成的会员摘要，覆盖资料、职业内容、搜索活动与历史查询
+features_signals.3|会员文本特征，如 headline、过往职位与地点
+features_signals.4|活动历史文本，如会员最近互动的 10 个职位标题
+features_signals.5|数值特征，如共同人脉数、网络距离与带显式点击和曝光的历史 CTR，截断到 2 位小数
+features_signals.6|GPU RAR 打分用的网络邻近度与资料热度特征
+features_signals.7|互动动作标签：Job Search 为 click、apply、badfit、shortlist、dismiss；People Search 为 long dwell、connect、follow、message
+training.mode|离线多阶段训练：先训任务特化教师，再经多教师蒸馏得到学生；摘要模型用强化学习训练
+training.objectives.0|相关性蒸馏：oracle 等级映射出的软标签 Yes/No 目标，加 listwise 成对排序损失
+training.objectives.1|多任务互动分类，Job Search 五个动作或 People Search 四个动作，用对教师分布的加权 KL 散度
+training.objectives.2|检索：双塔编码器的全局 InfoNCE 加成对间隔损失，GPU RAR 打分对相关性与互动标签做多任务 BCE
+training.objectives.3|摘要器用 GRPO 训练，奖励合并动作预测、长度惩罚与事实性得分
+training.notes|标注数据量为 People Search 扩到 10×、Job Search 扩到 40×，后者从 200k 到 8M 查询-文档对，此后继续加大数据不再有相关性收益。互动教师自定义损失权重为 click 0.4、apply 0.4、badfit 0.05、shortlist 0.05、dismiss 0.1。摘要器用开源 1.7B 模型做 actor，互动教师做奖励模型，事实性得分来自 32B 模型。训练设施：LiGer 支持大 2× 的批量，多节点训练达 3.5× 加速，FSDP2 再加 20%，H200 集群再降最多 30%；FP8 对 8B 以下模型无收益。基于 SGLang 的在线多教师蒸馏加速 3×；离线缓存版省约 35% 训练时间与约 25% GPU 小时；GPU 优化 agent 把 MixLM 训练时间砍 13%，在 64 张 H100 上省 256 GPU 小时。
+scale.0.metric|语料
+scale.0.value|每次查询最多检索 1.3B 文档
+scale.1.metric|重排深度
+scale.1.value|生产环境由 SLM 重排前 250 条结果
+scale.2.metric|检索深度
+scale.2.value|每次查询前 1000 候选
+scale.3.metric|设计目标
+scale.3.value|数十万 QPS
+scale.4.metric|排序吞吐
+scale.4.value|MixLM 在单张 H100 上、固定 500 毫秒延迟预算下每秒每 GPU 22000 条
+scale.5.metric|评估裁判
+scale.5.value|SAGE 相关性评估每天数千万次
+results_table.note|Job Search 与 People Search 的质量收益来自 Online Deployment 一节；论文未说明是线上还是离线测得。
+results_table.online.0.setting|LinkedIn AI 求职搜索与 AI 人搜，自上线起
+results_table.online.0.versus|上线前水平
+results_table.offline.0.setting|求职搜索相关性学生模型消融
+results_table.offline.0.versus|序数标签 SFT 下为 0.7583
+results_table.offline.1.setting|MTD 学生模型初始化消融
+results_table.offline.1.versus|相关性教师 0.9484
+results_table.offline.2.setting|检索双编码器，求职搜索
+results_table.offline.2.versus|8B 全参数微调为 0.842
+results_table.offline.3.setting|单卡 H100 固定 500 ms 延迟预算
+results_table.offline.3.versus|全文 SLM 为 290
+results_table.offline.4.setting|固定 500 ms 延迟预算下的仅预填充推理栈
+results_table.offline.4.versus|未调优基线为 750，累计 2.93×
+results_table.other.0.setting|求职搜索，提升见线上部署一节
+results_table.other.0.versus|此前的 DLRM 式排序基线
+results_table.other.1.setting|求职搜索，提升见线上部署一节
+results_table.other.1.versus|此前的 DLRM 式排序基线
+results_table.other.2.setting|人搜，提升见线上部署一节
+results_table.other.2.versus|此前的 DLRM 式排序基线
+caveats.0|上线收益在 Online Deployment 一节给出，但没有实验设计细节；论文未给 A/B 流量占比、时长或置信区间。
+caveats.1|摘要写的是固定延迟约束下排序吞吐超过 75×，2.3.3 节写的是 MixLM 对原文 SLM 约 76×、对摘要 SLM 约 10×；两个比较的基线不同。
+caveats.2|表 10 中剪枝加摘要模型 NDCG@10 为 0.9218，对全文模型 0.9432，7.5× 吞吐收益伴随实测质量损失；MixLM 回到 0.9239。
+caveats.3|损失掩码按设计保持排序指标中性；论文报告带与不带掩码的排序差异不具统计显著性，同时稀有事件的预测分数升高。
+caveats.4|sglang 开源的是打分专用推理栈；训练好的排序模型与生产数据未发布。
+unknown_fields.0|上线收益的 A/B 流量占比、时长与实验设计
+unknown_fields.1|实测线上 QPS 与端到端绝对服务延迟
+unknown_fields.2|相关性教师参数量与服务集群规模
+unknown_fields.3|嵌入维度取值
+unknown_fields.4|总训练算力
+version_note|读的是 arXiv 2602.07309 v1，目前唯一版本，2026 年二月七日提交。ACM CIKM 2026 记录 DOI 10.1145/3799682.3840152、页码 8178-8186 已在 Crossref 核对，但制卡时正式版全文还读不到。会后请对照 ACM 正式版复核每个数字，再把卡标记为已对照正式版核对。
+code.repos.0.owner|SGLang 项目，含 LinkedIn 的打分专用推理贡献
+code.repos.0.note|论文脚注说明打分专用 LLM 推理栈已开源进 sglang；训练好的排序模型与生产数据不在其中。
+deployment.scenario|LinkedIn AI Job Search 与 AI People Search：GPU 穷举嵌入检索加 SLM 重排前 250 条结果，自上线起服务生产流量
+deployment.baseline|此前的 DLRM 风格排序基线，即 LiRank 排序模型，DCNv2 加 TransAct 加 GNN
+deployment.training_compute|教师与学生训练用多节点 H200 集群；GPU 优化 agent 单独把 MixLM 训练时间砍 13%，在 64 张 H100 上省 256 GPU 小时
+deployment.serving_latency|效率测量统一用固定 500 毫秒延迟预算；全文 290、摘要加剪枝 2200、MixLM 22000 条每秒每 GPU，推理栈按 p99 不超过 500 毫秒调优
+deployment.serving_qps|论文将系统表述为可在数十万 QPS 规模可行
+deployment.inference_cost|按摘要，固定延迟下排序吞吐超过 75×；MixLM 约为摘要 SLM 的 10×、约为原文 SLM 的 76×；缓存直接服务超过 50% 的打分请求，中位与平均延迟降约 8-10%；重试策略约 10% 吞吐；高峰打分深度从 250 降到 130，每查询 GPU 计算省 48%；流量整形约 25% 有效 GPU 吞吐
+deployment.hardware|效率测量用单张 H100；训练用多节点 H200 集群
+deployment.notes.0|摘要写超过 75×，2.3.3 节写对原文 SLM 约 76×，两个数字按各自出处保留。
+deployment.notes.1|上线质量收益未给实验设计细节；论文未给 A/B 流量占比与时长。

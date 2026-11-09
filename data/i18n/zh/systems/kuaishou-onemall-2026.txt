@@ -1,0 +1,57 @@
+surface|快手电商商品卡、短视频、直播物品分发场景的端到端生成式检索
+era_reason|以业务感知语义 ID 分词器、decoder 风格 Sparse MoE 主干和排序奖励 RL 后训练构成自回归生成式检索；生成式技术栈本身是主角。
+tldr|OneMall 用业务感知语义 ID 分词器加 Sparse MoE 解码器与排序奖励 RL 统一快手电商检索；A/B 使 GMV 最高提升 +14.71%，服务超 4 亿日活。
+summary|OneMall 是快手面向电商的端到端生成式推荐框架，把商品卡、短视频、直播的物品分发场景统一进一条对齐 LLM 预训练与后训练范式的训练管线。分词器在 QARM 的 Res-Kmeans 基础上加 FSQ 末层，把微调 LLM 产出的物品向量量化成三级语义 ID；商品卡只量化商业向量，短视频拼接商业与观看向量，直播物品因在售商品随时间变化而改用双塔物品塔向量量化，并把实时在售商品语义 ID 作为附加特征。主干用 Query-Former 压缩曝光、点击、购买序列，经 Cross-Attention 融合，再由 decoder 风格 Sparse MoE Transformer 生成语义 ID，线上部署 0.5B 总参数、0.1B 激活。RL 管线把线上排序模型当奖励模型，融合其 CTR、CTCVR、EGPM 打分，用 DPO 与 GRPO 优化检索器。系统已部署，服务超 4 亿日活用户。
+core_idea|把物品编码成业务感知的三级语义 ID，用 Sparse MoE 解码器生成候选，再以排序模型奖励经 DPO 与 GRPO 训练检索器。
+deployed_in|快手电商的商品卡、短视频、直播场景候选生成
+scale_short|服务超 4 亿日活，覆盖商品卡、短视频、直播场景
+key_result|线上 A/B GMV：商品卡 +14.71%，短视频 +10.33%，直播 +4.90%，已部署服务超 4 亿日活
+results_reported|部署：OneMall 服务快手电商商品卡、短视频、直播场景，日活超 4 亿，见摘要与第 1 节。线上 A/B 见表 3 与 4.3 节：商品卡曝光 +2.851%、点击 +13.01%、订单 +8.35%、GMV +14.71%；短视频曝光 +15.32%、点击 +5.76%、订单 +11.65%、GMV +10.33%；直播曝光 +2.78%、点击 +2.53%、订单 +4.47%、GMV +4.90%；摘要将其 GMV 写成 +14.7%、+10.3%、+4.9%。电商短视频场景的离线缩放验证见表 1 与 4.1 节：从 0.05B 到 1.3B-A0.1B，Acc-SID1/2/3 由 14.5%/43.9%/61.0% 升到 16.2%/51.7%/71.7%，HR@50/100/500 由 32.9%/41.3%/60.5% 升到 45.6%/57.3%/76.0%，其中 0.1B 稠密到 0.5B-A0.1B 稀疏的跃迁提升最大，HR@50 提升 10%，即 34.7% 到 44.7%。0.5B-A0.1B 在回放流量上的仿真对比见表 2，各方法输入特征相同：商品卡上 OneMall 达 34.3%/40.9%/59.3%，对 SASRec-0.5B-A0.1B 的 23.2%/30.4%/45.1% 与 TIGER-0.5B-A0.1B 的 29.5%/37.1%/53.7%；短视频上 44.7%/56.0%/74.2%，对 30.2%/41.9%/66.3% 与 35.1%/47.8%/72.5%；直播上 65.9%/69.1%/80.5%，对 53.9%/58.8%/68.4% 与 57.3%/63.5%/73.7%。RL 消融见表 4：在 Top10/100/500 上 GRPO 都好于 DPO 与 Base，如 Top10 CTR 为 GRPO 7.874%、DPO 7.834%、Base 7.816%，GRPO 对 DPO 在 Top10 带来 +0.040% CTR、+0.012% CTCVR、+0.228% GPM。0.3B-A0.1B 上的分词器消融见表 5：ResKmeansFSQ 把码冲突从 36% 降到 11%，独占码从 86% 升到 95%；辅助对比损失在 HR@50/100/500 上再加 +1.5%/+1.7%/+1.7%。Query-Former 消融见表 6：压到 SeqLen 160、每样本 9.2 GFLOPs 时，命中率只比 SeqLen 1205、34.4 GFLOPs 的版本差 +0.5%/+0.3%/+0.4%。批内对比任务 accuracy@1 超 98%，故线上推理只用 beam search，见 3.2 节。
+serving_infra|服务商品卡、短视频、直播场景的候选生成；线上推理只跑 beam search，因对比任务 accuracy@1 超 98%。论文以线上服务算力受限为由把激活参数上限压到 0.1B；延迟、吞吐与硬件数字均未给出。
+stages.0.model_family|Decoder 风格 Sparse MoE Transformer，配 Query-Former 序列压缩、Cross-Attention 多行为融合与因果自注意力；线上部署 OneMall-0.5B-A0.1B，12 个专家取 2 个，beam search 解码三级语义 ID
+stages.0.details|Query-Former 按行为各压一条序列，查询 token 数约 10、输入长度约 500、维度约 128；Cross-Attention 把压缩后的兴趣融进语义 ID 查询状态；Sparse MoE 解码器用 loss-free 机制做专家负载均衡，0.5B-A0.1B 配 12/2 专家、1.3B-A0.1B 配 24/2 专家
+id_tokenization.approach|三级语义 ID：两层 Res-Kmeans 加一层 16 比特 FSQ、末层 4096 码，量化对象是 LLM 对齐的物品向量，沿 QARM 的 Res-Kmeans 扩展成 ResKmeansFSQ
+id_tokenization.details|物品向量来自用商业 Item2Item 语料与观看 Item2Item 语料做 InfoNCE 对比微调的 LLM，视觉编码用 Swin-Transformer、文本编码用 Qwen2.5 1.5B，ViT 冻结。商业语料抽样时单物品出现不超过 40 次，共 7000 万样本；观看语料共 1200 万样本。商品卡只量化商品向量；短视频拼接商品与视频向量；直播物品量化双塔物品塔向量，实时在售商品语义 ID 作附加特征，物品塔用更低学习率。表 5 显示 ResKmeansFSQ 把码冲突从 36% 降到 11%
+features_signals.0|曝光、点击、购买行为序列，各由一个 Query-Former 压缩
+features_signals.1|物品侧属性，如商品类目、价格、店铺信息，进物品塔做辅助对比任务
+features_signals.2|分词器的多模态输入：商品主图 224*224 加标题；短视频抽 6 帧画面 224*224 加标题、OCR 与 ASR
+features_signals.3|直播物品的实时在售商品语义 ID 附加特征
+features_signals.4|排序模型输出的 CTR、CTCVR、EGPM 融合成 RL 奖励
+training.mode|先下一 token 预测预训练、再 RL 后训练，流式训练，整体对齐 LLM 预训练加后训练范式；线上排序模型充当奖励模型
+training.objectives.0|自回归下一物品语义 ID 生成为主目标
+training.objectives.1|双塔式批内对比任务作辅助目标，用最终语义 ID 状态对物品向量，accuracy@1 超 98%
+training.objectives.2|以融合排序奖励为信号做 DPO 与 GRPO 策略优化，损失权重为 NTP 加 0.5 倍 RL
+training.notes|RL 抽 2% 训练流量、beam size 768；奖励融合权重 CTR 1.0、CTCVR 30.0、EGPM 1.0；专家负载均衡用 loss-free 机制；总损失为 NTP 加对比再加 0.5 倍 RL
+scale.0.metric|部署
+scale.0.value|快手电商商品卡、短视频、直播场景，日活超 4 亿
+scale.1.metric|模型容量
+scale.1.value|部署代际从 0.05B 到 1.3B 总参数，激活参数受线上算力约束压在 0.1B，靠 Sparse MoE 扩容
+scale.2.metric|分词器语料
+scale.2.value|商品卡商业语料 7000 万条 Item2Item 样本；短视频观看语料 1200 万条样本
+results_table.online.0.setting|快手电商线上 A/B，商品卡场景
+results_table.online.0.versus|A/B 对照组，论文未描述
+results_table.online.1.setting|快手电商线上 A/B，短视频场景
+results_table.online.1.versus|A/B 对照组，论文未描述
+results_table.online.2.setting|快手电商线上 A/B，直播场景
+results_table.online.2.versus|A/B 对照组，论文未描述
+results_table.offline.0.setting|电商短视频缩放验证，0.05B 到 1.3B-A0.1B
+results_table.offline.0.versus|对 OneMall-0.05B 的 32.9% / 60.5%
+results_table.offline.1.setting|回放线上流量，商品卡，0.5B-A0.1B
+results_table.offline.1.versus|对 SASRec-0.5B-A0.1B 的 23.2% / 45.1%；TIGER-0.5B-A0.1B 的 29.5% / 53.7%
+results_table.offline.2.setting|回放线上流量，直播，0.5B-A0.1B
+results_table.offline.2.versus|对 SASRec-0.5B-A0.1B 的 53.9% / 68.4%；TIGER-0.5B-A0.1B 的 57.3% / 73.7%
+results_table.other.0.setting|RL 消融，Top10 beam 段，论文未注明属线上还是离线测量
+results_table.other.0.versus|对 Base 7.816%；DPO 7.834%
+results_table.note|表 4 的 RL 消融按 Top10、Top100、Top500 分段报告 CTR、CTCVR、GPM 与 Reward，GRPO 每段都领先 DPO 与 Base。表 5 在 0.3B-A0.1B 上把码冲突从 36% 降到 11%，辅助对比损失再加 +1.5%/+1.7%/+1.7% 的 HR；表 6 把 GFLOPs 从 34.4 降到 9.2，命中率只差 +0.5%/+0.3%/+0.4%。A/B 流量占比、时长与对照臂配置均未报告。
+caveats.0|论文未指名线上对照臂，也没给 A/B 流量占比与时长。
+caveats.1|表 4 未注明 CTR、CTCVR、GPM 与 Reward 数字属离线还是线上测量。
+caveats.2|论文没有 Limitations 章节；结论列出统一检索与排序、文本推理、多业务共享主干等未来工作。
+unknown_fields.0|线上 A/B 流量占比、测试时长与对照臂配置
+unknown_fields.1|服务延迟、吞吐与硬件
+unknown_fields.2|训练算力
+version_note|读的是 arXiv 2601.21770 v2，2026-02-02 发布，全文取自 arXiv HTML 渲染，摘要、表 3 和第 4 节另对照 v2 PDF 抽查。ACM 正式版已在 Crossref 注册，DOI 10.1145/3799682.3840095，页码 8768-8775，但会前拿不到正式版全文。会后逐个数字对照 ACM 正式版复核，再把卡标记为已对照正式版核对。arXiv v2 的 abs 页仍显示 v1 摘要，其商品卡 GMV +13.01%、短视频 Orders +15.32%、直播 Orders +2.78% 对应表 3 的其他格子；v2 摘要与正文给的是 GMV +14.7%、+10.3%、+4.9%，本卡以 v2 全文为准。
+code.note|查过论文正文与 GitHub，论文未提及开源，2026-11-03 为止也未找到值得记录的第三方实现。
+deployment.scenario|服务快手电商商品卡、短视频、直播场景的端到端生成式检索，已部署，日活超 4 亿
+deployment.notes.0|论文以线上服务算力受限为由把激活参数压到 0.1B，总参数靠 Sparse MoE 扩到 1.3B。
+deployment.notes.1|表 6 消融中 Query-Former 压缩把每样本 GFLOPs 从 34.4 降到 9.2，论文称其为每样本计算开销；服务开销、延迟与吞吐未给出。
+deployment.notes.2|RL 管线抽 2% 训练流量、beam size 768；A/B 流量占比与时长未给出。

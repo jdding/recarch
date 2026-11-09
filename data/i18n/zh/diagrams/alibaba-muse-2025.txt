@@ -1,0 +1,21 @@
+alt|从左到右：每位用户最长 100K 条行为的终身历史，连同物品 ID embedding 与查表取到的冻结 SCL 多模态 embedding，进入在 matching 阶段异步预取并缓存于 GPU 显存的 GSU；GSU 按余弦相似度打分并保留 top-K；ESU 把相似度序列压成 SimTier 直方图，并把多模态相似度经可学习标量融合进作用在 ID embedding 上的 SA-TA 目标注意力；两路输出拼接成终身兴趣表示，送入 CTR 预估塔。
+caption.fig|图 1
+caption.note|简化版；论文对比的备选 embedding OpenCLIP 与 I2I，以及图 4 的异步部署，只在 GSU 框内概括。
+columns.0.label|输入
+columns.1.label|GSU
+columns.2.label|ESU
+columns.3.label|输出
+columns.0.boxes.0.text.0|终身行为历史
+columns.0.boxes.0.text.1|每位用户最多 100K 条行为
+columns.0.boxes.1.text.0|冻结 embedding
+columns.0.boxes.1.text.1|查表取 SCL 多模态向量，另有物品 ID embedding
+columns.1.boxes.0.text.0|异步预取
+columns.1.boxes.0.text.1|在 matching 阶段执行，缓存于 GPU 显存
+columns.1.boxes.1.text.0|余弦相似度取 top-K
+columns.1.boxes.1.text.1|轻量内积，无学习打分器
+columns.2.boxes.0.text.0|SimTier
+columns.2.boxes.0.text.1|相似度序列压成 N 档直方图
+columns.2.boxes.1.text.0|SA-TA
+columns.2.boxes.1.text.1|ID 目标注意力经可学习标量融合多模态相似度
+columns.3.boxes.0.text.0|CTR 预估
+columns.3.boxes.0.text.1|拼接的终身兴趣表示送入预估塔
