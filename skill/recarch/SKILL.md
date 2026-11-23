@@ -11,6 +11,7 @@ The RecArch Q&A and this skill are not affiliated with the paper authors and do 
 
 ## Ways to query
 
+<!-- MCP_LIVE_START -->
 1. MCP server, read-only, no sign-in: `https://mcp.recarch.example/mcp` over Streamable HTTP. Tools:
    - `search_cards`: keyword search. Arguments: `query` (string), optional `lang` (`zh` or `en`), optional `limit`. Returns ids, names and one-line summaries. An empty result list means RecArch has no matching card.
    - `get_card`: arguments `id`, optional `lang`. Returns the full card, including `facts`, each with a `source` field path.
@@ -22,6 +23,17 @@ The RecArch Q&A and this skill are not affiliated with the paper authors and do 
    - `cards.json`: structured data, `schema_version` 1.0.
 
 Pick the MCP server when it is connected, otherwise fetch `cards.json` or the `cards/<id>.md` file of the card you need.
+<!-- MCP_LIVE_END -->
+<!-- STATIC_ONLY_START -->
+Static files, no server or sign-in needed. Base URL `https://jdding.github.io/recarch/` for Chinese and `https://jdding.github.io/recarch/en/` for English:
+
+- `llms.txt`: compact index with one line per card and a link to its Markdown file.
+- `cards/<id>.md`: one full card in Markdown.
+- `llms-full.txt`: every card and topic comparison in one Markdown file.
+- `cards.json`: structured data (`schema_version` 1.0) with field-level `facts` provenance.
+
+Start by fetching `llms.txt` to locate the matching card IDs, then fetch the relevant `cards/<id>.md` files (or `cards.json` for cross-card comparison).
+<!-- STATIC_ONLY_END -->
 
 ## How to answer
 
@@ -36,4 +48,4 @@ Pick the MCP server when it is connected, otherwise fetch `cards.json` or the `c
 
 ## Install
 
-Place this file at `~/.claude/skills/recarch/SKILL.md`. Other tools that read Agent Skills use their own skills folder. Connect the MCP server at the same time for live search. Setup for Claude, Cursor and ChatGPT: `https://jdding.github.io/recarch/ai/`.
+Place this file at `~/.claude/skills/recarch/SKILL.md`. Other tools that read Agent Skills use their own skills folder. Setup and data entry points for Claude, Cursor, Codex and ChatGPT: `https://jdding.github.io/recarch/ai/`.

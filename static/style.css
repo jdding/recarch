@@ -341,3 +341,4 @@ table.cmp .rm{border:0;background:transparent;color:var(--mut);font-size:16px;li
 /* AI layer: reviewed FAQ and the "use in your AI" page */
 .faq-i{border-top:1px solid var(--line);padding:8px 0}.faq-i summary{cursor:pointer;font-weight:600}.faq-i p{margin:6px 0 2px}
 pre.code{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.5}
+.ai pre.code{white-space:pre-wrap;overflow-wrap:anywhere}

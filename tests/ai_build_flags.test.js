@@ -16,7 +16,7 @@ const TOKEN = "0123456789abcdef0123456789abcdef";
 let out = path.join(tmp, "off"); let r = build(out);
 ok(r.status === 0, "default build succeeds: " + (r.stderr || "").slice(0, 200));
 ok(htmls(out).every((f) => !/cloudflareinsights|data-cf-beacon/.test(fs.readFileSync(f, "utf8"))), "analytics is off by default: no beacon in any page");
-ok(/mcp\.recarch\.example\/mcp/.test(fs.readFileSync(`${out}/ai/index.html`, "utf8")), "placeholder MCP URL by default");
+ok(!/mcp\.recarch\.example/.test(fs.readFileSync(`${out}/ai/index.html`, "utf8")) && !/mcp\.recarch\.example/.test(fs.readFileSync(`${out}/skill/recarch/SKILL.md`, "utf8")), "no placeholder MCP URL in default static-live build");
 
 out = path.join(tmp, "on"); r = build(out, { RECARCH_CF_BEACON_TOKEN: TOKEN, RECARCH_MCP_URL: "https://mcp.example.org/mcp" });
 ok(r.status === 0, "build with token succeeds");
@@ -25,7 +25,7 @@ ok(pages.length > 100 && withBeacon.length === pages.length, `beacon on every pa
 ok(pages.every((f) => (fs.readFileSync(f, "utf8").match(/static\.cloudflareinsights\.com\/beacon\.min\.js/g) || []).length === (f === path.join(out, "404.html") ? 2 : 1)), "exactly one beacon per page (the root 404 also embeds the English 404 as a string, so two)");
 ok(!/cloudflareinsights|TOKEN/.test(fs.readFileSync(`${out}/llms.txt`, "utf8") + fs.readFileSync(`${out}/cards.json`, "utf8")), "token never reaches the data files");
 const ai = fs.readFileSync(`${out}/ai/index.html`, "utf8");
-ok(ai.includes("https://mcp.example.org/mcp") && !/mcp\.recarch\.example/.test(ai) && !/尚未启用/.test(ai), "RECARCH_MCP_URL replaces the placeholder and removes the not-live banner");
+ok(ai.includes("https://mcp.example.org/mcp") && /claude mcp add --transport http recarch https:\/\/mcp\.example\.org\/mcp/.test(ai) && !/mcp\.recarch\.example/.test(ai) && !/即将上线/.test(ai), "RECARCH_MCP_URL enables full MCP setup and removes the coming-soon notice");
 ok(/https:\/\/mcp\.example\.org\/mcp/.test(fs.readFileSync(`${out}/llms.txt`, "utf8")) && /https:\/\/mcp\.example\.org\/mcp/.test(fs.readFileSync(`${out}/skill/recarch/SKILL.md`, "utf8")), "llms.txt and the skill carry the real MCP URL");
 r = build(path.join(tmp, "bad"), { RECARCH_CF_BEACON_TOKEN: "<script>alert(1)</script>" });
 ok(r.status !== 0 && /RECARCH_CF_BEACON_TOKEN/.test(String(r.stderr) + String(r.stdout)), "malformed token fails the build instead of injecting it");

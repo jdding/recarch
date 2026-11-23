@@ -15,6 +15,8 @@ nav.rss_title || Atom feed || Atom 订阅源
 nav.sponsor || Sponsor || 赞助
 nav.method || Method || 方法
 nav.ai || Use in your AI || 在你的 AI 里用
+nav.ai_short || AI || AI 接入
+nav.maintainer || Jiandong Ding || 丁建栋
 footer.text || RecArch · structured notes on how real companies build recommender, search and ranking systems. Every card cites its public sources; unknowns are marked unknown. || RecArch · 结构化整理真实公司如何构建推荐、搜索和排序系统。每张卡片都标注公开来源，未知信息一律标为未知。
 nr || not reported || 未报告
 
@@ -335,6 +337,11 @@ fb.request || Request a system || 申请收录
 fb.footer_label || Feedback || 反馈
 about.fb_h || Corrections and requests || 纠错与收录申请
 about.fb_p || Corrections and requests for new systems go through GitHub issues, each with a short bilingual template. {error}, or {request}. || 纠错和新系统的收录申请都通过 GitHub issue 提交，各有一份简短的中英双语模板。{error}，或{request}。
+about.rel_h || Maintainer and related research || 维护者与相关研究
+about.rel_p || RecArch is maintained by {author} as an industrial companion to two ongoing research lines and open-source diagnostic tools. || RecArch 由{author}维护，作为以下两条研究主线与开源诊断工具的工业架构对照。
+about.rel_l1 || Adaptive Recommendation under Change || 变化环境下的自适应推荐
+about.rel_l2 || Auditable AI Retrieval and Interfaces || 可审计的 AI 检索与接口
+about.rel_l3 || Open-source quickstarts: DeltaGate, SIDInspector, SIDScope, and FocalSwap || 开源工具快速上手：DeltaGate、SIDInspector、SIDScope 与 FocalSwap
 sub.inline || Or subscribe without leaving this page || 或者不离开本页直接订阅
 sub.frame_title || Beehiiv subscribe form || Beehiiv 订阅表单
 sub.link_short || Subscribe to the weekly digest || 订阅每周精选

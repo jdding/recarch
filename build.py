@@ -587,9 +587,9 @@ def page(title, desc, body, root, path, extra_head="", scripts="", noalt=False):
 <link rel="stylesheet" href="{sr}static/style.css">{extra_head}</head><body>
 <a class="skip" href="#main">{E(T('nav.skip'))}</a>
 <header class="site"><div class="wrap"><a class="logo" href="{root}">Rec<span>Arch</span></a>
-<nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a></nav>{lang_switch(root, path)}</div></header>
+<nav><a href="{root}">{E(T('nav.systems'))}</a><a href="{root}topics/">{E(T('nav.topics'))}</a><a href="{root}compare/">{E(T('nav.compare'))}</a><a href="{root}changelog/">{E(T('nav.changelog'))}</a><a href="{root}newsletter/">{E(T('nav.newsletter'))}</a><a href="{root}ai/">{E(T('nav.ai_short'))}</a><a href="{root}feed.xml" title="{E(T('nav.rss_title'))}">RSS</a></nav>{lang_switch(root, path)}</div></header>
 <main id="main">{body}</main>
-<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a> &middot; <a href="{root}ai/">{E(T('nav.ai'))}</a> &middot; {feedback_links()}</div></footer>
+<footer class="site"><div class="wrap">{E(T('footer.text'))} <a href="{root}about/">{E(T('nav.method'))}</a> &middot; <a href="{root}changelog/">{E(T('nav.changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a> &middot; <a href="{root}ai/">{E(T('nav.ai'))}</a> &middot; {feedback_links()} &middot; <a href="https://jdding.github.io/">{E(T('nav.maintainer'))}</a></div></footer>
 <script>{LANG_SWITCH_JS}</script>
 <script src="{sr}static/nl.js" defer></script>
 {scripts}{ailayer.analytics_snippet()}</body></html>"""
@@ -1362,6 +1362,7 @@ def about_page(n):
 <li>{E(T('about.l2'))}</li>
 <li>{E(T('about.l3'))}</li><li>{E(T('about.l4'))}</li></ul>
 <section class="blk" id="feedback"><h2>{E(T('about.fb_h'))}</h2><p>{T('about.fb_p', error=f'<a href="{E(feedback_url("error"))}" target="_blank" rel="noopener nofollow">{E(T("fb.error"))}</a>', request=f'<a href="{E(feedback_url("request"))}" target="_blank" rel="noopener nofollow">{E(T("fb.request"))}</a>')}</p></section>
+<section class="blk" id="maintainer"><h2>{E(T('about.rel_h'))}</h2><p>{T('about.rel_p', author=f'<a href="https://jdding.github.io/">{E(T("nav.maintainer"))}</a>')}</p><ul class="clean"><li><a href="https://jdding.github.io/research/adaptive-recommendation/">{E(T('about.rel_l1'))}</a></li><li><a href="https://jdding.github.io/research/auditable-retrieval/">{E(T('about.rel_l2'))}</a></li><li><a href="https://jdding.github.io/resources/">{E(T('about.rel_l3'))}</a></li></ul></section>
 {subscribe_link()}</article></div>"""
     return page(T("about.title"), T("about.desc"), body, root, "about/")
 

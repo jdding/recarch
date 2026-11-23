@@ -91,14 +91,21 @@ for (const lang of ["zh", "en"]) {
   // --- /ai/ page
   const ai = fs.readFileSync(`${d}/ai/index.html`, "utf8");
   ok(/<h1>(在你的 AI 里用 RecArch|Use RecArch in your AI)<\/h1>/.test(ai), L("/ai/ page title"));
-  ok(/claude mcp add --transport http recarch https?:\/\//.test(ai) && /mcpServers/.test(ai) && /Add custom MCP server|添加自定义连接器|Add custom connector/.test(ai), L("/ai/ page has Claude, Cursor and ChatGPT setup"));
-  ok(/mcp\.recarch\.example\/mcp/.test(ai) || process.env.RECARCH_MCP_URL, L("/ai/ page uses the placeholder MCP URL until a real one is set"));
+  ok(ai.includes(`/${pre}llms.txt`) && ai.includes(`/${pre}cards.json`) && ai.includes("/skill/recarch/SKILL.md"), L("/ai/ page exposes live static feeds and Agent Skill"));
+  if (process.env.RECARCH_MCP_URL) {
+    ok(/claude mcp add --transport http recarch https?:\/\//.test(ai) && /mcpServers/.test(ai) && /Add custom MCP server|添加自定义连接器|Add custom connector/.test(ai), L("/ai/ page has Claude, Cursor and ChatGPT setup when MCP is live"));
+    ok(!/mcp\.recarch\.example/.test(ai), L("/ai/ page has no placeholder MCP URL when live"));
+  } else {
+    ok(!/mcp\.recarch\.example/.test(ai), L("/ai/ page hides placeholder MCP URL by default"));
+    ok(/即将上线|coming soon/i.test(ai), L("/ai/ page marks remote MCP as coming soon by default"));
+  }
   ok(!/虚拟通讯作者|virtual corresponding author/i.test(ai + full), L("no impersonation framing"));
 }
 function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 // shared files
 const skill = fs.readFileSync(`${root}/skill/recarch/SKILL.md`, "utf8");
 ok(/^---\nname: recarch\ndescription: .+\n---/.test(skill) && !/zotero/i.test(skill), "skill/recarch/SKILL.md has frontmatter and no zotero");
+ok(!/mcp\.recarch\.example/.test(skill) && !/MCP_LIVE_START|STATIC_ONLY_START/.test(skill), "built SKILL.md has no placeholder MCP URL or build markers");
 const sm = fs.readFileSync(`${root}/sitemap.xml`, "utf8");
 ok(/\/ai\/<\/loc>/.test(sm), "sitemap lists /ai/");
 console.log(fails ? `${fails} FAILED of ${checks}` : `ai_layer: ${checks} checks passed`); process.exit(fails ? 1 : 0);
