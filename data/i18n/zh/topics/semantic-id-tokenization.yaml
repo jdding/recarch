@@ -1,0 +1,67 @@
+title: Semantic ID 与物品分词
+summary: 工业级推荐系统如何将物品量化为 Semantic ID、管理冲突与码本健康度并复用编码，在十六张 RecArch 卡片之间做对比。
+framing:
+- 传统推荐系统为每个物品分配无语义的整数 ID，并在庞大的 embedding 表里各自占一行。Semantic ID 用内容、多模态和行为信号学出一小段离散编码，取代或补充传统 ID 表。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
+- 落地 Semantic ID 既是生成模型问题，更是分词器接口问题。团队需要在多层残差树、单层扁平码本与并行码本之间取舍，决定要消除冲突还是接受可控聚类冲突，防止码本坍缩与非法生成，并确定编码用于召回、排序还是向量压缩。
+problem: 把海量物品压缩成离散 Semantic ID，会直接改变表达容量、冲突率、前缀语义与下游复用方式。哪种分词设计适合你的系统？
+question: Semantic ID 应该为每个物品分配唯一编码，还是作为带溢出保护的可控语义簇来使用？
+decisions:
+- when: 冲突会伤害物品区分度，你希望得到唯一或近似唯一的物品编码。
+  then: 把残差量化与显式冲突控制结合起来。TIGER 附加第四个消歧 token，FORGE 在末层做随机分散分配，QuaSID 在汉明半径内排斥真正冲突的物品，OneMall 用两层 Res-Kmeans 加一层 16-bit FSQ 把编码冲突率从 36% 降到 11%。
+  cards: [tiger-google-2023, alibaba-forge-2025, kuaishou-quasid-2026, kuaishou-onemall-2026]
+- when: 严格一物一码过于脆弱，你更偏向语义簇加溢出兜底。
+  then: 像 CQ-SID 那样主动允许可控冲突，首层按 1,711 个有效类目约束，只在单个 SID 超过 50 个物品时拆分为最多 100 组；或像 GEAR 那样给共享同一 token 序列的物品接一个下游重排头。
+  cards: [taobao-cq-sid-2026, bytedance-gear-2026]
+- when: 逐 token 自回归解码或深层树结构拖累延迟与头部均衡。
+  then: 把码本扁平化或并行化。UNIQUE 用 16,384 个编码的单层扁平码本取代 128 x 128 分层结构，并按相对使用率缩放分配距离；Tlow 用归一化流把嵌入映射到标准正态潜空间，生成 16 个大小为 256 的独立并行码本。
+  cards: [baidu-unique-2026, tencent-tlow-2026]
+- when: 你想在不替换召回栈的前提下，把 Semantic ID 用于排序、压缩或超长历史建模。
+  then: 把 SID 当作排序内的紧凑物品接口。FLUID 用 4 层 LUCID 前缀 n-gram 嵌入表替代直播排序中的物品 ID；SiDec 把稠密内容向量压缩 50-100x 并在排序时按需重建；HiSAC 用 2 层、每层 512 项的 SID 把最长 10,000 条交互压缩成兴趣代理。
+  cards: [bytedance-fluid-2026, youtube-sidec-2026, alibaba-hisac-2026]
+- when: 原始自回归生成在线上产出过多非法 Semantic ID。
+  then: 在归咎生成器之前先加上快速合法性校验并体检分词器。NEZHA 把 SID 编成整数放进哈希集，把草稿合法率从 43% 提到 93% 以上；FORGE 和 MMQ 则在生成式训练前先跟踪码本利用率、熵与 Embedding HitRate。
+  cards: [alibaba-nezha-2025, alibaba-forge-2025, alibaba-mmq-2025]
+members:
+- id: tiger-google-2023
+  approach: 用 RQ-VAE 将内容 embedding 量化为 3 层、每层 256 个码字的 Semantic ID，再加第四个 token 区分冲突物品。
+- id: alibaba-forge-2025
+  approach: 系统评测多模态与共现特征构建 3 层 8192 码字 SID 的配方，结合末层冲突分散，并在生成式训练前跟踪 Embedding HitRate 与基尼系数。
+- id: alibaba-mmq-2025
+  approach: 采用共享与模态专属专家的多模态混合量化并做行为感知微调，监控重建损失、码本熵与利用率。
+- id: alibaba-nezha-2025
+  approach: 把多 token Semantic ID 编码为整数存入预计算哈希集，用常数时间哈希查找替代前缀树校验候选合法性。
+- id: tencent-higr-2025
+  approach: 采用 3 层 1024 码本的 PCRQ-VAE，加入前缀级 InfoNCE 对比对齐，使共享前缀的物品在语义上保持接近。
+- id: kuaishou-oneloc-2025
+  approach: 融合视频文本与地理特征做残差量化，构建 3 个各含 8192 个簇的地理感知语义码本，服务本地生活推荐。
+- id: youtube-sidec-2026
+  approach: 双用途 RQ-VAE Semantic ID，把稠密内容 embedding 压缩 50-100x，并在排序阶段通过轻量解码器按需重建。
+- id: kuaishou-quasid-2026
+  approach: 带冲突条件排斥的残差量化，线上 4 层 1024 码本、离线 3 层 256 码本，同时服务召回与排序。
+- id: kuaishou-onemall-2026
+  approach: 3 层混合 ResKmeansFSQ，在 LLM 对齐的物品向量上叠加两层 Res-Kmeans 与一层 16-bit、4096 码字的 FSQ，把编码冲突从 36% 降到 11%。
+- id: taobao-cq-sid-2026
+  approach: 在 2048x1024x1024 码本上主动允许语义簇冲突，首层按 1,711 个类目约束，仅对超过 50 个物品的 SID 拆成最多 100 组。
+- id: bytedance-fluid-2026
+  approach: 在直播排序中用 4 层、每层 64 簇的 LUCID RQ-KMeans 取代物品 ID，并通过前缀 n-gram 嵌入表避免不同父节点下的同码别名冲突。
+- id: bytedance-gear-2026
+  approach: 3 层前缀感知 BasisRQ，码本规模 2048、512 与 128，通过 5 步 Newton-Schulz 正交基和仿射变换与生成器联合训练。
+- id: baidu-unique-2026
+  approach: 从 128 x 128 分层结构转向 16,384 编码的单层扁平 EMA-VQ 码本，并用相对使用率缩放分配距离来抑制头部码字过载。
+- id: tencent-tlow-2026
+  approach: 用归一化流把多模态嵌入映射到标准正态潜空间，做独立分词得到 16 个大小为 256、可并行解码的码本。
+- id: alibaba-hisac-2026
+  approach: 对冻结 CLIP 与 Q-Former 多模态向量做 2 层、每层 512 项的 RQ-VAE 量化，把最长 10,000 条用户历史压缩成兴趣代理。
+- id: snap-snaplgr-2026
+  approach: 在多模态嵌入上训练 1024、512、256 三层 RQ-VAE，加入共同互动对比损失、LayerNorm 与全码本直通估计以抑制码本坍缩。
+differences:
+- heading: 分层残差树、扁平码本还是并行码本
+  text: 大多数线上分词器采用 3 层或 4 层残差层次结构，例如 TIGER、FORGE、HiGR、OneLoc、QuaSID、GEAR 和 SnapLGR，用更深的树换取更细的物品粒度。HiSAC 为了历史压缩保持精简的 2 层 512 项配置。UNIQUE 放弃早期的 128 x 128 分层结构，改用 16,384 编码的单层扁平码本以简化检索与打分。Tlow 则通过归一化流把嵌入标准化后切分为 16 个大小为 256 的独立码本，彻底去掉 token 间的串行依赖。
+- heading: 消除冲突，还是管理语义簇别名
+  text: 各团队对是否坚持一物一码分歧明显。TIGER 附加第四个 token 打破重码，FORGE 在末层做随机分散。QuaSID 只排斥真正发生冲突的物品，OneMall 把末层换成 16-bit FSQ 后将编码冲突从 36% 降到 11%。CQ-SID 则反其道而行之，在 1,711 个类目内主动允许簇级冲突，仅在单个 SID 超过 50 个物品时拆分为最多 100 组。FLUID 在排序中按完整前缀路径索引每层嵌入表，从而隔离不同父节点下的同码冲突。
+- heading: 码本健康度、均衡性与前缀对齐
+  text: 码本容量足够并不等于编码健康。死码、头部码字过载和前缀错位都会悄悄拖累下游模型。FORGE 提出在生成式训练前先用 Embedding HitRate 和 SID 使用基尼系数评估映射质量，MMQ 同步监控重建损失、熵和利用率。HiGR 加入前缀级对比对齐，让共享前缀的物品彼此接近。SnapLGR 结合 LayerNorm、全码本直通估计和共同互动对比损失，GEAR 采用带 5 步 Newton-Schulz 迭代的正交 BasisRQ，UNIQUE 按相对使用率缩放分配距离以保持均衡。
+- heading: 超越生成式召回：进入排序与向量压缩
+  text: Semantic ID 已不再局限于自回归候选生成。FLUID 在直播排序里去掉原始物品 ID、改用 4 层 LUCID 编码，在提升观看时长的同时带动冷启动直播间曝光。SiDec 导出 RQ-VAE 码本将稠密内容向量压缩 50-100x，并在 YouTube 排序中按需重建。HiSAC 用 2 层 SID 压缩最长 10,000 条交互的终身历史。即便在生成式召回内部，NEZHA 也显示线上原始多 token 生成的有效率仅约 0.1%，需要常数时间哈希校验才能将草稿合法率从 43% 提至 93% 以上。
+- heading: 把映射评估与生成器拆开来看
+  text: 部分卡片把分词器单独拿出来评测，另一些则把分词器改动与新生成器或强化学习后训练打包进同一组实验。FORGE 在线上 A/B 中直接对比调优前后两套 SID 配方，SiDec 则在已经使用 Semantic ID 嵌入的基线上单独隔离解码器增益。相比之下，OneMall、CQ-SID 和 GEAR 同时改变了分词器与下游模型。解读线上涨幅前，先看清对照组是否已经用上了 Semantic ID，不要把整套系统的收益全部归因于分词器。

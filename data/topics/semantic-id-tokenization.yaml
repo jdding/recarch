@@ -1,0 +1,72 @@
+title: Semantic IDs and item tokenization
+summary: How industrial recommenders quantize items into Semantic IDs, manage collisions and codebook health, and reuse codes, across sixteen RecArch cards.
+framing:
+  - In a classic recommender, every item has an opaque integer ID with its own row in a massive embedding table. Semantic IDs replace or augment that table with a short sequence of discrete codes learned from content, multimodal and behavioral signals. All systems below report production use except TIGER, which reports public datasets only.
+  - Shipping a Semantic-ID system is as much a tokenizer-interface problem as a generator problem. Teams must choose between hierarchical residual trees, flat codebooks and parallel codebooks, decide whether item collisions should be eliminated or embraced, prevent codebook collapse and invalid generations, and decide whether codes feed retrieval, ranking or embedding compression.
+problem: Turning millions of items into discrete Semantic IDs reshapes capacity, collisions, prefix semantics and downstream reuse. Which tokenizer design fits your system?
+question: Should Semantic IDs uniquely identify every item, or act as controlled semantic clusters with explicit collision handling?
+decisions:
+  - when: Collisions hurt item distinguishability and you want unique or near-unique item codes.
+    then: Combine residual quantization with explicit collision control. TIGER adds a fourth disambiguation token, FORGE spreads last-level assignments, QuaSID repels colliding items within a Hamming radius, and OneMall pairs two Res-Kmeans layers with a 16-bit FSQ layer to cut code conflict from 36% to 11%.
+    cards: [tiger-google-2023, alibaba-forge-2025, kuaishou-quasid-2026, kuaishou-onemall-2026]
+  - when: Strict one-item-one-ID is too brittle and you prefer semantic clusters with an overflow guard.
+    then: Allow controlled collisions as CQ-SID does with category-constrained first-level codes over 1,711 categories, splitting only SIDs holding more than 50 items into up to 100 groups, or pair shared token sequences with a downstream reranking head as GEAR does.
+    cards: [taobao-cq-sid-2026, bytedance-gear-2026]
+  - when: Autoregressive token-by-token decoding or deep hierarchies hurt latency or head-code balance.
+    then: Flatten or parallelize the codebook. UNIQUE replaced a 128 x 128 hierarchy with one flat 16,384-code codebook using usage-scaled balanced assignment, while Tlow uses a normalizing flow to produce 16 independent codebooks of size 256 that decode in parallel.
+    cards: [baidu-unique-2026, tencent-tlow-2026]
+  - when: You want Semantic IDs to upgrade ranking, compression or lifelong history modeling without replacing retrieval.
+    then: Use SIDs as compact item interfaces inside ranking. FLUID replaces item IDs with 4-level LUCID prefix n-gram tables, SiDec compresses dense content embeddings 50-100x and reconstructs them on the fly, and HiSAC compresses 10,000-interaction histories via 2-level 512-entry SIDs.
+    cards: [bytedance-fluid-2026, youtube-sidec-2026, alibaba-hisac-2026]
+  - when: Raw autoregressive generation produces too many invalid Semantic IDs at serving time.
+    then: Add a fast validity check and monitor tokenizer health before blaming the generator. NEZHA encodes SIDs as integers in a hash set to lift valid drafted candidates from 43% to over 93%, while FORGE and MMQ track codebook utilization, entropy and Embedding HitRate before generative training.
+    cards: [alibaba-nezha-2025, alibaba-forge-2025, alibaba-mmq-2025]
+members:
+  - id: tiger-google-2023
+    approach: RQ-VAE over content embeddings with 3 levels of 256 codewords plus a fourth token to disambiguate colliding items.
+  - id: alibaba-forge-2025
+    approach: Benchmarks SID construction over multimodal and co-occurrence features with 3 levels of 8192 codewords and last-level collision spreading, tracking Embedding HitRate and Gini usage before generative training.
+  - id: alibaba-mmq-2025
+    approach: Multimodal mixture-of-quantization using shared and modality-specific experts with behavior-aware fine-tuning, tracking reconstruction loss, codebook entropy and utilization.
+  - id: alibaba-nezha-2025
+    approach: Encodes multi-token Semantic IDs as integers in a pre-computed hash set so drafted candidates are verified in constant time instead of traversing a trie.
+  - id: tencent-higr-2025
+    approach: PCRQ-VAE with 3 layers of 1024 codes trained with prefix-level InfoNCE contrastive alignment so items sharing a prefix stay semantically close.
+  - id: kuaishou-oneloc-2025
+    approach: Geo-aware residual quantization into 3 codebooks of 8192 clusters fusing video text with geographic features for local services.
+  - id: youtube-sidec-2026
+    approach: Dual-purpose RQ-VAE Semantic IDs that compress dense content embeddings 50-100x and reconstruct them on the fly via a lightweight decoder during ranking.
+  - id: kuaishou-quasid-2026
+    approach: Residual quantization with collision-qualified repulsion, using 4 layers of 1024 codes online and 3 layers of 256 offline, serving both retrieval and ranking.
+  - id: kuaishou-onemall-2026
+    approach: Hybrid 3-level ResKmeansFSQ combining two Res-Kmeans layers with a 16-bit FSQ layer of 4096 codes over LLM-aligned embeddings, cutting code conflict from 36% to 11%.
+  - id: taobao-cq-sid-2026
+    approach: Deliberately allows semantic cluster collisions across 2048x1024x1024 codebooks with 1,711 category-constrained first-level codes, splitting only clusters above 50 items into up to 100 groups.
+  - id: bytedance-fluid-2026
+    approach: LUCID 4-level RQ-KMeans with 64 clusters per level replacing item IDs in live-streaming ranking through prefix n-gram embedding tables that separate shared codes under different parents.
+  - id: bytedance-gear-2026
+    approach: Three-layer prefix-aware BasisRQ with codebook sizes 2048, 512 and 128, orthogonal bases via 5 Newton-Schulz iterations and affine codebook transforms trained jointly with the generator.
+  - id: baidu-unique-2026
+    approach: Moves from a 128 x 128 hierarchy to one flat single-layer EMA-VQ codebook of 16,384 codes with usage-scaled balanced assignment to counter head-code overuse.
+  - id: tencent-tlow-2026
+    approach: Maps multimodal embeddings through a normalizing flow into a standard normal latent space for independent tokenization into 16 parallel codebooks of size 256.
+  - id: alibaba-hisac-2026
+    approach: Quantizes frozen CLIP and Q-Former multimodal item embeddings with 2-level 512-entry RQ-VAE SIDs to compress user histories of up to 10,000 interactions into interest agents.
+  - id: snap-snaplgr-2026
+    approach: Three-level RQ-VAE with codebooks of 1024, 512 and 256 over multimodal embeddings, adding a co-engagement contrastive loss, LayerNorm and full-codebook straight-through estimation to curb collapse.
+differences:
+  - heading: Hierarchy, flat codebook or parallel tokens
+    text: Most production tokenizers follow a 3-level or 4-level residual hierarchy such as TIGER, FORGE, HiGR, OneLoc, QuaSID, GEAR and SnapLGR, trading deeper trees for finer item granularity. HiSAC stays compact at 2 levels of 512 entries for history compression. UNIQUE abandons its earlier 128 x 128 hierarchy for one flat codebook of 16,384 codes to simplify retrieval and scoring. Tlow removes sequential dependency across tokens altogether by normalizing embeddings with a flow and tokenizing into 16 independent codebooks of size 256.
+    cards: [tiger-google-2023, alibaba-forge-2025, tencent-higr-2025, kuaishou-oneloc-2025, kuaishou-quasid-2026, bytedance-gear-2026, snap-snaplgr-2026, alibaba-hisac-2026, baidu-unique-2026, tencent-tlow-2026]
+  - heading: Eliminate collisions or manage cluster aliasing
+    text: Teams diverge sharply on whether one Semantic ID should map to one item. TIGER appends a fourth token to break ties, and FORGE applies random last-level spreading. QuaSID repels only genuinely colliding items, and OneMall replaces the last residual layer with 16-bit FSQ to lower code conflict from 36% to 11%. CQ-SID takes the opposite stance by embracing cluster collisions inside 1,711 categories and splitting only SIDs above 50 items into up to 100 groups. FLUID avoids parent-level aliasing inside ranking by keying each level's embedding table on the full prefix path.
+    cards: [tiger-google-2023, alibaba-forge-2025, kuaishou-quasid-2026, kuaishou-onemall-2026, taobao-cq-sid-2026, bytedance-fluid-2026]
+  - heading: Codebook health, balance and prefix alignment
+    text: A working codebook size does not guarantee healthy codes. Dead codes, head-code concentration and misaligned prefixes degrade downstream models silently. FORGE introduces Embedding HitRate and the Gini coefficient of SID usage to evaluate mappings before training a generator, while MMQ monitors reconstruction loss, entropy and utilization. HiGR adds prefix-level contrastive alignment so items sharing a prefix remain close. SnapLGR pairs LayerNorm and a full-codebook straight-through estimator with co-engagement contrast, GEAR uses orthogonal BasisRQ with 5 Newton-Schulz iterations, and UNIQUE scales assignment distance by relative code usage.
+    cards: [alibaba-forge-2025, alibaba-mmq-2025, tencent-higr-2025, snap-snaplgr-2026, bytedance-gear-2026, baidu-unique-2026]
+  - heading: Beyond generative retrieval into ranking and compression
+    text: Semantic IDs are no longer restricted to autoregressive candidate generation. FLUID drops raw item IDs in live-streaming ranking in favor of 4-level LUCID codes, lifting cold-start live-room impressions alongside watch time. SiDec exports RQ-VAE codebooks to compress dense content embeddings 50-100x and reconstructs them on the fly inside YouTube ranking. HiSAC uses 2-level SIDs to compress lifelong histories of up to 10,000 interactions. Even inside generative retrieval, NEZHA shows that raw multi-token generations have only about 0.1% validity in production data, making fast hash-set verification essential to push valid drafted candidates from 43% to over 93%.
+    cards: [bytedance-fluid-2026, youtube-sidec-2026, alibaba-hisac-2026, alibaba-nezha-2025]
+  - heading: Inspect the mapping separately from the generator
+    text: Several cards evaluate the tokenizer itself before or alongside end-to-end model changes, while others bundle tokenizer and generator lifts against different baselines. FORGE compares tuned against base SID recipes directly in an online A/B, and SiDec isolates its decoder lift on top of baselines that already use Semantic-ID token embeddings. By contrast, systems such as OneMall, CQ-SID and GEAR pair tokenizer changes with new generators or RL post-training. Check what the baseline already used before attributing an online lift to the tokenizer alone.
+    cards: [alibaba-forge-2025, youtube-sidec-2026, kuaishou-onemall-2026, taobao-cq-sid-2026, bytedance-gear-2026]
