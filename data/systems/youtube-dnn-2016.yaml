@@ -11,7 +11,10 @@ venue_year: 2016
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/2959100.2959190"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+updates:
+  - date: "2026-11-25"
+    note: Rechecked the conference paper and separated qualitative A/B evidence, offline ranking loss and training scale.
 system_type: recommendation
 evidence_level: production_described
 tldr: "The classic two-stage funnel: a deep candidate generator framed as extreme multiclass classification, then a deep ranker predicting expected watch time."
@@ -48,13 +51,13 @@ serving_infra: Approximate nearest-neighbor lookup for candidate generation; ran
 scale:
   - {metric: Model size, value: "~1 billion parameters", note: "stated in paper"}
   - {metric: Training data, value: "hundreds of billions of examples", note: "stated in paper"}
-results_reported: Paper reports offline MAP/watch-time-weighted metrics and notes live A/B results are not always correlated with offline ones.
+results_reported: Section 5 reports higher watch time for recently uploaded videos in an A/B test using training-example age as a retrieval feature. The paper gives no online lift magnitude. Separately, on the next-day offline holdout in Table 1, the three-layer ranker has 34.6% watch-time-weighted per-user loss against 41.6% without hidden layers.
 caveats: [2016 paper; the current YouTube system is not described by this source.]
-unknown_fields: [latency, current-day architecture]
+unknown_fields: [A/B traffic and duration, absolute serving latency and training compute, current-day architecture]
 sources:
   - {title: "Deep Neural Networks for YouTube Recommendations, RecSys 2016", url: "https://doi.org/10.1145/2959100.2959190", type: paper}
   - {title: "Deep Neural Networks for YouTube Recommendations, RecSys 2016, Google Research", url: "https://research.google/pubs/deep-neural-networks-for-youtube-recommendations/", type: paper}
-  - {title: "Paper PDF by Covington, Adams and Sargin", url: "https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/45530.pdf", type: paper}
+  - {title: "Paper PDF by Covington, Adams and Sargin", url: "https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/45530.pdf", type: paper}
 code:
   status: third_party_only
   checked_on: '2026-10-30'
@@ -66,23 +69,30 @@ code:
 core_idea: A deep candidate-generation network cast as extreme multiclass classification, then a deep ranker trained for expected watch time.
 deployed_in: YouTube homepage recommendations
 scale_short: About 1 billion parameters, hundreds of billions of training examples
-key_result: 'Offline: reports MAP and watch-time-weighted metrics, with no live A/B figures'
+key_result: Recently uploaded videos gained watch time in an A/B test using training-example age as a retrieval feature.
 results_table:
-  note: The paper reports offline MAP and watch-time-weighted metrics, and notes that live A/B results are not always correlated with offline
-    ones.
+  online:
+  - {setting: A/B on recently uploaded videos, method: Retrieval with training-example age, metric: Watch time, result: Increased by an unreported amount, versus: not reported}
+  offline:
+  - {setting: Next-day holdout, method: Ranker with three hidden layers, metric: Watch-time-weighted per-user loss, result: "34.6%", versus: "No hidden layers, 41.6%"}
 deployment:
-  online_evidence: deployed_only
+  online_evidence: online_qualitative
   scenario: YouTube homepage recommendations
   ab_traffic: not_reported
   ab_duration: not_reported
   baseline: not_reported
   online_lifts: not_reported
-  training_compute: About 1 billion parameters trained on hundreds of billions of examples
+  training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - The paper says live A/B results are not always correlated with offline metrics.
-  basis: card_content
-  checked_on: '2026-10-31'
+  - The original system used live A/B testing. The reported watch-time increase applies to recently uploaded videos.
+  fulltext_refs:
+  - Section 1 reports model and training data scale.
+  - Section 2 and Figure 2 describe production candidate generation and ranking.
+  - Section 4.3 and Table 1 report offline next-day ranking loss.
+  - Section 5 reports the qualitative A/B outcome on recent uploads.
+  basis: full_text
+  checked_on: "2026-11-25"

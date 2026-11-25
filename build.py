@@ -147,6 +147,7 @@ def load_cards():
             else:
                 for v_ in vl:
                     if not (isinstance(v_, dict) and str(v_.get("name", "")).strip() and re.fullmatch(r"(19|20)\d\d-(0[1-9]|1[0-2])", str(v_.get("first_public", ""))) and v_.get("source") in urls_ and str(v_.get("note", "")).strip()): errs.append(f"{n}: bad versions entry {v_}")
+                    elif "venue" in v_ and not (isinstance(v_["venue"], str) and v_["venue"].strip()): errs.append(f"{n}: versions venue must be a non-empty string")
                 if all(isinstance(v_, dict) for v_ in vl):
                     if vs not in [v_.get("name") for v_ in vl]: errs.append(f"{n}: version {vs} must name one of the versions entries")
                     if [str(v_.get("first_public")) for v_ in vl] != sorted(str(v_.get("first_public")) for v_ in vl): errs.append(f"{n}: versions must be oldest first")

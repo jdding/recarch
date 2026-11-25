@@ -1,0 +1,47 @@
+surface|今日头条信息流推荐，位于召回和精排之间
+era_reason|预排序分数由以交互标签训练的判别模型给出。
+tldr|今日头条先用轻量模型评估所有候选，再用更强的模型细排候选短名单。线上 A/B 中应用使用时长提升 0.4%。
+summary|HAP 按负样本在推荐级联中退出的阶段分组训练。轻量模型为所有召回候选打分，表达能力更强的模型对短名单重新打分，再交给精排。今日头条使用按请求记录的日志关联各阶段的特征和反馈。
+core_idea|先用轻量模型给所有候选打分，再用更强的预排序模型评估短名单。
+deployed_in|论文撰写时已在今日头条信息流预排序全量上线
+scale_short|线上预排序模型参数量分别为 310 万和 860 万
+key_result|今日头条线上 A/B 中，相比此前的线上预排序模型，应用使用时长提升 0.4%
+results_reported|第 4.6 节报告了今日头条线上 A/B。与此前的线上预排序模型相比，应用使用时长 +0.4%，活跃天数 +0.05%，CTR +3.0%。作者报告两者在线延迟相当，CPU 用量下降 6%。轻量模型打分后，前 550 个候选进入更强的模型，约占候选集的 30%。论文撰写时，HAP 已全量部署 9 个月。表 3 的 ToutiaoRec 离线实验中，HAP 在困难负样本上的 AUC 为 0.8023，HCCP 为 0.7917。
+version_note|WWW 2026 工业赛道官方名单确认收录。数据核对自 arXiv 上带 DOI 的作者全文，ACM 托管的正式全文待核。
+serving_infra|线上预排序把轻量模型打分最高的 550 个候选交给更强的模型，约占已打分候选集的 30%。日志在同一请求的候选间共享用户特征，延迟到达的交互会异步关联。
+stages.0.model_family|采用精简特征模型和高容量模型的级联式判别预排序
+stages.0.details|轻量模型为每个召回候选打分。高容量模型对得分靠前的候选重新打分，然后交给现有精排模型。
+id_tokenization.approach|原文未报告专有的 ID 编码
+id_tokenization.details|论文描述了请求日志中的用户、物品和上下文特征。
+features_signals.0|被点击和未被点击的曝光
+features_signals.1|候选的精排与预排序位置，以及从目录中随机抽取的负样本
+features_signals.2|按请求关联到候选列表的用户、物品和上下文特征
+training.mode|使用按请求记录的推荐日志联合优化
+training.objectives.0|按负样本难度分组计算对比损失
+training.objectives.1|高容量模型在困难负样本上计算对比损失
+training.objectives.2|辅助二元交叉熵也利用无点击请求
+training.notes|线上模型使用 60 天的完整请求轨迹训练，涵盖召回、预排序、精排和重排。
+scale.0.metric|线上模型参数量
+scale.0.value|310 万和 860 万参数
+results_table.online.0.setting|今日头条线上 A/B
+results_table.online.0.metric|应用使用时长
+results_table.online.0.versus|此前的线上预排序模型
+results_table.online.1.setting|今日头条线上 A/B
+results_table.online.1.metric|活跃天数
+results_table.online.1.versus|此前的线上预排序模型
+results_table.online.2.setting|今日头条线上 A/B
+results_table.online.2.versus|此前的线上预排序模型
+results_table.offline.0.setting|ToutiaoRec 困难负样本
+caveats.0|30% 是单次请求内进入高容量模型的候选比例。论文未报告线上 A/B 的流量分配。
+caveats.1|9 个月是论文撰写时的全量部署时长，线上 A/B 的时长未报告。
+caveats.2|表 5 是独立的路由消融，有单独的延迟与 CTR 结果。这里的线上 A/B 数值来自第 4.6 节。
+unknown_fields.0|A/B 流量分配与时长
+unknown_fields.1|线上部署延迟的毫秒数、QPS 和硬件
+unknown_fields.2|详细的生产训练算力与推理费用
+code.note|HAP 官方仓库提供说明、图片和数据集链接，未找到模型实现。
+deployment.scenario|今日头条信息流预排序，约 30% 的候选进入高容量模型
+deployment.baseline|此前的线上预排序模型
+deployment.online_lifts.0.metric|应用使用时长
+deployment.online_lifts.1.metric|活跃天数
+deployment.serving_latency|与此前的线上模型相当
+deployment.inference_cost|CPU 用量比此前的线上模型低 6%

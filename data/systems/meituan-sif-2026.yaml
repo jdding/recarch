@@ -1,0 +1,91 @@
+id: meituan-sif-2026
+name: SIF
+company: Meituan
+surface: Food-delivery recommendation ranking
+year: 2026
+era: deep
+era_reason: The mixer uses compressed history to predict response to a candidate.
+first_public: "2026-04"
+venue: RecSys 2026 Industry
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3773078.3831746
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Meituan SIF keeps the context of each past interaction in compressed tokens. Against the production HyFormer ranker, CTR rose 2.03% in a seven-day A/B test.
+summary: Sample Is Feature encodes the interaction record behind each history step, including context and feedback that a static item embedding omits. The Sample Tokenizer compresses groups of fields into discrete codes. SIF-Mixer combines fields within a sample and mixes information across past samples before scoring the current candidate.
+paradigms: [learning-to-rank, sequential-transformer]
+stages:
+- stage: rank
+  model_family: SIF-Mixer with token-level and sample-level attention
+  details: Token-level attention mixes feature groups within an interaction. Sample-level attention connects corresponding tokens across interactions, so the current request can attend to the history.
+id_tokenization:
+  approach: Hierarchical group-adaptive quantization of interaction samples
+  details: The tokenizer groups raw fields, divides large groups into sub-tokens, and applies residual quantization. A token describes an interaction with its context, including signals that can change between views of the same item.
+features_signals:
+- Historical user, item, context and feedback fields
+- Current request features encoded for the target sample
+training:
+  mode: Label-supervised tokenization and discriminative ranking
+  objectives:
+  - Interaction prediction with binary cross-entropy
+  - Quantization commitment loss and alignment of the current-request projection with the codebook
+  notes: The ranking label supervises codebook learning through the quantization path.
+serving_infra: Historical samples are stored as compact code indices. The current request uses a learned projection at serving time and skips the tokenizer forward pass.
+scale:
+- metric: Offline evaluation data
+  value: Over 1 billion impressions across 90 days
+  note: Section 4.1, industrial dataset
+results_reported: 'In Section 4.5 and Table 5, a 5% traffic holdout over 7 days against the production HyFormer ranker reports CTR +2.03%, CVR +1.21% and GMV per session +1.35%. CTR rose 0.53% for users with fewer than 10 interactions and 3.12% for users with at least 500 interactions.'
+caveats:
+- The 5% figure is the reported holdout share. The paper gives no allocation for each experiment arm.
+- The online results cover the reported food-delivery deployment. The paper does not give serving latency or hardware.
+unknown_fields:
+- Absolute serving latency and throughput
+- Production training compute, serving hardware and inference cost
+sources:
+- title: Sample Is Feature, RecSys 2026
+  url: https://doi.org/10.1145/3773078.3831746
+  type: paper
+- title: SIF author full text, arXiv 2604.15650v3
+  url: https://arxiv.org/html/2604.15650v3
+  type: paper
+version_note: Metrics were checked against the DOI-bearing author text on arXiv. The ACM-hosted text remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+  note: No author implementation was found in the paper or in a public code search.
+core_idea: Compress the context of each past interaction and attend over the resulting history when scoring the current candidate.
+deployed_in: Meituan food-delivery recommendation
+scale_short: Offline evaluation uses more than 1 billion impressions over 90 days
+key_result: CTR +2.03% and CVR +1.21% against production HyFormer
+results_table:
+  online:
+  - {setting: Meituan food-delivery A/B, method: SIF, metric: CTR, result: "+2.03%", versus: Production HyFormer}
+  - {setting: Meituan food-delivery A/B, method: SIF, metric: CVR, result: "+1.21%", versus: Production HyFormer}
+  - {setting: Meituan food-delivery A/B, method: SIF, metric: GMV per session, result: "+1.35%", versus: Production HyFormer}
+  note: Against HyFormer, CTR rose 0.53% for users with fewer than 10 interactions and 3.12% for users with at least 500 interactions.
+deployment:
+  online_evidence: online_numbers
+  scenario: Food-delivery recommendation ranking at Meituan
+  ab_traffic: 5% traffic holdout
+  ab_duration: 7 days
+  baseline: Production HyFormer ranker
+  online_lifts:
+  - {metric: CTR, value: "+2.03%"}
+  - {metric: CVR, value: "+1.21%"}
+  - {metric: GMV per session, value: "+1.35%"}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Sections 3.2 to 3.4 describe sample tokenization, mixing and the serving path.
+  - Section 4.1 reports the evaluation data scale.
+  - Section 4.5 and Table 5 report the holdout and results.
+  basis: full_text
+  checked_on: "2026-11-25"

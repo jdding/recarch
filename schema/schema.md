@@ -32,7 +32,7 @@ Cards in `data/drafts/` carry `needs_fulltext: true` and `fulltext_note` (which 
 
 
 ## Full-text provenance (added round 3)
-Cards upgraded from drafts carry `needs_fulltext: false` and `fulltext: {pdf_url, local_pdf, sections_read, verified_on}`. `local_pdf` is the box path of the PDF, or a note that the text was read through a fetch tool. These fields are optional and not validated by `build.py`.
+Use the public source URL and section, page, figure or table locators for full-text provenance. Draft upgrades can set `needs_fulltext: false` and use `fulltext: {pdf_url, sections_read, verified_on}`. If updating a legacy `local_pdf` field, use a brief description of how the text was read. These fields are optional and `build.py` does not validate them.
 
 ## Code field (added round 6)
 ```yaml
@@ -162,7 +162,7 @@ A card for a system with several published versions presents one version in all 
 | field | type | rule |
 |---|---|---|
 | `version` | string | name of the version this card presents; must equal one `versions[].name` |
-| `versions` | list, at least 2, oldest first | items: `name`, `first_public` (`YYYY-MM`), `source` (must equal one `sources[].url`), `note` (one factual line, no new numbers) |
+| `versions` | list, at least 2, oldest first | items: `name`, `first_public` (`YYYY-MM`), `source` (must equal one `sources[].url`), `note` (one factual line, no new numbers), optional `venue` for a verified formal publication |
 
 `build.py` checks: `version` equals the `name` of one `versions` item; the list is sorted by `first_public`; the first item's `first_public` equals the card's `first_public` (so `year` is the first public year of the whole lineage); `primary_source` equals the presented version's `source`.
 
@@ -218,7 +218,7 @@ Page layout, all generated from card data: hero with the problem, four stats (sy
 
 ## Bilingual site (added 2026-10-31, owner decision: Chinese by default, English switchable)
 
-Chinese pages live at the site root, English pages mirror them under `/en/`. Each page has a visible 中文 / EN toggle, `hreflang` alternates (`zh-CN`, `en`, `x-default` pointing at the Chinese page), a per-language canonical URL and `<html lang>`. `sitemap.xml` lists both languages with alternates. Merged-card redirect stubs, retired cards and 404 pages are `noindex` and are not in the sitemap. The root `404.html` shows both languages because GitHub Pages serves only that file; `en/404.html` is English only.
+Chinese pages live at the site root, English pages mirror them under `/en/`. Each page has a visible 中文 / EN toggle, `hreflang` alternates (`zh-CN`, `en`, `x-default` pointing at the Chinese page), a per-language canonical URL and `<html lang>`. `sitemap.xml` lists published pages in both languages with alternates. The `noindex` 404 pages are excluded. GitHub Pages serves the bilingual root `404.html`. The `en/404.html` file is in English.
 
 English sources are never edited for translation. Chinese text is stored in data, and `build.py` fails when a required Chinese string is missing (set `RECARCH_ALLOW_MISSING_ZH=1` only for a draft build).
 

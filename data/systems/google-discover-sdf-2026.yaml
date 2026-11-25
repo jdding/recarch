@@ -1,0 +1,97 @@
+id: google-discover-sdf-2026
+name: SDF
+company: Google
+surface: Google Discover feed, candidate filtering before ranking
+year: 2026
+era: deep
+era_reason: Learned pairwise and item-level classifiers filter the candidate pool.
+first_public: "2026-08"
+venue: CIKM 2026 Applied Research
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3799682.3840082
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Google Discover filters outdated candidates before ranking. In a two-month holdback with both filters disabled for the control group, SDF lifted positive feed engagement by 0.26%.
+summary: Supersession-Decay Filtering combines two content filters. A pairwise classifier detects when newer coverage makes an older item obsolete. A separate model predicts how much of an item's lifetime visit traffic should already have accrued. Google Discover caches both outputs and drops a candidate before ranking when either filter marks it stale.
+paradigms: [multi-task]
+stages:
+- stage: pre-rank
+  model_family: Pairwise supersession classifier and multimodal traffic-ratio predictor
+  details: The pairwise model checks related items for supersession. The traffic-ratio model estimates decay across several time horizons from one item. The system removes the candidate when either check fires.
+id_tokenization:
+  approach: Content representations for filtering
+  details: The traffic-ratio encoder fuses text, image and video tokens.
+features_signals:
+- Related-item pairs and publication times for detecting supersession
+- Text, image and video content for modeling relevance decay
+- Historical search-click traffic as the traffic-ratio training signal
+training:
+  mode: Separate training for the pairwise and traffic-ratio filters
+  objectives:
+  - Distill pairwise supersession judgments into a model suitable for serving at scale
+  - Predict cumulative visit-traffic ratios at several horizons
+  notes: Traffic-ratio labels use visits from search clicks and a fixed 30-day reference window.
+serving_infra: Both filters score candidates off the request path. Serving looks up cached scores or labels. The pairwise filter uses a near-real-time path for time-sensitive items and a batch path for broader coverage.
+scale:
+- metric: New items evaluated for staleness
+  value: Millions per day
+  note: Google Discover, Section 3.4
+results_reported: 'Section 4.2 reports stale-content prevalence deltas of -6.91 percentage points for SDF and -0.10 for the age-cutoff plus engagement-cliff baseline. Each delta compares the stale shares of promoted and demoted items sampled over four consecutive weeks. In the separate two-month joint holdback with both filters disabled for controls, dismissal rate fell 0.16%, feed diversity rose 0.13%, and positive engagement rose 0.26%. Section 4.3 reports 54.9% fewer user-filed staleness reports over two years versus the pre-deployment baseline. In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.'
+caveats:
+- The prevalence delta compares two sampled sets of items. It measures a different outcome from the joint-holdback experiment.
+- The two-year report count is deployment monitoring across model upgrades and locale expansion.
+- The CPU and TPU savings are reported in serving hours. The article gives no absolute cost.
+unknown_fields:
+- A/B traffic shares
+- Absolute serving latency, traffic throughput and accelerator models
+- Training compute and absolute inference cost
+sources:
+- title: Decomposing Staleness in Recommender Systems, CIKM 2026
+  url: https://doi.org/10.1145/3799682.3840082
+  type: paper
+- title: SDF author full text, arXiv 2608.15780v1
+  url: https://arxiv.org/html/2608.15780v1
+  type: paper
+version_note: The CIKM program confirms the applied research paper. Figures were checked against the author full text with the proceedings DOI. The ACM-hosted text remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+  note: No author implementation was found in the paper or in a public code search.
+core_idea: Remove candidates made obsolete by newer items or by the decay of their own relevance.
+deployed_in: Google Discover feed, upstream of its ranker
+scale_short: Evaluates millions of new items per day
+key_result: Positive feed engagement +0.26% in the two-month joint holdback
+results_table:
+  online:
+  - {setting: Four-week Discover A/B sampling, method: SDF, metric: Stale-content prevalence delta, result: -6.91 percentage points, versus: Age-cutoff plus engagement-cliff baseline at -0.10 percentage points}
+  - {setting: Two-month Discover holdback, method: SDF, metric: Dismissal rate, result: "-0.16%", versus: Both filters disabled}
+  - {setting: Two-month Discover holdback, method: SDF, metric: Feed diversity, result: "+0.13%", versus: Both filters disabled}
+  - {setting: Two-month Discover holdback, method: SDF, metric: Positive engagement, result: "+0.26%", versus: Both filters disabled}
+  note: In separate two-year deployment monitoring, user-filed staleness reports fell 54.9% versus the pre-deployment baseline.
+deployment:
+  online_evidence: online_numbers
+  scenario: Google Discover candidate filtering, with both SDF filters enabled
+  ab_traffic: not_reported
+  ab_duration: Two months for the joint holdback
+  baseline: Joint holdback with both SDF filters disabled
+  online_lifts:
+  - {metric: Dismissal rate, value: "-0.16%"}
+  - {metric: Feed diversity, value: "+0.13%"}
+  - {metric: Positive engagement, value: "+0.26%"}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.
+  hardware: not_reported
+  notes:
+  - The filters run off the request path. Serving reads the cached outputs.
+  fulltext_refs:
+  - Section 3.4 describes cached serving.
+  - Section 4.2 and Table 3 separate the A/B sampling from the joint holdback.
+  - Section 4.3 and Figure 4 report longitudinal complaint monitoring and serving-hour savings.
+  basis: full_text
+  checked_on: "2026-11-25"

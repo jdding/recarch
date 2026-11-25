@@ -1,0 +1,41 @@
+surface|外卖推荐排序
+era_reason|混合器利用压缩后的历史交互预测用户对候选的反馈。
+tldr|美团 SIF 用压缩 token 保留每次历史交互的上下文。为期七天的线上 A/B 中，CTR 较线上 HyFormer 排序器提升 2.03%。
+summary|SIF 编码每一步历史交互的完整样本，保留静态物品 embedding 没有的上下文和反馈。Sample Tokenizer 将不同字段组压缩为离散码。SIF-Mixer 在单条样本内融合字段，并在不同样本间融合信息，再给当前候选打分。
+core_idea|压缩每次历史交互的上下文，再根据压缩后的历史为当前候选打分。
+deployed_in|美团外卖推荐
+scale_short|离线评估使用 90 天内超过 10 亿条曝光
+key_result|相比线上 HyFormer，CTR +2.03%，CVR +1.21%
+results_reported|第 4.5 节和表 5 记录了为期 7 天、保留流量占比 5% 的线上实验。相对线上 HyFormer，CTR +2.03%，CVR +1.21%，每会话 GMV +1.35%。历史交互少于 10 次的用户 CTR 提升 0.53%，至少有 500 次交互的用户提升 3.12%。
+version_note|数值核对自 arXiv 上带 DOI 的作者全文，ACM 托管版本待核。
+serving_infra|历史样本存为紧凑的码本索引。线上将当前请求送入学习得到的投影层，跳过分词器的前向计算。
+stages.0.model_family|同时做 token 级和样本级注意力的 SIF-Mixer
+stages.0.details|token 级注意力在一次交互内融合特征组。样本级注意力连接不同交互中对应的 token，使当前请求可以读取历史样本。
+id_tokenization.approach|用分层分组自适应量化编码交互样本
+id_tokenization.details|分词器对原始字段分组，将较大的组拆为子 token，再做残差量化。token 表示一次带上下文的交互，包含同一物品多次曝光间可能变化的信号。
+features_signals.0|历史用户、物品、上下文和反馈字段
+features_signals.1|当前请求的特征，编码到目标样本
+training.mode|用标签监督样本分词，并训练判别式排序模型
+training.objectives.0|用二元交叉熵预测交互
+training.objectives.1|量化承诺损失，以及当前请求投影与码本的对齐损失
+training.notes|排序标签经量化路径监督码本学习。
+scale.0.metric|离线评估数据
+scale.0.value|90 天内超过 10 亿条曝光
+results_table.online.0.setting|美团外卖线上 A/B
+results_table.online.0.versus|线上 HyFormer
+results_table.online.1.setting|美团外卖线上 A/B
+results_table.online.1.versus|线上 HyFormer
+results_table.online.2.setting|美团外卖线上 A/B
+results_table.online.2.metric|每会话 GMV
+results_table.online.2.versus|线上 HyFormer
+results_table.note|相对 HyFormer，历史交互少于 10 次的用户 CTR 提升 0.53%，至少有 500 次交互的用户提升 3.12%。
+caveats.0|5% 是原文报告的保留流量比例，各实验组分别占多少流量未报告。
+caveats.1|结果来自论文描述的外卖上线场景，服务延迟和硬件未报告。
+unknown_fields.0|服务延迟绝对值和吞吐
+unknown_fields.1|生产训练算力、服务硬件和推理成本
+code.note|在论文和公开代码检索中未找到作者实现。
+deployment.scenario|美团外卖推荐排序
+deployment.ab_traffic|保留 5% 流量
+deployment.ab_duration|7 天
+deployment.baseline|线上 HyFormer 排序器
+deployment.online_lifts.2.metric|每会话 GMV

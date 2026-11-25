@@ -5,8 +5,9 @@ summary|两阶段漏斗：深度候选生成网络被表述为对数百万个视
 core_idea|深度候选生成网络被表述为极端多分类，然后是为期望观看时长训练的深度排序器。
 deployed_in|YouTube 首页推荐
 scale_short|约十亿个参数，数千亿个训练样本
-key_result|离线：报告 MAP 和按观看时长加权的指标，没有线上 A/B 数字
-results_reported|论文报告离线的 MAP 和按观看时长加权的指标，并指出线上 A/B 结果并不总与离线结果相关。
+key_result|将训练样本年龄用作召回特征后，线上 A/B 中近期上传视频的观看时长增加。
+results_reported|第 5 节报告，将训练样本年龄用作召回特征后，线上 A/B 中近期上传视频的观看时长提高，具体涨幅未报告。另据表 1，次日离线留出集上，三层排序器按观看时长加权的用户损失为 34.6%，无隐藏层时为 41.6%。
+updates.0.note|重核会议全文，区分线上定性结果、离线排序损失与训练规模。
 serving_infra|候选生成使用近似最近邻查找；对数百个候选做排序。
 stages.0.model_family|深度候选生成网络，带平均的 embedding bag、ReLU MLP、sampled softmax，服务时用 ANN 查找
 stages.0.details|推荐被表述为对数百万个视频的极端多分类。训练使用候选采样，数千个负样本，并对采样做校正。服务时，打分归结为在点积空间中做近似最近邻搜索，返回数百个候选。
@@ -27,11 +28,19 @@ scale.0.metric|模型规模
 scale.0.value|约十亿个参数
 scale.1.metric|训练数据
 scale.1.value|数千亿个样本
-results_table.note|论文报告离线的 MAP 和按观看时长加权的指标，并指出线上 A/B 结果并不总与离线结果相关。
+results_table.online.0.setting|近期上传视频的线上 A/B
+results_table.online.0.method|使用训练样本年龄特征的召回
+results_table.online.0.metric|观看时长
+results_table.online.0.result|观看时长增加，幅度未报告
+results_table.online.0.versus|未报告
+results_table.offline.0.setting|次日离线留出集
+results_table.offline.0.method|有三层隐藏层的排序器
+results_table.offline.0.metric|按观看时长加权的用户损失
+results_table.offline.0.versus|无隐藏层，41.6%
 caveats.0|这是 2016 年的论文；这份来源没有描述当前的 YouTube 系统。
-unknown_fields.0|延迟
-unknown_fields.1|当前的架构
+unknown_fields.0|A/B 流量和时长
+unknown_fields.1|服务延迟绝对值和训练算力
+unknown_fields.2|当前的架构
 code.repos.0.note|第三方的 YouTubeDNN 实现；Google 没有发布代码。
 deployment.scenario|YouTube 首页推荐
-deployment.training_compute|在数千亿个样本上训练约十亿个参数
-deployment.notes.0|论文指出线上 A/B 结果并不总与离线指标相关。
+deployment.notes.0|原系统使用线上 A/B。原文报告观看时长增加的对象是近期上传的视频。

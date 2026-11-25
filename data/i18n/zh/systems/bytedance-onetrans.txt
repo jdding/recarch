@@ -1,0 +1,54 @@
+surface|字节跳动电商推荐的重排与混排
+era_reason|本卡展示的 GSR 版本用自回归解码生成最终曝光列表。
+tldr|OneTrans-GSR 用一个解码器生成混合内容的最终曝光列表。与线上级联相比，人均 GMV 提升 2.63%，重排与混排的合计延迟下降 13%。
+summary|OneTrans-GSR 扩展 OneTrans 骨干，将上游排序器已打分的候选组织成曝光列表。解码器选择候选、分配不同内容类型的曝光位并确定顺序。离线奖励模型给完整列表打分，用于后训练。服务时由解码器执行业务约束。
+core_idea|用一个自回归策略在业务约束下挑选候选，并排出混合内容的曝光列表。
+deployed_in|字节跳动电商推荐的重排与混排
+scale_short|研究使用三个月的生产请求日志
+key_result|线上 A/B 中，人均 GMV +2.63%，重排与混排合计延迟 -13%
+results_reported|第 6.7 节和表 11 报告了一周按账号随机分组的线上 A/B，符合条件的流量在两组间等分。相对线上 Generator–Evaluator 级联，OneTrans-GSR 的人均 GMV 提升 2.63%，广告主价值提升 2.06%，复购率提升 2.03%。复购率在 14 天观察窗口结束后统计。重排和混排的端到端延迟下降 13%。
+version_note|GSR 和 V2 在不同流水线阶段延伸初代骨干。本卡展示 GSR 的 arXiv 报告。初代 OneTrans 的长文收录在 WWW 2026 工业赛道论文集中。
+versions.0.note|初代排序器用一个 Transformer 统一特征交互与行为序列建模。
+versions.1.note|扩展骨干，在召回、粗排和精排之间共享用户上下文。
+versions.2.note|扩展初代骨干，在重排和混排阶段直接生成曝光列表。
+serving_infra|服务解码器在多次列表采样间共享候选预填充缓存，并在解码时应用业务约束，直接返回选中的列表。
+stages.0.model_family|在约束下选择候选的自回归解码器
+stages.0.details|一个解码器从当前请求的候选中生成最终曝光列表，替换独立的重排和混排阶段。
+id_tokenization.approach|以当前请求中的候选作为 token
+id_tokenization.details|候选特征和上游精排分数共同构成 token。解码器从请求候选中选择，硬约束由掩码实现。
+features_signals.0|请求上下文与精排器已打分的候选
+features_signals.1|来自上游各通道的商品、短视频、直播与广告候选
+features_signals.2|用于训练奖励模型的曝光列表日志与反馈
+training.mode|先在曝光日志上预热解码器，再在生成的列表上做强化学习
+training.objectives.0|点击、下单和交易额的列表级奖励
+training.objectives.1|与复购行为相关的长期奖励
+training.objectives.2|分别标准化预测奖励与软业务偏好
+training.notes|奖励模型用于离线后训练。
+scale.0.metric|研究使用的生产日志
+scale.0.value|三个月
+results_table.online.0.setting|一周的线上 A/B
+results_table.online.0.metric|人均 GMV
+results_table.online.0.versus|线上 Generator–Evaluator
+results_table.online.1.setting|一周的线上 A/B
+results_table.online.1.metric|广告主价值
+results_table.online.1.versus|线上 Generator–Evaluator
+results_table.online.2.setting|一周的线上 A/B，另设 14 天观察窗口
+results_table.online.2.metric|复购率
+results_table.online.2.versus|线上 Generator–Evaluator
+results_table.online.3.setting|一周的线上 A/B
+results_table.online.3.metric|重排与混排延迟
+results_table.online.3.versus|线上 Generator–Evaluator
+caveats.0|A/B 评估整体替换重排和混排的效果。召回、精排与业务规则保持一致。
+caveats.1|延迟降幅覆盖重排和混排两段。表 10 单独测量解码器路径。
+caveats.2|14 天是复购观察窗口，A/B 持续一周。
+unknown_fields.0|满足 A/B 条件的流量占总生产流量的比例
+unknown_fields.1|替换的两段链路的线上延迟绝对值、吞吐及加速器预算
+code.note|在论文和公开代码检索中未找到 GSR 版本的作者实现。
+deployment.scenario|字节跳动电商推荐系统的重排和混排
+deployment.ab_traffic|按账号随机分组，符合条件的流量在两组间等分
+deployment.ab_duration|一周
+deployment.baseline|已部署的 Generator–Evaluator 级联
+deployment.online_lifts.0.metric|人均 GMV
+deployment.online_lifts.1.metric|广告主价值
+deployment.online_lifts.2.metric|复购率
+deployment.serving_latency|重排与混排两段的端到端延迟下降 13%

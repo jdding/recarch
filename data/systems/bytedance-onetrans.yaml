@@ -1,0 +1,115 @@
+id: bytedance-onetrans
+name: OneTrans
+company: ByteDance
+surface: ByteDance e-commerce recommendation, reranking and mix-ranking
+year: 2025
+era: generative
+era_reason: The presented GSR variant generates the exposure slate autoregressively.
+first_public: "2025-10"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2611.04720v1
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: OneTrans-GSR generates the final mixed-content slate in one decoder. Against the production cascade, GMV per user rose 2.63% and latency across reranking and mix-ranking fell 13%.
+summary: OneTrans-GSR extends the OneTrans backbone to assemble the exposure slate from candidates scored by the upstream ranker. A decoder chooses the candidates, allocates positions across content types and orders the slate. An offline reward model scores complete slates for post-training, and the decoder enforces business constraints at serving time.
+paradigms: [learning-to-rank, sequential-transformer, rl-alignment]
+stages:
+- stage: re-rank
+  model_family: Autoregressive decoder with constrained candidate selection
+  details: A single decoder generates the exposure list from request-specific candidates, replacing the separate reranking and mix-ranking stages.
+id_tokenization:
+  approach: Request-local candidate tokens
+  details: Candidate features and the upstream fine-ranking score form tokens. The decoder selects from the request's candidates under masks for hard constraints.
+features_signals:
+- Request context and pre-scored candidates from the fine ranker
+- Product, short-video, livestream and advertising candidates from upstream channels
+- Logged exposure slates and outcomes for reward-model training
+training:
+  mode: Decoder warm-up on logged slates followed by reinforcement learning on generated slates
+  objectives:
+  - Slate-level rewards for clicks, orders and transaction value
+  - Long-term reward based on repurchase behavior
+  - Separate standardization of predicted rewards and soft business preferences
+  notes: Reward models operate during offline post-training.
+serving_infra: The serving decoder shares the candidate prefill cache across slate samples and applies business rules during decoding. It serves the selected slate directly.
+scale:
+- metric: Production logs used in the study
+  value: Three months
+  note: Section 6.1 describes the logged candidate pools, displayed slates and outcomes.
+results_reported: 'Section 6.7 and Table 11 report a one-week account-randomized A/B test, with eligible traffic split equally across arms. Against the deployed Generator–Evaluator cascade, OneTrans-GSR raised GMV per user 2.63%, advertiser value 2.06% and repurchase rate 2.03%. Repurchase was read after a 14-day observation window. End-to-end latency across reranking and mix-ranking fell 13%.'
+caveats:
+- The A/B compares a complete replacement of reranking and mix-ranking. Retrieval, fine ranking and the business rule set were held fixed.
+- The latency change covers reranking and mix-ranking. Table 10 measures the decoder path separately.
+- The 14-day window is for measuring repurchases. The experiment ran for one week.
+unknown_fields:
+- Share of total production traffic eligible for the A/B
+- Absolute production latency across the two replaced stages, throughput and accelerator budget
+sources:
+- title: OneTrans-GSR author full text, arXiv 2611.04720v1
+  url: https://arxiv.org/html/2611.04720v1
+  type: paper
+- title: OneTrans, WWW 2026 Industry
+  url: https://doi.org/10.1145/3774904.3792838
+  type: paper
+- title: OneTrans author full text, arXiv 2510.26104v3
+  url: https://arxiv.org/html/2510.26104v3
+  type: paper
+- title: OneTrans-V2 author full text, arXiv 2609.28589v1
+  url: https://arxiv.org/html/2609.28589v1
+  type: paper
+version: OneTrans-GSR
+versions:
+- name: OneTrans
+  first_public: "2025-10"
+  source: https://doi.org/10.1145/3774904.3792838
+  venue: WWW 2026 Industry
+  note: Original ranker unifies feature interaction and behavior-sequence modeling in one Transformer.
+- name: OneTrans-V2
+  first_public: "2026-09"
+  source: https://arxiv.org/html/2609.28589v1
+  note: Extends the backbone to share user context across retrieval, preranking and fine ranking.
+- name: OneTrans-GSR
+  first_public: "2026-11"
+  source: https://arxiv.org/html/2611.04720v1
+  note: Extends the original backbone to generate the final slate across reranking and mix-ranking.
+version_note: GSR and V2 extend the original backbone at different stages. This card presents the arXiv GSR report. The original OneTrans has a WWW 2026 Industry proceedings paper.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+  note: No author implementation for the presented GSR variant was found in the paper or in a public code search.
+core_idea: Use one autoregressive policy to choose and order a mixed-content slate under business constraints.
+deployed_in: ByteDance e-commerce reranking and mix-ranking
+scale_short: Study uses three months of production request logs
+key_result: GMV per user +2.63% and reranking plus mix-ranking latency -13% in the production A/B
+results_table:
+  online:
+  - {setting: One-week production A/B, method: OneTrans-GSR, metric: GMV per user, result: "+2.63%", versus: Production Generator–Evaluator}
+  - {setting: One-week production A/B, method: OneTrans-GSR, metric: Advertiser value, result: "+2.06%", versus: Production Generator–Evaluator}
+  - {setting: One-week production A/B with 14-day follow-up, method: OneTrans-GSR, metric: Repurchase rate, result: "+2.03%", versus: Production Generator–Evaluator}
+  - {setting: One-week production A/B, method: OneTrans-GSR, metric: Reranking and mix-ranking latency, result: "-13%", versus: Production Generator–Evaluator}
+deployment:
+  online_evidence: online_numbers
+  scenario: Reranking and mix-ranking for a ByteDance e-commerce recommendation system
+  ab_traffic: Equal shares of eligible traffic, randomized at the account level
+  ab_duration: One week
+  baseline: Deployed Generator–Evaluator cascade
+  online_lifts:
+  - {metric: GMV per user, value: "+2.63%"}
+  - {metric: Advertiser value, value: "+2.06%"}
+  - {metric: Repurchase rate, value: "+2.03%"}
+  training_compute: not_reported
+  serving_latency: 13% lower end to end across reranking and mix-ranking
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Sections 4 and 5 describe slate generation, rewards and constrained decoding.
+  - Section 6.1 reports the production log window.
+  - Section 6.7 and Table 11 give A/B assignment, business metrics and latency scope.
+  basis: full_text
+  checked_on: "2026-11-25"

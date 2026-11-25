@@ -1,0 +1,119 @@
+id: bytedance-hap-2026
+name: HAP
+company: ByteDance
+surface: Toutiao feed recommendation, between retrieval and fine ranking
+year: 2026
+era: deep
+era_reason: Candidate scores come from discriminative pre-ranking models trained on interaction labels.
+first_public: "2026-03"
+venue: WWW 2026 Industry
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3774904.3792825
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Toutiao splits pre-ranking into a cheap pass for all candidates and a stronger pass for the shortlist. App usage time rose by 0.4% in its production A/B test.
+summary: Heterogeneity-Aware Adaptive Pre-ranking separates training negatives by where they fall out of the recommendation cascade. A lightweight model scores all retrieved candidates and an expressive model rescores the shortlist before fine ranking. Toutiao uses request-level logs to join features and feedback across stages.
+paradigms:
+- learning-to-rank
+stages:
+- stage: pre-rank
+  model_family: Cascaded discriminative pre-rankers with feature-reduced and higher-capacity models
+  details: The lightweight model scores every retrieved candidate. The expressive model rescores the top candidates before the existing fine ranker.
+id_tokenization:
+  approach: Dedicated ID encoding not reported
+  details: The paper describes user, item and context features in the request logs.
+features_signals:
+- Clicked and unclicked impressions
+- Candidate positions at ranking and pre-ranking stages, plus random catalog negatives
+- User, item and contextual features joined to the list of candidates for each request
+training:
+  mode: Joint optimization on request-level recommendation logs
+  objectives:
+  - Groupwise contrastive losses over negatives of different difficulty
+  - Contrastive loss over hard negatives for the expressive model
+  - Auxiliary binary cross-entropy that also uses requests without clicks
+  notes: The online setup trains on 60 days of full request traces across retrieval, pre-ranking, ranking and re-ranking.
+serving_infra: The production pre-ranker sends the top 550 candidates, about 30% of the scored candidate set, to the expressive model. Request logs share user features across candidates and attach delayed interactions asynchronously.
+scale:
+- metric: Production model sizes
+  value: 3.1M and 8.6M parameters
+  note: Lightweight and expressive pre-rankers respectively in Section 4.6
+results_reported: 'In Section 4.6, the Toutiao online A/B against the prior production pre-ranker reports app usage time +0.4%, active days +0.05% and CTR +3.0%. The authors report comparable serving latency and 6% lower CPU usage, with the top 550 candidates, about 30%, routed to the expressive model. At the time of writing, HAP had been fully deployed for 9 months. In the separate offline ToutiaoRec evaluation in Table 3, hard-negative AUC was 0.8023 for HAP and 0.7917 for HCCP.'
+caveats:
+- The 30% figure is the fraction of candidates routed within a request. The paper gives no traffic split for the production A/B.
+- The 9 months refer to the period of full deployment at the time of the paper. The production A/B duration is unreported.
+- Table 5 is a routing ablation with its own latency and CTR results. The production A/B figures here come from Section 4.6.
+unknown_fields:
+- A/B traffic split and duration
+- Serving latency in milliseconds for the production rollout, QPS and hardware
+- Detailed production training compute and monetary inference cost
+sources:
+- title: Not All Candidates are Created Equal, WWW 2026 Industry
+  url: https://doi.org/10.1145/3774904.3792825
+  type: paper
+- title: HAP author full text, arXiv 2603.03770v1
+  url: https://arxiv.org/html/2603.03770v1
+  type: paper
+- title: Toutiao Rec HAP project documentation
+  url: https://github.com/Toutiao-Rec/HAP
+  type: documentation
+version_note: The WWW 2026 Industry program confirms the paper. Numbers were checked against the DOI-bearing author full text on arXiv. The ACM-hosted full text remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+  note: The official HAP repository contains documentation and figures with a link to the dataset. No model implementation was found.
+core_idea: Score all candidates cheaply, then apply a stronger pre-ranker to the shortlist.
+deployed_in: Toutiao feed pre-ranking, fully rolled out at the time of the paper
+scale_short: Production pre-rankers with 3.1M and 8.6M parameters
+key_result: App usage time +0.4% against the prior production pre-ranker in a Toutiao A/B test
+results_table:
+  online:
+  - setting: Toutiao production A/B
+    method: HAP
+    metric: App usage time
+    result: +0.4%
+    versus: Prior production pre-ranker
+  - setting: Toutiao production A/B
+    method: HAP
+    metric: Active days
+    result: +0.05%
+    versus: Prior production pre-ranker
+  - setting: Toutiao production A/B
+    method: HAP
+    metric: CTR
+    result: +3.0%
+    versus: Prior production pre-ranker
+  offline:
+  - setting: ToutiaoRec hard negatives
+    method: HAP
+    metric: AUC
+    result: "0.8023"
+    versus: HCCP 0.7917
+deployment:
+  online_evidence: online_numbers
+  scenario: Toutiao feed pre-ranking, with about 30% of candidates routed to the expressive model
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Prior production pre-ranker
+  online_lifts:
+  - metric: App usage time
+    value: +0.4%
+  - metric: Active days
+    value: +0.05%
+  - metric: CTR
+    value: +3.0%
+  training_compute: not_reported
+  serving_latency: Comparable to the prior production model
+  serving_qps: not_reported
+  inference_cost: CPU usage 6% lower than the prior production model
+  hardware: not_reported
+  fulltext_refs:
+  - Section 3.5 and Figure 4 describe the pre-ranking cascade and sample pipeline.
+  - Section 4.6 reports the production A/B, candidate routing threshold, CPU usage and subsequent full rollout.
+  - Table 3 reports the offline AUC on ToutiaoRec.
+  basis: full_text
+  checked_on: "2026-11-25"

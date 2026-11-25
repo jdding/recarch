@@ -1,0 +1,53 @@
+surface|Google Discover 信息流，在排序前过滤候选
+era_reason|用学习得到的成对分类模型和单内容模型过滤候选。
+tldr|Google Discover 在排序前过滤过时内容。在为期两个月的保留组实验中，对照组禁用两道过滤器，SDF 使信息流正向互动提升 0.26%。
+summary|SDF 结合两种内容过滤器。成对分类器判断新报道是否使旧内容失效，另一模型预测一条内容的生命周期访问量中已有多少应当发生。Google Discover 缓存两道过滤器的输出，其中任意一道判为过时，就会在排序前移除该候选。
+core_idea|移除已被新内容取代或自身时效衰减的候选。
+deployed_in|Google Discover 信息流，位于排序器上游
+scale_short|每日评估数百万条新内容
+key_result|在两个月的保留组实验中，正向互动提升 0.26%
+results_reported|第 4.2 节报告，SDF 的过时内容占比差为 -6.91 个百分点，发布时间阈值加互动骤降的基线为 -0.10 个百分点。每个占比差比较连续四周抽样中曝光增加与曝光减少的内容。另做两个月的联合保留组实验，对照组禁用两道过滤器，SDF 的划走率下降 0.16%，信息流多样性提升 0.13%，正向互动提升 0.26%。第 4.3 节报告，相比部署前，两年内用户提交的过时投诉减少 54.9%。2026 年第一季度，两道过滤器分别节省服务侧 CPU 和 TPU 用时 4.76% 和额外的 3.98%。
+version_note|CIKM 官方程序确认该文属于应用研究赛道。数值核对自带会议 DOI 的作者全文，ACM 托管版本待核。
+serving_infra|两道过滤器均在请求链路之外打分。请求到来时读取已缓存的分数或标签。成对过滤器对时效性强的内容做准实时处理，并用批处理扩大覆盖。
+stages.0.model_family|判断新旧内容取代关系的成对分类器与多模态流量比例预测模型
+stages.0.details|成对模型检查相关内容之间是否存在取代关系。流量比例模型从单条内容估计多个时间窗口的衰减程度。任意一道判为过时即移除候选。
+id_tokenization.approach|用于过滤的内容表示
+id_tokenization.details|流量比例编码器融合文本、图片和视频 token。
+features_signals.0|用于判断取代关系的相关内容对与发布时间
+features_signals.1|用于建模时效衰减的文本、图片和视频内容
+features_signals.2|以历史搜索点击产生的访问量作为流量比例训练信号
+training.mode|分别训练成对过滤器与流量比例过滤器
+training.objectives.0|将成对取代关系判断蒸馏到适合大规模部署的模型
+training.objectives.1|预测多个时间窗口内的累计访问量比例
+training.notes|流量比例标签来自搜索点击，固定参考窗口为 30 天。
+scale.0.metric|评估时效性的新内容量
+scale.0.value|每日数百万条
+results_table.online.0.setting|Google Discover 连续四周的 A/B 抽样
+results_table.online.0.metric|过时内容占比差
+results_table.online.0.result|-6.91 个百分点
+results_table.online.0.versus|发布时间阈值加互动骤降的基线为 -0.10 个百分点
+results_table.online.1.setting|Google Discover 两个月保留组实验
+results_table.online.1.metric|划走率
+results_table.online.1.versus|同时关闭两道过滤器
+results_table.online.2.setting|Google Discover 两个月保留组实验
+results_table.online.2.metric|信息流多样性
+results_table.online.2.versus|同时关闭两道过滤器
+results_table.online.3.setting|Google Discover 两个月保留组实验
+results_table.online.3.metric|正向互动
+results_table.online.3.versus|同时关闭两道过滤器
+results_table.note|独立的两年部署监测显示，相比部署前，用户提交的过时投诉减少 54.9%。
+caveats.0|过时内容占比差来自两组抽样内容，与联合保留组实验衡量的结果不同。
+caveats.1|两年的投诉数来自线上监测，期间包含模型升级和地区扩展。
+caveats.2|CPU 和 TPU 节省以服务用时计，论文未给绝对成本。
+unknown_fields.0|A/B 流量占比
+unknown_fields.1|服务延迟绝对值、吞吐和加速器型号
+unknown_fields.2|训练算力和推理绝对成本
+code.note|在论文和公开代码检索中未找到作者实现。
+deployment.scenario|Google Discover 候选过滤，同时启用两道过滤器
+deployment.ab_duration|联合保留组实验为两个月
+deployment.baseline|同时关闭两道过滤器的保留组
+deployment.online_lifts.0.metric|划走率
+deployment.online_lifts.1.metric|信息流多样性
+deployment.online_lifts.2.metric|正向互动
+deployment.inference_cost|2026 年第一季度，关系过滤器节省服务侧 CPU 和 TPU 用时 4.76%，内在衰减过滤器额外节省 3.98%。
+deployment.notes.0|过滤器在请求链路之外运行，服务时读取缓存输出。
