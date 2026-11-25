@@ -11,7 +11,10 @@ venue_year: null
 published_version_checked: null
 primary_source: "https://careersatdoordash.com/blog/homepage-recommendation-with-exploitation-and-exploration/"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+updates:
+- date: '2026-11-25'
+  note: Rechecked the engineering account and added the affected population and the scope of UCB exploration.
 system_type: recommendation
 evidence_level: production_described
 tldr: "DoorDash ranks its homepage in three stages; a deep learning-to-rank Universal Ranker scores mixed entity types and UCB adds exploration. No headline number published."
@@ -35,8 +38,9 @@ training: {mode: "Daily refresh of data driving UR and uncertainty", objectives:
 serving_infra: Batch feature ETL with internal tool Fabricator.
 scale:
   - {metric: Candidates after retrieval, value: "<= 1,200", note: "blog"}
-results_reported: "Blog reports consistent online experiment improvements without a single headline number."
-caveats: [2022 post; DoorDash has since published newer LLM-assisted personalization posts not covered here.]
+results_reported: DoorDash reports more engagement and conversions in homepage experiments. The reported impact was concentrated among people who had already browsed entities, with little impact among new users.
+caveats:
+- In the 2022 account, exploration applied to vertical ordering. Exploration within carousels is discussed as future work.
 unknown_fields: [model size, latency, headline lift numbers]
 sources:
   - {title: "Homepage Recommendation with Exploitation and Exploration, DoorDash, 2022", url: "https://careersatdoordash.com/blog/homepage-recommendation-with-exploitation-and-exploration/", type: engineering_blog}
@@ -52,7 +56,7 @@ deployed_in: DoorDash homepage of stores, carousels and items
 scale_short: At most 1,200 candidates after retrieval
 key_result: Consistent online experiment improvements, no headline number reported
 results_table:
-  note: The blog reports consistent online experiment improvements without a single headline number.
+  note: The engineering account reports more homepage engagement and conversions, mainly among previous browsers, with no lift percentages.
 deployment:
   online_evidence: online_qualitative
   scenario: DoorDash homepage of stores, carousels and items
@@ -66,6 +70,8 @@ deployment:
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - The card reports consistent improvements in online experiments, with no headline number.
-  basis: card_content
-  checked_on: '2026-10-31'
+  - The result primarily concerns consumers with browsing data. The engineering account reports little change for new consumers and gives neither rates nor rollout details.
+  fulltext_refs:
+  - Figure 4 and the Enabling a better homepage experience section describe the treatment, affected population and observed outcome.
+  basis: full_text
+  checked_on: '2026-11-25'

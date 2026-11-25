@@ -8,10 +8,14 @@ era_reason: "REINFORCE policy-gradient deep recommender with off-policy correcti
 first_public: "2018-12"
 venue: "WSDM 2019"
 venue_year: 2019
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3289600.3290999"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the WSDM 2019 proceedings. Section 6.2 separates the stochastic-policy experiment, the top-K test and the K sweep."
+updates:
+- date: "2026-11-25"
+  note: "Checked the WSDM 2019 proceedings. Section 6.2 separates the stochastic-policy experiment, the top-K test and the K sweep."
 system_type: recommendation
 evidence_level: production_described
 tldr: "REINFORCE policy-gradient candidate generator with off-policy and top-K correction; live A/B shows ViewTime gains, +0.07% for the stochastic-policy bucket."
@@ -73,10 +77,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1812.02353
-  local_pdf: /workspace/src/fulltext/1812.02353.pdf
   sections_read: Abstract, intro, related work, REINFORCE recommender setup, off-policy correction, top-K correction, variance reduction,
     simulations per Sec 6.1, live experiments per Sec 6.2, conclusion
-  verified_on: '2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: "WSDM 2019 proceedings full text checked 2026-11-25."
 code:
   status: none
   checked_on: '2026-10-30'
@@ -94,7 +98,7 @@ results_table:
     method: Top-K off-policy correction
     metric: ViewTime
     result: +0.85%, videos viewed -0.16%
-    versus: Production candidate generator
+    versus: Candidate generator with standard off-policy correction
   - setting: Live A/B, 5% of users
     method: Stochastic policy with exploration data
     metric: ViewTime
@@ -123,9 +127,9 @@ results_table:
 deployment:
   online_evidence: online_numbers
   scenario: YouTube production candidate generation
-  ab_traffic: Users split 90%, 5% and 5%; the stochastic policy served 5%
-  ab_duration: Multi-day runs; 5 days for the K sweep
-  baseline: Production candidate generator
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Candidate generator with standard off-policy correction, for the K=16 comparison
   online_lifts:
   - metric: ViewTime, top-K correction with K=16
     value: +0.85%
@@ -136,5 +140,8 @@ deployment:
   hardware: not_reported
   notes:
   - Videos viewed fell 0.16% in the same test. Other settings in the card show smaller or negative ViewTime changes.
+  - The 90% / 5% / 5% split was for the separate stochastic-policy test. The five-day run was the K sweep.
+  fulltext_refs:
+  - Sections 6.2.1 to 6.2.4 distinguish the stochastic bucket, the standard correction, the K=16 top-K test and the K sweep.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"

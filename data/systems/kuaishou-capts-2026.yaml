@@ -130,10 +130,11 @@ deployment:
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: 'Online scoring covers 10^2 to 10^3 recent candidates and a nearline cache covers 10^3 to 10^4 long-term candidates; the paper says only lightweight scoring, routing and cache lookup are added.'
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - 'Each I2I channel returns the top 50 items per trigger.'
+  - "Online scoring covers 10^2 to 10^3 recent candidates and a nearline cache covers 10^3 to 10^4 long-term candidates; the paper says only lightweight scoring, routing and cache lookup are added."
   fulltext_refs:
   - 'Sec 4.4.1 and Table 6: online A/B lifts, with the four channels Swing, Marm, SimLR and MMU'
   - 'Sec 3.3: 10^2 to 10^3 online candidates, 10^3 to 10^4 nearline candidates, lightweight scoring only'

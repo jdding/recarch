@@ -1,0 +1,37 @@
+surface|For You 首页信息流
+era_reason|Phoenix 用双塔做向量召回，再由有监督的 Transformer 预测用户行为并给候选打分。语义 ID 在两个模型中都用于表示帖子。
+tldr|X 从关注关系内外取回 For You 的候选。Phoenix 按向量相似度召回，再按预测的用户行为给每条候选打分。
+summary|For You 通过 Thunder 获取关注账号的帖子。Phoenix 按向量相似度召回，SimClusters 和热门内容等来源补充候选。Phoenix Transformer 独立给候选打分，彼此不可见。Home Mixer 对行为预测加权，根据作者和关注关系调整得分，最后按多样性重排。
+versions.0.note|Home Mixer 将搜索和图召回，包括 SimClusters 与 TwHIN，接入神经网络精排。
+versions.1.note|复审采用 十一月快照，记录了双塔召回、候选隔离的 Transformer 排序，以及帖子的语义 ID 表示。
+version_note|本卡呈现固定在 2026 年 十一月的 Phoenix 快照。2023 年的开源记录用于查阅旧版 For You 链路。
+updates.0.note|合并 Twitter 和 Phoenix 两次开源快照，复核现版召回和排序文档，并修正架构分类。
+stages.0.model_family|Phoenix 双塔与其他候选来源
+stages.0.details|召回 checkpoint 内含候选塔构建的帖子向量索引，Phoenix 用点积召回。Thunder、SimClusters 和热门内容补充候选。
+stages.1.model_family|候选隔离的 Phoenix Transformer
+stages.1.details|每条候选只关注用户历史和候选自身。各行为预测加权后，再由 Home Mixer 调整得分。
+stages.2.model_family|VMRanker 多样性重排
+stages.2.details|取得候选分数后，重排服务用帖子向量和行列式点过程调整顺序。
+id_tokenization.approach|对帖子的多模态向量做残差量化
+id_tokenization.details|六层各 256 个码的语义 ID 为召回提供帖子标识，为排序提供输入特征，两者还使用哈希特征。
+features_signals.0|用户交互历史
+features_signals.1|帖子语义 ID、帖子和作者哈希特征
+training.mode|召回和排序分别用 JAX 做离线训练
+training.objectives.0|召回采用对比学习，以点赞作为正样本信号
+training.objectives.1|有监督地预测用户对候选帖子的多种行为
+training.notes|独立训练召回和排序模型，并分别生成 checkpoint。
+serving_infra|Rust Home Mixer 协调候选源和 gRPC 推理。Phoenix 提供 JAX 模型服务，并从 checkpoint 加载召回索引。
+scale.0.metric|帖子表示
+scale.0.value|六层残差编码，每层 256 个码
+results_reported|开源仓库说明了生产架构和持续实验机制，未披露信息流的实测提升。
+caveats.0|发布范围未包含生产 checkpoint 和生产数据，仓库另有合成数据的本地运行示例。
+caveats.1|架构细节来自固定在 2026 年 十一月的快照，晚于 Phoenix 首次发布。
+unknown_fields.0|生产 A/B 设计、指标、延迟与吞吐
+code.repos.0.note|公开了信息流编排、Phoenix 模型定义及训练与服务代码。生产数据及 checkpoint 未随代码提供。
+core_idea|用向量召回和候选隔离的行为预测打分，再接信息流规则和多样性重排。
+deployed_in|X 官方文档描述的 For You 首页信息流
+scale_short|每帖子六层、每层 256 个码，生产流量未披露
+key_result|有官方架构和训练及服务代码，生产提升未披露。
+results_table.note|信息流和 Phoenix 的 README 给出了系统设计，未披露 A/B 结果。
+deployment.scenario|X For You 首页信息流
+deployment.notes.0|项目说明了在线实验的机制，未披露本快照的对比结果。

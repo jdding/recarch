@@ -75,7 +75,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1606.07792
-  local_pdf: /workspace/src/a_1606.07792.pdf
   sections_read: 'Full 4-page paper: abstract, model (wide, deep, joint training), system implementation (data generation, training,
     serving), experiments (online, serving performance)'
   verified_on: '2026-10-30'

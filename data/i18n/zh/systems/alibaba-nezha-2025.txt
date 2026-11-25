@@ -44,6 +44,6 @@ deployment.ab_duration|7 天
 deployment.baseline|此前不放生成式检索器进首页的部署方式
 deployment.training_compute|基准覆盖 0.6B 与 3B 骨干；训练算力未报告
 deployment.serving_latency|低于 30 毫秒首页约束，从 1000 多毫秒降下；算法级 2.6 倍加排队节省；表 1 计时保密归一化
-deployment.inference_cost|无模型哈希集验证取代目标模型验证；合法草稿比例 43% 到 93% 以上
+deployment.notes.2|无模型哈希集验证取代目标模型验证；合法草稿比例 43% 到 93% 以上
 deployment.notes.0|论文将该业务单元描述为占广告收入四分之一以上。
 deployment.notes.1|表 1 基线测量已含 KV cache。

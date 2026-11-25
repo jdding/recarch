@@ -2,7 +2,7 @@
 id: pinterest-transact
 reviewed: false
 generated_by: templates over card fields
-content_hash: 872580ded8924383
+content_hash: b964248496fb00ac
 drop: []
 items:
 - key: what
@@ -37,9 +37,9 @@ items:
   - results_reported
 - key: online
   q_en: Does TransAct have online evidence, and how long was the A/B?
-  a_en: 'Online evidence: Online numbers. A/B duration: not reported. A/B traffic: 1.5% of Homefeed page visitors per group.'
+  a_en: 'Online evidence: Online numbers. A/B duration: Three weeks. A/B traffic: 1.5% of Homefeed page visitors per group, more than 5 million per group.'
   q_zh: TransAct 有线上证据吗，A/B 做了多久？
-  a_zh: 线上证据：有线上数据。A/B 时长：未报告。A/B 流量：每组 1.5% 的首页访客。
+  a_zh: 线上证据：有线上数据。A/B 时长：三周。A/B 流量：每组 1.5% 的首页访客，超过五百万人。
   fields:
   - deployment.online_evidence
   - deployment.ab_duration

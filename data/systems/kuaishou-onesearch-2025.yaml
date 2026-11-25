@@ -70,7 +70,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2509.03236
-  local_pdf: /workspace/src/a_2509.03236.pdf
   sections_read: Abstract, intro, related work, framework overview (KHQE, multi-view behavior injection, PARS), online A/B and efficiency
     results
   verified_on: '2026-10-30'

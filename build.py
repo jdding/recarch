@@ -712,7 +712,8 @@ def rel_date(d, today):
 
 def carousel_select(cards, today, size=6, window=7):
     """Home carousel. Activity date = max(added_on, latest updates[].date). Cards active within `window` days of `today`
-    come first, newest first; if fewer than `size`, the most recently active other cards backfill. Ties: updated before added, then id."""
+    come first, newest first; if fewer than `size`, the most recently active other cards backfill. Ties: updated before added, then id.
+    If updates fill every slot, include one addition from the last slide's date when available."""
     t = datetime.date.fromisoformat(today); items = []
     for c in cards:
         if not is_active(c): continue
@@ -723,7 +724,12 @@ def carousel_select(cards, today, size=6, window=7):
         recent = (t - datetime.date.fromisoformat(date)).days < window
         items.append({"card": c, "kind": kind, "date": date, "note": note, "recent": recent})
     items.sort(key=lambda x: (x["date"], x["kind"] == "updated", x["card"]["id"]), reverse=True)
-    return items[:size]
+    slides = items[:size]
+    if len(slides) > 1 and all(item["kind"] == "updated" for item in slides):
+        addition = next((item for item in items[size:] if item["date"] == slides[-1]["date"] and item["kind"] == "added"), None)
+        if addition:
+            slides[-1] = addition
+    return slides
 
 def strip(ev, root, today, cards=None):
     """Home carousel of recently added/updated cards (replaces the old text list). Pure HTML; static/carousel.js adds the behaviour."""

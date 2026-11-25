@@ -2,7 +2,7 @@
 id: tencent-tlow-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 4b8b935e4c95d3d3
+content_hash: 0ba9fa8a3f1539a8
 drop: []
 items:
 - key: what
@@ -62,9 +62,9 @@ items:
   - scale.2
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does Tlow report?
-  a_en: 'Serving latency: not reported. Serving QPS: not reported. Inference cost: Sequential model learns 4,096 token embeddings instead of tens of millions of item embeddings; tokenization of new items runs off the request path. Hardware: A single GPU for daily tokenization of new items.'
+  a_en: 'Serving latency: not reported. Serving QPS: not reported. Inference cost: not reported. Hardware: A single GPU for daily tokenization of new items.'
   q_zh: Tlow 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：未报告。 服务 QPS：未报告。 推理成本：序列模型学 4096 个 token 嵌入而非数千万物品嵌入；新物品 tokenization 在请求路径之外。 硬件：单张 GPU 用于每日新物品 tokenization。
+  a_zh: 服务延迟：未报告。 服务 QPS：未报告。 推理成本：未报告。 硬件：单张 GPU 用于每日新物品 tokenization。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

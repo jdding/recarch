@@ -11,10 +11,13 @@ venue_year: 2018
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3219819.3219885"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+updates:
+- date: '2026-11-25'
+  note: Rechecked the KDD paper and corrected the Similar Listings lift, the subgroup scope, and the search experiment control.
 system_type: search
 evidence_level: production_described
-tldr: "Skip-gram listing embeddings trained on click sessions, with booking as global context, feed Airbnb search ranking; Similar Listings CTR rose 20% over the prior algorithm."
+tldr: Airbnb uses click-trained listing embeddings for related listings and as search-ranking features. The Similar Listings carousel CTR rose 21% overall in its A/B test.
 summary: Skip-gram-style listing embeddings trained on click sessions with booking-as-global-context and market-aware negatives, plus
   user-type/listing-type embeddings for long-term interest; used as similarity features in the ranking model.
 paradigms:
@@ -23,10 +26,10 @@ paradigms:
 stages:
 - stage: rank
   model_family: Embedding-similarity features (to recently clicked/skipped/booked listings) fed into the search ranker
-  details: Similarity, not raw vectors, is used as a ranking feature (per secondary summary of the paper).
+  details: The GBDT uses cosine similarities to listings from the user's recent interactions and long-term user-to-listing-type similarity as ranking features.
 - stage: retrieval
   model_family: Similar Listings via embedding nearest neighbours
-  details: ''
+  details: Online cosine nearest neighbors are drawn from available listings in the same market and for the same dates, if entered.
 id_tokenization:
   approach: Listing IDs / listing types / user types
   details: null
@@ -40,7 +43,7 @@ training:
   objectives:
   - Skip-gram with booked listing as global context
   notes: 32-d embeddings.
-serving_infra: null
+serving_infra: Search machines hold shards of listing embeddings and calculate Similar Listings similarities in parallel. Click sessions and listing models are refreshed daily through Airflow and MapReduce.
 scale:
 - metric: Training sessions
   value: more than 800 million search click sessions
@@ -51,17 +54,20 @@ scale:
 - metric: Share of bookings from the two channels
   value: 99% (Search Ranking and Similar Listings)
   note: PDF
-results_reported: 'PDF: embedding features gave significant booking gains in search ranking (A/B); Similar Listings CTR improved by
-  20% over the previous algorithm.'
+results_reported: The Similar Listings A/B test raised carousel CTR by 21% overall, by 23% on pages with dates, and by 20% on dateless pages. The number of guests who found the listing they went on to book in the carousel rose 4.9%. A separate search-ranking test found a statistically significant booking gain and did not give its size.
 caveats:
-- Absolute booking-lift numbers not captured here.
+- The carousel booking-discovery metric counts guests who found an eventual booking in the carousel. The separate search-ranking booking lift has no published magnitude.
 unknown_fields:
 - serving latency
-- absolute booking lift
+- Magnitude of booking lift for search ranking and traffic allocation in the two experiments
 sources:
 - title: Real-time Personalization using Embeddings for Search Ranking at Airbnb, KDD 2018
   url: https://doi.org/10.1145/3219819.3219885
   type: paper
+- title: KDD 2018 official applied data science program and abstract
+  url: https://www.kdd.org/kdd2018/accepted-papers/view/real-time-personalization-using-embeddings-for-search-ranking-at-airbnb
+  type: documentation
+version_note: Sections 4.3 and 4.4 were checked in the KDD proceedings. They describe two distinct A/B tests for the carousel and search ranking.
 code:
   status: none
   checked_on: '2026-10-30'
@@ -72,34 +78,45 @@ code:
 core_idea: Learn listing embeddings from click sessions and use them as similarity features.
 deployed_in: Airbnb Search Ranking and Similar Listings
 scale_short: More than 800 million search click sessions for training
-key_result: Similar Listings CTR improved by 20% over the previous algorithm
+key_result: Similar Listings carousel CTR +21% overall. Search ranking bookings increased, with magnitude undisclosed.
 results_table:
   online:
-  - setting: Similar Listings
+  - setting: Similar Listings carousel A/B, all listing pages
     method: Listing embeddings
     metric: CTR
-    result: +20%
-    versus: Previous algorithm
+    result: +21%
+    versus: Location search ranker followed by availability, price and listing-type filters
   - setting: Search ranking A/B
     method: Embedding features as ranking features
     metric: Bookings
     result: Significant gain, size not given
     versus: Ranking without them
+  - setting: Similar Listings carousel A/B, all listing pages
+    method: Listing embeddings
+    metric: Guests finding their eventual booking in the carousel
+    result: +4.9%
+    versus: Location search ranker followed by availability, price and listing-type filters
 deployment:
   online_evidence: online_numbers
   scenario: Airbnb Search Ranking and Similar Listings
   ab_traffic: not_reported
   ab_duration: not_reported
-  baseline: Previous algorithm for Similar Listings; ranking without the embedding features
+  baseline: For Similar Listings, the main search ranker for the same location with availability, price and listing-type filters. For search, the ranker without embedding features.
   online_lifts:
-  - metric: Similar Listings click-through rate
-    value: +20%
+  - metric: Similar Listings carousel CTR, overall
+    value: +21%
   - metric: Search ranking bookings
     value: Significant gain, size not given
+  - metric: Guests finding their eventual booking in the carousel
+    value: +4.9%
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
   hardware: not_reported
-  basis: card_content
-  checked_on: '2026-10-31'
+  notes:
+  - Carousel CTR was +23% on listing pages with dates and +20% on dateless pages.
+  fulltext_refs:
+  - Section 4.3 gives the Similar Listings experiment, the control and the CTR breakdown. Section 4.4 describes the search-ranking test.
+  basis: full_text
+  checked_on: '2026-11-25'

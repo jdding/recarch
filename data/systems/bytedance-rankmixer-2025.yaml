@@ -71,7 +71,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2507.15551
-  local_pdf: /workspace/src/a_2507.15551.pdf
   sections_read: Abstract, intro, related work, architecture (token mixing, per-token FFN, Sparse-MoE), deployment claims
   verified_on: '2026-10-30'
 code:

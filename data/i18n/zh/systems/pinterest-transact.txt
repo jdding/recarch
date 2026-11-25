@@ -38,16 +38,15 @@ results_table.offline.1.versus|实时 TransAct -6.86%
 caveats.0|论文说明 TWIN 因依赖昂贵的离线推理系统而未比较，BERT4Rec 类模型因问题设定不同而未直接比较。
 caveats.1|离线指标 HIT@3 是 Pinterest 内部按推荐 chunk 计算的排序指标。
 caveats.2|论文说明 FlashAttention-2 因不支持下一动作损失和填充所需的自定义掩码而未直接比较。
-unknown_fields.0|A/B 持续天数
-unknown_fields.1|模型规模与训练算力
-unknown_fields.2|官方代码
-unknown_fields.3|模型头数
+unknown_fields.0|模型规模与训练算力
+unknown_fields.1|官方代码
+unknown_fields.2|模型头数
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|本卡呈现 TransAct V2，同一系统 2 个版本中的最新版。TransAct v1 保留在来源和版本列表中。
 versions.0.note|KDD 2023 论文，提出基于 transformer 的实时用户动作模型，用候选锚定的最近邻检索处理实时序列。
 versions.1.note|扩展终身行为序列、下一动作损失与网络级服务；本卡呈现此版本，发表于 RecSys 2026。
 deployment.scenario|Pinterest 首页信息流排序的序列模块，服务生产流量，覆盖超 5 亿用户
-deployment.ab_traffic|每组 1.5% 的首页访客
+deployment.ab_traffic|每组 1.5% 的首页访客，超过五百万人
+deployment.ab_duration|三周
 deployment.baseline|带实时序列的生产 TransAct 模型
 deployment.serving_latency|每主机每秒 29,000 样本环境下按一分钟窗口的 p99 评估；端到端推理延迟较未优化基线 p50 提升 103 倍、p90 提升 338 倍、p99 提升 250 倍；SKUT 在序列长度 192 延迟低 85.09%
 deployment.serving_qps|服务评估中每主机每秒 29,000 个样本
@@ -56,3 +55,5 @@ deployment.hardware|NVIDIA A10G GPU，8 MB 共享内存
 deployment.notes.0|论文说明转发量提升 1% 即被视为显著收益。
 deployment.notes.1|PinSage 序列嵌入以 int8 仿射量化存储，体积减半。
 updates.0.note|按一系统一卡规则，把 TransAct 与 TransAct V2 合并为呈现 V2 的一张卡。
+version_note|核对 RecSys 2026 正式论文。本卡呈现 TransAct V2。第 4.3 与 4.4 节核实三周线上实验、业务收益和服务基准，初代保留在版本历史。
+updates.1.note|RecSys 2026 正式论文披露为期三周的 A/B，Pinterest 首页每组超过五百万名访客。

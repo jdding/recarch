@@ -52,6 +52,6 @@ deployment.ab_traffic|用户级随机化，同一服务管线下 20% 实验桶�
 deployment.ab_duration|三周，覆盖多个完整周周期
 deployment.baseline|生产基线；离线表 2 把 BST+ALiBi 标为生产基线，但线上部分没说 A/B 对照与之相同
 deployment.serving_latency|平均服务延迟 +0.3%，从 15.4 ms 到 15.5 ms；离线推理延迟 3.02 ms
-deployment.inference_cost|238 个额外参数，FP16 下 0.47 KB
+deployment.notes.2|238 个额外参数，FP16 下 0.47 KB
 deployment.notes.0|CTR 与 RPM 提升在双侧检验下 p < 0.01 显著，整个测试期内持续为正。
 deployment.notes.1|2026 年一月在闪购广告推荐流量上 100% 上线；上线后未观察到系统性回退。

@@ -61,6 +61,9 @@ sources:
 - title: "Learning Deep Structured Semantic Models for Web Search using Clickthrough Data, CIKM 2013"
   url: https://doi.org/10.1145/2505515.2505665
   type: paper
+- title: Microsoft Research full text for CIKM 2013
+  url: https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf
+  type: paper
 version_note: 'Read from the author-hosted ACM-format PDF of the CIKM 2013 paper, which carries the CIKM 2013 copyright block. The ACM Digital Library page itself was not opened.'
 needs_fulltext: false
 fulltext:

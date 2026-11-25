@@ -107,7 +107,7 @@ for t in tests/*.test.js; do NODE_PATH=/tmp/jt/node_modules node "$t" || exit 1;
 新增或修改卡片：
 
 1. 读全文，按 schema 写 YAML 和中文翻译，每个数字记下出处页码或表号。
-2. 修改已有卡片时，在 `updates` 中加一条记录，并更新 `last_verified`。
+2. 实质升级已有卡片时，在 `updates` 中加一条记录，并更新 `last_verified`。批量字段归位与来源链接维护可在本页集中记录，保留原有证据日期。
 3. 跑准入审计、构建和全部测试。
 4. 维护者授权后，再按发布流程提交或提 PR，列出关键数字的出处。
 
@@ -129,12 +129,12 @@ for t in tests/*.test.js; do NODE_PATH=/tmp/jt/node_modules node "$t" || exit 1;
 
 准入脚本在基线报告 90 张达标、12 张豁免、4 张边缘。边缘卡为 `etsy-unified-embedding-retrieval-2023`、`kuaishou-kuaiformer-2024`、`twitter-x-for-you-2023`、`x-phoenix-for-you-2026`。
 
-Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬件。专题表展示最多两项线上指标及基线，并附延迟和硬件。下一轮用 HAP、FORGE 和 SORT 检查读者能否分辨 CPU 用量、异步缓存时间与跨场景服务延迟的测量口径。
+Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬件。专题表展示最多两项线上指标及基线，并附延迟和硬件。HAP、FORGE 和 SORT 的测量范围已在全库复审中核对。
 
 | 周次 | 内容维护交付 | 产品设计交付 | 验收、依赖与延期条件 |
 |---|---|---|---|
-| 11-23 至 11-29 | 首批四新一升级已发布。后续本地批次纳入四个召回案例、NAR4Rec 重排和 COSMO 搜索知识服务，并升级 GloRank、NextGen 和 CQ-SID。 | 已盘点 Compare 和专题的部署字段，下一步检查测量范围。 | 新卡以可定位的原文、线上证据、谱系去重与双语构建验收。 |
-| 11-30 至 12-06 | 复审下列 10 张旧卡，接续 CQ-SID 作者新版核验。 | 用 HAP、FORGE 和 SORT 检查 Compare 的部署口径。 | 记录每张卡的结论。CQ-SID 继续核对 ACM 托管全文。 |
+| 11-23 至 11-29 | 两批新增和升级已发布。原定复审提前展开，完成全库扫描、两张退场、For You 谱系合并及 HIT 补卡。 | 修正 Compare 的推理成本口径，更新长序列专题的关联卡片。 | 新卡以可定位的原文、线上证据、谱系去重与双语构建验收。 |
+| 11-30 至 12-06 | 按文末队列复查 10 张。优先补出版全文，并对照正文及图表。 | 检查下列卡片的对照、流量和延迟单位是否能在对比页逐项读懂。 | 更改需有一手证据。版本或数值待核时，保留具体缺项。 |
 | 12-07 至 12-13 | 复审下一批 10 张卡，优先检查只读过作者版本的卡。 | 基于已有卡片判断是否具备撰写预排序与重排部署专题的条件。 | 至少三张活跃卡能支持同一个工程问题才起草专题，待证字段保留在对比记录。 |
 | 12-14 至 12-20 | 复审 10 张卡，优先检查观察期和 A/B 对照缺项。 | 验收已形成的对比改进或专题的双语链接、移动端阅读和键盘操作。 | 每项升级附原始出处和本地测试。暂缺全文时记录原因和复查条件。 |
 | 12-21 至 12-27 | 复审 10 张卡，优先检查线上延迟、吞吐和硬件的测量范围。 | 在现有 Compare 中复核已修正字段的展示。 | 区分离线批测、线上模型推理与端到端请求。 |
@@ -160,9 +160,10 @@ Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬�
 
 | 状态 | 候选 | 证据及下一步 |
 |---|---|---|
-| 已在本地补卡 | 快手 NAR4Rec | KDD 2024 长文。并行计算输出位置分布，为现有 GloRank 的逐步生成提供另一种工程选择。生产测试以 Edge-rerank 为对照，实验组占 20%，作者报告全量上线。 [作者全文 §5.3](https://arxiv.org/html/2402.06871v6#S5.SS3) |
-| 优先评估预排序与重排 | 腾讯 HIT、淘宝 ICE/JBM | HIT 补广告预排序的特征交互与时延取舍，线上对照 MVKE。ICE 补首页重排评估器，固定生成器，报告 14 天生产 A/B 和全量部署。两者先按深度架构审查，在现有 50 张深度卡复审后评估容量。 [HIT §5.5](https://arxiv.org/html/2505.19849#S5.SS5) · [ICE 作者全文](https://arxiv.org/html/2611.07591v1) |
-| 草稿已升级为本地卡 | Amazon COSMO | 基于 SIGMOD 工业赛道 13 页正式全文，记录缓存式知识服务。线上证据限于受试美国流量中的搜索导航功能。 [Amazon 官方全文](https://assets.amazon.science/19/5d/bde30d0d4019be6421e79e50cda9/cosmo-paper.pdf) |
+| 已发布 | 快手 NAR4Rec | KDD 2024 长文。并行计算输出位置分布，与 GloRank 的逐步生成形成工程对照。生产测试以 Edge-rerank 为对照，实验组占 20%，作者报告全量上线。 [作者全文 §5.3](https://arxiv.org/html/2402.06871v6#S5.SS3) |
+| 本轮纳入 | 腾讯 HIT | CIKM 2025 Applied Research 长文，补可缓存双塔的广告预排序。五天 A/B 对照 MVKE，共用下游，比较收入规模与投放回报。 [作者全文 §5.5](https://arxiv.org/html/2505.19849v2#S5.SS5) · [CIKM 录用程序](https://www.cikm2025.org/program/accepted-papers) |
+| 候选 | 淘宝 ICE/JBM | 首页重排评估器，固定生成器，报告 14 天生产 A/B 和全量部署。重排已有 10 张，本轮新增名额用于广告预排序。下轮从已有淘宝重排卡的产品入口和替代关系判断独立收录价值。 [ICE 作者全文](https://arxiv.org/html/2611.07591v1) |
+| 已发布 | Amazon COSMO | 基于 SIGMOD 工业赛道正式全文，记录缓存式知识服务。线上证据限于受试美国流量中的搜索导航功能。 [Amazon 官方全文](https://assets.amazon.science/19/5d/bde30d0d4019be6421e79e50cda9/cosmo-paper.pdf) |
 | 已补正式记录和版本历史 | GloRank、淘宝 SORT-Gen | GloRank 原卡补正式标题、DOI 及作者团队对快手部署的确认。SORT-Gen 并入 NextGen 原卡版本历史。NextGen 全文确认它是同一团队已部署的秒杀对照，SORT-Gen 原论文实验在百亿补贴。 [GloRank 会议程序](https://cikm2026.diag.uniroma1.it/cikm-program/CIKM2026_program.html) · [SORT-Gen 正式记录](https://doi.org/10.1145/3726302.3731935) |
 | 等合格长版或适用豁免 | 淘宝 TARQ | 量化近似目标注意力，补预排序的效率取舍。论文报告淘宝生产 A/B 和全量部署，已查到的作者版共 5 页，暂缓独立收录。 [作者全文](https://arxiv.org/pdf/2509.16931v3) |
 | 有全文和工业部署证据 | ConAlign | 快手短视频排序有论文全文和生产 A/B。深度卡名额有限，留在候选队列。 [作者全文 §4.4](https://arxiv.org/html/2607.24092v1#S4.SS4) |
@@ -186,9 +187,23 @@ Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬�
 | 纳入本地批次 | 快手 NAR4Rec、Amazon COSMO | 补非自回归重排和搜索导航的知识服务。 |
 | 双语草稿顺延 | Alibaba International TriGen、Meta G2Rec | 双语稿移至 `data/drafts/`。Related Pins 和 PinRec 已能提供种子物品触发的参照。G2Rec 的产品场景、线上对照及生产环节待补证据。 [TriGen §5.5](https://arxiv.org/html/2611.16395v1#S5.SS5) · [G2Rec §5.3](https://arxiv.org/html/2606.20554v1#S5.SS3) |
 
-本地中英文各构建 116 张卡。更新日志、准入审计、FAQ 校验和 15 项 JavaScript 测试已通过。NAR4Rec、GLIDE、GloRank 和 CQ-SID 的线上数字已核对作者全文，ACM 托管全文待核。新增 FAQ 和调整年份出处的 NextGen FAQ 待人工复核。发布前按实际发布日核对新增日期。
+以上批次随 `da6a386` 发布。线上中英文各 116 张卡。NAR4Rec、GLIDE、GloRank 和 CQ-SID 的线上数字已核对作者全文，ACM 托管全文待核。
 
-11 月 30 日起第一轮复审 10 张。CQ-SID 已基于带 DOI 的作者新版补明线上对照和通道归因，下一次核对 ACM 托管全文。其余依次是 HAP、Google Discover SDF、美团 SIF、FORGE、SORT、Etsy Unified Embedding Retrieval、快手 KuaiFormer、Twitter/X For You 2023 和 X Phoenix For You 2026。
+### 全库复审 · 2026-11-25
+
+逐卡检查 116 张线上卡的状态、DOI、arXiv ID、正式版本标记、线上证据和对照字段，并核对可疑数字和同一产品谱系。批量读取公开全文、官方文档或代码后，再用可取得的会议全文核对重点案例。未能重读出版全文的卡继续保留原有版本标记，当前有 42 张标记为出版全文待核。
+
+| 复审结论 | 变更 |
+|---|---|
+| 退场两张 | Etsy 的论文来源层级未达标，KuaiFormer 的 arXiv 观察期已过。旧 YAML 保留，双语长用户序列专题从十二张减到十一张。 |
+| 两张合一 | X For You 保留 2023 年 Twitter 版本与 Phoenix 版本历史。新版按向量召回与行为打分列在深度架构中，语义 ID 用于表示帖子。官方代码有架构和训练服务说明，未披露 A/B。 [Phoenix 官方代码快照](https://github.com/xai-org/x-algorithm/blob/52d45989090e63992ba04e4f6cfccd73bf8cc05c/phoenix/README.md) |
+| 新增一张 | 腾讯 HIT 与现库相邻的召回、广告排序卡解决的是不同阶段的问题。预排序比较保持双塔可缓存时如何补回交互信息。作者全文第 5.5 节与表 4 记录五天 A/B，GMV +1.66%、ROI +1.55%。 [HIT 作者全文](https://arxiv.org/html/2505.19849v2#S5.SS5) |
+| 核对九份正式全文 | Airbnb 搜索 DNN、ESMM、Facebook Search EBR、快手 OneLoc、Meta VLM、MIND、TransAct V2、SIM、YouTube REINFORCE。TransAct V2 补三周与每组样本量，SIM 补日期和 MIMN 对照，YouTube 分开随机策略与 top-K 两项试验，ESMM 标明部署证据指向 BASE。 |
+| 修正可比性 | Airbnb 相似房源轮播的整体 CTR 为 +21%，无日期子集为 +20%。16 张卡移出了推理成本栏里的结构、配置或效率描述，保留在部署说明中。HAP 的 CPU 用量、FORGE 的异步缓存完成时间和 SORT 四场景相对延迟各自保留测量口径。 |
+
+活跃卡现为 114 张，其中古典 8、深度 50、生成式 56。准入审计为 99 张达标、15 张按既有规则豁免。双语首页轮播满是更新时，若最后一张同一天有新增，留一位给新增。证据更新后重新生成的问答按现有流程等待人工复核，问答评测保留已有条目的编号。
+
+下次每周轮到的 10 张依次是 HAP、Google Discover SDF、美团 SIF、淘宝 CQ-SID、腾讯 HIT、快手 GloRank、Meta Unity、Meta Lattice、阿里 URM、Spotify GLIDE。先核正式全文与作者版差异，检查 Unity 的 Pollen 实验和 Lattice 的指标定义。ICE/JBM 的独立性可并行判断，容量按实际复审结果计算。
 
 ### 后续每周记录
 

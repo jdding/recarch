@@ -8,10 +8,14 @@ era_reason: "Two-tower embedding-based retrieval for search"
 first_public: "2020-06"
 venue: "KDD 2020"
 venue_year: 2020
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3394486.3403305"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the KDD 2020 proceedings. The production case reports qualitative A/B gains and explains query and document embedding serving."
+updates:
+- date: "2026-11-25"
+  note: "Checked the KDD 2020 proceedings. The production case reports qualitative A/B gains and explains query and document embedding serving."
 system_type: search
 evidence_level: production_described
 tldr: "Facebook Search retrieves with a unified two-tower embedding that matches searcher, query and context against the document, trained with triplet loss and hard negatives."
@@ -96,7 +100,8 @@ fulltext:
   sections_read: 'Entire paper: abstract, intro, Sec 2 model (loss, unified embedding, training data mining), Sec 3 features (Tables
     1-2), Sec 4 serving (ANN tuning, Table 3, Unicorn integration, hybrid retrieval), Sec 5 later-stage optimization, Sec 6 hard mining
     and ensembles, conclusions'
-  verified_on: '2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: "KDD 2020 proceedings full text checked 2026-11-25."
 code:
   status: none
   checked_on: '2026-10-30'
@@ -154,6 +159,9 @@ deployment:
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - Significant metric gains from A/B experiments on verticals, with no numbers.
-  basis: card_content
-  checked_on: '2026-10-31'
+  - The paper reports significant metric gains from vertical search A/B experiments without publishing their metrics or magnitudes.
+  - Query embeddings are computed online. Document embeddings are generated offline with Spark and quantized for the inverted index.
+  fulltext_refs:
+  - Sections 4.2 and 4.3 give index integration and query selection. The introduction summarizes the vertical deployments and qualitative A/B results.
+  basis: full_text
+  checked_on: "2026-11-25"

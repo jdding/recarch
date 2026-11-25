@@ -8,10 +8,14 @@ era_reason: "Capsule-routing multi-interest retrieval"
 first_public: "2019-04"
 venue: "CIKM 2019"
 venue_year: 2019
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3357384.3357814"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the CIKM 2019 proceedings. Section 4.3 and Figure 4 confirm one week of online testing with the same ranking procedure behind each matching method."
+updates:
+- date: "2026-11-25"
+  note: "Checked the CIKM 2019 proceedings. Section 4.3 and Figure 4 confirm one week of online testing with the same ranking procedure behind each matching method."
 system_type: recommendation
 evidence_level: production_described
 tldr: "MIND gives each user several interest vectors via capsule-style dynamic routing; on TmallData HR@10 is 0.0972 vs 0.0589 for YouTube DNN."
@@ -81,7 +85,8 @@ fulltext:
   local_pdf: (read as text via arxiv.org/pdf/1904.08030; no local PDF)
   sections_read: 'Entire paper: abstract, intro, Sec 3 (multi-interest extractor, B2I dynamic routing, label-aware attention, training
     and serving), Sec 4 offline and online experiments, Sec 5 system deployment, conclusion'
-  verified_on: '2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: "CIKM 2019 proceedings full text checked 2026-11-25."
 code:
   status: official_partial
   checked_on: '2026-10-30'
@@ -137,4 +142,4 @@ deployment:
   notes:
   - MIND beats both baselines on CTR in the one-week Tmall A/B. The text gives no figure for the deltas.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"

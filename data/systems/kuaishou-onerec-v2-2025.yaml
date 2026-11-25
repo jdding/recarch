@@ -64,7 +64,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2508.20900
-  local_pdf: /workspace/src/a_2508.20900.pdf
   sections_read: Abstract, intro, Sec 2 (lazy decoder-only architecture, scaling), Sec 3 (preference alignment, GBPO), online-experiment setup
   verified_on: '2026-10-30'
 code:

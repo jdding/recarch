@@ -23,7 +23,7 @@ results_table.online.3.setting|线上 A/B，5 天
 results_table.online.4.setting|线上 A/B，5 天
 results_table.online.0.method|top-K off-policy 校正
 results_table.online.0.result|+0.85%，观看视频数 -0.16%
-results_table.online.0.versus|线上生产的候选生成器
+results_table.online.0.versus|仅使用标准 off-policy 校正的召回模型
 results_table.online.1.versus|线上生产的候选生成器
 results_table.online.2.versus|线上生产的候选生成器
 results_table.online.3.versus|线上生产的候选生成器
@@ -43,8 +43,9 @@ unknown_fields.2|服务延迟
 unknown_fields.3|硬件
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|YouTube 线上的候选生成
-deployment.ab_traffic|用户按 90%、5% 和 5% 划分；随机策略服务 5%
-deployment.ab_duration|持续多天；K 扫描为 5 天
-deployment.baseline|线上生产的候选生成器
+deployment.baseline|K=16 的结果以仅使用标准 off-policy 校正的召回模型为对照
 deployment.notes.0|同一测试中观看视频数下降 0.16%。卡片中的其他设置显示 ViewTime 的变化更小或为负。
+deployment.notes.1|90% / 5% / 5% 来自单独的随机策略实验。五天来自 K 值扫描。
 deployment.online_lifts.0.metric|ViewTime，K=16 的 top-K 校正
+version_note|核对 WSDM 2019 正式论文。第 6.2 节区分随机策略、top-K 校正和 K 值扫描试验。
+updates.0.note|核对 WSDM 2019 正式论文。第 6.2 节区分随机策略、top-K 校正和 K 值扫描试验。

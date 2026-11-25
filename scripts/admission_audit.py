@@ -25,8 +25,15 @@ def audit(c):
     blog = bool(st & {"engineering_blog", "documentation", "press"}) and "paper" not in st
     canon = n is not None and n >= 500
     fail, soft, ex = [], [], []
-    if ev == "research_only": (ex if canon else fail).append(f"论文无线上证据，被引 {shown}" + ("，按被引 500 以上豁免" if canon else ""))
-    if ev == "open_source_reference": (ex if canon else soft).append("只有开源参考实现，无论文级线上数据" + (f"，被引 {shown}，豁免" if canon else ""))
+    online = (c.get("deployment") or {}).get("online_evidence")
+    if ev == "research_only":
+        reason = "有线上实验，持续部署未确认" if online in ("online_numbers", "online_qualitative") else "论文无线上证据"
+        (ex if canon else fail).append(f"{reason}，被引 {shown}" + ("，按被引 500 以上豁免" if canon else ""))
+    if ev == "open_source_reference":
+        if code == "official_full" and online == "deployed_only" and any(repo.get("official") for repo in c["code"].get("repos", [])):
+            ex.append("有官方开源实现及生产架构说明，未披露线上实验数据")
+        else:
+            (ex if canon else soft).append("只有开源参考实现，无论文级线上数据" + (f"，被引 {shown}，豁免" if canon else ""))
     if c.get("system_type") == "research" and ev != "research_only": soft.append("模型组件而非完整系统")
     if not v and not has_main_venue and "paper" in st and not blog and "engineering_blog" not in st:
         m = months_since(c["first_public"])

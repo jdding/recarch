@@ -51,6 +51,9 @@ def main(out):
         meta[name] = {"ids": ids, "recent": nrec, "kinds": [x["kind"] for x in sel]}
     assert build.carousel_select([card(0, 7)], TODAY)[0]["recent"] is False and build.carousel_select([card(0, 6)], TODAY)[0]["recent"] is True
     assert build.carousel_select([], TODAY) == []
+    updates = [card(i, 30, [0]) for i in range(1, 8)]
+    scenario("same-day addition", [card(0, 0), *updates], ["c07", "c06", "c05", "c04", "c03", "c00"], 6)
+    scenario("older addition", [card(0, 1), *updates], ["c07", "c06", "c05", "c04", "c03", "c02"], 6)
     _write_fixture(out, "meta.json", json.dumps(meta))
     print("python selection tests: ALL PASS", {k: v["ids"] for k, v in meta.items()})
 

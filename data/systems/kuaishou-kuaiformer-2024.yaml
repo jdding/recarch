@@ -1,4 +1,7 @@
 id: kuaishou-kuaiformer-2024
+status: retired
+status_date: "2026-11-25"
+status_reason: The arXiv observation period has ended. The review found 27 citations and no qualifying proceedings version or official complete implementation.
 name: KuaiFormer
 company: Kuaishou
 surface: Short-video retrieval stage
@@ -90,7 +93,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2411.10057
-  local_pdf: /workspace/src/fulltext/2411.10057.txt (text of arXiv 2411.10057v1; PDF at /workspace/src/a_2411.10057.pdf)
   sections_read: 'Entire paper: abstract, intro, Sec 2 (problem, backbone, longer sequence, multi-interests, stable training), Sec 3 deployment,
     Sec 4 experiments (Tables 1-3, Figure 3), related work, conclusion'
   verified_on: '2026-10-30'

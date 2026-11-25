@@ -9,10 +9,14 @@ first_public: "2020-06"
 venue: "CIKM 2020"
 venue_year: 2020
 deployed_year: 2019
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3340531.3412744"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the CIKM 2020 proceedings. Section 5.5 identifies the exact online experiment dates, Taobao surface and MIMN control."
+updates:
+- date: "2026-11-25"
+  note: "Checked the CIKM 2020 proceedings. Section 5.5 identifies the exact online experiment dates, Taobao surface and MIMN control."
 system_type: ads
 evidence_level: production_described
 tldr: "SIM handles lifelong behavior sequences with a two-stage search-then-model cascade; in Alibaba display ads since 2019 it gives CTR +7.1%, RPM +4.4%."
@@ -53,16 +57,16 @@ scale:
 - metric: Peak traffic
   value: more than 1 million users per second
   note: paper
-results_reported: 'Online (Table 5, since 2019 in Alibaba display advertising): CTR +7.1%, RPM +4.4% lift; SIM serves the main traffic.
+results_reported: 'Section 5.5 reports an online A/B test from January 7 to February 7, 2020 in Guess What You Like on the Taobao homepage. Compared with MIMN, the previous production model, SIM lifted CTR by 7.1% and RPM by 4.4%. The paper reports that SIM served the main traffic.
   Industrial AUC per Table 4: DIEN 0.6452, MIMN 0.6541, SIM (hard) 0.6604, SIM (soft) 0.6625, SIM (hard) with time info 0.6624; hard-search
   chosen for deployment because soft-search''s gain is slight and it needs nearest-neighbor search online. Public AUC (Table 2, Taobao
   / Amazon): DIN 0.9214 / 0.7276, MIMN 0.9278 / 0.7396, SIM (soft) 0.9416 / 0.7510; SIM (soft) with time info 0.9501 on Taobao.'
 caveats:
-- Abstract-level online lift (7.1% CTR, 4.4% RPM) comes without baseline traffic share or duration.
+- The paper gives the experiment period and control, with traffic allocation undisclosed.
 - The 22 TB figure is for the user behavior tree index; storage of other features is not given.
 - Table values were read from extracted text and cross-checked against the text discussion.
 unknown_fields:
-- A/B traffic share and duration
+- A/B traffic allocation
 - number of machines
 - GPU count
 sources:
@@ -75,10 +79,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2006.05639
-  local_pdf: /workspace/src/fulltext/2006.05639.pdf
   sections_read: Abstract, intro, SIM design (GSU hard/soft search, ESU), Sec 4 online serving implementation, Sec 5 experiments (Tables
     1-6, Fig 5), deployment text
-  verified_on: '2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: "CIKM 2020 proceedings full text checked 2026-11-25."
 code:
   status: third_party_only
   checked_on: '2026-10-30'
@@ -93,16 +97,16 @@ scale_short: Sequences up to 54,000 behaviors, 22 TB behavior index, over 1 mill
 key_result: CTR +7.1% and RPM +4.4% online in Alibaba display advertising, with SIM serving the main traffic
 results_table:
   online:
-  - setting: Alibaba display advertising, Table 5
+  - setting: Taobao app homepage, Guess What You Like ad test (Section 5.5)
     method: SIM
     metric: CTR
     result: +7.1%
-    versus: Previous production model
-  - setting: Alibaba display advertising, Table 5
+    versus: MIMN
+  - setting: Taobao app homepage, Guess What You Like ad test (Section 5.5)
     method: SIM
     metric: RPM
     result: +4.4%
-    versus: Previous production model
+    versus: MIMN
   offline:
   - setting: Industrial dataset, Table 4
     method: SIM hard-search
@@ -126,10 +130,10 @@ results_table:
     versus: DIN 0.7276, MIMN 0.7396
 deployment:
   online_evidence: online_numbers
-  scenario: Alibaba display advertising CTR prediction, main traffic since 2019
+  scenario: Display advertisements in Guess What You Like on the Taobao app homepage
   ab_traffic: not_reported
-  ab_duration: not_reported
-  baseline: Previous production model
+  ab_duration: January 7 to February 7, 2020
+  baseline: MIMN, the previous production model
   online_lifts:
   - metric: CTR
     value: +7.1%
@@ -143,5 +147,6 @@ deployment:
   hardware: Daily-rebuilt user behavior tree of about 22 TB; machine and GPU counts not reported
   fulltext_refs:
   - 'Sec 5: serving latency should be less than 30 milliseconds'
+  - Section 5.5 reports the A/B dates, location, MIMN control and business metrics.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"

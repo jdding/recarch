@@ -1,0 +1,106 @@
+id: x-for-you
+name: X For You
+company: X / Twitter
+surface: For You home feed
+year: 2023
+era: deep
+era_reason: Phoenix uses two-tower embedding retrieval and a supervised Transformer that scores candidates by predicted actions. Semantic IDs represent posts in both models.
+first_public: '2023-03'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://github.com/xai-org/x-algorithm/tree/52d45989090e63992ba04e4f6cfccd73bf8cc05c
+added_on: '2026-10-30'
+last_verified: '2026-11-25'
+version: Phoenix
+versions:
+- name: Twitter For You
+  first_public: '2023-03'
+  source: https://github.com/twitter/the-algorithm
+  note: Home Mixer combines search and graph candidate sources, including SimClusters and TwHIN, with a neural heavy ranker.
+- name: Phoenix
+  first_public: '2026-01'
+  source: https://github.com/xai-org/x-algorithm/tree/52d45989090e63992ba04e4f6cfccd73bf8cc05c
+  note: The reviewed November snapshot documents two-tower retrieval and candidate-isolated Transformer ranking with semantic post IDs.
+version_note: This card presents Phoenix using the pinned November 2026 snapshot. The 2023 release describes the earlier For You pipeline.
+updates:
+- date: '2026-11-25'
+  note: Consolidated the Twitter and Phoenix snapshots, checked the current Phoenix retrieval and ranking code documentation, and corrected the architecture classification.
+system_type: recommendation
+evidence_level: open_source_reference
+tldr: X assembles the For You feed from follower and outside-network sources. Phoenix retrieves by embedding similarity, then scores each candidate by predicted user actions.
+summary: For You pulls posts from followed accounts via Thunder. Phoenix retrieves posts by embedding similarity, and SimClusters and popular-post sources contribute additional candidates. Phoenix scores candidates with a Transformer that prevents candidates from attending to each other. Home Mixer weights predicted actions, adjusts scores for authors and network membership, then reranks for diversity.
+paradigms: [two-tower, sequential-transformer, multi-task, embedding-based-retrieval, semantic-id]
+stages:
+- stage: retrieval
+  model_family: Phoenix two-tower and other candidate sources
+  details: The retrieval checkpoint includes a post embedding index built by the candidate tower. Phoenix retrieves via dot products. Thunder, SimClusters and popular posts provide additional candidates.
+- stage: rank
+  model_family: Phoenix Transformer with candidate isolation
+  details: Each candidate attends to user history and itself. A weighted sum of predicted actions feeds the score adjustments in Home Mixer.
+- stage: re-rank
+  model_family: VMRanker diversity reranking
+  details: A determinantal point process reranks posts using their embeddings after candidate scores are computed.
+id_tokenization:
+  approach: Residual quantization of multimodal post embeddings
+  details: Six levels of 256 codes provide post identity to retrieval and features to ranking, alongside hashed features.
+features_signals:
+- User interaction history
+- Post semantic IDs, hashed post and author features
+training:
+  mode: Offline JAX training with separate retrieval and ranking models
+  objectives:
+  - Contrastive retrieval with favorites as the positive signal
+  - Supervised prediction for multiple actions per candidate post
+  notes: Retrieval and ranking have separate training pipelines and checkpoints.
+serving_infra: Rust Home Mixer coordinates candidate sources and gRPC inference. Phoenix serves the JAX models and loads its retrieval index from the checkpoint.
+scale:
+- metric: Post representation
+  value: 6 residual levels with 256 codes each
+  note: Phoenix README, retrieval and ranking configurations.
+results_reported: The open repository documents the production design and ongoing experiments. It reports no measured lift for the feed.
+caveats:
+- Production checkpoints and data are outside the release. The repository documents a separate synthetic example for running the pipeline locally.
+- Architecture details refer to the pinned November 2026 snapshot, which is newer than the first Phoenix release.
+unknown_fields:
+- Production A/B design, metrics, latency and throughput
+sources:
+- title: X For You source and architecture, November 2026 snapshot
+  url: https://github.com/xai-org/x-algorithm/tree/52d45989090e63992ba04e4f6cfccd73bf8cc05c
+  type: source_code
+- title: Phoenix retrieval and ranking documentation
+  url: https://github.com/xai-org/x-algorithm/blob/52d45989090e63992ba04e4f6cfccd73bf8cc05c/phoenix/README.md
+  type: source_code
+- title: Twitter For You, March 2023 open-source version
+  url: https://github.com/twitter/the-algorithm
+  type: source_code
+code:
+  status: official_full
+  checked_on: '2026-11-25'
+  repos:
+  - url: https://github.com/xai-org/x-algorithm
+    owner: X / xAI
+    official: true
+    note: Feed orchestration, Phoenix model definitions, training and serving code are public. Reproduction with private production data and checkpoints is outside the release.
+core_idea: Combine embedding retrieval and candidate-isolated action prediction with feed-level rules and diversity reranking.
+deployed_in: X For You home feed, as documented by X
+scale_short: Six 256-code levels per post, with production traffic undisclosed
+key_result: Official architecture and training/serving code are available. Production lift was not reported.
+results_table:
+  note: The reviewed feed and Phoenix READMEs document the system without publishing an A/B result.
+deployment:
+  online_evidence: deployed_only
+  scenario: X For You home feed
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts: not_reported
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The project describes live experimentation and reports no comparative metrics for this feed snapshot.
+  basis: card_content
+  checked_on: '2026-11-25'

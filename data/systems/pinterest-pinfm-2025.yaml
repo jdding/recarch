@@ -75,7 +75,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2507.12704
-  local_pdf: /workspace/src/a_2507.12704.pdf
   sections_read: Abstract, intro, modeling/pretraining objectives, Tables 3-4 text, efficiency (DCAT, int4), serving infrastructure
   verified_on: '2026-10-30'
 code:

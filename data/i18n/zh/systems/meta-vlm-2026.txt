@@ -42,10 +42,11 @@ unknown_fields.1|三个租户与两个平台的模型身份
 unknown_fields.2|训练算力与硬件
 unknown_fields.3|官方代码
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|读的是 arXiv 2604.24806 v2 预印本；RecSys 2026 的 DOI 10.1145/3773078.3831845 已在 Crossref 核对，正式版本身未读到；Crossref 登记页码 1654-1662。
 deployment.scenario|Meta 两个以上推荐场景生产排序模型的训练数据基础设施，服务 HSTU 类生成式推荐器
 deployment.baseline|4K 序列长度下的 Fat Row 范式
 deployment.training_compute|本身不是训练系统；分离式预处理让 GPU 保持算力受限，批大小调优带来每 worker 15%、流水线预取带来 10% 的吞吐提升
-deployment.inference_cost|可变 UIH 存储在推理路径提供秒级新鲜度；不可变存储读取只需一次磁盘寻道加顺序 I/O
+deployment.notes.2|可变 UIH 存储在推理路径提供秒级新鲜度；不可变存储读取只需一次磁盘寻道加顺序 I/O
 deployment.notes.0|论文说明该生产规模下 1% 的 Normalized Entropy 提升即被视为成功。
 deployment.notes.1|一百多个并发训练作业共享读取同一不可变存储。
+version_note|核对 RecSys 2026 正式论文。表 1 与表 2 分别核对训练数据读写的资源节省和两个平台的生产 A/B 收益。
+updates.0.note|核对 RecSys 2026 正式论文。表 1 与表 2 分别核对训练数据读写的资源节省和两个平台的生产 A/B 收益。

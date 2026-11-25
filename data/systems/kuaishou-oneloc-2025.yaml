@@ -8,11 +8,13 @@ era_reason: "An end-to-end encoder-decoder generative recommender over geo-aware
 first_public: "2025-08"
 venue: "WSDM 2026"
 venue_year: 2026
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773966.3777963"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-25"
+updates:
+- date: "2026-11-25"
+  note: "Checked the WSDM 2026 proceedings. Section 5 and Table 4 confirm the one-week test, 10% treatment traffic, shared candidate pool and four lifts."
 system_type: recommendation
 evidence_level: production_described
 tldr: "OneLoc generates geo-aware semantic IDs end to end for Kuaishou local life; a one-week A/B at 10% traffic lifted GMV +21.016% and now serves full traffic."
@@ -65,14 +67,14 @@ sources:
 - title: "OneLoc, arXiv 2508.14646"
   url: https://arxiv.org/abs/2508.14646
   type: paper
-version_note: "Read from arXiv 2508.14646, a preprint in a placeholder ACM template; the WSDM 2026 DOI 10.1145/3773966.3777963 was verified against Crossref, and the camera-ready was not read; Crossref lists pages 735-744."
+version_note: "Checked the WSDM 2026 proceedings. Section 5 and Table 4 confirm the one-week test, 10% treatment traffic, shared candidate pool and four lifts."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2508.14646
   local_pdf: "full text read, file not redistributed"
   sections_read: "Abstract, introduction, methodology including tokenizer, encoder, decoder and RL, experiments with Tables 1 to 4, deployment, scaling analysis, conclusion"
-  verified_on: "2026-11-02"
-  published_pdf: "not read; WSDM 2026 version not available, arXiv preprint read on 2026-11-02"
+  verified_on: "2026-11-25"
+  published_pdf: "WSDM 2026 proceedings full text checked 2026-11-25."
 code:
   status: none
   checked_on: "2026-11-02"
@@ -128,14 +130,15 @@ deployment:
   training_compute: "Trained on NVIDIA A800 GPUs; 0.05B to 0.3B model scales tested; GPU hours not reported"
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "Mixed precision, KV cache, dynamic batching and TensorRT on NVIDIA A10 GPUs, reaching 25% MFU"
+  inference_cost: not_reported
   hardware: "NVIDIA A800 for training, NVIDIA A10 for inference"
   notes:
   - "All online gains significant at p < 0.01 under two-tailed t-tests at alpha 0.05."
   - "Both A/B groups shared identical candidate pools and system constraints."
+  - "The paper reports 25% model FLOPs utilization (MFU) for inference on NVIDIA A10 GPUs with mixed precision, KV cache, dynamic batching and TensorRT."
   fulltext_refs:
   - "Table 4 and Sec 5: GMV +21.016%, orders +17.891%, paying users +18.585%, new paying users +23.027%, 10% traffic, one week, p < 0.01"
   - "Sec 4.2: KuaiLLSR Recall@5 +13.46%, NDCG@5 +14.47%; Foursquare Recall@5 +13.18%, NDCG@5 +16.34%"
   - "Table 3: full model Recall@5 0.3565, w/o geo-aware self-attention 0.3315"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-25"

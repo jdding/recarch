@@ -122,11 +122,12 @@ deployment:
   training_compute: "Flow trained on about 1M item embeddings; tokenizing tens of millions of new items per day takes minutes on one GPU"
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "Sequential model learns 4,096 token embeddings instead of tens of millions of item embeddings; tokenization of new items runs off the request path"
+  inference_cost: not_reported
   hardware: "A single GPU for daily tokenization of new items"
   notes:
   - "Pathway-level gains on new items reach UCTR +11.64% single-domain and +9.45% cross-domain."
   - "Top-tier accounts' exposure share falls 1.15% in cross-domain, which the paper reads as long-tail benefit."
+  - "Sequential model learns 4,096 token embeddings instead of tens of millions of item embeddings; tokenization of new items runs off the request path"
   fulltext_refs:
   - "Table 6: single-domain CTR +4.79%, UCTR +10.32%, new-item CTR +8.46%, UCTR +11.64%; cross-domain +6.23%, +7.20%, +9.09%, +9.45%"
   - "Sec 3.6.3: 24-hour overall CTR +0.78%, new-picture CTR +1.94% single-domain; per-capita +1.05%, top-tier share -1.15% cross-domain"

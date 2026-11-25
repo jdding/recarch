@@ -37,3 +37,5 @@ deployment.training_compute|100 块 GPU，每轮约 8 小时；线上服务的�
 deployment.serving_latency|从十亿级的 item 池中选出数千个候选，耗时不到 15 ms
 deployment.hardware|训练用 100 块 GPU
 deployment.notes.0|在为期一周的天猫 A/B 中，MIND 的 CTR 优于两个基线。正文没有给出提升的数字。
+version_note|核对 CIKM 2019 正式论文。第 4.3 节和图 4 核实一周的线上实验，各召回方法共用后续排序。
+updates.0.note|核对 CIKM 2019 正式论文。第 4.3 节和图 4 核实一周的线上实验，各召回方法共用后续排序。

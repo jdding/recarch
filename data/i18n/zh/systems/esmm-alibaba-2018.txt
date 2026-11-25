@@ -29,4 +29,6 @@ unknown_fields.1|线上部署
 unknown_fields.2|在线延迟
 code.repos.0.note|阿里巴巴 XDL 框架中的 ESMM 示例；论文中没有链接，且是框架示例，不是广告系统的代码。
 deployment.scenario|淘宝推荐数据上的点击后 CVR 预估
-deployment.notes.0|论文称 Product Dataset 上的模型是承担主要流量的最新模型。它只报告了离线 AUC。
+deployment.notes.0|论文第 3.3 节指明，承担主流量的是 BASE 对照模型。ESMM 相对 BASE 的提升来自离线评估。
+version_note|核对 SIGIR 2018 正式论文。第 3.3 节区分已经上线的 BASE 对照与 ESMM 的离线 AUC 结果。
+updates.0.note|核对 SIGIR 2018 正式论文。第 3.3 节区分已经上线的 BASE 对照与 ESMM 的离线 AUC 结果。

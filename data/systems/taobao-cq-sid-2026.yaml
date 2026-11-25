@@ -135,12 +135,13 @@ deployment:
   training_compute: "CQ-SID quantizer trained 10 epochs on 4 GPUs; LLM stages 2k to 5k steps; total compute not aggregated"
   serving_latency: "Approximately 40 ms average end-to-end latency"
   serving_qps: "Over 200 QPS"
-  inference_cost: "Beam search with dynamic beam sizes in [20, 50, 100]; offline, cluster SIDs cut beam search size by more than half at comparable recall"
+  inference_cost: not_reported
   hardware: "8 GPUs for online serving"
   notes:
   - "The paper states the offline top-1K truncation differs from the actual online recall process that employs coarse-ranking truncation."
   - The paper describes the control as production multi-channel recall without CQ-SID and gives no traffic split.
   - The deployed channel shares of exposure, clicks and purchases use attribution that allows overlap across channels.
+  - "Beam search with dynamic beam sizes in [20, 50, 100]; offline, cluster SIDs cut beam search size by more than half at comparable recall"
   fulltext_refs:
   - "Sec 4.5: deployed in production search on TmallAPP; two-week online A/B with GMV +1.15% and UCTCVR +0.40%; dynamic beam sizes in [20, 50, 100], over 200 QPS across 8 GPUs, 99.9% availability, approximately 40 ms average end-to-end latency; 50.25% of exposures, 58.96% of clicks, 72.63% of purchases"
   - "Sec 4.1: 37.5M samples for CQ-SID, 21.0M Item2SID, 90.3M Query2SID, 73.7M personalized UQ2SID, test sets 201k and 170k"

@@ -32,3 +32,4 @@ code.repos.0.note|「为你推荐」时间线 和通知服务的源码快照，S
 code.repos.1.note|配套仓库，含 ML 模型，包括 Home 的「recap」排序器。
 deployment.scenario|X 的「为你推荐」首页时间线，开源的流水线
 deployment.notes.0|没有公布 A/B 结果。
+status_reason|这次发布与 Phoenix 描述的是同一条 For You 信息流的不同版本，已合并至主卡。

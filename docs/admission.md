@@ -64,6 +64,7 @@
 |---|---|---|
 | `dcn-google` | DCN V2，WWW 2021 | `dcn-google-2017` 即 DCN，`dcn-v2-google-2020` |
 | `onerec-kuaishou` | OneRec-V2，2025-08（所有者指定；最新版本是 OneRec-Think，2025-10） | `onerec-kuaishou-2025` 即 OneRec，`kuaishou-onerec-v2-2025` 即 OneRec-V2，`kuaishou-onerec-think-2025` |
+| `x-for-you` | Phoenix，采用 2026 年 11 月的官方快照 | `twitter-x-for-you-2023`、`x-phoenix-for-you-2026` |
 
 ### 合并卡的准入与被引
 
@@ -94,6 +95,13 @@
 | `spotify-joint-semantic-ids-2025` | 用公开电影数据，不是 Spotify 生产，无线上证据，被引不到 500 |
 | `xiaohongshu-notellm-2024` | 一周线上测试没有给流量占比，也没说已采用，所以是 research_only，被引不到 500 |
 | `youtube-semantic-ids-ranking-2023` | 只有 YouTube 排序数据集上的离线 AUC，无生产上线或线上 A/B，被引不到 500 |
+
+2026-11-25 复审退场两张卡。
+
+| 卡片 | 理由 |
+|---|---|
+| `etsy-unified-embedding-retrieval-2023` | 工业 A/B 有效。FMLDS 2024 来源层级未达到长文准入要求，复审查到 5 次引用，未找到合格的正式版本或官方工程资料。 |
+| `kuaishou-kuaiformer-2024` | 有生产实验。仅 arXiv 已超过观察期，复审查到 27 次引用，未找到正式版本或官方完整代码。 |
 
 ## 6 总量
 

@@ -83,7 +83,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2402.17152
-  local_pdf: /workspace/src/fulltext/2402.17152.pdf
   sections_read: Abstract, intro, method, experiments, Tables 4-7 and Fig 1/5 captions
   verified_on: '2026-10-30'
 code:

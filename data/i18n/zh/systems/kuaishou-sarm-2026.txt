@@ -50,5 +50,5 @@ deployment.baseline|线上的生产排序模型 HoME，不带语义锚点
 deployment.training_compute|训练 CPU 利用率 51.71%，基础排序模型为 48.69%；GPU 利用率 80.29%，基础模型为 77.54%；每轮训练时间为 1.08x；绝对硬件和训练时长未报告
 deployment.serving_latency|每次查询时间是基础排序模型的 1.02x，论文没有报告统计显著的退化；绝对延迟未报告
 deployment.serving_qps|推理 QPS 为 271.30，基础排序模型为 280.71，单位按 Table 5
-deployment.inference_cost|memory bank 让主播侧编码在推理时变成常数时间的查表，每个请求都不运行 LLM
+deployment.notes.1|memory bank 让主播侧编码在推理时变成常数时间的查表，每个请求都不运行 LLM
 deployment.notes.0|多模态 LLM 每天为每位主播生成一次锚点，不在请求路径上。

@@ -1,6 +1,6 @@
 {
- "candidates": 949,
- "kept": 928,
+ "candidates": 931,
+ "kept": 912,
  "discarded": [
   {
    "id": "taobao-cq-sid-2026",
@@ -21,11 +21,6 @@
    "id": "linkedin-semantic-search-2026",
    "key": "results",
    "reason": "answer too long"
-  },
-  {
-   "id": "x-phoenix-for-you-2026",
-   "key": "scale",
-   "reason": "card has no such field"
   },
   {
    "id": "alibaba-bar-2025",
@@ -73,11 +68,6 @@
    "reason": "card has no such field"
   },
   {
-   "id": "twitter-x-for-you-2023",
-   "key": "results",
-   "reason": "card has no such field"
-  },
-  {
    "id": "uber-eats-two-tower-2023",
    "key": "results",
    "reason": "card has no such field"
@@ -116,10 +106,10 @@
   "prompt_injection": 20,
   "pdf_request": 15
  },
- "cards": 116,
+ "cards": 114,
  "discard_reasons": {
   "answer too long": 10,
-  "card has no such field": 10,
+  "card has no such field": 8,
   "parentheses in Chinese copy": 1
  }
 }

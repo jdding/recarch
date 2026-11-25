@@ -115,11 +115,12 @@ deployment:
   training_compute: "Benchmarked 0.6B and 3B backbones; training compute not reported"
   serving_latency: "Below the 30 ms first-page constraint, down from over 1000 ms; 2.6x algorithm-level speedup plus queuing savings; Table 1 timings normalized for confidentiality"
   serving_qps: not_reported
-  inference_cost: "Model-free hash-set verification replaces target-model verification; valid draft ratio 43% to over 93%"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "The paper describes the business unit as accounting for over a quarter of advertising revenue."
   - "KV cache is already included in the Table 1 baseline measurements."
+  - "Model-free hash-set verification replaces target-model verification; valid draft ratio 43% to over 93%"
   fulltext_refs:
   - "Sec 5: 2.6x speedup, over 1000 ms to below 30 ms, +0.58% and +0.61% hit rate, 7-day reverse A/B on 10% of traffic +1.2% revenue, October 2025"
   - "Sec 3.3: 43% to over 93% valid ratio, 12 percentage point uplift"

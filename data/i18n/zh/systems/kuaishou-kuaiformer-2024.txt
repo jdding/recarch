@@ -53,3 +53,4 @@ deployment.hardware|实际使用 GPU 暴力 top-K 搜索；没有给出 GPU 型�
 deployment.online_lifts.0.metric|视频观看时长，快手单列
 deployment.online_lifts.1.metric|视频观看时长，快手双列
 deployment.online_lifts.2.metric|视频观看时长，快手极速版单列
+status_reason|arXiv 观察期已满。复核为 27 次引用，未找到满足要求的正式发表版本或官方完整实现。

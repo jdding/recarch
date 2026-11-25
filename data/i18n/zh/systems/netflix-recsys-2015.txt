@@ -28,7 +28,7 @@ results_table.other.0.setting|论文的估计
 results_table.other.0.method|个性化和推荐合在一起
 results_table.other.0.metric|减少取消订阅带来的节省
 results_table.other.0.result|每年超过 $1B
-results_table.other.0.versus|没有个性化
+results_table.other.0.versus|论文未给出估算的反事实基线
 caveats.0|2015 年的快照：该系统此后已经重建，见 netflix-foundation-model-2025。
 caveats.1|叙述性的系统论文；几乎没有架构或超参细节。
 unknown_fields.0|模型规模
@@ -36,5 +36,6 @@ unknown_fields.1|延迟
 unknown_fields.2|服务基础设施
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|Netflix 首页、大部分页面和搜索
-deployment.notes.0|个性化和推荐的估计价值为每年超过 $1B。这是估计，不是 A/B 结果。
-deployment.notes.1|论文讨论了 A/B 测试设计，没有给出模型指标。
+deployment.notes.0|作者估计个性化与推荐合计每年创造超过 10 亿美元的价值，并另行讨论了会员留存实验。
+deployment.notes.1|年度估算的实验对照及推理成本未披露。
+updates.0.note|重核 ACM 正式论文，明确年度估算的适用范围以及原文未披露的实验对照。

@@ -1,4 +1,8 @@
 id: x-phoenix-for-you-2026
+status: superseded
+status_date: '2026-11-25'
+superseded_by: x-for-you
+status_reason: This release and the 2023 Twitter release document successive versions of the same For You feed.
 name: "X For You Phoenix"
 company: "X / xAI"
 surface: For You feed

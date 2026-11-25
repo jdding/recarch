@@ -1,4 +1,7 @@
 id: etsy-unified-embedding-retrieval-2023
+status: retired
+status_date: "2026-11-25"
+status_reason: The FMLDS 2024 publication is outside the admitted venue tiers. The review found 5 citations and no qualifying alternate publication or official engineering source for this system.
 name: Etsy Unified Embedding Retrieval
 company: Etsy
 surface: Search retrieval
@@ -89,7 +92,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2306.04833
-  local_pdf: /workspace/src/fulltext/2306.04833.txt (text of arXiv 2306.04833v2)
   sections_read: 'Entire paper: abstract, intro, related work, Sec III (unified embedding model, encoders, negative mining, loss), Sec
     IV (ANN-based product boosting), Sec V (online serving), Sec VI (offline and online results), conclusion; Tables I-III'
   verified_on: '2026-10-30'

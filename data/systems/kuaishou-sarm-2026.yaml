@@ -133,10 +133,11 @@ deployment:
   training_compute: 'Training CPU utilization 51.71% against 48.69% for the base ranker, GPU utilization 80.29% against 77.54%, and training time per pass 1.08x; absolute hardware and training time not reported'
   serving_latency: 'Time per query 1.02x of the base ranker, with no statistically significant degradation reported; absolute latency not reported'
   serving_qps: 'Inference QPS 271.30 against 280.71 for the base ranker, in the units of Table 5'
-  inference_cost: 'The memory bank turns author-side encoding into a constant-time lookup at inference; no LLM runs per request'
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - 'Anchor generation by the multimodal LLM runs daily for each author, outside the request path.'
+  - "The memory bank turns author-side encoding into a constant-time lookup at inference; no LLM runs per request"
   fulltext_refs:
   - 'Table 3 and Sec 4.4: two-week online A/B on key pages of Kuaishou and Kuaishou Lite; Kuaishou Exposure +0.424%, Watch Count +0.189%, Watch Time +0.092%, Click +0.982%, Gift +0.482%, Effective View +0.070%, Follow +0.805%; Kuaishou Lite Exposure +1.190%, Watch Count +0.397%, Watch Time +0.962%, Click +0.562%, Gift +1.287%, Effective View +0.340%, Follow +0.522%'
   - 'Table 5: training CPU 51.71% against 48.69%, GPU 80.29% against 77.54%, time per pass 1.08x, inference QPS 271.30 against 280.71, time per query 1.02x'

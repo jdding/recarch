@@ -42,12 +42,12 @@ ok(total >= 600, f"at least 600 items across the cards, got {total}")
 
 # validator rejects bad candidates
 c = en["airbnb-listing-embeddings-2018"]; z = zh["airbnb-listing-embeddings-2018"]
-ok(gen_faq.validate(c, "en", "Q?", "CTR rose 20%.", ["tldr"]) is None, "valid answer passes")
+ok(gen_faq.validate(c, "en", "Q?", "CTR rose 21%.", ["tldr"]) is None, "valid answer passes")
 ok("number" in (gen_faq.validate(c, "en", "Q?", "CTR rose 35%.", ["tldr"]) or ""), "invented number is rejected")
 ok("number" in (gen_faq.validate(c, "en", "Q?", "Latency is 12 ms.", ["deployment.serving_latency"]) or ""), "a number for an unreported field is rejected")
 ok(gen_faq.validate(c, "en", "Q?", "  ", ["tldr"]) == "empty answer", "empty answer is rejected")
-ok("parentheses" in (gen_faq.validate(z, "zh", "问？", "提高了 20%（见表）。", ["tldr"]) or ""), "Chinese parentheses are rejected")
-ok("number" in (gen_faq.validate(z, "zh", "2030 年的问题？", "提高 20%。", ["tldr"]) or ""), "invented number in the question is rejected")
+ok("parentheses" in (gen_faq.validate(z, "zh", "问？", "提高了 21%（见表）。", ["tldr"]) or ""), "Chinese parentheses are rejected")
+ok("number" in (gen_faq.validate(z, "zh", "2030 年的问题？", "提高 21%。", ["tldr"]) or ""), "invented number in the question is rejected")
 
 # reviewed gate
 saved = copy.deepcopy(ailayer.FAQ)

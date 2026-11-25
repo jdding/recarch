@@ -62,7 +62,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2403.01744
-  local_pdf: /workspace/src/a_2403.01744.pdf
   sections_read: Intro, related work, method summary, Tables 2-3, Sec 5.8 online experiments, training-setup footnote
   verified_on: '2026-10-30'
 code:

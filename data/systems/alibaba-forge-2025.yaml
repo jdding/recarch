@@ -137,10 +137,11 @@ deployment:
   training_compute: 'Benchmark runs, not the production job: Qwen2.5-0.5B 1 epoch on 32 PPU-ZW810E GPUs at about 80 h per epoch; T5-base 4 epochs on 16 GPUs at about 20 h per epoch; RQ-VAE 150 epochs. Production training compute not reported.'
   serving_latency: 'Asynchronous: the retrieval request starts after a click on an item detail page and writes candidates to the cache table within 200 ms, so the main recommendation service is not affected.'
   serving_qps: not_reported
-  inference_cost: 'Dynamic beam search with 300, 600 and 1200 beams cuts the second decoding step by 75% against a fixed beam of 1200.'
+  inference_cost: not_reported
   hardware: 'Experiments ran on PPU-ZW810E GPUs, an Alibaba GPU at about 90% of the compute of an NVIDIA A100 with 95.6 GB memory; serving hardware not reported.'
   notes:
   - The paper mentions platforms with ten thousand requests per second only as the motivation for dynamic beam search, not as a measured QPS of this system.
+  - "At beam sizes 300, 600 and 1200, dynamic beam search cuts second-step decoding computation by 75% against a fixed size of 1200."
   fulltext_refs:
   - 'Sec 4.3.6 and Table 13: 7-day A/B, PVR +8.93%, HR +10.02%, transaction count +0.35%, request writes to the cache table within 200 ms'
   - 'Appendix A.1 and A.2: PPU-ZW810E GPUs at about 90% of an A100, 95.6 GB memory; Qwen2.5-0.5B on 32 GPUs at 80 h/epoch, T5-base 4 epochs on 16 GPUs at 20 h/epoch, 150 RQ-VAE epochs'

@@ -64,7 +64,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2510.11639
-  local_pdf: /workspace/src/a_2510.11639.pdf
   sections_read: Abstract, intro, method (itemic alignment, reasoning activation, reasoning enhancement, Think-Ahead), experiments, industrial A/B paragraph
   verified_on: '2026-10-30'
 code:

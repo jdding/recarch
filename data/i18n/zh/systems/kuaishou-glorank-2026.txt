@@ -52,6 +52,6 @@ deployment.scenario|日活超过 4 亿、物品数千万级的领先内容平台
 deployment.ab_traffic|7.8% 线上流量，等规模对照组
 deployment.ab_duration|14 天，覆盖周内波动
 deployment.baseline|GoalRank，生产系统中已部署的最优重排器
-deployment.inference_cost|在候选 Semantic ID 上做 Trie 受限解码；因候选集远小于物品全集，构建与掩码开销被描述为可忽略
+deployment.notes.2|在候选 Semantic ID 上做 Trie 受限解码；因候选集远小于物品全集，构建与掩码开销被描述为可忽略
 deployment.notes.0|表 4 的全部提升经 t 检验 p < 0.05 显著。
 deployment.notes.1|正文报告活跃设备 +0.030%。

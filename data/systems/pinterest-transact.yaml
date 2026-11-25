@@ -8,10 +8,10 @@ era_reason: "A discriminative wide-and-deep CTR ranker whose sequence module is 
 first_public: "2023-05"
 venue: "RecSys 2026"
 venue_year: 2026
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831868"
 added_on: "2026-10-29"
-last_verified: "2026-11-02"
+last_verified: "2026-11-25"
 version: TransAct V2
 versions:
 - name: TransAct
@@ -22,10 +22,12 @@ versions:
   first_public: "2025-06"
   source: https://doi.org/10.1145/3773078.3831868
   note: 'Extends the model with lifelong user sequences, a next-action loss and web-scale serving; presented on this card and published at RecSys 2026.'
-version_note: 'This card presents TransAct V2, the latest of 2 versions of one system. TransAct V1 is kept as a source and in the version list.'
+version_note: "Checked the RecSys 2026 proceedings. The card presents TransAct V2. Sections 4.3 and 4.4 confirm its three-week test, business gains and serving benchmark. The original TransAct remains in the version history."
 updates:
 - date: "2026-11-02"
   note: "Merged TransAct and TransAct V2 into one card presenting V2, per the one-system-one-card rule."
+- date: "2026-11-25"
+  note: "The RecSys 2026 proceedings specify a three-week A/B with more than 5 million Pinterest Homefeed visitors per arm."
 system_type: recommendation
 evidence_level: production_described
 tldr: "TransAct V2 adds lifelong sequences and a next-action loss to Pinterest's Homefeed ranker; the A/B lifted repin volume +6.35% and cut hides -12.80%."
@@ -67,7 +69,6 @@ caveats:
 - "The offline evaluation metric HIT@3 is a Pinterest-internal ranking metric computed over recommendation chunks."
 - "FlashAttention-2 is not directly compared because it lacks support for the custom masks needed for the next-action loss and padding, as the paper states."
 unknown_fields:
-- A/B duration in days
 - Full model size and training compute
 - Official code
 - Number of model heads
@@ -86,8 +87,8 @@ fulltext:
   pdf_url: https://arxiv.org/pdf/2506.02267
   local_pdf: "full text read, file not redistributed"
   sections_read: "Abstract, introduction, related work, methodology, serving and logging design, experiments with Tables 2 to 5 and Figures 6 to 9, conclusion"
-  verified_on: "2026-11-02"
-  published_pdf: "not read; the RecSys 2026 DOI 10.1145/3773078.3831868 was verified against Crossref with pages 1576-1585, but the ACM page was not readable"
+  verified_on: "2026-11-25"
+  published_pdf: "RecSys 2026 proceedings full text checked 2026-11-25."
 code:
   status: none
   checked_on: "2026-11-02"
@@ -128,8 +129,8 @@ results_table:
 deployment:
   online_evidence: online_numbers
   scenario: "Sequence module of Pinterest Homefeed ranking, serving production traffic to over 500 million users"
-  ab_traffic: "1.5% of Homefeed page visitors per group"
-  ab_duration: not_reported
+  ab_traffic: "1.5% of Homefeed page visitors per group, more than 5 million per group"
+  ab_duration: Three weeks
   baseline: "The production TransAct model with real-time sequences"
   online_lifts:
   - metric: "Homefeed Repin Volume"
@@ -149,8 +150,8 @@ deployment:
   - "The paper notes that a 1% increase in repin volume is considered a substantial gain."
   - "PinSage sequence embeddings are stored as int8 with affine scaling, halving storage."
   fulltext_refs:
-  - "Table 3: Repin Volume +6.35%, Hide Volume -12.80%, Impression Diversity +0.45%, Time Spent +1.41%, 1.5% groups"
+  - "Section 4.3 and Table 3: three weeks, 1.5% of page visitors and over 5 million users per arm; Repin Volume +6.35%, Hide Volume -12.80%, Impression Diversity +0.45%, Time Spent +1.41%"
   - "Table 2: HIT@3/repin +13.31%, HIT@3/hide -11.25%; Table 4: impression negatives +1.10% and -2.39%"
   - "Sec 4.4.3, Tables 5 and Figures 7 to 9: -85.09% latency at length 192, 8x PCIe reduction, 20% fused dequantization gain, fused transformer 6.6 times faster than PyTorch, 103x, 338x, 250x end-to-end, 29,000 examples per second per host, A10G"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-25"

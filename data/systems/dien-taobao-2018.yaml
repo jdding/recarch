@@ -71,7 +71,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1809.03672
-  local_pdf: /workspace/src/fulltext/1809.03672.pdf
   sections_read: Abstract, intro, model (interest extractor with auxiliary loss, interest evolving layer with AUGRU), datasets, Tables
     1-5, online serving and A/B text
   verified_on: '2026-10-30'

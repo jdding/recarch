@@ -128,10 +128,11 @@ deployment:
   training_compute: 'Experiments used 64–256 A100 80GB GPUs for 1 day to 1 week depending on model size; the deployed model is not singled out'
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: 'Embeddings are computed once per day in batch and scored with a dot product; the paper says this is substantially cheaper than real-time target-aware schemes'
+  inference_cost: not_reported
   hardware: 'Training on A100 80GB GPUs as above; serving hardware not reported'
   notes:
   - 'A smaller real-time variant was later integrated into the production ranker, with complementary gains over the daily offline embeddings; no numbers are given.'
+  - "Embeddings are computed once per day in batch and scored with a dot product; the paper says this is substantially cheaper than real-time target-aware schemes"
   fulltext_refs:
   - 'Sec 4.6 and Table 6: ARGUS Offline V4 with context 8192 and a 126.0M encoder, total listening time +2.26%, like likelihood +6.37%'
   - 'Sec 4.1.2: the production ranker is a gradient-boosted tree ensemble on one thousand features'

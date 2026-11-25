@@ -26,3 +26,5 @@ code.note|没有找到官方代码：论文和博客文本中没有代码链接�
 deployment.scenario|Airbnb 搜索排序
 deployment.hardware|Java 服务器负责召回和打分，运行在 AWS 实例上；没有说明实例类型或数量
 deployment.notes.0|论文称预订有提升，但没有给出幅度。
+version_note|核对 KDD 2019 正式论文。图 2 对比多代排序模型的预订收益。第 3.2 节另有多任务试验，该试验预订量持平。
+updates.0.note|核对 KDD 2019 正式论文。图 2 对比多代排序模型的预订收益。第 3.2 节另有多任务试验，该试验预订量持平。

@@ -55,6 +55,6 @@ deployment.scenario|抖音搜索的视频排序，CTR 为查询后观看超过�
 deployment.ab_duration|14 天
 deployment.baseline|抖音搜索生产基线，即 RankMixer+LONGER 体系
 deployment.training_compute|不采样时 1.39 亿参数、batch 2048 下 4303G FLOPs，基线为 9200 万参数、1673G；部署采用 20% 采样，2439G FLOPs
-deployment.inference_cost|推理时按文档 ID 从记忆库直接取嵌入，不激活 Transformer；当前文档覆盖率保持在 98% 以上
+deployment.notes.2|推理时按文档 ID 从记忆库直接取嵌入，不激活 Transformer；当前文档覆盖率保持在 98% 以上
 deployment.notes.0|A/B 结果经 T 检验显著。
 deployment.notes.1|抖音广告平台离线 AUC +0.1%；TikTok 搜索查询改写率约降 0.843%。

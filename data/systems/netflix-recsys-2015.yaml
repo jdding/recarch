@@ -11,7 +11,10 @@ venue_year: 2015
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/2843948"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+updates:
+- date: '2026-11-25'
+  note: Rechecked the ACM paper and clarified the scope of the annual estimate and the absence of a stated experimental comparator.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Netflix's ensemble of algorithms such as the per-row Personalized Video Ranker, Top-N and Trending, judged by A/B tests on retention; the paper estimates over $1B a year saved."
@@ -88,7 +91,7 @@ results_table:
     method: Personalisation and recommendations together
     metric: Savings from reduced cancellations
     result: More than $1B per year
-    versus: No personalisation
+    versus: Counterfactual not specified in the paper
 deployment:
   online_evidence: deployed_only
   scenario: Netflix homepage, most screens and search
@@ -102,8 +105,9 @@ deployment:
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - Estimated value of personalization and recommendations is more than $1B per year. This is an estimate, not an
-    A/B result.
-  - The paper discusses A/B test design and gives no model metrics.
-  basis: card_content
-  checked_on: '2026-10-31'
+  - The authors estimate more than $1B in annual value for personalization and recommendations combined. They discuss retention experiments separately.
+  - The paper gives no experimental comparator or inference-cost figure for the annual estimate.
+  fulltext_refs:
+  - Sections 3 and 4.1 distinguish the annual business estimate from member-retention A/B tests.
+  basis: full_text
+  checked_on: '2026-11-25'

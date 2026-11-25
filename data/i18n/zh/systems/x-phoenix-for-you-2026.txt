@@ -22,3 +22,4 @@ unknown_fields.1|训练数据
 code.repos.0.note|「为你推荐」信息流的核心代码，涵盖召回、过滤和 transformer 排序器。README 列出了少量未发布的文件，例如 Grox LLM 的 prompt 和一些 botmaker 规则。
 deployment.scenario|X 的「为你推荐」信息流，开放仓库
 deployment.notes.0|仓库 README 列出了更新，没有指标。
+status_reason|这次发布与 2023 年 Twitter 发布描述的是同一条 For You 信息流的不同版本，已合并至主卡。

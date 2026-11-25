@@ -8,11 +8,13 @@ era_reason: "The paper's central claim is scaling-law sequence length for HSTU-c
 first_public: "2026-04"
 venue: "RecSys 2026"
 venue_year: 2026
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831845"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-25"
+updates:
+- date: "2026-11-25"
+  note: "Checked the RecSys 2026 proceedings. Tables 1 and 2 separate training data I/O savings and production A/B gains on the two platforms."
 system_type: training_infrastructure
 evidence_level: production_described
 tldr: "Versioned late materialization stores each user's history once and rebuilds it at training time; it cuts primary read bandwidth up to -70.3% and unlocked 4K-to-64K sequences at Meta."
@@ -65,14 +67,14 @@ sources:
 - title: "Versioned Late Materialization, arXiv 2604.24806"
   url: https://arxiv.org/abs/2604.24806
   type: paper
-version_note: "Read from arXiv 2604.24806 v2, a preprint; the RecSys 2026 DOI 10.1145/3773078.3831845 was verified against Crossref, and the published version itself was not read; Crossref lists pages 1654-1662."
+version_note: "Checked the RecSys 2026 proceedings. Tables 1 and 2 separate training data I/O savings and production A/B gains on the two platforms."
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2604.24806
   local_pdf: "full text read, file not redistributed"
   sections_read: "Abstract, introduction, fat row analysis, methodology, productionization, evaluation with Tables 1 and 2 and Figure 4, related work, conclusion"
-  verified_on: "2026-11-02"
-  published_pdf: "not read; RecSys 2026 version not available, arXiv v2 preprint read on 2026-11-02"
+  verified_on: "2026-11-25"
+  published_pdf: "RecSys 2026 proceedings full text checked 2026-11-25."
 code:
   status: none
   checked_on: "2026-11-02"
@@ -128,14 +130,15 @@ deployment:
   training_compute: "Not a training system itself; disaggregated preprocessing keeps GPUs compute-bound, with 15% per-worker throughput from batch tuning and 10% from pipelined prefetching"
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "Mutable UIH store serves second-level freshness on the inference path; immutable store reads need one disk seek plus sequential I/O"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "The paper states that at this production scale a 1% Normalized Entropy improvement is considered a success."
   - "A hundred-plus concurrent training jobs read the shared immutable store."
+  - "Mutable UIH store serves second-level freshness on the inference path; immutable store reads need one disk seek plus sequential I/O"
   fulltext_refs:
   - "Table 1: write -46.2%, reads -70.3%, -50.9%, -47.7%, lookups +62.7%, +16.2%, +8.7% streaming and +24.6%, +6.5%, +3.4% batch, latency +9.7%, -26.4%, -36.2%"
   - "Sec 5.2 and Table 2: Fat Row Wall about 4K, Platform A +1.2% NE to 64K, Platform B +0.65% to 10K, A/B lifts +0.22%, +4.1%, +2.3%, +4.3%, +0.14%, +0.79%, +1.4%, +1.7%"
   - "Sec 4: 3.4x read throughput per host resource, 15% and 10% preprocessing gains, 60% batch read reduction, 28% per-worker throughput"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-25"

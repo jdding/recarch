@@ -6,7 +6,7 @@ core_idea|General Search Unit 从终身序列中检索相关行为，再由 Exac
 deployed_in|自 2019 年起用于阿里巴巴展示广告的 CTR 预测，承接主流量
 scale_short|序列最长 54,000 个行为，22 TB 行为索引，峰值时每秒超过一百万用户
 key_result|阿里巴巴展示广告线上 CTR +7.1%，RPM +4.4%，SIM 承接主流量
-results_reported|线上，见表 5，自 2019 年起用于阿里巴巴展示广告：CTR +7.1%，RPM +4.4%；SIM 承接主流量。工业数据集 AUC，见表 4：DIEN 0.6452，MIMN 0.6541，SIM 硬搜索 0.6604，SIM 软搜索 0.6625，带时间信息的 SIM 硬搜索 0.6624；部署选了硬搜索，因为软搜索的收益很小，而且线上需要最近邻搜索。公开数据集 AUC，见表 2，Taobao / Amazon：DIN 0.9214 / 0.7276，MIMN 0.9278 / 0.7396，SIM 软搜索 0.9416 / 0.7510；带时间信息的 SIM 软搜索在 Taobao 上为 0.9501。
+results_reported|第 5.5 节报告淘宝 App 首页「猜你喜欢」广告在 2020 年一月 7 日至二月 7 日做 A/B。对比上一代 MIMN，CTR +7.1%、RPM +4.4%，论文报告 SIM 随后承接主流量。工业数据集 AUC 见表 4，DIEN 0.6452，MIMN 0.6541，SIM 硬搜索 0.6604，SIM 软搜索 0.6625，带时间信息的 SIM 硬搜索 0.6624。出于服务效率选择硬搜索，软搜索收益小且需要在线最近邻。公开数据集 AUC 见表 2，淘宝 / Amazon 上 DIN 0.9214 / 0.7276，MIMN 0.9278 / 0.7396，SIM 软搜索 0.9416 / 0.7510，带时间信息的 SIM 软搜索在淘宝数据集上为 0.9501。
 serving_infra|Real-time Prediction 系统，即 RTP，峰值时每秒处理超过一百万用户，为每个用户给数百个候选打分。一个两级离线索引，先按用户 id，再按类目，称为用户行为树，每天重建，约达 22 TB；每个类目的子序列截断到 200，每个请求少于 20 个类目；multi-head attention 用深度 kernel 融合优化。相对在截断行为上的 MIMN，服务一万多个行为约增加 5 ms。
 stages.0.model_family|SIM：GSU，硬搜索或软搜索，用辅助的 CTR 损失训练，加 ESU，带时间间隔 embedding 的 multi-head attention，再接 MLP；损失 = alpha*Loss_GSU + beta*Loss_ESU
 stages.0.details|硬搜索是无参数的，选出候选所在类目中的行为，alpha = 0；软搜索使用共享 embedding 和最大内积搜索，alpha = beta = 1。部署的变体是硬搜索。
@@ -19,10 +19,8 @@ scale.0.value|54,000，论文称是 MIMN 的 1000 的 54x
 scale.1.metric|用户行为树索引大小
 scale.2.metric|峰值流量
 scale.2.value|每秒超过一百万用户
-results_table.online.0.setting|阿里巴巴展示广告，表 5
-results_table.online.1.setting|阿里巴巴展示广告，表 5
-results_table.online.0.versus|之前的线上模型
-results_table.online.1.versus|之前的线上模型
+results_table.online.0.setting|淘宝 App 首页「猜你喜欢」广告 A/B，见第 5.5 节
+results_table.online.1.setting|淘宝 App 首页「猜你喜欢」广告 A/B，见第 5.5 节
 results_table.offline.0.setting|工业数据集，表 4
 results_table.offline.1.setting|工业数据集，表 4
 results_table.offline.2.setting|Taobao 公开数据集，表 2
@@ -31,15 +29,18 @@ results_table.offline.0.method|SIM 硬搜索
 results_table.offline.1.method|SIM 软搜索
 results_table.offline.2.method|SIM 软搜索
 results_table.offline.3.method|SIM 软搜索
-caveats.0|摘要层面的线上提升，CTR 7.1%，RPM 4.4%，没有给出基线的流量占比或时长。
+caveats.0|论文给出实验区间与对照模型，未披露分流比例。
 caveats.1|22 TB 的数字是用户行为树索引的；没有给出其他特征的存储。
 caveats.2|表中的数值是从提取的文本中读出的，并与正文讨论交叉核对过。
-unknown_fields.0|A/B 流量占比和时长
+unknown_fields.0|A/B 分流比例
 unknown_fields.1|机器数量
 unknown_fields.2|GPU 数量
 code.repos.0.note|NVIDIA 对 SIM 的 TensorFlow 2 重新实现；不是阿里巴巴的。
-deployment.scenario|阿里巴巴展示广告的 CTR 预测，自 2019 年起承接主流量
-deployment.baseline|之前的线上模型
+deployment.scenario|淘宝 App 首页「猜你喜欢」展示广告
+deployment.ab_duration|2020 年一月 7 日至二月 7 日
+deployment.baseline|上一代生产模型 MIMN
 deployment.serving_latency|实时预算低于 30 ms；相对在截断行为上的 MIMN，服务一万多个行为约增加 5 ms
 deployment.serving_qps|峰值时每秒超过一百万用户
 deployment.hardware|每天重建的用户行为树，约 22 TB；未报告机器和 GPU 数量
+version_note|核对 CIKM 2020 正式论文。第 5.5 节核实线上实验的起止日期、淘宝入口和 MIMN 对照。
+updates.0.note|核对 CIKM 2020 正式论文。第 5.5 节核实线上实验的起止日期、淘宝入口和 MIMN 对照。

@@ -61,6 +61,6 @@ deployment.baseline|同一个 GR 模型使用 base SID 方案，不是此前的�
 deployment.online_lifts.0.metric|成交笔数
 deployment.training_compute|基准实验，不是线上生产任务：Qwen2.5-0.5B 训练 1 个 epoch，用 32 张 PPU-ZW810E，约 80 h 每个 epoch；T5-base 训练 4 个 epoch，用 16 张，约 20 h 每个 epoch；RQ-VAE 训练 150 个 epoch。线上训练算力未报告。
 deployment.serving_latency|异步：点击 item 详情页后才发起召回请求，候选在 200 ms 内写入缓存表，不影响主推荐服务。
-deployment.inference_cost|beam 数为 300、600、1200 的动态 beam search，使第二步解码的计算量比固定 1200 的 beam 减少 75%。
+deployment.notes.1|beam 数为 300、600、1200 的动态 beam search，使第二步解码的计算量比固定 1200 的 beam 减少 75%。
 deployment.hardware|实验在 PPU-ZW810E 上运行，这是阿里巴巴的 GPU，算力约为 NVIDIA A100 的 90%，显存 95.6 GB；线上服务硬件未报告。
 deployment.notes.0|论文提到每秒一万次请求的平台，只是用来说明动态 beam search 的动机，并不是这套系统实测的 QPS。

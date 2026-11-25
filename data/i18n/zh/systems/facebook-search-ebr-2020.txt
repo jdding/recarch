@@ -52,4 +52,7 @@ unknown_fields.3|索引规模
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|Facebook 搜索 召回，包括人、群组、主页和活动
 deployment.baseline|线上搜索
-deployment.notes.0|垂直领域的 A/B 实验带来显著的指标提升，没有数字。
+deployment.notes.0|论文报告垂类搜索 A/B 有显著提升，未公布指标及其幅度。
+deployment.notes.1|查询向量在线计算。文档向量用 Spark 批量生成，再量化写入倒排索引。
+version_note|核对 KDD 2020 正式论文。生产案例给出 A/B 定性收益，并解释查询与文档向量如何接入线上。
+updates.0.note|核对 KDD 2020 正式论文。生产案例给出 A/B 定性收益，并解释查询与文档向量如何接入线上。

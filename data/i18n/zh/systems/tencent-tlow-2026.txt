@@ -43,7 +43,7 @@ deployment.scenario|Tlow token ID 驱动的 Transformer 解码器检索通路，
 deployment.ab_duration|两组用同一数据各训两周；测试时长未报告
 deployment.baseline|同一序列模型使用随机分配的物品 ID 嵌入
 deployment.training_compute|流在约 100 万物品嵌入上训练；每日数千万新物品 tokenization 在单张 GPU 数分钟完成
-deployment.inference_cost|序列模型学 4096 个 token 嵌入而非数千万物品嵌入；新物品 tokenization 在请求路径之外
+deployment.notes.2|序列模型学 4096 个 token 嵌入而非数千万物品嵌入；新物品 tokenization 在请求路径之外
 deployment.hardware|单张 GPU 用于每日新物品 tokenization
 deployment.notes.0|新物品通路收益达单域 UCTR +11.64%、跨域 +9.45%。
 deployment.notes.1|跨域头部账号曝光份额下降 1.15%，论文解读为长尾受益。

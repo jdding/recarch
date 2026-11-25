@@ -66,7 +66,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2306.08121
-  local_pdf: /workspace/src/a_2306.08121.pdf
   sections_read: Abstract, intro, related work, Semantic-ID generation (RQ-VAE), n-gram/SPM adaptation, experimental setup and Sec 4.2
     text, Table 1 (sub-trie stats); result figures are charts and were read from captions/text only
   verified_on: '2026-10-30'

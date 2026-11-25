@@ -62,7 +62,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2512.09200
-  local_pdf: /workspace/src/a_2512.09200.pdf
   sections_read: Abstract, intro, overview, Zipper/Filter/Networks/KTAP descriptions, Sec 4 text around Table 3 and Fig 5
   verified_on: '2026-10-30'
 code:

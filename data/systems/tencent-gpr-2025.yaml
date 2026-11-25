@@ -67,7 +67,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2511.10138
-  local_pdf: /workspace/src/a_2511.10138.pdf
   sections_read: Abstract, intro, input schema/tokenization, HHD architecture summary, Table 2 (architecture study), Table 3 (training
     and alignment), Tables 4-5 (online A/B) text
   verified_on: '2026-10-30'

@@ -1,0 +1,96 @@
+id: tencent-hit-2025
+name: HIT
+company: Tencent
+surface: Pre-ranking in Tencent display advertising
+year: 2025
+era: deep
+era_reason: HIT scores user-ad pairs with a two-tower model. The training losses teach each tower to approximate cross features while preserving independent serving.
+first_public: '2025-05'
+venue: CIKM 2025 Applied Research
+venue_year: 2025
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3746252.3761501
+added_on: '2026-11-25'
+last_verified: '2026-11-25'
+system_type: ads
+evidence_level: production_described
+tldr: Tencent uses learned cross-feature approximations and multi-head similarity in a cacheable two-tower ad pre-ranker. A five-day test against MVKE lifted GMV by 1.66% and ROI by 1.55%.
+summary: HIT pre-ranks ads in Tencent's display advertising system. During training, the two towers learn to recover a representation of coarse user-ad interactions from the static features of either side. Each tower also projects its embedding into multiple subspaces for finer matching. At serving time, the towers can compute representations independently before matching them. The pre-ranker sends several hundred ads for each user to downstream modules.
+paradigms: [two-tower]
+stages:
+- stage: pre-rank
+  model_family: Interaction-enhanced two-tower scoring
+  details: Train each tower to approximate cross interactions from static features, then match user and ad embeddings in multiple learned subspaces before downstream ranking.
+id_tokenization:
+  approach: Learned user and ad feature embeddings
+  details: The towers map float and embedded categorical features into vectors for similarity scoring.
+features_signals:
+- Static user and ad features
+- Representations learned from coarse user-ad cross interactions
+training:
+  mode: Supervised learning on user-ad relevance with auxiliary interaction-vector alignment
+  objectives:
+  - Relevance prediction
+  - Cosine similarity between predicted vectors and the coarse interaction representation
+  notes: The auxiliary training objective teaches both towers to retain information from cross interactions.
+serving_infra: User and ad representation computation stays separable for caching. The pre-ranker forwards selected ads to the existing downstream pipeline.
+scale:
+- metric: Training data reported for the online model
+  value: Over 3.6 billion samples, over 1 billion users and 10 million candidate ads
+  note: Section 5.5 gives training counts, separately from the test population.
+results_reported: In a five-day online A/B test, HIT improved GMV by 1.66% and ROI by 1.55% relative to MVKE. The downstream pipeline was identical across arms. Figure 6 compares response time and success rate at the service benchmark of 35,000 QPS and reports efficiency close to a vanilla two-tower model.
+caveats:
+- Figure 6 uses 35,000 QPS as the benchmark threshold. The paper gives no measured production traffic volume for HIT.
+- In the author version, the paragraph before Table 4 assigns 1.55% to GMV. Table 4, the abstract and the conclusion agree on 1.66% GMV and 1.55% ROI.
+unknown_fields:
+- Experiment traffic split and sample size
+- Production latency, throughput, hardware and per-request cost
+sources:
+- title: HIT Model, CIKM 2025 Applied Research proceedings
+  url: https://doi.org/10.1145/3746252.3761501
+  type: paper
+- title: Author full text, arXiv 2505.19849 v2
+  url: https://arxiv.org/html/2505.19849v2
+  type: paper
+- title: CIKM 2025 accepted applied research papers, arp0813
+  url: https://www.cikm2025.org/program/accepted-papers
+  type: documentation
+version_note: The official CIKM program confirms the Applied Research track. The architecture and deployment figures were checked against the full arXiv v2 author manuscript. The published ACM text was unavailable at review.
+code:
+  status: official_full
+  checked_on: '2026-11-25'
+  repos:
+  - url: https://github.com/HarveyYang123/HIT_model
+    owner: HIT authors
+    official: true
+    note: The authors provide the HIT model and training scripts for public datasets. Tencent production serving and data are outside the release.
+core_idea: Learn to approximate user-ad feature crosses before serving, then compare independently computed tower embeddings in multiple subspaces.
+deployed_in: Tencent display-ad pre-ranking
+scale_short: More than 3.6 billion training samples for the tested model
+key_result: Five-day A/B against MVKE, with GMV +1.66% and ROI +1.55%
+results_table:
+  online:
+  - {setting: Tencent display-ad pre-ranking, method: HIT, metric: GMV, result: +1.66%, versus: MVKE}
+  - {setting: Tencent display-ad pre-ranking, method: HIT, metric: ROI, result: +1.55%, versus: MVKE}
+deployment:
+  online_evidence: online_numbers
+  scenario: Tencent display-ad pre-ranking
+  ab_traffic: not_reported
+  ab_duration: Five days
+  baseline: MVKE, chosen as the strongest baseline on private data, with identical downstream modules in both arms
+  online_lifts:
+  - {metric: GMV, value: +1.66%}
+  - {metric: ROI, value: +1.55%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The pre-ranker sent several hundred ads per user to downstream modules in the experiment.
+  - Figure 6 compares response time and success rate at a 35,000 QPS service threshold. HIT performed close to the vanilla two-tower model under that benchmark.
+  fulltext_refs:
+  - Section 4 and Figure 2 explain the interaction generators and multi-head matching.
+  - Section 5.5, Table 4 and Figure 6 give the experiment setup, business metrics and efficiency comparison.
+  basis: full_text
+  checked_on: '2026-11-25'

@@ -137,11 +137,12 @@ deployment:
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "Trie constrained decoding over candidate Semantic IDs; construction and masking overhead described as negligible because the candidate set is much smaller than the item universe"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "All Table 4 improvements are statistically significant with student t-test p < 0.05."
   - "Active Devices grew +0.030% in the text."
+  - "Trie constrained decoding over candidate Semantic IDs; construction and masking overhead described as negligible because the candidate set is much smaller than the item universe"
   fulltext_refs:
   - "Table 4 and Sec 4.10: Watch Time +0.095%, Effective View +0.111%, Like +0.286%, Comment +0.462%, Forward +0.447%, Active Devices +0.030%, 7.8% traffic, 14 days, over 400 million DAU"
   basis: full_text

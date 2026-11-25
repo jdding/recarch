@@ -1,0 +1,36 @@
+surface|腾讯展示广告预排序
+era_reason|HIT 用双塔给用户与广告配对打分。训练让每侧能近似交叉特征，上线时两侧表征可独立计算。
+tldr|腾讯在可缓存的广告预排序双塔上，用学习到的交叉特征近似和多头相似度来打分。对照 MVKE 的五天实验里，GMV 提升 1.66%，ROI 提升 1.55%。
+summary|HIT 用于腾讯展示广告预排序。训练时，两座塔各从本侧静态特征近似用户与广告的粗粒度交互表示，再把嵌入投影到多个子空间，捕捉更细的匹配关系。上线时可分别算出用户和广告表示，再计算匹配分。预排序为每位用户选出数百条广告交给后续模块。
+stages.0.model_family|增强交互建模的双塔打分
+stages.0.details|两侧分别学习从静态特征近似交叉交互，再在多个学习得到的子空间中匹配用户和广告嵌入，把候选交给下游排序。
+id_tokenization.approach|学习用户和广告的特征向量
+id_tokenization.details|双塔将连续特征和类别嵌入映射成用于相似度计算的向量。
+features_signals.0|静态用户和广告特征
+features_signals.1|从粗粒度用户与广告交叉交互学得的表示
+training.mode|有监督地学习用户和广告的相关性，并用辅助目标对齐交互向量
+training.objectives.0|预测相关性
+training.objectives.1|用余弦相似度对齐预测向量与粗粒度交互表示
+training.notes|辅助目标让双塔各自保留用户与广告交叉交互的信息。
+serving_infra|用户和广告的表示可以独立计算和缓存。预排序选出的广告进入原有下游链路。
+scale.0.metric|线上实验模型的训练数据
+scale.0.value|超过 36 亿条样本、超过 10 亿用户、1000 万个候选广告
+results_reported|五天线上 A/B 中，相比 MVKE，GMV 相对提升 1.66%，ROI 相对提升 1.55%。两组使用相同的下游链路。图 6 在每秒 35,000 次查询的服务基准下比较响应时间和成功率，HIT 的效率接近普通双塔。
+caveats.0|图 6 的 35,000 QPS 是基准门槛，论文未披露 HIT 的生产实际流量。
+caveats.1|作者版表 4 前的正文把 1.55% 写给了 GMV。表 4、摘要和结论一致，GMV +1.66%，ROI +1.55%。
+unknown_fields.0|实验分流比例与样本量
+unknown_fields.1|生产延迟、吞吐、硬件与单次请求成本
+version_note|CIKM 官方程序确认 Applied Research 赛道。架构与部署数字已核对 arXiv v2 作者全文，ACM 出版全文待核。
+code.repos.0.note|作者提供了 HIT 模型和公开数据集的训练脚本。发布范围未包含腾讯生产服务和数据。
+core_idea|训练时学习近似用户与广告的交叉特征，服务时独立算双塔表示，再在多个子空间中匹配。
+deployed_in|腾讯展示广告预排序
+scale_short|线上实验模型使用超过 36 亿条训练样本
+key_result|对照 MVKE 做五天 A/B，GMV +1.66%，ROI +1.55%
+results_table.online.0.setting|腾讯展示广告预排序
+results_table.online.1.setting|腾讯展示广告预排序
+deployment.scenario|腾讯展示广告预排序
+deployment.ab_duration|五天
+deployment.baseline|对照为内部数据上表现最强的 MVKE，两组共用相同的下游模块
+deployment.notes.0|实验中，预排序为每位用户选出数百条广告交给下游模块。
+deployment.notes.1|图 6 在 35,000 QPS 服务门槛下比较响应时间和成功率，HIT 在该基准下的效率接近普通双塔。
+code.repos.0.owner|HIT 作者团队

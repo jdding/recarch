@@ -105,7 +105,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1711.07601
-  local_pdf: /workspace/src/fulltext/1711.07601.txt (text of arXiv 1711.07601v1)
   sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (Pixie Random Walk, graph pruning, implementation), Sec 4 (experiments,
     Tables 1-3, Figures 1-5), Sec 5 (use cases), conclusion'
   verified_on: '2026-10-30'

@@ -44,6 +44,6 @@ deployment.ab_traffic|每臂 10% 流量，每模型约 4000 万独立用户
 deployment.ab_duration|七天，随后切回基线再做 5 天 A/A 留白
 deployment.baseline|WLR 生产连续值模型
 deployment.serving_latency|推理随码长线性增长；绝对延迟未报告
-deployment.inference_cost|较二次增长的生成式回归基线，码长更短固定且重建误差更低
+deployment.notes.2|较二次增长的生成式回归基线，码长更短固定且重建误差更低
 deployment.notes.0|七天 A/B 的逐日 ADVV 增益全部统计显著。
 deployment.notes.1|第 8 天切回与 5 天 A/A 回落是论文的因果检验。

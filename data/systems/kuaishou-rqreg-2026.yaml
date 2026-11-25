@@ -122,11 +122,12 @@ deployment:
   training_compute: not_reported
   serving_latency: "Inference scales linearly with code length; absolute latency not reported"
   serving_qps: not_reported
-  inference_cost: "Shorter fixed code length than the quadratic-scaling Generative Regression baseline at lower reconstruction error"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "Daily ADVV gains stay statistically significant across all seven A/B days."
   - "The day-8 switch-back and 5-day A/A drop serve as the paper's causal check."
+  - "Shorter fixed code length than the quadratic-scaling Generative Regression baseline at lower reconstruction error"
   fulltext_refs:
   - "Table 7: AUC +0.12% overall, +0.23% long-tail; ADVV +4.19% overall, +4.76% long-tail"
   - "Sec 4.3.1: 10% per arm, 40 million users per model, 7 days, 3x32 codebook, LSTM backbone, WLR baseline"

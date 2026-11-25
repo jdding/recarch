@@ -42,13 +42,14 @@ unknown_fields.1|推理延迟数字
 unknown_fields.2|A800 之外的训练算力
 unknown_fields.3|官方代码
 code.note|论文未给出官方代码，GitHub 与网络搜索也未找到发布。
-version_note|读的是 arXiv 2508.14646，占位 ACM 模板预印本；WSDM 2026 的 DOI 10.1145/3773966.3777963 已在 Crossref 核对，camera-ready 未读到；Crossref 登记页码 735-744。
 deployment.scenario|快手 App 的本地生活服务推荐，服务 4 亿日活用户的全部流量
 deployment.ab_traffic|实验组 10% 流量，对照组用生产管线
 deployment.ab_duration|一周
 deployment.baseline|生产级多阶段管线：多路召回、粗排精排和链路级重排
 deployment.training_compute|在 NVIDIA A800 GPU 上训练；测试 0.05B 到 0.3B 规模；GPU 时长未报告
-deployment.inference_cost|NVIDIA A10 GPU 上混合精度、KV cache、动态批处理与 TensorRT，达 25% MFU
+deployment.notes.2|NVIDIA A10 GPU 上混合精度、KV cache、动态批处理与 TensorRT，达 25% MFU
 deployment.hardware|训练用 NVIDIA A800，推理用 NVIDIA A10
 deployment.notes.0|全部线上提升在 alpha 0.05 下双尾 t 检验 p < 0.01 显著。
 deployment.notes.1|两组 A/B 共享一致候选池与系统约束。
+version_note|核对 WSDM 2026 正式论文。第 5 节及表 4 核实一周 A/B、实验组分到 10% 流量、共用候选池，以及四项收益。
+updates.0.note|核对 WSDM 2026 正式论文。第 5 节及表 4 核实一周 A/B、实验组分到 10% 流量、共用候选池，以及四项收益。

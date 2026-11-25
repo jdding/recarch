@@ -89,7 +89,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2402.11139
-  local_pdf: /workspace/src/fulltext/2402.11139.txt (text of arXiv 2402.11139v1)
   sections_read: 'Entire paper: abstract, intro, related work, Sec 3 (graph, training infra, architecture, temporal graphs, densification,
     multi-hop sampling), Sec 4 (training stability and speed, Tables 2-3), Sec 5 near-line inference, Sec 6 experiments per Tables 4-8,
     Sec 7 deployment lessons, conclusion'

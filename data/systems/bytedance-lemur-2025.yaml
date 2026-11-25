@@ -127,11 +127,12 @@ deployment:
   training_compute: "Without sampling 139M parameters and 4303G FLOPs at batch 2048 against 92M and 1673G for the baseline; the deployed 20% sampling runs 2439G FLOPs"
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "At inference embeddings are fetched from the memory bank by document ID without activating the transformer; current-document coverage stays above 98%"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "The A/B result is statistically significant by T-test."
   - "The Douyin ads platform reports +0.1% offline AUC; TikTok Search about 0.843% query change rate reduction."
+  - "At inference embeddings are fetched from the memory bank by document ID without activating the transformer; current-document coverage stays above 98%"
   fulltext_refs:
   - "Sec 4.3: 14-day A/B, query change rate 0.843% better than baseline, T-test significant, fully deployed over one month"
   - "Table 4: 92M and 1673G baseline, 139M and 4303G unsampled, 2439G at p=20 q=20"

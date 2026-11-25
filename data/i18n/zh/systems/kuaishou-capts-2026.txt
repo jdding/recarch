@@ -55,5 +55,5 @@ deployment.online_lifts.1.metric|每台设备平均 App 使用时长
 deployment.online_lifts.2.metric|日活设备
 deployment.online_lifts.3.metric|视频总观看时长
 deployment.online_lifts.4.metric|每台设备平均观看时长
-deployment.inference_cost|在线对 10^2 到 10^3 个近期候选打分，近线缓存覆盖 10^3 到 10^4 个长期候选；论文称只增加了轻量的打分、路由和缓存查询。
+deployment.notes.1|在线对 10^2 到 10^3 个近期候选打分，近线缓存覆盖 10^3 到 10^4 个长期候选；论文称只增加了轻量的打分、路由和缓存查询。
 deployment.notes.0|每个 I2I 通道对每个触发 item 返回前 50 个 item。

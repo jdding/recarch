@@ -47,6 +47,6 @@ code.note|论文没有给出代码链接，数据集为内部数据。
 deployment.scenario|Yandex Music，每日离线用户 embedding 用点积打分，作为生产梯度提升树排序模型的特征
 deployment.baseline|现有生产栈，其排序模型是一个基于一千个特征的梯度提升树集成
 deployment.training_compute|实验使用 64–256 张 A100 80GB GPU，训练 1 天到 1 周，取决于模型大小；论文没有单独说明部署模型
-deployment.inference_cost|embedding 每天批量计算一次，用点积打分；论文称这比实时的 target-aware 方案便宜得多
+deployment.notes.1|embedding 每天批量计算一次，用点积打分；论文称这比实时的 target-aware 方案便宜得多
 deployment.hardware|训练使用 A100 80GB GPU，如上；服务硬件未报告
 deployment.notes.0|后来一个较小的实时版本被集成进生产排序模型，与每日离线 embedding 的收益互补；论文没有给出数字。

@@ -100,9 +100,10 @@ deployment:
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: More than 3x end-to-end QPS improvement; absolute QPS not reported
-  inference_cost: Model capacity up 10,000x; feature extraction more than 100x faster
+  inference_cost: not_reported
   hardware: NVIDIA Grace Hopper Superchip; MTIA integration planned
   notes:
   - The blog does not describe the A/B setup behind the recall and ads quality figures.
+  - "Model capacity up 10,000x; feature extraction more than 100x faster"
   basis: card_content
   checked_on: '2026-10-31'

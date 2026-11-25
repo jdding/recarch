@@ -34,11 +34,12 @@
 ## 4. doordash-homepage-2022 / caveats
 
 - 英文问：What should I keep in mind when reading the results of DoorDash homepage ranking?
-- 英文答：2022 post; DoorDash has since published newer LLM-assisted personalization posts not covered here.
+- 英文答：In the 2022 account, exploration applied to vertical ordering. Exploration within carousels is discussed as future work.
 - 中文问：读 DoorDash homepage ranking 的结果时要注意什么？
-- 中文答：这是 2022 年的文章；此后 DoorDash 又发布了较新的由 LLM 辅助的个性化文章，这里没有涵盖。
+- 中文答：2022 年上线的探索针对页面纵向排序。轮播内部的探索仍是文章提出的后续方向。
 - 引用字段：caveats.0
 - 抽查结论：[ ] 通过  [ ] 有问题
+
 
 ## 5. facebook-search-ebr-2020 / what
 
@@ -103,6 +104,7 @@
 - 引用字段：company, year, deployed_in
 - 抽查结论：[ ] 通过  [ ] 有问题
 
+
 ## 12. meta-rankgraph2-2026 / code
 
 - 英文问：Is there code for RankGraph-2?
@@ -139,14 +141,15 @@
 - 引用字段：tldr
 - 抽查结论：[ ] 通过  [ ] 有问题
 
-## 16. twitter-x-for-you-2023 / unknown
+## 16. x-for-you / unknown
 
-- 英文问：What does the source of Twitter For You timeline algorithm not report?
-- 英文答：The source does not report: current architecture; A/B results.
-- 中文问：Twitter For You timeline algorithm 的原文有哪些没有报告？
-- 中文答：原文没有报告：当前的架构；A/B 结果。
-- 引用字段：unknown_fields.0, unknown_fields.1
+- 英文问：What does the source of X For You not report?
+- 英文答：The source does not report: Production A/B design, metrics, latency and throughput.
+- 中文问：X For You 的原文有哪些没有报告？
+- 中文答：原文没有报告：生产 A/B 设计、指标、延迟与吞吐。
+- 引用字段：unknown_fields.0
 - 抽查结论：[ ] 通过  [ ] 有问题
+
 
 ## 17. kuaishou-oneloc-2025 / inputs
 

@@ -2,7 +2,7 @@
 id: kuaishou-sarm-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: c69f3625d4014874
+content_hash: 116c844217947354
 drop: []
 items:
 - key: what
@@ -63,9 +63,9 @@ items:
   - scale.2
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does SARM report?
-  a_en: 'Serving latency: Time per query 1.02x of the base ranker, with no statistically significant degradation reported; absolute latency not reported. Serving QPS: Inference QPS 271.30 against 280.71 for the base ranker, in the units of Table 5. Inference cost: The memory bank turns author-side encoding into a constant-time lookup at inference; no LLM runs per request. Hardware: not reported.'
+  a_en: 'Serving latency: Time per query 1.02x of the base ranker, with no statistically significant degradation reported; absolute latency not reported. Serving QPS: Inference QPS 271.30 against 280.71 for the base ranker, in the units of Table 5. Inference cost: not reported. Hardware: not reported.'
   q_zh: SARM 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：每次查询时间是基础排序模型的 1.02x，论文没有报告统计显著的退化；绝对延迟未报告。 服务 QPS：推理 QPS 为 271.30，基础排序模型为 280.71，单位按 Table 5。 推理成本：memory bank 让主播侧编码在推理时变成常数时间的查表，每个请求都不运行 LLM。 硬件：未报告。
+  a_zh: 服务延迟：每次查询时间是基础排序模型的 1.02x，论文没有报告统计显著的退化；绝对延迟未报告。 服务 QPS：推理 QPS 为 271.30，基础排序模型为 280.71，单位按 Table 5。 推理成本：未报告。 硬件：未报告。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

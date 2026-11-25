@@ -126,10 +126,11 @@ deployment:
   training_compute: 'SFT on a single machine with 8x80GB GPUs at about 2.5 GPU hours per epoch; DPO on 2 machines with 8xA100 80GB for 1 epoch'
   serving_latency: 'Alignment scoring takes 323 ms; the system adds +0.043% critical-path latency and +0.412% direct-tier latency'
   serving_qps: not_reported
-  inference_cost: 'List-wise scoring of all candidates in a single inference step instead of point-wise scoring'
+  inference_cost: not_reported
   hardware: 'Training hardware as above; serving hardware not reported'
   notes:
   - 'The 70B variant improves precision but was ruled out for its memory footprint and latency on the critical path.'
+  - "List-wise scoring of all candidates in a single inference step instead of point-wise scoring"
   fulltext_refs:
   - 'Sec 6.2.1 and Table 5: randomized subset of production traffic in the US and Canada, several months, post dismiss -1.70%, post dislike -2.74%, interest consumption +0.16%'
   - 'Sec 6.3 and Table 1: +0.043% critical-path latency, +0.412% direct-tier latency, alignment scoring 323 ms'

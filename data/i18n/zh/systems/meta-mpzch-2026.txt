@@ -41,6 +41,6 @@ deployment.scenario|服务约 30 亿月活用户的视频后期排序模型与 H
 deployment.baseline|标准哈希方法 torcharrow sigrid hash，Meta 多数模型的默认算法
 deployment.serving_latency|HBM 即 CUDA 批处理内核在深度 8 到 512 下为 0.8 到 0.9 毫秒；探测深度对延迟影响可忽略
 deployment.serving_qps|通过输入特征去重，训练 QPS 与既有方法保持相当
-deployment.inference_cost|发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积
+deployment.notes.2|发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积
 deployment.notes.0|17 个预测任务中 14 个 NE 改善、3 个持平；论文称鉴于模型成熟度，提升具有统计显著性。
 deployment.notes.1|检索部署中 Post ID 的 TTL 为 24 小时、Owner ID 为 72 小时。

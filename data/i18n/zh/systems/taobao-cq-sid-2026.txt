@@ -56,7 +56,7 @@ deployment.ab_duration|两周
 deployment.training_compute|CQ-SID 量化器训 10 个 epoch 于 4 块 GPU；LLM 各阶段 2k 到 5k 步；总算力未汇总
 deployment.serving_latency|平均端到端延迟约 40 毫秒
 deployment.serving_qps|超过 200 QPS
-deployment.inference_cost|beam search 配 [20, 50, 100] 动态 beam；离线同等召回下聚类 SID 把 beam search 规模削减一半以上
+deployment.notes.3|beam search 配 [20, 50, 100] 动态 beam；离线同等召回下聚类 SID 把 beam search 规模削减一半以上
 deployment.hardware|8 块 GPU 用于线上服务
 deployment.notes.0|论文说明离线 top-1K 截断与线上实际采用粗排截断的召回流程不同。
 deployment.baseline|未加入 CQ-SID 的生产多路召回

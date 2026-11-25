@@ -118,11 +118,12 @@ deployment:
   training_compute: not_reported
   serving_latency: "Batched HBM or CUDA kernel 0.8 to 0.9 ms flat across probe depths 8 to 512; probe depth has negligible latency impact"
   serving_qps: "Training QPS maintained comparable to existing methods through input feature deduplication"
-  inference_cost: "Published model drops the metadata tensor and freezes identities read-only; auxiliary tensors add the identities tensor to model size"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "NE improved in 14 of 17 prediction tasks with 3 neutral; the paper calls the gains statistically significant given the model's maturity."
   - "TTL set to 24 hours for Post IDs and 72 hours for Owner IDs in the retrieval deployment."
+  - "Published model drops the metadata tensor and freezes identities read-only; auxiliary tensors add the identities tensor to model size"
   fulltext_refs:
   - "Table 1: 150M IDs, Sigrid 13.61% at 3.33x capacity, MPZCH zero at 1.33x with probe 256"
   - "Table 2: 0.8 to 0.9 ms batched HBM, 94.2 to 102.7 ms non-batched CPU"

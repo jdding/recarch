@@ -85,7 +85,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2407.00091
-  local_pdf: /workspace/src/a_2407.00091.pdf
   sections_read: 'Entire paper: abstract, intro, Sections 2-8 (Map != List, Less Is More / Bookability Filter, robustness, focus vs
     urgency, tiered attention, attention flow and Algorithm 2, insights), Tables 1-3'
   verified_on: '2026-10-30'

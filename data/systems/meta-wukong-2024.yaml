@@ -68,7 +68,6 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/2403.02545
-  local_pdf: /workspace/src/a_2403.02545.pdf
   sections_read: Abstract, intro, Sec 3 design (embedding, interaction stack, FMB, LCB), Sec 4 implementation, Sec 6 public-dataset
     setup and Table 2 text, Sec 7 internal-dataset results text
   verified_on: '2026-10-30'

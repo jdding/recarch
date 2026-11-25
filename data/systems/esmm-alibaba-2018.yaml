@@ -8,10 +8,14 @@ era_reason: "Entire-space multi-task neural CVR model"
 first_public: "2018-04"
 venue: "SIGIR 2018"
 venue_year: 2018
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3209978.3210104"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the SIGIR 2018 proceedings. Section 3.3 distinguishes the deployed BASE control from ESMM’s offline AUC results."
+updates:
+- date: "2026-11-25"
+  note: "Checked the SIGIR 2018 proceedings. Section 3.3 distinguishes the deployed BASE control from ESMM’s offline AUC results."
 system_type: recommendation
 evidence_level: research_only
 tldr: "ESMM trains CTR and CTCVR over the entire impression space so conversion rate is estimated without sample-selection bias; public-data CVR AUC 68.56 vs 66.00 baseline."
@@ -64,10 +68,10 @@ sources:
 needs_fulltext: false
 fulltext:
   pdf_url: https://arxiv.org/pdf/1804.07931
-  local_pdf: /workspace/src/a_1804.07931.pdf
   sections_read: 'Full 4-page paper: abstract, intro, Sec 2 (problem, SSB and data sparsity, ESMM), Sec 3 experiments (Tables 1-2, Product
     Dataset results), conclusion'
-  verified_on: '2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: "SIGIR 2018 proceedings full text checked 2026-11-25."
 code:
   status: official_partial
   checked_on: '2026-10-30'
@@ -104,7 +108,7 @@ results_table:
     result: +2.56 and +3.25 absolute
     versus: BASE
 deployment:
-  online_evidence: deployed_only
+  online_evidence: no_online_claim
   scenario: Post-click CVR estimation on Taobao recommender data
   ab_traffic: not_reported
   ab_duration: not_reported
@@ -116,7 +120,6 @@ deployment:
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - The paper says the Product Dataset model is the latest one serving the main traffic. It reports offline AUC
-    only.
+  - Section 3.3 identifies BASE as the model serving the main traffic. ESMM's gains over BASE come from offline evaluation.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"

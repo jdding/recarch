@@ -46,3 +46,4 @@ deployment.hardware|训练用 4 张 A100 GPU；没有报告服务硬件
 deployment.notes.0|提升是在线上流量的多个 A/B 测试上汇总得到的。
 deployment.online_lifts.0.metric|自然搜索购买率
 deployment.online_lifts.1.metric|全站转化率
+status_reason|FMLDS 2024 正式发表的来源层级未达准入要求。复核为 5 次引用，未找到合格的其他正式版本或该系统的官方工程来源。

@@ -855,7 +855,7 @@
   "count": 5,
   "source": "Semantic Scholar",
   "source_url": "https://www.semanticscholar.org/paper/91a26cc27dbc94814379dc5d9ce0a400403135c2",
-  "fetched_on": "2026-11-02",
+  "fetched_on": "2026-11-25",
   "matched_title": "Unified Embedding Based Personalized Retrieval in Etsy Search",
   "matched_year": 2023,
   "ids": [
@@ -1044,10 +1044,10 @@
   ]
  },
  "kuaishou-kuaiformer-2024": {
-  "count": 25,
+  "count": 27,
   "source": "Semantic Scholar",
   "source_url": "https://www.semanticscholar.org/paper/cb5c5a06ab2d13a2c6978d3eff9c91719e61a64b",
-  "fetched_on": "2026-11-02",
+  "fetched_on": "2026-11-25",
   "matched_title": "KuaiFormer: Transformer-Based Retrieval at Kuaishou",
   "matched_year": 2024,
   "ids": [
@@ -1056,7 +1056,7 @@
   "papers": [
    {
     "name": "KuaiFormer",
-    "count": 25,
+    "count": 27,
     "source": "Semantic Scholar",
     "source_url": "https://www.semanticscholar.org/paper/cb5c5a06ab2d13a2c6978d3eff9c91719e61a64b",
     "matched_title": "KuaiFormer: Transformer-Based Retrieval at Kuaishou",

@@ -2,7 +2,7 @@
 id: meta-mpzch-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: a57e5cd981094c0b
+content_hash: 099a8976994ed952
 drop: []
 items:
 - key: what
@@ -63,9 +63,9 @@ items:
   - scale.2
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does MPZCH report?
-  a_en: 'Serving latency: Batched HBM or CUDA kernel 0.8 to 0.9 ms flat across probe depths 8 to 512; probe depth has negligible latency impact. Serving QPS: Training QPS maintained comparable to existing methods through input feature deduplication. Inference cost: Published model drops the metadata tensor and freezes identities read-only; auxiliary tensors add the identities tensor to model size. Hardware: not reported.'
+  a_en: 'Serving latency: Batched HBM or CUDA kernel 0.8 to 0.9 ms flat across probe depths 8 to 512; probe depth has negligible latency impact. Serving QPS: Training QPS maintained comparable to existing methods through input feature deduplication. Inference cost: not reported. Hardware: not reported.'
   q_zh: MPZCH 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：HBM 即 CUDA 批处理内核在深度 8 到 512 下为 0.8 到 0.9 毫秒；探测深度对延迟影响可忽略。 服务 QPS：通过输入特征去重，训练 QPS 与既有方法保持相当。 推理成本：发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积。 硬件：未报告。
+  a_zh: 服务延迟：HBM 即 CUDA 批处理内核在深度 8 到 512 下为 0.8 到 0.9 毫秒；探测深度对延迟影响可忽略。 服务 QPS：通过输入特征去重，训练 QPS 与既有方法保持相当。 推理成本：未报告。 硬件：未报告。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

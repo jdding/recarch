@@ -129,11 +129,12 @@ deployment:
   training_compute: not_reported
   serving_latency: "Average serving latency +0.3%, from 15.4 ms to 15.5 ms; offline inference latency 3.02 ms"
   serving_qps: not_reported
-  inference_cost: "238 additional parameters, 0.47 KB in FP16"
+  inference_cost: not_reported
   hardware: not_reported
   notes:
   - "CTR and RPM improvements significant at p < 0.01, two-sided, and consistently positive across the test period."
   - "Rolled out to 100% of Shangou ad recommendation traffic in January 2026; no systematic regression observed after rollout."
+  - "238 additional parameters, 0.47 KB in FP16"
   fulltext_refs:
   - "Sec 4.6: three-week online A/B, 20% treatment and 20% control user buckets, CTR +1.8%, RPM +3.0%, p < 0.01 two-sided, latency 15.4 ms to 15.5 ms, rollout to 100% in January 2026"
   - "Table 4: 238 parameters, 0.47 KB FP16, offline inference latency 3.02 ms"

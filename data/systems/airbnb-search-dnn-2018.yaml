@@ -8,10 +8,14 @@ era_reason: "Airbnb's move from GBDT to neural networks for search ranking"
 first_public: "2018-10"
 venue: "KDD 2019"
 venue_year: 2019
-published_version_checked: false
+published_version_checked: true
 primary_source: "https://doi.org/10.1145/3292500.3330658"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-25"
+version_note: "Checked the KDD 2019 proceedings. Figure 2 shows relative booking gains across rankers. Section 3.2 describes the separate multitask trial with neutral bookings."
+updates:
+- date: "2026-11-25"
+  note: "Checked the KDD 2019 proceedings. Figure 2 shows relative booking gains across rankers. Section 3.2 describes the separate multitask trial with neutral bookings."
 system_type: search
 evidence_level: production_described
 tldr: "How Airbnb search ranking moved from a GBDT to neural nets, ending at a 2-hidden-layer DNN after about 10x more training data, with offline NDCG and online booking gains."
@@ -71,4 +75,4 @@ deployment:
   fulltext_refs:
   - 'Sec 5, System Engineering: a Java server does retrieval and scoring; components run on AWS instances'
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"
