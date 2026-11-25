@@ -11,8 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3799682.3840110"
 added_on: "2026-11-03"
-last_verified: "2026-11-03"
-updates: []
+last_verified: "2026-11-25"
+updates:
+- date: "2026-11-25"
+  note: Checked the DOI-bearing author revision and clarified the online control and overlapping channel attribution.
 system_type: search
 evidence_level: production_described
 tldr: "Taobao's CQ-SID turns semantic IDs into category-constrained cluster identifiers and aligns recall with ranking via EG-GRPO; two-week TmallAPP A/B: GMV +1.15%, UCTCVR +0.40%."
@@ -55,14 +57,14 @@ scale:
 - metric: Channel contribution
   value: "50.25% of all exposures, 58.96% of all clicks, 72.63% of all purchases"
   note: "paper, abstract and Sec 4.5"
-results_reported: "Abstract and Sec 4, offline on TmallAPP search logs: CQ-SID reaches up to 26.76% relative improvement in semantic click hitrate and 11.11% in personalized click hitrate over the RQ-VAE baseline, while reducing beam search size by more than half without compromising recall quality. Table 1, same beam size, semantic click hitrate: CQ-SID 0.0758 at beam 1 against 0.0598 for RQ-VAE (+26.76%), 0.3161 at beam 10 against 0.2579 (+22.57%), 0.6181 at beam 100 against 0.5199 (+18.89%); the ablation without the category constraint reaches 0.0680 (+13.71%) at beam 1 and dropping the query-item contrastive loss scores 0.0596 (-0.33%) at beam 1. Table 2, top-1K truncation: CQ-SID peaks at 0.4422 with beam 30 against 0.4275 with beam 65 for RQ-VAE, a 3.44% relative improvement with 53.85% fewer beams. Table 3, personalized click hitrate: 0.1510 vs 0.1359 at beam 1 (+11.11%), 0.5206 vs 0.4787 at beam 10 (+8.75%), 0.7431 vs 0.6912 at beam 50 (+7.51%), 0.8062 vs 0.7513 at beam 100 (+7.31%); at top-1K truncation CQ-SID peaks at 0.7984 with beam 160 against 0.7607 with beam 195 for RQ-VAE, a 4.96% relative improvement with a 17.95% beam reduction. Table 4 at beam 10: EG-GRPO with K=2 lifts clk@10 from 0.5206 to 0.5221 and pvr@10 from 0.4371 to 0.4377, with K=4 exp@10 reaches 0.8711, while standard GRPO with K=0 degrades clk@10 to 0.5196 and pvr@10 to 0.4360. Sec 4.5 online: a two-week A/B test in the multi-channel recall stage reports statistically significant GMV +1.15% and UCTCVR +0.40%; after full deployment the generative recall channel accounts for 50.25% of all exposures, 58.96% of all clicks and 72.63% of all purchases, with the system serving over 200 QPS across 8 GPUs at 99.9% availability and approximately 40 ms average end-to-end latency."
+results_reported: "Abstract and Sec 4, offline on TmallAPP search logs: CQ-SID reaches up to 26.76% relative improvement in semantic click hitrate and 11.11% in personalized click hitrate over the RQ-VAE baseline, while reducing beam search size by more than half without compromising recall quality. Table 1, same beam size, semantic click hitrate: CQ-SID 0.0758 at beam 1 against 0.0598 for RQ-VAE (+26.76%), 0.3161 at beam 10 against 0.2579 (+22.57%), 0.6181 at beam 100 against 0.5199 (+18.89%); the ablation without the category constraint reaches 0.0680 (+13.71%) at beam 1 and dropping the query-item contrastive loss scores 0.0596 (-0.33%) at beam 1. Table 2, top-1K truncation: CQ-SID peaks at 0.4422 with beam 30 against 0.4275 with beam 65 for RQ-VAE, a 3.44% relative improvement with 53.85% fewer beams. Table 3, personalized click hitrate: 0.1510 vs 0.1359 at beam 1 (+11.11%), 0.5206 vs 0.4787 at beam 10 (+8.75%), 0.7431 vs 0.6912 at beam 50 (+7.51%), 0.8062 vs 0.7513 at beam 100 (+7.31%); at top-1K truncation CQ-SID peaks at 0.7984 with beam 160 against 0.7607 with beam 195 for RQ-VAE, a 4.96% relative improvement with a 17.95% beam reduction. Table 4 at beam 10: EG-GRPO with K=2 lifts clk@10 from 0.5206 to 0.5221 and pvr@10 from 0.4371 to 0.4377, with K=4 exp@10 reaches 0.8711, while standard GRPO with K=0 degrades clk@10 to 0.5196 and pvr@10 to 0.4360. Sec 4.5 online: a two-week A/B test between production multi-channel recall with and without CQ-SID reports statistically significant GMV +1.15% and UCTCVR +0.40%; under attribution that allows overlap, the fully deployed generative recall channel accounts for 50.25% of all exposures, 58.96% of all clicks and 72.63% of all purchases, with the system serving over 200 QPS across 8 GPUs at 99.9% availability and approximately 40 ms average end-to-end latency."
 caveats:
 - "Sec 4.2.2 states the offline top-1K truncation differs from the actual online recall process, which employs coarse-ranking truncation."
 - "Sec 4.4 explains the small RL gains: SFT already leaves narrow headroom for refinement, hitrate is a binary metric, and EG-GRPO must navigate a trade-off between click and exposure."
-- "The paper does not report the A/B traffic share and does not name the control arm."
-- "The exposure, click and purchase channel shares are post-deployment contribution figures, not A/B lifts."
+- The control used multi-channel recall without CQ-SID. The paper gives neither per-arm traffic nor the exact mix of other channels.
+- Exposure, click and purchase shares describe post-deployment contributions under attribution that allows overlap across channels.
 unknown_fields:
-- "A/B traffic share and the control arm identity"
+- Per-arm traffic and the exact mix of control channels
 - "Total training compute and cost"
 - "Absolute GMV and UCTCVR values"
 - "Configuration of the online coarse-ranking truncation"
@@ -70,17 +72,17 @@ sources:
 - title: "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL, CIKM 2026"
   url: https://doi.org/10.1145/3799682.3840110
   type: paper
-- title: "Efficient Generative Retrieval for E-commerce Search with Semantic Cluster IDs and Expert-Guided RL, arXiv 2605.14434"
-  url: https://arxiv.org/abs/2605.14434
+- title: 'CQ-SID DOI-bearing author full text, arXiv 2605.14434v2'
+  url: https://arxiv.org/html/2605.14434v2
   type: paper
-version_note: "Based on arXiv 2605.14434 v1, the only version posted as of card time; the published full text was not readable at card time. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+version_note: The DOI-bearing arXiv v2 clarifies the A/B control and the attribution of deployed channel contributions. The ACM-hosted full text remains unchecked.
 needs_fulltext: false
 fulltext:
-  pdf_url: https://arxiv.org/pdf/2605.14434v1
+  pdf_url: https://arxiv.org/pdf/2605.14434v2
   local_pdf: "full text read, file not redistributed"
   sections_read: "Abstract, Sec 1 introduction, Sec 2 related work, Sec 3 methodology with Algorithms 1 and 2, Sec 4 experiments with Tables 1 to 4 including Sec 4.5 online A/B test, Sec 5 conclusion"
-  verified_on: "2026-11-03"
-  published_pdf: "ACM version behind DOI 10.1145/3799682.3840110 not readable at card time"
+  verified_on: "2026-11-25"
+  published_pdf: DOI-bearing author revision checked. The ACM-hosted copy remains unchecked.
 code:
   status: none
   checked_on: "2026-11-03"
@@ -96,12 +98,12 @@ results_table:
     method: CQ-SID
     metric: GMV
     result: "+1.15%"
-    versus: "A/B control arm, not named in the paper"
+    versus: Production multi-channel recall without CQ-SID
   - setting: "TmallAPP search, two-week A/B, multi-channel recall stage"
     method: CQ-SID
     metric: UCTCVR
     result: "+0.40%"
-    versus: "A/B control arm, not named in the paper"
+    versus: Production multi-channel recall without CQ-SID
   offline:
   - setting: "TmallAPP search logs, semantic click hitrate, same beam size"
     method: CQ-SID
@@ -124,7 +126,7 @@ deployment:
   scenario: "Generative recall channel in the multi-channel recall stage of TmallAPP search, fully deployed in the search product line"
   ab_traffic: not_reported
   ab_duration: "Two weeks"
-  baseline: not_reported
+  baseline: Production multi-channel recall without CQ-SID
   online_lifts:
   - metric: GMV
     value: "+1.15%"
@@ -137,12 +139,12 @@ deployment:
   hardware: "8 GPUs for online serving"
   notes:
   - "The paper states the offline top-1K truncation differs from the actual online recall process that employs coarse-ranking truncation."
-  - "The paper does not report the A/B traffic share and does not name the control arm."
-  - "The exposure, click and purchase channel shares are post-deployment contribution figures, not A/B lifts."
+  - The paper describes the control as production multi-channel recall without CQ-SID and gives no traffic split.
+  - The deployed channel shares of exposure, clicks and purchases use attribution that allows overlap across channels.
   fulltext_refs:
   - "Sec 4.5: deployed in production search on TmallAPP; two-week online A/B with GMV +1.15% and UCTCVR +0.40%; dynamic beam sizes in [20, 50, 100], over 200 QPS across 8 GPUs, 99.9% availability, approximately 40 ms average end-to-end latency; 50.25% of exposures, 58.96% of clicks, 72.63% of purchases"
   - "Sec 4.1: 37.5M samples for CQ-SID, 21.0M Item2SID, 90.3M Query2SID, 73.7M personalized UQ2SID, test sets 201k and 170k"
   - "Sec 3.1.2: 1,711 valid categories; three-level codebook sizes 2048x1024x1024"
   - "Sec 3.4: pool of approximately 21 million items filtered from hundreds of millions, dynamically updated daily"
   basis: full_text
-  checked_on: "2026-11-03"
+  checked_on: "2026-11-25"

@@ -43,8 +43,12 @@ def t_what(c, L):
     return c["tldr"].strip(), ["tldr"]
 def t_who(c, L):
     if not c.get("deployed_in"): return None
-    a = (f'{c["name"]} comes from {c["company"]}, {c["year"]}. Deployed in: {c["deployed_in"]}' if L == "en" else f'{c["name"]} 来自 {c["company"]}，{c["year"]} 年。上线位置：{c["deployed_in"]}')
-    return sent_end(a, L), ["company", "year", "deployed_in"]
+    year, date_field = c["year"], "year"
+    if c.get("version") == c["name"]:
+        index, version = next((i, v) for i, v in enumerate(c["versions"]) if v["name"] == c["version"])
+        year, date_field = version["first_public"][:4], f"versions.{index}.first_public"
+    a = (f'{c["name"]} comes from {c["company"]}, {year}. Deployed in: {c["deployed_in"]}' if L == "en" else f'{c["name"]} 来自 {c["company"]}，{year} 年。上线位置：{c["deployed_in"]}')
+    return sent_end(a, L), ["company", date_field, "deployed_in"]
 def t_core(c, L):
     if not c.get("core_idea"): return None
     return c["core_idea"].strip(), ["core_idea"]

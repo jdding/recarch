@@ -1,0 +1,38 @@
+surface|电商商品详情页的点击触发推荐
+era_reason|模型根据已点击的商品和用户历史生成语义 ID。
+tldr|用户点击的商品引导候选生成，模型也保留此前交互中的偏好。六个东南亚市场的生产试验报告收入提升 3.27%。
+summary|TriGen 在历史序列末尾重复加入触发商品，使用两条路径分别保留历史偏好和接受触发商品的引导，再通过学习得到的门控调整二者的权重。解码器按语义 ID 的位置接收不同的触发引导。
+core_idea|用已点击的商品引导生成，在历史偏好有帮助时继续利用它。
+deployed_in|某未公开名称的电商平台商品详情页，自 2026 年七月起全面上线
+scale_short|生产实验覆盖东南亚六个市场
+key_result|相对此前线上直接追加触发商品的生成模型，流量加权收入 +3.27%
+results_reported|第 5.5 节与图 4 描述了 2026 年六月 28 日至七月 2 日的商品详情页 A/B，每个实验分组占生产流量 10%。对照组使用此前线上把触发商品追加到序列的生成召回模型。六个市场的流量加权收入 +3.27%，GMV +0.90%。线上推理延迟约 10.5 毫秒，与对照组相当。原文报告系统自 2026 年七月起全面上线。
+version_note|作者全文报告了生产部署。正式会议论文版本未确认。
+serving_infra|实验保持上游候选源和下游服务链路相同。模型在线推理约 10.5 毫秒，与线上对照相当。
+stages.0.model_family|按语义 ID 位置引入触发引导的编码器与解码器召回模型
+stages.0.details|根据已点击的商品及交互历史生成语义 ID，用于商品详情页信息流。
+id_tokenization.approach|商品表示的残差向量量化
+id_tokenization.details|分词器生成固定的语义 ID，推荐模型将其作为输入和生成目标。
+features_signals.0|进入触发推荐信息流之前点击的商品
+features_signals.1|用户交互历史与商品表示
+training.mode|使用点击会话训练以触发商品为条件的生成式召回
+training.objectives.0|生成触发点击之后发生交互的商品 ID
+training.objectives.1|学习在当前请求中给历史偏好和触发商品分配多少权重
+scale.0.metric|生产实验覆盖的市场
+scale.0.value|东南亚六个市场
+results_table.online.0.setting|东南亚商品详情页 A/B
+results_table.online.0.metric|收入
+results_table.online.0.versus|线上直接追加触发商品的生成式召回模型
+results_table.online.1.setting|东南亚商品详情页 A/B
+results_table.online.1.versus|线上直接追加触发商品的生成式召回模型
+caveats.0|收益按参试市场的流量加权汇总。部分市场的 GMV 未提升。
+caveats.1|10.5 毫秒是线上模型推理延迟。整条请求延迟和延迟分位数未报告。
+unknown_fields.0|平台名称和 A/B 指标绝对值
+unknown_fields.1|线上服务硬件、峰值吞吐、总训练算力和推理费用
+deployment.scenario|电商平台商品详情页，点击触发的信息流
+deployment.ab_traffic|随机抽取生产流量，每个分组 10%
+deployment.ab_duration|2026 年六月 28 日至七月 2 日
+deployment.baseline|线上直接追加触发商品的生成式召回模型
+deployment.online_lifts.0.metric|流量加权收入
+deployment.online_lifts.1.metric|流量加权 GMV
+deployment.serving_latency|线上模型推理约 10.5 毫秒，与对照相当

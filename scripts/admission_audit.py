@@ -7,7 +7,7 @@ import collections, datetime, glob, json, re, sys, yaml
 today = datetime.date.today()
 cit = json.load(open("data/citations.json"))
 cards = [yaml.safe_load(open(f)) for f in sorted(glob.glob("data/systems/*.yaml"))]
-MAIN = re.compile(r'^(KDD|RecSys 20\d\d$|RecSys 20\d\d \(?[^wl]|WWW|SIGIR|CIKM|WSDM|NeurIPS|ICML|ICLR|AAAI|IJCAI|ACL|IEEE Internet|ACM TMIS)')
+MAIN = re.compile(r'^(KDD|RecSys 20\d\d$|RecSys 20\d\d \(?[^wl]|WWW|SIGIR|SIGMOD 20\d\d Industrial$|CIKM|WSDM|NeurIPS|ICML|ICLR|AAAI|IJCAI|ACL|IEEE Internet|ACM TMIS)')
 
 def months_since(fp):
     y, m = map(int, str(fp).split("-")[:2]); return (today.year - y) * 12 + (today.month - m)

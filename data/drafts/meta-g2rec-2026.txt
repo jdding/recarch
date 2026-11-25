@@ -1,0 +1,41 @@
+surface|Meta 多个产品场景中的生成式序列推荐
+era_reason|序列模型结合图结构提取出的兴趣上下文，自回归预测下一物品。
+tldr|Meta 从物品共交互图中提取兴趣 token，将其插入物品历史。原文报告上线后多项互动指标的提升幅度为 0.06% 至 0.19%。
+summary|G2Rec 对物品稀疏共交互图做软聚类，提取共享的兴趣原型。每个物品的兴趣分布表示为连续 token，与物品 token 交替输入序列模型。模型预测下一物品，同时训练一个辅助兴趣预测目标。
+core_idea|为用户历史中的每个物品附一个从离线共交互图中提取的兴趣 token。
+deployed_in|Meta 多个产品场景，具体场景未披露
+scale_short|多个场景开展短期和长期线上 A/B
+key_result|Meta 报告上线后多项互动指标提升 0.06% 至 0.19%
+results_reported|第 5.3 节描述了 G2Rec 在 Meta 多个产品场景的上线，包含 7 天短期和更长期的线上 A/B。原文报告会话内改善超过 0.03%，多项互动指标提升 0.06% 至 0.19%。举例包括总使用时长、点赞与分享，但原文未给出各指标、各实验或各场景对应的提升幅度，也未描述线上对照。
+version_note|RecSys 工业赛道官方程序确认收录。上线证据核对自作者全文，ACM 托管的正式全文待核。
+serving_infra|物品共交互图及兴趣 token 均离线计算。原文提到各产品场景有专门适配，未披露生产服务链路。
+stages.0.model_family|融合图兴趣分布的自回归序列推荐
+stages.0.details|在每个已交互物品的 token 后插入其兴趣分布，建模历史中的兴趣变化。
+id_tokenization.approach|物品 ID 与连续兴趣 token 并用
+id_tokenization.details|兴趣 token 是该物品对应的多个兴趣原型嵌入的加权组合。
+features_signals.0|从用户交互中聚合的物品共交互关系
+features_signals.1|物品嵌入和按时间排序的用户交互历史
+training.mode|先离线建图，再联合训练序列模型
+training.objectives.0|根据交互历史预测下一物品
+training.objectives.1|以原型权重为软标签预测兴趣分布
+scale.0.metric|生产部署范围
+scale.0.value|Meta 多个产品场景
+results_table.online.0.setting|Meta 产品上线
+results_table.online.0.metric|多项互动指标提升范围
+results_table.online.0.result|+0.06% 至 +0.19%
+results_table.online.0.versus|线上对照未披露
+results_table.online.1.setting|Meta 产品上线
+results_table.online.1.metric|原文报告的会话内改善
+results_table.online.1.result|超过 +0.03%
+results_table.online.1.versus|线上对照未披露
+caveats.0|多项互动指标仅有整体区间，原文未公开逐指标提升和会话内指标的确切定义。
+caveats.1|第 5.4 节的耗时实验基于离线 Amazon Beauty 数据集。生产服务延迟无量化结果。
+unknown_fields.0|具体场景、对照、各组流量和长期 A/B 时长
+unknown_fields.1|指标定义与各场景的收益
+unknown_fields.2|生产硬件、容量、延迟和计算成本
+deployment.scenario|Meta 多个未公开名称的产品场景，分别做了场景适配
+deployment.ab_duration|短期实验为 7 天
+deployment.online_lifts.0.metric|多项互动指标提升范围
+deployment.online_lifts.0.value|+0.06% 至 +0.19%
+deployment.online_lifts.1.metric|原文报告的会话内改善
+deployment.online_lifts.1.value|超过 +0.03%

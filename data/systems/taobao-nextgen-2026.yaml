@@ -2,17 +2,19 @@ id: taobao-nextgen-2026
 name: "NextGen"
 company: Alibaba Taobao & Tmall Group
 surface: Taobao Miaosha time-limited discount scenario, re-ranking stage
-year: 2026
+year: 2025
 era: generative
 era_reason: "An encoder-decoder autoregressively builds the final page by selecting from the whole candidate set at each step; generation, not item scoring, is the core of the re-ranker."
-first_public: "2026-09"
+first_public: "2025-05"
 venue: "RecSys 2026"
 venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831881"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
-updates: []
+last_verified: "2026-11-25"
+updates:
+- date: "2026-11-25"
+  note: Added the SORT-Gen predecessor to the version history and verified its relationship to the production Miaosha baseline.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Taobao's NextGen is a full-candidate autoregressive re-ranker; 14-day 5% A/B on Miaosha vs the prior generative re-ranker Sort-gen: GMV +18.85%, orders +12.35%."
@@ -63,14 +65,29 @@ sources:
 - title: "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation, RecSys 2026"
   url: https://doi.org/10.1145/3773078.3831881
   type: paper
-version_note: 'Numbers checked against the RecSys 2026 camera-ready PDF, ACM DOI 10.1145/3773078.3831881, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
+- title: A Generative Re-ranking Model for List-level Multi-objective Optimization at Taobao
+  url: https://doi.org/10.1145/3726302.3731935
+  type: paper
+version: NextGen
+versions:
+- name: SORT-Gen
+  first_public: "2025-05"
+  source: https://doi.org/10.1145/3726302.3731935
+  venue: SIGIR 2025
+  note: Introduced ordered regression for list-level value. Its original production A/B was in Taobao's Ten Billion Subsidy channel, Baiyibutie.
+- name: NextGen
+  first_public: "2026-09"
+  source: https://doi.org/10.1145/3773078.3831881
+  venue: RecSys 2026
+  note: Scores the full candidate set at each decoding step and reuses upstream ranking signals in Taobao Miaosha.
+version_note: The RecSys 2026 full text presents NextGen in Taobao Miaosha and identifies the same team's earlier SORT-Gen as its deployed baseline. The original SIGIR 2025 SORT-Gen experiment was in Baiyibutie, Taobao's Ten Billion Subsidy channel. This card's results are the NextGen Miaosha experiments.
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3773078.3831881
   local_pdf: full text read, file not redistributed
   sections_read: 'Abstract, introduction, related work, method 4.1-4.2, experimental setup, online A/B results, offline AUC and ablation, conclusion and limitations'
-  verified_on: '2026-10-30'
-  published_pdf: 'RecSys 2026 camera-ready PDF read 2026-10-30'
+  verified_on: "2026-11-25"
+  published_pdf: 'RecSys 2026 proceedings full text rechecked. Section 4.3.2 identifies SORT-Gen as the same team’s prior system deployed in Miaosha.'
 code:
   status: none
   checked_on: '2026-10-30'
@@ -141,4 +158,4 @@ deployment:
   fulltext_refs:
   - 'Sec 5: NextGen incurs only 2ms additional mean inference latency at 26ms total vs. Sort-gen 24ms, an 8.3% increase'
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-25"

@@ -1,0 +1,49 @@
+surface|快手短视频列表重排
+era_reason|模型从已排序的候选集生成多个备选曝光列表。
+tldr|快手并行计算每个输出位置的物品分布，再对生成的列表进行评估。生产 A/B 对比 Edge-rerank，播放量提升 1.161%。
+summary|NAR4Rec 编码已排序的候选列表，再并行计算各候选出现在不同位置的分数。对比解码器用这些分数构建多个不同的列表，列表评估器选出预计效用最高的列表。
+core_idea|并行计算输出位置的分数，再构建并评估备选列表。
+deployed_in|作者报告已在快手短视频推荐全量部署
+scale_short|快手 App 整体日活超过 3 亿
+key_result|线上 A/B 对比 Edge-rerank，播放量 +1.161%，完整播放量 +2.45%
+results_reported|第 5.3 节和表 5 报告快手 10 天 A/B。NAR4Rec 用于 20% 的 App 流量，其余仍使用 Edge-rerank。播放量、点赞、关注、长播放和完整播放相对提升 1.161%、1.71%、1.15%、1.82% 和 2.45%。作者撰文时报告已全量上线。表 4 单独报告 Avito 离线耗时。在 Tesla T4 上、批大小 1024，NAR4Rec 每批推理用时 0.037 秒，Seq2Slate 用时 0.186 秒。
+version_note|KDD 正式论文和作者全文的 DOI 一致。数据核对自 arXiv v6，ACM 托管的正式全文待核。
+serving_infra|模型一次前向计算各位置的候选分布。对比解码构建多个备选列表，再由评估器选出曝光列表。
+stages.0.model_family|非自回归列表生成器与列表评估器
+stages.0.details|候选表示与输出位置表示共同形成分数矩阵。解码构建有效列表，再由评估器结合上下文对列表打分。
+id_tokenization.approach|从单次请求已排序的视频候选中选取
+id_tokenization.details|各位置对本次请求中的候选打分，输入是候选表示和学习得到的位置嵌入。
+features_signals.0|已排序的视频候选与物品特征
+features_signals.1|输出列表的位置嵌入
+features_signals.2|历史曝光列表中的正负反馈
+training.mode|在曝光日志上监督训练生成器和列表评估器
+training.objectives.0|用正反馈学习各输出位置的候选分布
+training.objectives.1|用反似然训练降低不合适的物品和位置组合分数
+training.objectives.2|用结合上下文的物品分数估计列表效用
+scale.0.metric|论文撰写时的 App 用户规模
+scale.0.value|超过 3 亿日活用户
+results_table.online.0.setting|快手生产 A/B
+results_table.online.0.metric|播放量
+results_table.online.1.setting|快手生产 A/B
+results_table.online.1.metric|完整播放量
+results_table.online.2.setting|快手生产 A/B
+results_table.online.2.metric|点赞
+results_table.online.3.setting|快手生产 A/B
+results_table.online.3.metric|关注
+results_table.online.4.setting|快手生产 A/B
+results_table.online.4.metric|长播放
+results_table.offline.0.setting|Avito 批量推理
+results_table.offline.0.metric|每批秒数
+caveats.0|Avito 耗时来自离线批量推理。原文未披露生产请求延迟。
+caveats.1|生产对比评估整套重排系统。原文另有组件消融实验。
+unknown_fields.0|生产延迟、QPS、硬件和推理费用
+unknown_fields.1|训练算力和各 A/B 分组的用户数
+deployment.scenario|快手 App 短视频重排
+deployment.ab_traffic|20% 的 App 流量使用 NAR4Rec，其余使用 Edge-rerank
+deployment.ab_duration|10 天
+deployment.baseline|=
+deployment.online_lifts.0.metric|播放量
+deployment.online_lifts.1.metric|完整播放量
+deployment.online_lifts.2.metric|点赞
+deployment.online_lifts.3.metric|关注
+deployment.online_lifts.4.metric|长播放

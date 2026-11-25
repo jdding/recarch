@@ -2190,16 +2190,28 @@
   ]
  },
  "taobao-nextgen-2026": {
-  "count": 0,
+  "count": 28,
   "source": "Semantic Scholar",
   "source_url": "https://www.semanticscholar.org/paper/9c77198ce83efd3091f2ac16123ee39aaa465182",
-  "fetched_on": "2026-11-02",
+  "fetched_on": "2026-11-25",
   "matched_title": "NextGen: A Multi-Objective Generative Re-ranking Framework for Taobao Recommendation",
   "matched_year": 2026,
   "ids": [
+   "doi:10.1145/3726302.3731935",
    "doi:10.1145/3773078.3831881"
   ],
   "papers": [
+   {
+    "name": "SORT-Gen",
+    "count": 28,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/386dd3c755c55ad8c507337b5b8dfcc76ee51cc9",
+    "matched_title": "A Generative Re-ranking Model for List-level Multi-objective Optimization at Taobao",
+    "matched_year": 2025,
+    "ids": [
+     "doi:10.1145/3726302.3731935"
+    ]
+   },
    {
     "name": "NextGen",
     "count": 0,

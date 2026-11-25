@@ -3,7 +3,7 @@ era_reason|重排被改写为在固定全局词表上自回归生成 Semantic ID
 tldr|GloRank 用受限解码生成全局 Semantic ID 做重排，再用 GRPO 后训练；14 天 A/B 胜过已上线的 GoalRank，评论 +0.462%、观看时长 +0.095%。
 summary|GloRank 由快手科技作者与香港城市大学、UCSD 合作完成，用固定全局词表上的生成取代依赖位置的重排。物品表示为 RQ Semantic ID，重排因此变成锚定物品语义的自回归 token 生成，而不是选局部候选下标。论文证明后者会让输出层产生不可约的映射方差。监督预训练先模仿代理评估器挑出的高质量列表，GRPO 后训练再直接最大化列表收益，Trie 受限解码保证生成物品都在候选集内且不重复。在 7.8% 线上流量上与已部署的 GoalRank 重排器做了 14 天 A/B，所有监控的互动指标显著提升。
 core_idea|生成全局 Semantic ID 而不是选局部下标，让每个输出神经元始终对应同一物品，再用列表收益对齐生成器。
-deployed_in|领先内容平台的 list-wise 重排，线上 A/B 流量
+deployed_in|作者团队确认在快手部署，论文未披露线上 A/B 的具体内容场景
 scale_short|在日活超过 4 亿、物品数千万级的平台上做 A/B
 key_result|7.8% 流量的 14 天 A/B 对比已上线 GoalRank：点赞 +0.286%、评论 +0.462%、观看时长 +0.095%，全部 p < 0.05
 results_reported|离线任务为从 50 个候选生成长度 6 的列表，表 2：工业电商数据集上 GloRank 达到 Precision 62.56、NDCG 90.15、MAP 84.84、F1 74.32，相对最优基线提升 3.99%、2.35%、3.39%、3.97%；Amazon Books 上为 83.75、90.08、85.10、86.97，提升 4.23%、6.13%、9.23%、4.23%；MovieLens-1M 上为 75.79、87.56、81.19、82.57，提升 3.03%、4.95%、6.60%、3.02%。消融见表 3：去掉预训练，Amazon Books 的 NDCG 崩到 24.13；去掉后训练，Amazon Books 的 MAP 降到 83.68，而 MovieLens-1M 上后训练带来 MAP 从 78.85 到 81.19 的 2.34% 提升和 NDCG 从 85.94 到 87.56 的 1.62% 提升。局部动作空间变体明显退化；在 Amazon Books 上从训练集移除 5% 物品的冷启动设定下，GoalRank 的 MAP 下降超过 88.4%，GloRank 只降 4.9%。线上见表 4：在日活超过 4 亿的内容平台上，以 7.8% 线上流量与等规模 GoalRank 对照组跑了 14 天，观看时长 +0.095%、有效观看 +0.111%、点赞 +0.286%、评论 +0.462%、转发 +0.447%，全部经 t 检验 p < 0.05 显著，正文另报告活跃设备 +0.030%。
@@ -34,8 +34,8 @@ results_table.online.0.versus|已上线的 GoalRank，等规模对照组
 results_table.online.1.versus|已上线的 GoalRank，等规模对照组
 results_table.online.2.versus|已上线的 GoalRank，等规模对照组
 results_table.offline.0.versus|最优基线，相对 +2.35%
-caveats.0|A/B 平台只被描述为领先内容平台；快手身份来自作者署名，未说明 A/B 之外的全量状态。
-caveats.1|所读 arXiv v1 是占位 ACM 模板的预印本；未读到 CIKM 2026 最终文本。
+caveats.0|作者团队确认在快手部署。论文未披露 A/B 的具体场景，也未量化推广范围。
+caveats.1|线上数字来自 arXiv v1。CIKM 正式全文待核。
 caveats.2|工业离线数据集采自真实电商平台，有 200775 名用户，不是线上实验所在的内容平台。
 caveats.3|线上提升是低于 0.5% 的相对值，未给服务延迟、吞吐或成本数字。
 caveats.4|论文未给出官方代码；仅有第三方复现。
@@ -46,7 +46,8 @@ unknown_fields.3|训练算力
 unknown_fields.4|官方代码
 code.repos.0.owner|第三方研究者 daiwk
 code.repos.0.note|reproductions 目录下有社区复现，不是官方发布也不是独立实现；论文未给出官方代码。
-version_note|读的是 2026 年四月 28 日的 arXiv v1，占位 ACM 模板、无 DOI；CIKM 2026 录用来自外部消息，未读到 camera-ready。
+version_note|CIKM 2026 正式论文使用 GloRank 标题。A/B 数字重新核对自原题名下的 arXiv v1，正式全文待核。
+updates.0.note|补齐 CIKM 正式标题和 DOI，并记录作者团队确认在快手部署。
 deployment.scenario|日活超过 4 亿、物品数千万级的领先内容平台上的 list-wise 重排
 deployment.ab_traffic|7.8% 线上流量，等规模对照组
 deployment.ab_duration|14 天，覆盖周内波动

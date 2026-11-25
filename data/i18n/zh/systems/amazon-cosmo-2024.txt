@@ -1,0 +1,38 @@
+surface|Amazon 商品搜索导航的知识生成与服务
+era_reason|搜索导航使用指令微调语言模型生成的电商知识。
+tldr|Amazon 离线生成购物意图知识，通过缓存为商品搜索提供细化选项。受试搜索导航流量上的商品销售指标增长 0.7%。
+summary|COSMO 从搜索后购买与共同购买行为提取可能的购物意图。Amazon 使用人工判断做指令微调，将 COSMO-LM 的输出整理成知识关系，并从缓存向导航提供查询细化、商品类型和属性筛选建议。
+core_idea|从购物行为生成意图关系，写入缓存以支持搜索细化。
+deployed_in|Amazon 搜索导航，在部分美国流量上测试
+scale_short|为 18 个主要商品类目生成知识
+key_result|在论文所述美国流量中，商品销售指标 +0.7%，导航交互率 +8%
+results_reported|第 4.3.2 节报告了 Amazon 搜索导航合计数月的线上 A/B，覆盖约 10% 的美国流量。导航引入 COSMO 知识后，受试流量的商品销售指标相对增长 0.7%，导航交互率增长 8%。论文未披露详细的对照配置。
+version_note|数字核对自 Amazon Science 托管的 SIGMOD 工业赛道正式全文，PDF 载有该论文 DOI。
+serving_infra|部署于 SageMaker 的模型批量处理购物行为日志和高频查询。特征存储把模型输出整理为结构化知识，写入异步缓存供下游请求使用。
+stages.0.model_family|指令微调知识生成与缓存式搜索导航
+stages.0.details|从购物行为生成并筛选电商知识。搜索导航利用得到的概念层级，提供逐步细化的筛选建议。
+id_tokenization.approach|以电商知识图谱表示购物意图与商品的关系
+id_tokenization.details|将知识表示为有类型的关系。论文未描述专门的商品目录 ID 分词器。
+features_signals.0|搜索后购买形成的查询与商品对
+features_signals.1|共同被购买的商品对
+features_signals.2|对生成意图解释的人工判断
+training.mode|在从行为提取的样本和人工标注上做指令微调
+training.objectives.0|为观测到的购物行为生成可能的意图
+training.objectives.1|区分有效知识与不合理或无关的解释
+scale.0.metric|生成知识的覆盖规模
+scale.0.value|18 个主要商品类目
+results_table.online.0.setting|Amazon 搜索导航 A/B
+results_table.online.0.metric|商品销售指标
+results_table.online.0.versus|对照配置未披露
+results_table.online.1.setting|Amazon 搜索导航 A/B
+results_table.online.1.metric|导航交互率
+results_table.online.1.versus|对照配置未披露
+caveats.0|线上提升限于受试的搜索导航功能和流量。搜索相关性与会话推荐另有离线结果。
+caveats.1|作者描述了每日更新流程，也说明它对限时促销等短期变化存在局限。
+unknown_fields.0|每组流量、确切实验日期与对照组详细配置
+unknown_fields.1|生产延迟毫秒数、QPS、硬件配置及推理费用
+deployment.scenario|Amazon 美国流量中的商品搜索导航
+deployment.ab_traffic|各次测试整体覆盖约 10% 的 Amazon 美国流量
+deployment.ab_duration|各次测试合计数月
+deployment.online_lifts.0.metric|商品销售指标
+deployment.online_lifts.1.metric|导航交互率

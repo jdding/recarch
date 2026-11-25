@@ -1,0 +1,93 @@
+id: shopify-sid-llm-2026
+name: SID-LLM
+company: Shopify
+surface: Shopify product search and home feed recommendations
+year: 2026
+era: generative
+era_reason: The model generates catalog semantic IDs for both search and recommendation.
+first_public: "2026-11"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2611.08804v1
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Shopify uses one product vocabulary with different generators for search and feed retrieval. The added feed source lifted attributed orders by 7.95% on the tested surface.
+summary: SID-LLM shares a catalog tokenizer across search and recommendations. Search predicts multiple ID tokens together and uses a lightweight ranker. Feed retrieval decodes IDs autoregressively and resolves them to concrete products before the existing ranker.
+paradigms: [generative-retrieval, semantic-id, llm-based]
+stages:
+- stage: retrieval
+  model_family: Multi-token generation with a lightweight ranker for search
+  details: The search model contributes both candidates and features to the production search stack.
+- stage: retrieval
+  model_family: Autoregressive semantic ID generation for recommendations
+  details: The serving decoder uses joint probabilities to resolve generated semantic IDs to products. The standard home feed ranker orders the combined pool.
+id_tokenization:
+  approach: Residual k-means over product embeddings
+  details: The shared catalog vocabulary uses three residual codebooks. Multiple products can share a semantic ID, so serving also resolves the concrete product.
+features_signals:
+- Search query and buyer interaction histories
+- Catalog text and product attributes
+- Search and recommendation interactions
+training:
+  mode: Continued task-mixed pre-training followed by task-specific post-training
+  objectives:
+  - Learn product vocabulary and query or history to product mappings
+  - Fine-tune the deployed generators for their respective discovery tasks
+  notes: The authors also test a unified distilled student offline. The described production paths use separate decoding setups.
+serving_infra: Search forwards its candidates and features to downstream rankers. Feed retrieval adds candidates to the existing home feed ranking stack.
+scale:
+- metric: Production backbone
+  value: LFM2-2.6B
+  note: The report describes this backbone for the production recommendation decoder and the selected search setup.
+results_reported: 'Sections 9.1.1 and 9.2.2 describe different experiments. Search A/B tests informed deployment, with numeric lifts unreported. Table 19 compares the home feed with and without the additional SID-LLM candidate source. On the impacted surface, attributed orders rose 7.95%, converting users 8.60% and conversion rate 9.85%. All three passed the reported Dunnett correction.'
+caveats:
+- The figures apply to the impacted home feed surface. They do not quantify Shopify-wide orders or a standalone search effect.
+- The unified distilled student is an offline experiment. The production A/B used the task-specific recommendation decoder.
+unknown_fields:
+- Home feed A/B traffic split and duration
+- Production feed latency, throughput, hardware and monetary inference cost
+- Numerical online search lifts
+sources:
+- title: SID-LLM author full text, arXiv 2611.08804v1
+  url: https://arxiv.org/html/2611.08804v1
+  type: paper
+- title: Shopify Engineering, Generative Discovery
+  url: https://shopify.engineering/generative-discovery
+  type: engineering_blog
+version_note: The author technical report and Shopify Engineering describe production usage. A proceedings version is unconfirmed.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Share the product vocabulary and choose a decoding path for each discovery task.
+deployed_in: Shopify production search and home feed candidate retrieval
+scale_short: LFM2-2.6B backbone
+key_result: Attributed orders +7.95% on the impacted home feed surface in the production A/B
+results_table:
+  online:
+  - {setting: Impacted home feed surface, method: SID-LLM, metric: Attributed orders, result: +7.95%, versus: Home feed control without the added candidate source}
+  - {setting: Impacted home feed surface, method: SID-LLM, metric: Converting users, result: +8.60%, versus: Home feed control without the added candidate source}
+  - {setting: Impacted home feed surface, method: SID-LLM, metric: Conversion rate, result: +9.85%, versus: Home feed control without the added candidate source}
+deployment:
+  online_evidence: online_numbers
+  scenario: Shopify home feed, with SID-LLM added as a candidate source
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Home feed control without the added candidate source
+  online_lifts:
+  - {metric: Attributed orders, value: +7.95%}
+  - {metric: Converting users, value: +8.60%}
+  - {metric: Conversion rate, value: +9.85%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Sections 3 and 7 describe tokenization and the separate serving paths.
+  - Sections 9.1.1 and 9.2.2 and Table 19 separate search testing from the quantified home feed experiment.
+  basis: full_text
+  checked_on: "2026-11-25"

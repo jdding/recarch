@@ -168,7 +168,7 @@ A card for a system with several published versions presents one version in all 
 
 Rendering: a "Presents <version>, latest of N versions" badge (or "Presents <version>, one of N versions, latest is <other>" when the presented version is not the newest) under the title, a "Versions" list at the top of the History section, and an "other version" tag on the other versions' sources. The merged card's `version_note` says which version it presents.
 
-Merging procedure. Create the merged card with a new id from the presented version's card. Keep `added_on` as the earliest of the merged cards and add an `updates` entry. Set every old card (including the presented version's old card) to `status: superseded` with `superseded_by`, `status_date` and `status_reason`. Add an entry to `data/citations.json` for the new id, with one `papers` row per version; `count` is their sum (run `scripts/citations.py --only <id>`). See `docs/admission.md` section 4.
+When merging cards that have separate published URLs, create the merged card with a new id. Keep the earliest `added_on` and add an `updates` entry. Set every old card to `status: superseded` with `superseded_by`, `status_date` and `status_reason`. When adding a predecessor that never had its own published card, extend the existing card's version history and keep its id and URL. Refresh `data/citations.json` with `scripts/citations.py --only <id>` so each version has a `papers` row and `count` is their sum. See `docs/admission.md` section 4.
 
 
 ## Deployment block (added 2026-10-31)

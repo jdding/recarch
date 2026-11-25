@@ -1,0 +1,88 @@
+id: baidu-icegr-2026
+name: ICEGR
+company: Baidu
+surface: Baidu E-commerce Search
+year: 2026
+era: generative
+era_reason: Query-conditioned generation of semantic IDs retrieves products and supplies a direct path to impressions.
+first_public: "2026-08"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2608.29652v3
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: search
+evidence_level: production_described
+tldr: Baidu aligns generated product IDs with query intent and places a fixed number of top candidates directly in search results. Order volume rose 15.96% in its production A/B.
+summary: ICEGR builds intent-aware product IDs using query–product relevance, shared-query clicks and product content. It trains on synthetic queries before adapting to real search data, then calibrates preferences with relevance and business signals. Production adds the generator to the existing search pipeline.
+paradigms: [generative-retrieval, semantic-id, llm-based, rl-alignment]
+stages:
+- stage: retrieval
+  model_family: Query-conditioned autoregressive product generation
+  details: A fixed number of top ICEGR candidates is inserted directly into the impression list. Other candidates go through the existing relevance filters and ranking stages.
+id_tokenization:
+  approach: Intent-aware semantic IDs
+  details: Query–product supervision and relations between products clicked for shared queries shape product representations before quantization.
+features_signals:
+- Real and synthetic search queries
+- Product content and shared-query clicks
+- Relevance and historical business feedback from clicks, payments and GMV
+training:
+  mode: Tokenizer training, supervised fine-tuning and relevance-calibrated preference optimization
+  objectives:
+  - Align product representations with observed search intent
+  - Train query-to-ID generation on synthetic queries and then on real queries
+  - Use relevance-aware preference margins to incorporate business outcomes
+serving_infra: 'The production generator uses beam size 50 on 67 NVIDIA L20 GPUs. The paper reports 156 ms mean serving latency and a peak of 2,200 queries per second.'
+scale:
+- metric: Production generator
+  value: 0.5B parameters
+  note: Deployed in Baidu E-commerce Search for the production test.
+results_reported: 'Section 4.5 and Table 5 report a two-week production A/B on 20% of live traffic. The control used the existing MCA system. The treatment added a generative path to the same pipeline, inserting a fixed number of the highest ICEGR candidates directly into impressions. Relative lifts were +3.52% CTR, +15.96% order volume and +7.53% GMV. Section 4.6 reports 156 ms mean generator latency and 2,200 peak QPS with beam size 50 and 67 NVIDIA L20 GPUs.'
+caveats:
+- The production A/B evaluates the added path, including direct insertion. It does not isolate a gain for the tokenizer.
+- The 20% describes live traffic assigned to the experiment. Per-arm allocations and absolute metric values were not published.
+unknown_fields:
+- Per-arm traffic allocation and absolute A/B metrics
+- Full rollout scope after the A/B test
+- Training compute, monetary inference cost and production latency percentiles
+sources:
+- title: 'ICEGR: An Intent-Coherent End-to-End Generative Retrieval Framework for E-commerce Search'
+  url: https://arxiv.org/html/2608.29652v3
+  type: paper
+version_note: The production evidence was verified against arXiv v3. A proceedings version is unconfirmed.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Constrain generated product candidates by query intent throughout tokenization, training and preference calibration.
+deployed_in: Baidu E-commerce Search, as an additional path in the production A/B
+scale_short: 0.5B parameters in the deployed generator
+key_result: Order volume +15.96% when the Baidu E-commerce Search A/B added ICEGR to production
+results_table:
+  online:
+  - {setting: Baidu E-commerce Search A/B, method: MCA plus ICEGR, metric: Order volume, result: +15.96%, versus: Existing production MCA system}
+  - {setting: Baidu E-commerce Search A/B, method: MCA plus ICEGR, metric: CTR, result: +3.52%, versus: Existing production MCA system}
+  - {setting: Baidu E-commerce Search A/B, method: MCA plus ICEGR, metric: GMV, result: +7.53%, versus: Existing production MCA system}
+deployment:
+  online_evidence: online_numbers
+  scenario: Baidu E-commerce Search, with a fixed number of ICEGR candidates inserted directly into the impressions
+  ab_traffic: 20% of live traffic in the experiment
+  ab_duration: Two weeks
+  baseline: Existing production MCA system
+  online_lifts:
+  - {metric: Order volume, value: +15.96%}
+  - {metric: CTR, value: +3.52%}
+  - {metric: GMV, value: +7.53%}
+  training_compute: not_reported
+  serving_latency: 156 ms average for the generator at beam size 50
+  serving_qps: '2,200 QPS peak for the generator'
+  inference_cost: not_reported
+  hardware: 67 NVIDIA L20 GPUs serving the generator
+  fulltext_refs:
+  - Section 3 describes the product tokenizer and retrieval model training.
+  - Section 4.5 and Table 5 document the A/B setup and relative lifts.
+  - Section 4.6 reports the deployed generator's latency, peak QPS and hardware.
+  basis: full_text
+  checked_on: "2026-11-25"

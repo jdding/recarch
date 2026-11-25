@@ -1,0 +1,90 @@
+id: spotify-glide-2026
+name: GLIDE
+company: Spotify
+surface: Podcast discovery on Spotify Home
+year: 2026
+era: generative
+era_reason: A language model generates semantic IDs of catalog episodes as recommendation candidates.
+first_public: "2026-03"
+venue: KDD 2026 ADS
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3770855.3818419
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Spotify adds a podcast retrieval source that generates episode IDs from long-term preferences and recent listens. Non-habitual streams per user rose 5.4% in a Home A/B test.
+summary: GLIDE conditions a catalog-grounded language model on recent episode IDs, contextual prompts and a projected long-term user embedding. It generates podcast episodes from shows beyond routine listening. The standard episode ranker scores these candidates together with other sources.
+paradigms: [generative-retrieval, semantic-id, llm-based]
+stages:
+- stage: retrieval
+  model_family: Instruction-tuned language model with a continuous user prompt
+  details: Beam search generates episode IDs that are resolved through a catalog lookup and passed to the existing episode ranker.
+id_tokenization:
+  approach: Residual k-means over podcast episode embeddings
+  details: Discrete episode IDs represent recent interactions and generation targets. A projected long-term user embedding is injected as a continuous prompt.
+features_signals:
+- Recent podcast listening history
+- Long-term listening preferences represented by a collaborative-filtering embedding
+- Episode titles and descriptions, and discovery instructions
+training:
+  mode: Catalog grounding followed by instruction tuning
+  objectives:
+  - Learn the correspondence between episode metadata and semantic IDs
+  - Retrieve episodes under instructions about the listener's familiarity and listening habits
+serving_infra: Event-triggered requests allow precomputation and caching when appropriate. The service decodes episode IDs with beam search and passes resolved candidates to the existing episode ranker.
+scale:
+- metric: Home A/B exposure
+  value: About 20M impressions per cell
+  note: The number of randomized listeners is undisclosed.
+results_reported: 'In Section 5.3, Spotify ran a 21-day user-randomized Home A/B on podcast listeners in English-speaking markets who were active in the preceding 30 days. Each cell covered about 20M impressions. Adding GLIDE before the unchanged episode ranker raised non-habitual streams per user by 5.4% and new-show non-habitual streams by 14.3%. GLIDE accounted for about 34% of the treatment recommendations.'
+caveats:
+- GLIDE supplied 34% of treatment recommendations. The randomized traffic split is undisclosed.
+- Reported gains apply to the eligible podcast audience on Home. Long-term effects and wider audience results were not quantified.
+unknown_fields:
+- A/B traffic split and randomized user count
+- Production latency, throughput, hardware and monetary inference cost
+- Extent of rollout beyond the reported deployment and experiment
+sources:
+- title: 'From Habits to Discovery: Deploying LLMs for Personalized Generative Recommendations at Spotify'
+  url: https://doi.org/10.1145/3770855.3818419
+  type: paper
+- title: Deploying Semantic ID-based Generative Retrieval for Large-Scale Podcast Discovery at Spotify
+  url: https://arxiv.org/html/2603.17540v1
+  type: paper
+- title: Spotify Research, From Models to Products
+  url: https://research.atspotify.com/2026/8/from-models-to-products-llms-for-recommendation-at-spotify-scale
+  type: engineering_blog
+version_note: The KDD Applied Data Science proceedings use a different title. Deployment evidence was checked against the author full text and Spotify Research. The ACM-hosted full text remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Generate catalog episode IDs using both stable preferences and listeners' recent interests.
+deployed_in: Spotify Home podcast discovery candidate generation
+scale_short: About 20M impressions per A/B cell
+key_result: Non-habitual streams per user +5.4% in the Spotify Home A/B
+results_table:
+  online:
+  - {setting: Spotify Home user-level A/B, method: GLIDE, metric: Non-habitual streams per user, result: +5.4%, versus: Existing production system without the added GLIDE source}
+  - {setting: Spotify Home user-level A/B, method: GLIDE, metric: New-show non-habitual streams, result: +14.3%, versus: Existing production system without the added GLIDE source}
+deployment:
+  online_evidence: online_numbers
+  scenario: Spotify Home podcast listeners in English-speaking markets who were active in the preceding 30 days
+  ab_traffic: not_reported
+  ab_duration: 21 days
+  baseline: Existing production system without the added GLIDE source, with the same downstream ranker
+  online_lifts:
+  - {metric: Non-habitual streams per user, value: +5.4%}
+  - {metric: New-show non-habitual streams, value: +14.3%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Sections 4.1 through 4.4 describe the tokenizer, contextual prompt, training and serving.
+  - Section 5.3 describes the eligible audience, experiment conditions and lifts.
+  basis: full_text
+  checked_on: "2026-11-25"

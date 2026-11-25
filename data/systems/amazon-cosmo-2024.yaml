@@ -1,0 +1,86 @@
+id: amazon-cosmo-2024
+name: COSMO
+company: Amazon
+surface: Knowledge generation and serving for Amazon product search navigation
+year: 2024
+era: generative
+era_reason: An instruction-tuned language model generates the commerce knowledge served by the search navigation feature.
+first_public: "2024-06"
+venue: SIGMOD 2024 Industrial
+venue_year: 2024
+published_version_checked: true
+primary_source: https://doi.org/10.1145/3626246.3653398
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: search
+evidence_level: production_described
+tldr: Amazon generates shopping-intent knowledge offline and serves it from a cache to refine product searches. Product sales rose 0.7% in the tested search navigation segment.
+summary: COSMO derives likely shopping intents from search-to-purchase and co-purchase behavior. Amazon collects human judgments to instruction-tune COSMO-LM, structures its output as knowledge relations, and uses the cached knowledge to offer query refinements, product types and attribute filters.
+paradigms: [llm-based]
+stages:
+- stage: other
+  model_family: Instruction-tuned knowledge generation with cached search navigation
+  details: Generate and filter commerce knowledge from behavior data. Search navigation uses the resulting concept hierarchy to suggest progressively narrower facets.
+id_tokenization:
+  approach: Intent and product relations in a commerce knowledge graph
+  details: Knowledge is represented as typed relations. The paper does not describe a dedicated catalog ID tokenizer.
+features_signals:
+- Search-to-purchase query and product pairs
+- Co-purchased product pairs
+- Human judgments on generated intent explanations
+training:
+  mode: Instruction tuning on behavior-derived examples and human annotations
+  objectives:
+  - Generate plausible commerce intents for observed shopping actions
+  - Learn to distinguish valid knowledge from implausible or irrelevant explanations
+serving_infra: A SageMaker model processes behavior logs and frequent queries in batches. A feature store structures responses before they are written to an asynchronous cache for downstream requests.
+scale:
+- metric: Scope of the generated knowledge
+  value: 18 major product categories
+  note: The paper reports millions of knowledge facts from 30,000 annotated instructions.
+results_reported: 'Section 4.3.2 reports Amazon search navigation A/B tests over several months in total, targeting approximately 10% of U.S. traffic. Adding the COSMO knowledge to navigation yielded a 0.7% relative increase in product sales and an 8% increase in navigation engagement rate in the tested segment. The paper gives no detailed control configuration.'
+caveats:
+- The reported gains apply to the tested search navigation feature and traffic segment. Search relevance and session recommendation have separate offline results.
+- The authors describe daily updates and explain their limitations for short-lived changes such as flash sales.
+unknown_fields:
+- Per-arm traffic allocation, precise test dates and detailed control configuration
+- Production latency in milliseconds, serving QPS, hardware configuration and monetary cost
+sources:
+- title: 'COSMO: A Large-Scale E-commerce Common Sense Knowledge Generation and Serving System at Amazon'
+  url: https://doi.org/10.1145/3626246.3653398
+  type: paper
+- title: Amazon Science copy of the SIGMOD 2024 Industrial proceedings paper
+  url: https://assets.amazon.science/19/5d/bde30d0d4019be6421e79e50cda9/cosmo-paper.pdf
+  type: paper
+version_note: 'The numbers were checked against the DOI-bearing SIGMOD Industrial proceedings full text hosted by Amazon Science.'
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Generate shopping-intent relations from behavior data, then serve them as cached search refinements.
+deployed_in: Amazon search navigation, tested on a segment of U.S. traffic
+scale_short: Knowledge generated for 18 major product categories
+key_result: Product sales +0.7% and navigation engagement rate +8% in the reported U.S. traffic segment
+results_table:
+  online:
+  - {setting: Amazon search navigation A/B, method: COSMO, metric: Product sales, result: +0.7%, versus: Control configuration undisclosed}
+  - {setting: Amazon search navigation A/B, method: COSMO, metric: Navigation engagement rate, result: +8%, versus: Control configuration undisclosed}
+deployment:
+  online_evidence: online_numbers
+  scenario: Search navigation in Amazon's U.S. traffic
+  ab_traffic: About 10% of Amazon's U.S. traffic targeted across the tests
+  ab_duration: Several months across tests
+  baseline: not_reported
+  online_lifts:
+  - {metric: Product sales, value: +0.7%}
+  - {metric: Navigation engagement rate, value: +8%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Section 3.5 and Figure 5 describe batched generation, the feature store and the asynchronous cache.
+  - Section 4.3 and Figure 9 describe search navigation. Section 4.3.2 gives the online test scope and gains.
+  basis: full_text
+  checked_on: "2026-11-25"

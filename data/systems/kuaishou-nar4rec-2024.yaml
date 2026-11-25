@@ -1,0 +1,95 @@
+id: kuaishou-nar4rec-2024
+name: NAR4Rec
+company: Kuaishou
+surface: Short-video slate re-ranking in the Kuaishou app
+year: 2024
+era: generative
+era_reason: The model generates alternative item sequences from a ranked candidate set.
+first_public: "2024-02"
+venue: KDD 2024
+venue_year: 2024
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3637528.3671645
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Kuaishou computes the item distribution for each output position in parallel and evaluates the resulting slates. Views rose 1.161% against Edge-rerank in the production A/B.
+summary: NAR4Rec encodes a ranked list of candidates and scores their possible output positions in parallel. A contrastive decoder constructs several distinct slates from those scores, and a sequence evaluator selects the slate with the highest estimated utility.
+paradigms: [sequential-transformer, learning-to-rank]
+stages:
+- stage: re-rank
+  model_family: Non-autoregressive slate generator and sequence evaluator
+  details: Candidate and output-position representations produce a joint score matrix. The decoder builds valid slates, then an evaluator scores each slate in context.
+id_tokenization:
+  approach: Per-request selection over ranked video candidates
+  details: The position heads score candidates from the current request. Candidate representations and learned position embeddings provide the inputs.
+features_signals:
+- Ranked video candidates and their item features
+- Position embeddings for the output slate
+- Positive and negative feedback on previously exposed sequences
+training:
+  mode: Supervised generator training and sequence evaluation on exposure logs
+  objectives:
+  - Learn output-position distributions from positive feedback
+  - Reduce scores for undesirable item and position choices with unlikelihood training
+  - Predict sequence utility from contextualized item scores
+serving_infra: One model pass computes the position distributions. Contrastive decoding constructs alternative slates and the evaluator picks one for display.
+scale:
+- metric: App audience at the time of the paper
+  value: Over 300 million daily active users
+  note: The paper reports the overall Kuaishou app audience. A/B user counts are undisclosed.
+results_reported: 'In Section 5.3 and Table 5, Kuaishou ran a 10-day A/B with 20% of app traffic on NAR4Rec and the remainder on Edge-rerank. Relative gains were +1.161% views, +1.71% likes, +1.15% follows, +1.82% long views and +2.45% complete views. The authors report full deployment at the time of the paper. In a separate offline Avito benchmark in Table 4, inference took 0.037 seconds per batch for NAR4Rec and 0.186 seconds for Seq2Slate on a Tesla T4 at batch size 1024.'
+caveats:
+- The Avito latency numbers describe offline batch inference. Production request latency is undisclosed.
+- The production comparison evaluates the complete re-ranker. Component ablations are reported separately.
+unknown_fields:
+- Production serving latency, QPS, hardware and monetary inference cost
+- Training compute and per-arm user counts
+sources:
+- title: Non-autoregressive Generative Models for Reranking Recommendation, KDD 2024
+  url: https://doi.org/10.1145/3637528.3671645
+  type: paper
+- title: NAR4Rec DOI-bearing author full text, arXiv 2402.06871v6
+  url: https://arxiv.org/html/2402.06871v6
+  type: paper
+version_note: The KDD proceedings identity and DOI match the author full text. The numbers were checked against arXiv v6. The ACM-hosted copy remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Compute output-position scores in parallel, then construct and evaluate candidate slates.
+deployed_in: Kuaishou short-video recommendation, fully deployed per the authors
+scale_short: Kuaishou app with over 300 million daily active users
+key_result: Views +1.161% and complete views +2.45% against Edge-rerank in the online A/B
+results_table:
+  online:
+  - {setting: Kuaishou production A/B, method: NAR4Rec, metric: Views, result: +1.161%, versus: Edge-rerank}
+  - {setting: Kuaishou production A/B, method: NAR4Rec, metric: Complete views, result: +2.45%, versus: Edge-rerank}
+  - {setting: Kuaishou production A/B, method: NAR4Rec, metric: Likes, result: +1.71%, versus: Edge-rerank}
+  - {setting: Kuaishou production A/B, method: NAR4Rec, metric: Follows, result: +1.15%, versus: Edge-rerank}
+  - {setting: Kuaishou production A/B, method: NAR4Rec, metric: Long views, result: +1.82%, versus: Edge-rerank}
+  offline:
+  - {setting: Avito batch inference, method: NAR4Rec, metric: Seconds per batch, result: "0.037", versus: Seq2Slate 0.186}
+deployment:
+  online_evidence: online_numbers
+  scenario: Kuaishou app short-video re-ranking
+  ab_traffic: 20% treatment on NAR4Rec, remaining app traffic on Edge-rerank
+  ab_duration: 10 days
+  baseline: Edge-rerank
+  online_lifts:
+  - {metric: Views, value: +1.161%}
+  - {metric: Complete views, value: +2.45%}
+  - {metric: Likes, value: +1.71%}
+  - {metric: Follows, value: +1.15%}
+  - {metric: Long views, value: +1.82%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Section 4.1 through 4.4 describe position scoring, decoding, training and evaluation.
+  - Section 5.3 and Table 5 give the online test and Table 4 gives the separate Avito timing.
+  basis: full_text
+  checked_on: "2026-11-25"

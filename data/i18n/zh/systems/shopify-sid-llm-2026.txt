@@ -1,0 +1,45 @@
+surface|Shopify 商品搜索和首页信息流推荐
+era_reason|模型为搜索和推荐生成商品目录的语义 ID。
+tldr|Shopify 共用商品词表，搜索和信息流则使用各自的召回生成器。新增候选源后，受试首页场景的归因订单增长 7.95%。
+summary|SID-LLM 的搜索与推荐共用一套商品分词器。搜索一次预测多个 ID token，再用轻量模型排序。信息流召回逐步生成 ID，将其解析到具体商品，再交给现有排序器。
+core_idea|共用商品词表，为各个发现任务选择合适的解码路径。
+deployed_in|Shopify 线上搜索和首页信息流候选召回
+scale_short|LFM2-2.6B 主干模型
+key_result|生产 A/B 中，受试首页信息流场景的归因订单 +7.95%
+results_reported|第 9.1.1 和 9.2.2 节分别描述搜索和信息流实验。搜索实验支持部署，但原文未披露量化收益。表 19 对比首页信息流加入 SID-LLM 候选源的实验组和未加入的对照组。受试场景的归因订单增长 7.95%，转化用户增长 8.60%，转化率增长 9.85%。三项均通过原文报告的 Dunnett 校正。
+version_note|作者技术报告和 Shopify 工程博客均描述了生产部署。正式会议论文版本未确认。
+serving_infra|搜索向下游排序器提供候选和特征。信息流候选进入现有的首页排序链路。
+stages.0.model_family|面向搜索的多 token 生成与轻量排序
+stages.0.details|搜索模型向生产搜索链路同时提供候选和特征。
+stages.1.model_family|面向推荐的自回归语义 ID 生成
+stages.1.details|线上解码器按联合概率把语义 ID 解析到具体商品。合并后的候选由现有首页排序器排序。
+id_tokenization.approach|对商品嵌入做残差 k-means 量化
+id_tokenization.details|共用词表使用三级残差码本。多个商品可能共享语义 ID，线上还要解析到具体商品。
+features_signals.0|搜索查询与买家交互历史
+features_signals.1|商品目录文本与属性
+features_signals.2|搜索和推荐中的交互
+training.mode|在混合任务上继续预训练，再针对各个任务做后训练
+training.objectives.0|学习商品词表及查询或历史与商品的对应关系
+training.objectives.1|分别面向各自任务微调线上生成器
+training.notes|作者还离线测试了统一的蒸馏学生模型。论文描述的生产链路使用不同的解码方式。
+scale.0.metric|生产模型主干
+scale.0.value|=
+results_table.online.0.setting|受试首页信息流场景
+results_table.online.0.metric|归因订单
+results_table.online.0.versus|未加入该候选源的首页信息流对照
+results_table.online.1.setting|受试首页信息流场景
+results_table.online.1.metric|转化用户
+results_table.online.1.versus|未加入该候选源的首页信息流对照
+results_table.online.2.setting|受试首页信息流场景
+results_table.online.2.metric|转化率
+results_table.online.2.versus|未加入该候选源的首页信息流对照
+caveats.0|数值仅限受试首页信息流场景。Shopify 全站订单和搜索的独立提升幅度均未报告。
+caveats.1|统一蒸馏模型只在离线实验中评估。线上 A/B 使用面向推荐任务的解码器。
+unknown_fields.0|首页信息流 A/B 的流量分配与时长
+unknown_fields.1|线上信息流的延迟、吞吐、硬件和推理费用
+unknown_fields.2|量化的搜索线上收益
+deployment.scenario|Shopify 首页信息流，加入 SID-LLM 作为候选源
+deployment.baseline|未加入该候选源的首页信息流对照
+deployment.online_lifts.0.metric|归因订单
+deployment.online_lifts.1.metric|转化用户
+deployment.online_lifts.2.metric|转化率

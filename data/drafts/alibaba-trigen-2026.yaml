@@ -1,0 +1,82 @@
+id: alibaba-trigen-2026
+name: TriGen
+company: Alibaba International
+surface: Click-triggered recommendations on e-commerce product detail pages
+year: 2026
+era: generative
+era_reason: The model generates semantic IDs conditioned on the clicked product and the user's history.
+first_public: "2026-11"
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2611.16395v1
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: A product click steers candidate generation while the model retains preferences from prior interactions. The production trial reported a 3.27% revenue gain across six Southeast Asian markets.
+summary: TriGen repeats the trigger at the tail of the history and combines a history-preserving path with a trigger-conditioned path. A learned gate weights their outputs. Decoder feed-forward layers receive trigger guidance specific to each semantic ID position.
+paradigms: [generative-retrieval, semantic-id, sequential-transformer]
+stages:
+- stage: retrieval
+  model_family: Encoder-decoder retrieval with position-specific trigger guidance
+  details: Generate semantic IDs for a product detail page feed from the clicked product and the user's interaction history.
+id_tokenization:
+  approach: Residual vector quantization of product representations
+  details: The tokenizer creates fixed semantic IDs. The recommender uses them as inputs and generation targets.
+features_signals:
+- Product clicked before opening the triggered feed
+- User interaction history and product representations
+training:
+  mode: Trigger-conditioned generative retrieval on click sessions
+  objectives:
+  - Generate IDs of products engaged with after the trigger
+  - Learn how much to rely on the past history and current trigger for each request
+serving_infra: The test kept upstream candidate sources and downstream serving unchanged. Online model inference took about 10.5 ms, comparable to the production control.
+scale:
+- metric: Production test markets
+  value: Six Southeast Asian markets
+  note: Section 5.5 names Indonesia, Malaysia, Singapore, the Philippines, Thailand and Vietnam.
+results_reported: 'In Section 5.5 and Figure 4, the product detail page A/B ran June 28–July 2, 2026, with 10% of production traffic per bucket. The control was the deployed generative retriever with the trigger appended. Across the six markets, the traffic-weighted lifts were +3.27% revenue and +0.90% GMV. Inference latency was about 10.5 ms and comparable to control. The paper reports full production deployment since July 2026.'
+caveats:
+- The gain is traffic-weighted across the tested markets. GMV did not improve in every market.
+- The 10.5 ms figure measures online model inference. The paper does not report full request latency or its percentiles.
+unknown_fields:
+- Platform name and absolute A/B metrics
+- Serving hardware, peak throughput, overall training compute and monetary inference cost
+sources:
+- title: TriGen, A Generative Paradigm for Trigger-Induced Recommendation
+  url: https://arxiv.org/html/2611.16395v1
+  type: paper
+version_note: The author full text documents the production rollout. A proceedings version is unconfirmed.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Use the clicked item to steer generation and keep past interests available when they help.
+deployed_in: Product detail page recommendations on an unnamed e-commerce platform, fully deployed since July 2026
+scale_short: Six Southeast Asian markets in the production test
+key_result: Traffic-weighted revenue +3.27% against the deployed trigger-append model
+results_table:
+  online:
+  - {setting: Southeast Asian product detail page A/B, method: TriGen, metric: Revenue, result: +3.27%, versus: Production generative retrieval with trigger append}
+  - {setting: Southeast Asian product detail page A/B, method: TriGen, metric: GMV, result: +0.90%, versus: Production generative retrieval with trigger append}
+deployment:
+  online_evidence: online_numbers
+  scenario: Click-triggered product detail page feed on an e-commerce platform
+  ab_traffic: 10% of randomly sampled production traffic per bucket
+  ab_duration: 'June 28–July 2, 2026'
+  baseline: Production generative retrieval with trigger append
+  online_lifts:
+  - {metric: Traffic-weighted revenue, value: +3.27%}
+  - {metric: Traffic-weighted GMV, value: +0.90%}
+  training_compute: not_reported
+  serving_latency: About 10.5 ms online model inference, comparable to control
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Section 4 describes trigger conditioning. Appendix C describes the tokenizer.
+  - Section 5.5 and Figure 4 give the A/B conditions, market-weighted results, latency and rollout.
+  basis: full_text
+  checked_on: "2026-11-25"

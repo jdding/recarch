@@ -1,0 +1,90 @@
+id: meta-g2rec-2026
+name: G2Rec
+company: Meta
+surface: Generative sequential recommendation on multiple Meta surfaces
+year: 2026
+era: generative
+era_reason: The sequential model predicts next items autoregressively with graph-derived interest context.
+first_public: "2026-06"
+venue: RecSys 2026 Industry
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3773078.3831928
+added_on: "2026-11-25"
+last_verified: "2026-11-25"
+system_type: recommendation
+evidence_level: production_described
+tldr: Meta turns a co-engagement graph into interest tokens and interleaves them with item history. Product launches reported engagement gains ranging from 0.06% to 0.19%.
+summary: G2Rec extracts shared interest prototypes by soft clustering a sparse item co-engagement graph. It represents each item's interest profile with a continuous token. The sequence model learns from alternating item and profile tokens, predicting the next item with an auxiliary interest prediction objective.
+paradigms: [generative-retrieval, sequential-transformer]
+stages:
+- stage: retrieval
+  model_family: Autoregressive sequential recommendation with graph-derived interest profiles
+  details: Insert the profile of each interacted item after its item token to model interest transitions across the history.
+id_tokenization:
+  approach: Continuous interest-profile tokens alongside item identity
+  details: Each interest token is a weighted mixture of the embeddings of the item's interest prototypes.
+features_signals:
+- Item co-engagement aggregated from user interactions
+- Item embeddings and users' ordered interaction histories
+training:
+  mode: Offline graph modeling followed by joint sequence training
+  objectives:
+  - Predict the next item from the interaction history
+  - Predict interest profiles with the prototype weights as soft targets
+serving_infra: The item co-engagement graph and its interest-profile tokens are computed offline. The paper reports surface-specific deployment modifications without describing the production serving stacks.
+scale:
+- metric: Production rollout scope
+  value: Multiple Meta product surfaces
+  note: The paper does not identify the surfaces.
+results_reported: 'Section 5.3 describes G2Rec productization on several Meta surfaces, with 7-day and longer online A/B tests. The authors report more than 0.03% in-session improvement and gains from 0.06% to 0.19% across multiple engagement metrics. They cite time spent, likes and shares as examples, without mapping individual lifts to a metric, test, or surface. The paper does not describe the online control.'
+caveats:
+- The paper reports a range across engagement measures. It gives neither a breakdown per metric nor the exact in-session metric definition.
+- The timing benchmarks in Section 5.4 use the offline Amazon Beauty dataset. No production serving latency is quantified.
+unknown_fields:
+- Product surfaces, control, per-arm traffic and long-term A/B duration
+- Metric definitions and per-surface lifts
+- Production hardware, capacity, latency and compute costs
+sources:
+- title: G2Rec, ACM RecSys 2026 Industry
+  url: https://doi.org/10.1145/3773078.3831928
+  type: paper
+- title: Structuring and Tokenizing Distributed User Interest Context for Generative Recommendation
+  url: https://arxiv.org/html/2606.20554v1
+  type: paper
+- title: RecSys 2026 accepted contributions
+  url: https://recsys.acm.org/recsys26/contributions/
+  type: documentation
+version_note: The RecSys Industry program confirms the paper. Production evidence was checked against the author full text. The ACM-hosted full text remains unchecked.
+code:
+  status: none
+  checked_on: "2026-11-25"
+  repos: []
+core_idea: Add an offline graph-derived interest profile token after each item in the user's history.
+deployed_in: Multiple Meta product surfaces, with surface names undisclosed
+scale_short: Multiple product surfaces with short- and long-term online A/B
+key_result: Multiple engagement metrics up 0.06% to 0.19% in reported Meta product launches
+results_table:
+  online:
+  - {setting: Meta product launches, method: G2Rec, metric: Range across engagement metrics, result: +0.06% to +0.19%, versus: Online control undisclosed}
+  - {setting: Meta product launches, method: G2Rec, metric: In-session improvement as reported, result: More than +0.03%, versus: Online control undisclosed}
+deployment:
+  online_evidence: online_numbers
+  scenario: Multiple undisclosed Meta product surfaces with adaptations per surface
+  ab_traffic: not_reported
+  ab_duration: 7 days for short-term tests
+  baseline: not_reported
+  online_lifts:
+  - {metric: Range across engagement metrics, value: +0.06% to +0.19%}
+  - {metric: In-session improvement as reported, value: More than +0.03%}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  fulltext_refs:
+  - Section 3 describes the sparse graph, soft clustering and interest-token sequence.
+  - Section 5.3 describes production rollout and online testing disclosure.
+  - Section 5.4 reports a separate offline time benchmark.
+  basis: full_text
+  checked_on: "2026-11-25"

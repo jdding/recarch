@@ -2,7 +2,7 @@
 id: kuaishou-glorank-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 764762dcb30a079e
+content_hash: 0233a71086894881
 drop: []
 items:
 - key: what
@@ -14,9 +14,9 @@ items:
   - tldr
 - key: who
   q_en: Who built GloRank and where does it run?
-  a_en: 'GloRank comes from Kuaishou, 2026. Deployed in: List-wise reranking on a leading content platform, live A/B traffic.'
+  a_en: 'GloRank comes from Kuaishou, 2026. Deployed in: Kuaishou deployment confirmed by the author lab, with live A/B on an unnamed content surface in the paper.'
   q_zh: GloRank 是谁做的，用在哪里？
-  a_zh: GloRank 来自 快手，2026 年。上线位置：领先内容平台的 list-wise 重排，线上 A/B 流量。
+  a_zh: GloRank 来自 快手，2026 年。上线位置：作者团队确认在快手部署，论文未披露线上 A/B 的具体内容场景。
   fields:
   - company
   - year
@@ -46,9 +46,9 @@ items:
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of GloRank?
-  a_en: The A/B platform is described only as a leading content platform; Kuaishou comes from the author affiliation, and no rollout beyond the A/B is stated. The arXiv v1 text read is a preprint in a placeholder ACM template; the final CIKM 2026 text was not read.
+  a_en: The author lab confirms deployment at Kuaishou. The author paper leaves the A/B surface unnamed and the rollout scope unquantified. The online numbers come from arXiv v1. The CIKM proceedings full text remains unchecked.
   q_zh: 读 GloRank 的结果时要注意什么？
-  a_zh: A/B 平台只被描述为领先内容平台；快手身份来自作者署名，未说明 A/B 之外的全量状态。 所读 arXiv v1 是占位 ACM 模板的预印本；未读到 CIKM 2026 最终文本。
+  a_zh: 作者团队确认在快手部署。论文未披露 A/B 的具体场景，也未量化推广范围。 线上数字来自 arXiv v1。CIKM 正式全文待核。
   fields:
   - caveats.0
   - caveats.1

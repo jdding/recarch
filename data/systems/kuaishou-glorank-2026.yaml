@@ -9,10 +9,12 @@ first_public: "2026-04"
 venue: "CIKM 2026"
 venue_year: 2026
 published_version_checked: false
-primary_source: "https://arxiv.org/abs/2604.25291"
+primary_source: "https://doi.org/10.1145/3799682.3840950"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-25"
+updates:
+- date: "2026-11-25"
+  note: Added the CIKM proceedings title and DOI, and recorded the author lab's confirmation of deployment at Kuaishou.
 system_type: recommendation
 evidence_level: production_described
 tldr: "GloRank reranks by generating global Semantic IDs with constrained decoding and GRPO post-training; a 14-day A/B beats the deployed GoalRank with Comment +0.462% and Watch Time +0.095%."
@@ -51,8 +53,8 @@ scale:
   note: "paper, Table 1"
 results_reported: "Offline, generating a list of length 6 from 50 candidates, Table 2: on the industrial e-commerce dataset GloRank reaches Precision 62.56, NDCG 90.15, MAP 84.84 and F1 74.32, with relative improvements over the best baseline of 3.99%, 2.35%, 3.39% and 3.97%; on Amazon Books 83.75, 90.08, 85.10 and 86.97, improving 4.23%, 6.13%, 9.23% and 4.23%; on MovieLens-1M 75.79, 87.56, 81.19 and 82.57, improving 3.03%, 4.95%, 6.60% and 3.02%. Ablation, Table 3: without pre-training, NDCG collapses to 24.13 on Amazon Books; without post-training, MAP falls to 83.68 on Amazon Books, while on MovieLens-1M post-training adds 2.34% MAP from 78.85 to 81.19 and 1.62% NDCG from 85.94 to 87.56. A local action space variant degrades sharply, and under a cold start on Amazon Books with 5% of items removed from training, GoalRank MAP drops by over 88.4% while GloRank loses only 4.9%. Online, Table 4: over 14 days on 7.8% of live traffic with an equal-size GoalRank control on a content platform serving over 400 million DAU, Watch Time +0.095%, Effective View +0.111%, Like +0.286%, Comment +0.462% and Forward +0.447%, all significant at p < 0.05 by t-test, with Active Devices +0.030% in the text."
 caveats:
-- "The A/B platform is described only as a leading content platform; Kuaishou comes from the author affiliation, and no rollout beyond the A/B is stated."
-- "The arXiv v1 text read is a preprint in a placeholder ACM template; the final CIKM 2026 text was not read."
+- The author lab confirms deployment at Kuaishou. The author paper leaves the A/B surface unnamed and the rollout scope unquantified.
+- The online numbers come from arXiv v1. The CIKM proceedings full text remains unchecked.
 - "The industrial offline dataset is collected from a real-world e-commerce platform and has 200,775 users; it is not the content platform used online."
 - "Online gains are relative percentages below 0.5%, and no serving latency, throughput or cost numbers are given."
 - "No official code is cited; only a third-party reproduction exists."
@@ -63,17 +65,23 @@ unknown_fields:
 - Training compute
 - Official code
 sources:
-- title: "From Local Indices to Global Identifiers: Generative Reranking for Recommender Systems via Global Action Space, arXiv 2604.25291"
-  url: https://arxiv.org/abs/2604.25291
+- title: 'GloRank: Generative Reranking for Deep Recommender Systems via Global Identifier Generation'
+  url: https://doi.org/10.1145/3799682.3840950
   type: paper
-version_note: "Read from arXiv v1 dated 28 Apr 2026, a preprint in a placeholder ACM template with no DOI; CIKM 2026 acceptance is known from external announcements, and the camera-ready was not read."
+- title: "From Local Indices to Global Identifiers: Generative Reranking for Recommender Systems via Global Action Space, arXiv 2604.25291v1"
+  url: https://arxiv.org/html/2604.25291v1
+  type: paper
+- title: CityUHK Applied Machine Learning Lab publications
+  url: https://aml-cityu.github.io/publications/
+  type: documentation
+version_note: The CIKM 2026 proceedings use the GloRank title. A/B numbers were rechecked against arXiv v1, available under the original title. The proceedings full text remains unchecked.
 needs_fulltext: false
 fulltext:
-  pdf_url: https://arxiv.org/pdf/2604.25291
+  pdf_url: https://arxiv.org/pdf/2604.25291v1
   local_pdf: "full text read into local notes; file not redistributed"
   sections_read: "Abstract, introduction, theoretical analysis, methodology, experiments with Tables 1 to 4 and Figures 3 to 6, online experiments, related work, conclusion"
-  verified_on: "2026-11-02"
-  published_pdf: "not read; arXiv v1 preprint only, read 2026-11-02"
+  verified_on: "2026-11-25"
+  published_pdf: CIKM proceedings DOI verified. Online results are sourced to the arXiv v1 author copy.
 code:
   status: third_party_only
   checked_on: "2026-11-02"
@@ -83,7 +91,7 @@ code:
     official: false
     note: "Contains a community reproduction of GloRank under the reproductions directory, not an official or standalone release; no official code is cited in the paper."
 core_idea: "Generate global Semantic IDs instead of picking local indices, so each output neuron always means the same item, and align the generator with list-wise rewards."
-deployed_in: "List-wise reranking on a leading content platform, live A/B traffic"
+deployed_in: Kuaishou deployment confirmed by the author lab, with live A/B on an unnamed content surface in the paper
 scale_short: "A/B on a platform with over 400 million DAU and tens of millions of items"
 key_result: "14-day A/B at 7.8% traffic against the deployed GoalRank: Like +0.286%, Comment +0.462%, Watch Time +0.095%, all p < 0.05"
 results_table:
@@ -137,4 +145,4 @@ deployment:
   fulltext_refs:
   - "Table 4 and Sec 4.10: Watch Time +0.095%, Effective View +0.111%, Like +0.286%, Comment +0.462%, Forward +0.447%, Active Devices +0.030%, 7.8% traffic, 14 days, over 400 million DAU"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-25"

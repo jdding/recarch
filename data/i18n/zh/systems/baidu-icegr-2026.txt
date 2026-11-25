@@ -1,0 +1,47 @@
+surface|百度电商搜索
+era_reason|模型根据查询生成语义 ID 来召回商品，并让部分商品直接进入曝光列表。
+tldr|百度让生成的商品 ID 与查询意图对齐，并把固定数量的头部候选直接放进搜索结果。生产 A/B 中，订单量增长 15.96%。
+summary|ICEGR 利用查询与商品的相关性、同一查询下的点击和商品内容构建与意图对齐的商品 ID。模型先在合成查询上训练，再适配真实搜索数据，最后用相关性和商业反馈校准偏好。线上把生成器加入原有搜索链路。
+core_idea|在分词、训练和偏好校准中持续用查询意图约束生成的商品候选。
+deployed_in|百度电商搜索生产 A/B 中的新增召回路径
+scale_short|上线生成器参数量 5 亿
+key_result|百度电商搜索生产 A/B 加入 ICEGR 后，订单量 +15.96%
+results_reported|第 4.5 节和表 5 报告了占线上流量 20%、持续两周的生产 A/B。对照组使用现有 MCA，实验组在同一链路加上生成路径，将固定数量的 ICEGR 头部候选直接放进曝光列表。相对对照组，CTR +3.52%，订单量 +15.96%，GMV +7.53%。第 4.6 节报告生成器在 67 张 NVIDIA L20 GPU、束宽 50 的配置下，平均延迟为 156 毫秒，峰值吞吐为 2,200 QPS。
+version_note|生产证据核对自 arXiv v3 全文。正式会议论文版本未确认。
+serving_infra|线上生成器使用 67 张 NVIDIA L20 GPU、束宽 50。原文报告平均服务延迟 156 毫秒、峰值 2,200 QPS。
+stages.0.model_family|以查询为条件的自回归商品生成
+stages.0.details|固定数量的 ICEGR 头部候选直接进入曝光列表。其余候选通过现有相关性过滤和排序。
+id_tokenization.approach|与查询意图对齐的语义 ID
+id_tokenization.details|量化前，用查询与商品的监督信号以及同一查询下被点击商品之间的关系学习商品表示。
+features_signals.0|真实和合成的搜索查询
+features_signals.1|商品内容和同一查询下的点击
+features_signals.2|相关性，以及点击、支付和 GMV 等历史商业反馈
+training.mode|训练分词器、监督微调，再做校准相关性的偏好优化
+training.objectives.0|让商品表示与观测到的搜索意图对齐
+training.objectives.1|先用合成查询训练生成 ID，再用真实查询适配
+training.objectives.2|调整偏好优化的间隔，在顾及查询相关性的同时纳入商业反馈
+scale.0.metric|线上生成器
+scale.0.value|5 亿参数
+results_table.online.0.setting|百度电商搜索生产 A/B
+results_table.online.0.method|MCA 加 ICEGR
+results_table.online.0.metric|订单量
+results_table.online.0.versus|现有生产 MCA 系统
+results_table.online.1.setting|百度电商搜索生产 A/B
+results_table.online.1.method|MCA 加 ICEGR
+results_table.online.1.versus|现有生产 MCA 系统
+results_table.online.2.setting|百度电商搜索生产 A/B
+results_table.online.2.method|MCA 加 ICEGR
+results_table.online.2.versus|现有生产 MCA 系统
+caveats.0|生产 A/B 测量包含直接插入候选的整条新增路径。分词器的独立贡献未报告。
+caveats.1|20% 是纳入实验的生产流量。各组分流和指标绝对值未公布。
+unknown_fields.0|各组分流和 A/B 指标绝对值
+unknown_fields.1|A/B 之后的推广范围
+unknown_fields.2|训练算力、推理费用和线上延迟分位数
+deployment.scenario|百度电商搜索，固定数量的 ICEGR 候选直接进入曝光列表
+deployment.ab_traffic|实验占生产流量 20%
+deployment.ab_duration|两周
+deployment.baseline|现有生产 MCA 系统
+deployment.online_lifts.0.metric|订单量
+deployment.serving_latency|生成器束宽 50 时的平均延迟为 156 毫秒
+deployment.serving_qps|生成器峰值 2,200 QPS
+deployment.hardware|生成器使用 67 张 NVIDIA L20 GPU

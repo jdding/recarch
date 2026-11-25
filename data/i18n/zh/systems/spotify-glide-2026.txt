@@ -1,0 +1,39 @@
+surface|Spotify 首页的播客发现
+era_reason|语言模型生成目录中播客单集的语义 ID 作为推荐候选。
+tldr|Spotify 加入了一个播客候选源，根据长期偏好和近期收听生成单集 ID。首页 A/B 中，人均非惯常播客播放量提升 5.4%。
+summary|GLIDE 用近期单集 ID、上下文提示和投影后的长期用户嵌入引导语言模型，从目录中生成听众平常不听的节目单集。已有的单集排序器将这些候选和其他候选源一起打分。
+core_idea|结合听众的稳定偏好和近期兴趣，生成目录中的播客单集 ID。
+deployed_in|Spotify 首页播客发现的候选召回
+scale_short|A/B 每个分组约 2000 万次曝光
+key_result|Spotify 首页 A/B 中，人均非惯常播客播放量 +5.4%
+results_reported|第 5.3 节报告了 Spotify 首页 21 天的用户级随机 A/B，覆盖英语市场过去 30 天内活跃的播客听众。每个分组约 2000 万次曝光。在原有单集排序器前加入 GLIDE 后，人均非惯常播客播放量增长 5.4%，新节目中的非惯常播放量增长 14.3%。实验组约 34% 的推荐来自 GLIDE。
+version_note|KDD 应用数据科学赛道的正式论文使用另一标题。部署证据核对自作者全文与 Spotify Research，ACM 托管的正式全文待核。
+serving_infra|通过事件触发请求，在适用时预计算并缓存。服务使用束搜索生成单集 ID，将其映射成候选后交给现有单集排序器。
+stages.0.model_family|使用连续用户提示的指令微调语言模型
+stages.0.details|束搜索生成单集 ID，查目录后将候选交给现有单集排序器。
+id_tokenization.approach|对播客单集嵌入做残差 k-means 量化
+id_tokenization.details|近期交互和生成目标用离散单集 ID 表示。长期用户嵌入经投影后作为连续提示输入模型。
+features_signals.0|近期播客收听历史
+features_signals.1|用协同过滤嵌入表示的长期收听偏好
+features_signals.2|单集标题、描述与发现指令
+training.mode|先学习播客目录与语义 ID 的对应关系，再做指令微调
+training.objectives.0|学习播客单集元数据和语义 ID 的对应关系
+training.objectives.1|根据听众熟悉度和收听习惯的指令召回单集
+scale.0.metric|首页 A/B 曝光
+scale.0.value|每个分组约 2000 万次曝光
+results_table.online.0.setting|Spotify 首页用户级 A/B
+results_table.online.0.metric|人均非惯常播客播放量
+results_table.online.0.versus|未加入 GLIDE 候选源的生产系统
+results_table.online.1.setting|Spotify 首页用户级 A/B
+results_table.online.1.metric|新节目中的非惯常播放量
+results_table.online.1.versus|未加入 GLIDE 候选源的生产系统
+caveats.0|34% 是实验组中来自 GLIDE 的推荐比例，随机 A/B 的流量分配未公开。
+caveats.1|收益针对符合实验条件的首页播客听众。原文未量化长期效果和更广听众群体的结果。
+unknown_fields.0|A/B 流量分配和随机分组的用户数
+unknown_fields.1|生产延迟、吞吐、硬件和推理费用
+unknown_fields.2|原文所述部署及实验之外的推广范围
+deployment.scenario|Spotify 首页，英语市场过去 30 天内活跃的播客听众
+deployment.ab_duration|21 天
+deployment.baseline|未加入 GLIDE 候选源的生产系统，下游排序器相同
+deployment.online_lifts.0.metric|人均非惯常播客播放量
+deployment.online_lifts.1.metric|新节目中的非惯常播放量
