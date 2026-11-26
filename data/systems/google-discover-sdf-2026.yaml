@@ -11,7 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: https://doi.org/10.1145/3799682.3840082
 added_on: "2026-11-25"
-last_verified: "2026-11-25"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the definition of the sampled staleness metric and confidence intervals for the joint holdback.
 system_type: recommendation
 evidence_level: production_described
 tldr: Google Discover filters outdated candidates before ranking. In a two-month holdback with both filters disabled for the control group, SDF lifted positive feed engagement by 0.26%.
@@ -39,9 +42,9 @@ scale:
 - metric: New items evaluated for staleness
   value: Millions per day
   note: Google Discover, Section 3.4
-results_reported: 'Section 4.2 reports stale-content prevalence deltas of -6.91 percentage points for SDF and -0.10 for the age-cutoff plus engagement-cliff baseline. Each delta compares the stale shares of promoted and demoted items sampled over four consecutive weeks. In the separate two-month joint holdback with both filters disabled for controls, dismissal rate fell 0.16%, feed diversity rose 0.13%, and positive engagement rose 0.26%. Section 4.3 reports 54.9% fewer user-filed staleness reports over two years versus the pre-deployment baseline. In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.'
+results_reported: 'Section 4.2 reports stale-content prevalence deltas of -6.91 percentage points for SDF and -0.10 for the age-cutoff plus engagement-cliff baseline. Each delta subtracts the stale share among items whose views fell from the stale share among items whose views rose. Items were sampled weekly over four weeks. In the separate two-month joint holdback with both filters disabled for controls, dismissal rate changed by -0.16 ± 0.07%, feed diversity by +0.13 ± 0.04%, and positive engagement by +0.26 ± 0.18%. The ranges are 95% confidence intervals. Section 4.3 reports 54.9% fewer user-filed staleness reports over two years versus the pre-deployment baseline. In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.'
 caveats:
-- The prevalence delta compares two sampled sets of items. It measures a different outcome from the joint-holdback experiment.
+- The item sample is weighted by the size of the view change. An item counts as stale when at least three of five raters agree. The estimate describes the sampled items the filter moved.
 - The two-year report count is deployment monitoring across model upgrades and locale expansion.
 - The CPU and TPU savings are reported in serving hours. The article gives no absolute cost.
 unknown_fields:
@@ -71,7 +74,7 @@ results_table:
   - {setting: Two-month Discover holdback, method: SDF, metric: Dismissal rate, result: "-0.16%", versus: Both filters disabled}
   - {setting: Two-month Discover holdback, method: SDF, metric: Feed diversity, result: "+0.13%", versus: Both filters disabled}
   - {setting: Two-month Discover holdback, method: SDF, metric: Positive engagement, result: "+0.26%", versus: Both filters disabled}
-  note: In separate two-year deployment monitoring, user-filed staleness reports fell 54.9% versus the pre-deployment baseline.
+  note: The two-month holdback reports 95% confidence intervals with half-widths of 0.07% for dismissal, 0.04% for diversity and 0.18% for positive engagement. In separate two-year monitoring, user-filed staleness reports fell 54.9% versus the pre-deployment baseline.
 deployment:
   online_evidence: online_numbers
   scenario: Google Discover candidate filtering, with both SDF filters enabled
@@ -94,4 +97,4 @@ deployment:
   - Section 4.2 and Table 3 separate the A/B sampling from the joint holdback.
   - Section 4.3 and Figure 4 report longitudinal complaint monitoring and serving-hour savings.
   basis: full_text
-  checked_on: "2026-11-25"
+  checked_on: "2026-11-26"

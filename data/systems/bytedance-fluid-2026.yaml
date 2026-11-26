@@ -5,14 +5,16 @@ surface: Livestreaming ranking on ByteDance livestreaming platforms
 year: 2026
 era: deep
 era_reason: "A discriminative token-based ranker trained on click-style targets; the change is representational, replacing the candidate item ID with discrete multimodal semantic codes, not generating items autoregressively."
-first_public: "2026-09"
+first_public: "2026-05"
 venue: "RecSys 2026"
 venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831918"
 added_on: "2026-11-01"
-last_verified: "2026-11-01"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the public author version and corrected the first-publication month.
 system_type: recommendation
 evidence_level: production_described
 tldr: "ByteDance's FLUID drops the item ID from a production livestreaming ranker, using multimodal semantic codes instead; A/B gives Quality Watch Duration +0.55% and Cold-Start Room Views +2.05%."
@@ -71,7 +73,10 @@ sources:
 - title: "FLUID: From Ephemeral IDs to Multimodal Semantic Codes for Billion-Scale Livestreaming Recommendation, RecSys 2026"
   url: https://doi.org/10.1145/3773078.3831918
   type: paper
-version_note: 'Numbers checked against the ACM RecSys 2026 proceedings PDF, DOI 10.1145/3773078.3831918, from the owner''s library. No arXiv version was found.'
+- title: FLUID, public author version
+  url: https://arxiv.org/html/2605.21832v2
+  type: paper
+version_note: "The RecSys 2026 proceedings version has DOI 10.1145/3773078.3831918. The public author version is titled Industrial-Scale Livestreaming Recommendation and gives the production results in Sec. 4.2, Table 4."
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3773078.3831918
@@ -139,4 +144,4 @@ deployment:
   - 'Table 4 and Sec 4.2: online A/B of three arms against the production baseline, FLUID Quality Watch Duration +0.55%, Cold-Start Room Views +2.05%, Active Hours +0.05%'
   - 'Table 3 and Table 2: CTR AUC 0.7802 against 0.7784, logloss 0.1262 against 0.1264, 168B instances'
   basis: full_text
-  checked_on: '2026-11-01'
+  checked_on: "2026-11-26"

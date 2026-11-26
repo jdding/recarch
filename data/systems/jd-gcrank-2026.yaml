@@ -5,14 +5,16 @@ surface: JD takeout food delivery advertising ranking
 year: 2026
 era: generative
 era_reason: "Context is generated rather than looked up: LLM-reasoned dynamic context, flow-matching interest generation and LLM embeddings feed the ranker, which the authors present as a generative paradigm replacing feature-crossing DLRM ranking."
-first_public: "2026-04"
+first_public: "2026-01"
 venue: "WWW 2026"
 venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3774904.3792818"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the public author version and corrected the first-publication month.
 system_type: ads
 evidence_level: production_described
 tldr: "JD's GCRank feeds LLM and flow-matching generated context into takeout ad ranking; 7-day 20% A/B vs the production DLRM: CTR +5.07%, CVR +4.71%, RPM +6.42%, then full traffic."
@@ -64,7 +66,10 @@ sources:
 - title: "A Generative Contextual Comprehension Paradigm for Takeout Ranking Model, WWW 2026"
   url: https://doi.org/10.1145/3774904.3792818
   type: paper
-version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792818, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
+- title: GCRank, public author version
+  url: https://arxiv.org/html/2601.02361v1
+  type: paper
+version_note: "The published record is WWW 2026, DOI 10.1145/3774904.3792818. The earlier arXiv author version confirms the A/B metrics in Sec. 5.5."
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3774904.3792818
@@ -130,4 +135,4 @@ deployment:
   notes:
   - After the test the model was rolled out to all platform traffic. LLM calls are off the main serving path.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

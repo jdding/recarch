@@ -5,14 +5,16 @@ surface: AppGallery app recommendation ranking
 year: 2026
 era: generative
 era_reason: "An HSTU-based generative recommender with session-level pre-training and preference-guided sparse attention replaces the production DLRM ranker."
-first_public: "2026-04"
+first_public: "2026-03"
 venue: "WWW 2026"
 venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3774904.3792790"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the public author version and corrected the first-publication month.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Huawei's HPGR adds session pre-training and preference-guided sparse attention to an HSTU ranker; 7-day 50% A/B on AppGallery vs the production DLRM: eCPM +1.99%."
@@ -65,7 +67,10 @@ sources:
 - title: "Beyond the Flat Sequence: Hierarchical and Preference-Aware Generative Recommendations, WWW 2026"
   url: https://doi.org/10.1145/3774904.3792790
   type: paper
-version_note: 'Numbers checked against the WWW 2026 camera-ready PDF, ACM DOI 10.1145/3774904.3792790, with the full text read. No arXiv preprint was found, so the first public date is the conference month.'
+- title: HPGR, author copy with WWW 2026 citation
+  url: https://arxiv.org/html/2603.00980v1
+  type: paper
+version_note: "The WWW 2026 DOI is 10.1145/3774904.3792790. The public author copy carries the same DOI and confirms the AppGallery A/B in Sec. 5 and Table 3."
 needs_fulltext: false
 fulltext:
   pdf_url: https://doi.org/10.1145/3774904.3792790
@@ -117,4 +122,4 @@ deployment:
   notes:
   - The paper says training and inference time rise only modestly over MTGR, with no figures.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

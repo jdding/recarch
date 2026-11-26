@@ -11,11 +11,13 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3773078.3831900"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Separated offline I/O and storage results from inference overhead and serving cost.
 system_type: recommendation
 evidence_level: production_described
-tldr: "Dual-purpose Semantic IDs compress dense content embeddings into tokens reconstructed on the fly; at YouTube they lifted satisfied engagement +0.80% on Watchpage and broke the I/O bottleneck."
+tldr: "Dual-purpose Semantic IDs compress dense content embeddings into tokens reconstructed on the fly; at YouTube they lifted satisfied engagement +0.80% on Watchpage and reduced offline input I/O."
 summary: "SiDec, from YouTube with Google DeepMind co-authors, makes one Semantic-ID token sequence serve two jobs inside the recommendation model. As collaborative identity, the tokens become hierarchical categorical features through unigram, overlapping-bigram, nested n-gram or Sentence-Piece representations. As content, a lightweight Semantic Decoder reconstructs the original dense content embedding from codebook lookups inside the model graph, so training logs and serving no longer store, transfer or join floating-point vectors. The framework was deployed in a multitask production ranking model, using the candidate video, the currently watched video and the watch history as Semantic-ID features, and in a foundational transformer retrieval model over the watch history. Because the production baselines already used Semantic-ID token embeddings, the reported online gains isolate the added content-reconstruction stream."
 paradigms:
 - semantic-id
@@ -131,7 +133,7 @@ deployment:
   training_compute: "Offline retrieval study under a fixed step budget: 16.80 steps/s control, 12.07 with raw embeddings, 14.53 to 15.41 with codebook decoding; production training compute not reported"
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: "Item storage falls from d x 32 bits to K x log2 V bits, typically 50-100x; reconstruction is described as costing no more than a normal sparse embedding feature, with tokens already cached in the baseline serving path"
+  inference_cost: The paper describes decoder overhead as comparable to adding one sparse embedding feature under the baseline token cache. It reports no measured serving cost.
   hardware: not_reported
   notes:
   - "Table 1 notes that reported metrics may represent proprietary variants of the listed descriptors."
@@ -141,4 +143,4 @@ deployment:
   - "Table 2: 16.80, 12.07, 15.41, 15.26, 14.53 steps/s; losses 2.766, 2.723, 2.764, 2.758, 2.681; Hit Rate 0.2811, 0.2844, 0.2816, 0.2870, 0.2910"
   - "Sec 3.1: storage d x 32 bits to K x log2 V bits, 50-100x compression; Sec 3.4.1: L = 200, d = 256 gives 51,200 floats, 200 KB FP32"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-26"

@@ -11,11 +11,13 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://arxiv.org/abs/2511.10962"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Corrected the query-change result by separating the Douyin and TikTok tests and disclosing the conflicting Douyin wording.
 system_type: search
 evidence_level: production_described
-tldr: "LEMUR trains ByteDance's multimodal encoders end to end with the Douyin Search ranker and serves history from a memory bank; a 14-day A/B cut the query change rate by 0.843% with offline QAUC +0.81%."
+tldr: LEMUR trains multimodal encoders jointly with the Douyin Search ranker and reuses history from a memory bank. A 14-day Douyin test reported fewer query changes.
 summary: "LEMUR is presented as the first large-scale fully end-to-end multimodal recommender system deployed on an industrial platform. Instead of pretraining a multimodal model and feeding frozen embeddings to the ranker, ByteDance trains bidirectional transformers over raw query and document text jointly with the RankMixer ranking model on Douyin Search, aligned by a session-masked query-document contrastive loss, SQDC. A memory bank stores document representations during training and serves user-history multimodal sequences by document ID, removing the prohibitive cost of recomputing sequence representations and the online transmission bottleneck; a LONGER-style decoder with cross-attention and a similarity module consumes these sequences. Sampling and cross-worker deduplication keep training tractable. After a 14-day A/B, LEMUR was fully deployed on Douyin Search and has run for over one month, with additional offline gains on the Douyin ads platform and an online gain on TikTok Search."
 paradigms:
 - dlrm
@@ -53,7 +55,7 @@ scale:
 - metric: Deployment
   value: fully deployed on Douyin Search, operating over one month
   note: "paper, Sec 4.3"
-results_reported: "Offline on 70 days of Douyin Search logs, against DLRM-MLP at AUC 0.74071 and QAUC 0.63760: adding RankMixer gives +0.49% AUC and +0.59% QAUC, adding LONGER +0.89% and +1.04%, LEMUR-SQDC +1.22% and +1.51%, and LEMUR-SQDC with the memory bank +1.44% and +1.85%, Table 2; against the online baseline RankMixer+LONGER the final LEMUR gains AUC +0.55% and QAUC +0.81%, where 0.1% is already significant in this setting. Against a two-stage pretrained-then-frozen variant, Table 3, baseline QAUC 0.64393, two-stage 0.64470 at +0.12%, LEMUR 0.64914 at +0.81%, a 0.69% edge. Ablations, Table 5: stop-gradient -0.31%, without the long multimodal sequence -0.25%, without SQDC -0.17%, without cosine similarity -0.12%, without the session mask -0.10%, without the short sequence -0.09%, with the CIC loss -0.02%. Efficiency, Table 4: baseline 92M parameters and 1673G FLOPs; LEMUR without sampling 139M parameters and 4303G FLOPs at +0.81% QAUC; p=100 q=20 gives 3232G at +0.78%; the deployed p=20 q=20 gives 2439G at +0.76%; p=10 q=10 gives 2262G at +0.75%. SQDC temperature sweep, Table 6: 0.64831 at temperature 1, 0.64857 at 5, 0.64914 at 50 and 0.64869 at 100. A 14-day online A/B on Douyin Search reduced the query change rate by 0.843%, which the abstract words as a 0.843% reduction in query change rate decay, T-test significant, after which LEMUR was fully deployed and has operated for over one month. The Douyin ads platform reports +0.1% offline AUC and TikTok Search about 0.843% query change rate reduction. Memory-bank staleness similarity stabilizes around 0.95 and sequence coverage exceeds 90%, with current-document coverage above 98%."
+results_reported: "Offline on 70 days of Douyin Search logs, against DLRM-MLP at AUC 0.74071 and QAUC 0.63760: adding RankMixer gives +0.49% AUC and +0.59% QAUC, adding LONGER +0.89% and +1.04%, LEMUR-SQDC +1.22% and +1.51%, and LEMUR-SQDC with the memory bank +1.44% and +1.85%, Table 2; against the online baseline RankMixer+LONGER the final LEMUR gains AUC +0.55% and QAUC +0.81%, where 0.1% is already significant in this setting. Against a two-stage pretrained-then-frozen variant, Table 3, baseline QAUC 0.64393, two-stage 0.64470 at +0.12%, LEMUR 0.64914 at +0.81%, a 0.69% edge. Ablations, Table 5: stop-gradient -0.31%, without the long multimodal sequence -0.25%, without SQDC -0.17%, without cosine similarity -0.12%, without the session mask -0.10%, without the short sequence -0.09%, with the CIC loss -0.02%. Efficiency, Table 4: baseline 92M parameters and 1673G FLOPs; LEMUR without sampling 139M parameters and 4303G FLOPs at +0.81% QAUC; p=100 q=20 gives 3232G at +0.78%; the deployed p=20 q=20 gives 2439G at +0.76%; p=10 q=10 gives 2262G at +0.75%. SQDC temperature sweep, Table 6: 0.64831 at temperature 1, 0.64857 at 5, 0.64914 at 50 and 0.64869 at 100. Section 4.3 reports a significant decrease in the query change rate in a 14-day Douyin Search A/B. The abstract describes a 0.843% reduction in query change rate decay, while Section 4.3 gives 0.843% as the rate. LEMUR was fully deployed for over one month at the time of writing. The Douyin ads platform reports +0.1% offline AUC and TikTok Search about 0.843% query change rate reduction. Memory-bank staleness similarity stabilizes around 0.95 and sequence coverage exceeds 90%, with current-document coverage above 98%."
 caveats:
 - "The arXiv v2 text read is a preprint in a placeholder ACM template; the final CIKM 2026 text was not read."
 - "The online A/B reports no traffic share, bucket counts or user numbers, and the query change rate is a search-experience proxy, not the five-second watch CTR the model optimizes."
@@ -86,19 +88,19 @@ code:
 core_idea: "Train the multimodal encoders jointly with the ranker and serve history from a memory bank, removing the frozen two-stage pipeline."
 deployed_in: "Douyin Search video ranking, fully deployed"
 scale_short: "3 billion samples over 70 days, hundreds of millions of documents"
-key_result: "14-day A/B on Douyin Search: query change rate -0.843%, T-test significant, offline QAUC +0.81%"
+key_result: The 14-day Douyin Search A/B reports a significantly lower query change rate. In offline comparison, QAUC improved by 0.81%.
 results_table:
   online:
   - setting: "Douyin Search, 14-day A/B"
     method: LEMUR
     metric: Query change rate
-    result: "-0.843%"
-    versus: "Production baseline"
+    result: Statistically significant decrease
+    versus: Control configuration undisclosed
   - setting: "TikTok Search, online A/B"
     method: LEMUR
     metric: Query change rate
     result: "about -0.843%"
-    versus: "Production baseline"
+    versus: Control configuration undisclosed
   offline:
   - setting: "Douyin Search logs, 70 days"
     method: "LEMUR-SQDC-MB"
@@ -116,26 +118,24 @@ results_table:
     result: "0.64914"
     versus: "Two-stage 0.64470"
 deployment:
-  online_evidence: online_numbers
+  online_evidence: online_qualitative
   scenario: "Video ranking in Douyin Search, where CTR is watching a returned video for more than five seconds after a query; fully deployed and running over one month"
   ab_traffic: not_reported
   ab_duration: "14 days"
-  baseline: "The Douyin Search production baseline, the RankMixer+LONGER stack"
-  online_lifts:
-  - metric: "Query change rate, reduction"
-    value: "0.843%"
+  baseline: not_reported
+  online_lifts: not_reported
   training_compute: "Without sampling 139M parameters and 4303G FLOPs at batch 2048 against 92M and 1673G for the baseline; the deployed 20% sampling runs 2439G FLOPs"
   serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - "The A/B result is statistically significant by T-test."
+  - The Douyin A/B result is significant by t-test. The abstract and Section 4.3 describe the 0.843% figure differently.
   - "The Douyin ads platform reports +0.1% offline AUC; TikTok Search about 0.843% query change rate reduction."
   - "At inference embeddings are fetched from the memory bank by document ID without activating the transformer; current-document coverage stays above 98%"
   fulltext_refs:
-  - "Sec 4.3: 14-day A/B, query change rate 0.843% better than baseline, T-test significant, fully deployed over one month"
+  - Section 4.3 reports the 14-day Douyin A/B and subsequent rollout. Section 4.7 reports the separate TikTok result.
   - "Table 4: 92M and 1673G baseline, 139M and 4303G unsampled, 2439G at p=20 q=20"
   - "Fig 3: staleness similarity about 0.95, sequence coverage above 90%, current-document coverage above 98%"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-26"

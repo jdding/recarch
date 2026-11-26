@@ -2,7 +2,7 @@
 id: tencent-tlow-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 0ba9fa8a3f1539a8
+content_hash: 473df6887362c0fc
 drop: []
 items:
 - key: what
@@ -30,16 +30,16 @@ items:
   - core_idea
 - key: results
   q_en: What results does Tlow report?
-  a_en: 'Online pathway comparison, Table 6: in single-domain the Tlow pathway shows CTR +4.79% and UCTR +10.32%, and on new items CTR +8.46% with UCTR +11.64%; in the cross-domain scenario CTR +6.23% and UCTR +7.20%, and on new items CTR +9.09% with UCTR +9.45%. Core A/B metrics beyond pathway comparison: in single-domain, 24-hour overall CTR +0.78% and newly-published-picture CTR +1.94%; in cross-domain, per-capita picture CTR +1.05% with a 1.15% decrease in top-tier accounts'' exposure share, which the paper reads as long-tail benefit. The abstract summarizes global CTR +10.32% and new-item +11.64% for the retrieval model based on token IDs. Offline, four public datasets show tokenization and codebook guidance significantly improving recommendation performance, with cross-domain and multimodal evaluations confirming the benefit in a simplified embedding space.'
+  a_en: 'Online pathway comparison, Table 6: in single-domain the Tlow pathway shows CTR +4.79% and UCTR +10.32%, and on new items CTR +8.46% with UCTR +11.64%; in the cross-domain scenario CTR +6.23% and UCTR +7.20%, and on new items CTR +9.09% with UCTR +9.45%. Core A/B metrics beyond pathway comparison: in single-domain, 24-hour overall CTR +0.78% and newly-published-picture CTR +1.94%; in cross-domain, per-capita picture CTR +1.05% with a 1.15% decrease in top-tier accounts'' exposure share, which the paper reads as long-tail benefit. Offline, four public datasets show tokenization and codebook guidance significantly improving recommendation performance, with cross-domain and multimodal evaluations confirming the benefit in a simplified embedding space.'
   q_zh: Tlow 报告了哪些结果？
-  a_zh: 在线通路对比见表 6：单域下 Tlow 通路 CTR +4.79%、UCTR +10.32%，新物品 CTR +8.46%、UCTR +11.64%；跨域场景 CTR +6.23%、UCTR +7.20%，新物品 CTR +9.09%、UCTR +9.45%。通路之外的核心 A/B 指标：单域 24 小时整体 CTR +0.78%、新发布图片 CTR +1.94%；跨域人均图片 CTR +1.05%，头部账号曝光份额下降 1.15%，论文解读为长尾受益。摘要把基于 token ID 的检索模型概括为全球 CTR +10.32%、新物品 +11.64%。离线在四个公开数据集上 tokenization 与码本引导显著提升推荐表现，跨域与多模态评估确认在简化嵌入空间中的收益。
+  a_zh: 在线通路对比见表 6：单域下 Tlow 通路 CTR +4.79%、UCTR +10.32%，新物品 CTR +8.46%、UCTR +11.64%；跨域场景 CTR +6.23%、UCTR +7.20%，新物品 CTR +9.09%、UCTR +9.45%。通路之外的核心 A/B 指标：单域 24 小时整体 CTR +0.78%、新发布图片 CTR +1.94%；跨域人均图片 CTR +1.05%，头部账号曝光份额下降 1.15%，论文解读为长尾受益。离线在四个公开数据集上 tokenization 与码本引导显著提升推荐表现，跨域与多模态评估确认在简化嵌入空间中的收益。
   fields:
   - results_reported
 - key: online
   q_en: Does Tlow have online evidence, and how long was the A/B?
-  a_en: 'Online evidence: Online numbers. A/B duration: Both arms trained two weeks on identical data; test duration not reported. A/B traffic: not reported.'
+  a_en: 'Online evidence: Online numbers. A/B duration: not reported. A/B traffic: not reported.'
   q_zh: Tlow 有线上证据吗，A/B 做了多久？
-  a_zh: 线上证据：有线上数据。A/B 时长：两组用同一数据各训两周；测试时长未报告。A/B 流量：未报告。
+  a_zh: 线上证据：有线上数据。A/B 时长：未报告。A/B 流量：未报告。
   fields:
   - deployment.online_evidence
   - deployment.ab_duration

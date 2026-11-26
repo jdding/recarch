@@ -1,12 +1,12 @@
 surface|跨应用的用户行为序列基础模型
 era_reason|在用户行为序列上预训练的基础模型
-tldr|一个 20B+ 参数、预训练的用户序列基础模型，耦合进 Home Feed 和 Related Items 的排序器；DCAT 带来 +600% 吞吐，新 item 互动 +20%。
+tldr|Pinterest 的行为序列基础模型接入下游排序。首页新内容收藏增加 5.70%，相关推荐的新内容收藏下降 0.82%，后者未采用冷启动处理。
 summary|Pinterest 的、20B+ 参数的预训练用户行为序列基础模型：用多年的用户行为，以 InfoNCE 的 next-positive-item 目标训练，再微调，并通过 Deduplicated Cross-Attention Transformer，即 DCAT，耦合进 Home Feed 和 Related Items Feed 等下游排序器，同时用 int4 embedding 量化保持成本持平。
 core_idea|预训练的用户行为序列模型，通过去重的 cross-attention transformer 为下游排序器提供输入。
 deployed_in|Pinterest 的 Home Feed 和 Related Items Feed
 scale_short|20B+ 参数，序列最长 16,000 个行为，超过五亿用户
-key_result|在已上线的 Home Feed 和 Related Items Feed 中，对新 item 的互动 +20%
-results_reported|DCAT 带来吞吐 +600%，内部数据；对新 item，即 fresh item 的互动 +20%，归因于学习用户序列和候选之间的交互；已部署到 Home Feed 和 Related Items Feed，成本持平，延迟略有增加。各场景的线上提升在论文的表中，这里未复现。
+key_result|首页 A/B 的新内容收藏 +5.70%，相关推荐 A/B 的新内容收藏 -0.82%
+results_reported|表 7 中，首页排序接入 PinFM 后，全站收藏 +1.20%、首页收藏 +2.60%、新内容收藏 +5.70%。相关推荐排序实验的全站收藏 +0.72%、页面收藏 +2.09%、新内容收藏 -0.82%。论文给出的置信水平为 95%。首页实验组采用了冷启动处理，相关推荐实验组没有使用。表 2 是独立的离线首页实验。对上线未满 28 天的内容，未做冷启动处理的 PinFM 的 Save HIT@3 为 -4.40%，用完整方案后为 +17.72%，两者均以未接入 PinFM 的排序器为对照。另一个内部基准报告 DCAT 使吞吐增加 600%。
 serving_infra|大的 ID embedding 表与稠密模型分离，部署在 CPU 主机或集群上，由推理路由器为用户序列取 embedding，而 transformer 运行在 GPU 推理主机上。DCAT 对用户序列只处理一次，并在各候选之间复用，在 Pinterest 内部数据上吞吐 +600%。Embedding 的 int4 训练后量化：为期两周的线上 A/B 与全精度相比在统计上持平。
 stages.0.model_family|PinFM 在用户行为序列上预训练的 transformer，序列元素包括 item id、行为类型、场景和时间戳，在现有排序模型内部微调
 stages.0.details|序列上限为 16,000 个行为，训练时切成每段数百个 token、互不重叠的片段。预训练使用 InfoNCE，带 batch 内负样本和可学习的温度；正样本行为按表 4 的消融来选。微调损失在表 3 中做了消融，默认用 L_ntl；L_mtl 因内存和速度原因默认不使用。Fresh item 的处理：item 特征，加上对未见过 item 的额外 dropout。
@@ -20,21 +20,31 @@ scale.0.value|20B+ 参数，来自摘要
 scale.1.metric|最大序列
 scale.1.value|16,000 个行为
 scale.2.value|跨应用部署给超过五亿用户，来自摘要
-results_table.note|各场景的线上提升在论文的表中，这里未复现。
-results_table.online.0.setting|部署在 Home Feed 和 Related Items Feed
-results_table.online.0.metric|对新 item 的互动
-results_table.online.0.versus|不学习用户序列和候选的交互
-results_table.offline.0.setting|内部数据
-caveats.0|没有提取各场景的线上 A/B 百分比，所以只列出摘要层面的结论。
-caveats.1|新 item 互动 20% 的数字来自论文摘要；这里没有重新推导它的实验设置。
+results_table.online.0.setting|首页排序，表 7
+results_table.online.0.metric|新内容收藏、页面收藏、全站收藏
+results_table.online.0.versus|既有首页排序器
+results_table.offline.1.setting|内部数据
+caveats.0|摘要概述约 20% 的新内容互动提升。表 2 是离线 Save HIT@3，表 7 分别列出两个页面的实际线上新内容收藏。
+caveats.1|未披露两个线上排序实验的流量分配和时长。
 caveats.2|Embedding 表的服务放在单台 CPU 主机上，作者指出这限制了灵活性。
-unknown_fields.0|各场景的线上指标提升
-unknown_fields.1|GPU 型号和数量
-unknown_fields.2|绝对延迟
+unknown_fields.0|GPU 型号与数量
+unknown_fields.1|绝对延迟
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|Pinterest 的 Home Feed 和 Related Items Feed
 deployment.serving_latency|延迟略有增加；没有绝对数字
-deployment.inference_cost|报告服务成本持平；在 Pinterest 内部数据上，DCAT 带来吞吐 +600%
+deployment.inference_cost|作者报告服务成本没有明显增加。
 deployment.hardware|Embedding 表在 CPU 主机上；transformer 在 GPU 推理主机上
 deployment.notes.0|为期两周的 int4 embedding 量化线上测试，与全精度相比在统计上持平。
-deployment.online_lifts.0.metric|对新 item 的互动
+deployment.online_lifts.0.metric|首页排序实验的新内容收藏
+results_table.online.0.method|加入冷启动处理的 PinFM
+results_table.online.1.setting|相关推荐排序，表 7
+results_table.online.1.method|未加入冷启动处理的 PinFM
+results_table.online.1.metric|新内容收藏、页面收藏、全站收藏
+results_table.online.1.versus|既有相关推荐排序器
+results_table.offline.0.setting|首页，发布未满 28 天的内容，表 2
+results_table.offline.0.method|加入完整冷启动方案的 PinFM
+results_table.offline.0.result|相对无 PinFM 基线，完整方案 +17.72%，未做冷启动处理的 PinFM -4.40%
+results_table.offline.0.versus|两次均与未接入 PinFM 的排序器比较
+deployment.baseline|各页面既有的排序器，已经用较小的 Transformer 编码行为序列
+deployment.online_lifts.1.metric|相关推荐排序实验的新内容收藏
+updates.0.note|改用分页面 A/B 的新内容收藏结果，单列冷启动离线实验。

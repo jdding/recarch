@@ -2,14 +2,14 @@
 id: youtube-sidec-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 05fbf6502f44b751
+content_hash: 10924572f4cc91d1
 drop: []
 items:
 - key: what
   q_en: What is SiDec, in one sentence?
-  a_en: Dual-purpose Semantic IDs compress dense content embeddings into tokens reconstructed on the fly; at YouTube they lifted satisfied engagement +0.80% on Watchpage and broke the I/O bottleneck.
+  a_en: Dual-purpose Semantic IDs compress dense content embeddings into tokens reconstructed on the fly; at YouTube they lifted satisfied engagement +0.80% on Watchpage and reduced offline input I/O.
   q_zh: SiDec 一句话是什么？
-  a_zh: 双用途 Semantic ID 把稠密内容嵌入压成 token 按需重建；在 YouTube 使观看页满足感互动 +0.80%，并打破 I/O 瓶颈。
+  a_zh: 双用途 Semantic ID 把稠密内容嵌入压成 token 按需重建；在 YouTube 使观看页满足感互动 +0.80%，并降低离线输入 I/O 开销。
   fields:
   - tldr
 - key: who
@@ -62,9 +62,9 @@ items:
   - scale.1
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does SiDec report?
-  a_en: 'Serving latency: not reported. Serving QPS: not reported. Inference cost: Item storage falls from d x 32 bits to K x log2 V bits, typically 50-100x; reconstruction is described as costing no more than a normal sparse embedding feature, with tokens already cached in the baseline serving path. Hardware: not reported.'
+  a_en: 'Serving latency: not reported. Serving QPS: not reported. Inference cost: The paper describes decoder overhead as comparable to adding one sparse embedding feature under the baseline token cache. It reports no measured serving cost. Hardware: not reported.'
   q_zh: SiDec 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：未报告。 服务 QPS：未报告。 推理成本：每物品存储从 d x 32 比特降到 K x log2 V 比特，典型 50-100 倍；重建成本被描述为不超过一个普通稀疏嵌入特征，token 在基线服务路径中已缓存。 硬件：未报告。
+  a_zh: 服务延迟：未报告。 服务 QPS：未报告。 推理成本：基线已缓存这些 token。论文把解码开销描述为约等于新增一个稀疏嵌入特征，未报告实测服务成本。 硬件：未报告。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

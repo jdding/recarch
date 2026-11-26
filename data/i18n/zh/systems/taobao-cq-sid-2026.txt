@@ -11,7 +11,7 @@ serving_infra|部署在天猫 App 搜索多路召回阶段，动态 beam 大小�
 stages.0.model_family|Qwen2.5-0.5B 自回归生成式检索器，beam search 解码语义聚类 ID
 stages.0.details|四个渐进阶段：item-to-SID SFT、query-to-SID 每条 query 随机采样 N=3 个 SID、融合用户特征与近期点击 SID 历史的个性化 user-and-query-to-SID、再以 EG-GRPO 做排序对齐精调；线上解码用 [20, 50, 100] 动态 beam。
 id_tokenization.approach|RQ-VAE 多级语义聚类 ID，有意允许碰撞而非一件一 ID
-id_tokenization.details|三级残差量化，码本大小 2048×1024×1024；第一级码本受 1,711 个有效类目约束，第二、三级用最近邻量化加 EMA 更新与码本重启策略；超过 50 个物品的 SID 拆成最多 100 组并在第三级码后追加组后缀。
+id_tokenization.details|三级残差量化，码本大小为 2048×1024×1024。第一级受 1,711 个有效类目约束，第 2、3 级用最近邻量化、EMA 更新和码本重启。超过 50 个物品的 SID 拆成最多 100 组，并在第三级码后加组后缀。
 features_signals.0|物品标题
 features_signals.1|query 与批内 query-item 对比对
 features_signals.2|性别、年龄等用户特征与近期点击 SID 历史
@@ -51,11 +51,12 @@ unknown_fields.3|线上粗排截断的具体配置
 code.note|论文无代码链接；2026-11-03 的 GitHub 与网络检索未发现此处所述 CQ-SID 与 EG-GRPO 的官方或第三方实现，名为 EG-GRPO 的仓库属于另一篇不相关的自回归图像生成论文。
 version_note|带 DOI 的 arXiv v2 补明了线上对照和部署后通道贡献的归因口径，ACM 托管的正式全文待核。
 updates.0.note|核对带 DOI 的作者新版，补明线上对照和通道贡献可重叠的归因口径。
+updates.1.note|明确延迟和吞吐数字的测量对象为生成式召回服务。
 deployment.scenario|天猫 App 搜索多路召回阶段的生成式召回通道，已全量部署于搜索产品线
 deployment.ab_duration|两周
 deployment.training_compute|CQ-SID 量化器训 10 个 epoch 于 4 块 GPU；LLM 各阶段 2k 到 5k 步；总算力未汇总
-deployment.serving_latency|平均端到端延迟约 40 毫秒
-deployment.serving_qps|超过 200 QPS
+deployment.serving_latency|生成式召回服务的平均端到端延迟约 40 毫秒
+deployment.serving_qps|生成式召回服务的 8 块 GPU 共承载超过 200 QPS
 deployment.notes.3|beam search 配 [20, 50, 100] 动态 beam；离线同等召回下聚类 SID 把 beam search 规模削减一半以上
 deployment.hardware|8 块 GPU 用于线上服务
 deployment.notes.0|论文说明离线 top-1K 截断与线上实际采用粗排截断的召回流程不同。

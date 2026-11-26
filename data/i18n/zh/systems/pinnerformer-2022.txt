@@ -1,12 +1,12 @@
 surface|Homefeed 和广告排序，作为用户 embedding 特征，以及召回
 era_reason|Transformer 用户 embedding，离线训练；不是生成式
-tldr|在用户最近 256 个行为上做因果 transformer，得到 256 维、按天批量的用户 embedding；报告 Homefeed 的 Repin +7.5%，Time Spent +1%。
+tldr|Pinterest 用每日批量计算的 256 维用户向量替换 Homefeed 的 PinnerSage 特征。首页收藏量增加 7.5%，全站使用时长增加 1%。
 summary|在用户最近最多 256 个行为上做因果 transformer，产出 256 维的用户 embedding，用稠密的全行为损失来训练，以预测未来一段窗口内的互动，并按天批量计算。
 core_idea|在近期行为上做因果 transformer，按天批量产出用户 embedding。
 deployed_in|Pinterest 的 Homefeed 和广告排序，作为用户 embedding 特征，以及召回
 scale_short|每个用户最多 256 个行为，256 维的用户 embedding
-key_result|论文报告 Homefeed 的 Repin +7.5%，Time Spent +1%
-results_reported|报告 Homefeed 的 Repin +7.5%，Time Spent +1%，来自论文。
+key_result|Homefeed 排序 A/B 中，首页收藏量 +7.5%，全站使用时长 +1%
+results_reported|在 Homefeed 排序的 A/B 中，PinnerFormer 替换了聚合后的 PinnerSage 向量。表 7 报告首页收藏量增加 7.5%，全站使用时长增加 1%。
 serving_infra|KV 存储 + HNSW 索引；每天增量推理。
 stages.0.model_family|Transformer 用户 embedding，通过 HNSW 索引提供服务
 stages.0.details|每天增量批量推理；embedding 存在 KV 存储和 HNSW 索引中。
@@ -24,3 +24,10 @@ code.note|没有找到官方代码：论文和博客文本中没有代码链接�
 deployment.scenario|Pinterest 的 Homefeed 和广告排序，以及召回
 deployment.training_compute|序列长度 512 时在 2 台机器的 16 块 GPU 上训练，长度 1024 时在 4 台机器的 32 块 GPU 上训练
 deployment.notes.0|Embedding 按天批量推理，不是实时，并从带 HNSW 索引的 KV 存储中提供服务。
+results_table.online.0.versus|使用聚合 PinnerSage 向量的首页排序器
+results_table.online.1.versus|使用聚合 PinnerSage 向量的首页排序器
+results_table.online.1.setting|Homefeed A/B，全站指标
+results_table.online.1.metric|使用时长
+deployment.baseline|使用聚合 PinnerSage 向量的首页排序器
+deployment.online_lifts.1.metric|全站使用时长
+updates.0.note|更正时长的全站统计范围，并写清首页排序对照。

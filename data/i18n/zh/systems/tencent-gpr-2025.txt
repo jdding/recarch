@@ -6,7 +6,7 @@ core_idea|一个生成式模型，带统一的 token 模式和层次化 decoder�
 deployed_in|腾讯微信视频号广告系统，据称已全量部署
 scale_short|来源中未说明
 key_result|在首次线上 A/B 上线，即 v0.1，相对成熟的级联，GMV +2.11%
-results_reported|相对成熟级联的五次连续线上 A/B 上线，GMV，主要 KPI，提升：v0.1 HSD+NTP+DPO +2.11%；v0.2 加 HEPO，不带 ARR，+0.70%；v0.3 加 MTP+Thinking +0.63%；v0.4 加 PTD +0.71%；v0.5 加 HEPO，带 ARR，+0.58%，均为增量改动；摘要只说 GMV 和 CTCVR 有显著提升。表 5 给出按用户群以及新广告与非新广告分层的 GMV/CTR/CVR/CTCVR。
+results_reported|相对成熟级联的五次连续线上 A/B 上线，GMV，主要 KPI，提升：v0.1 HSD+NTP+DPO +2.11%；v0.2 加 HEPO，不带 ARR，+0.70%；v0.3 加 MTP+Thinking +0.63%；v0.4 加 PTD 在表 4 中为 +0.71%，紧邻正文写为 +0.58%；v0.5 加 HEPO，带 ARR，+0.58%，均为增量改动；摘要只说 GMV 和 CTCVR 有显著提升。表 5 给出按用户群以及新广告与非新广告分层的 GMV/CTR/CVR/CTCVR。
 stages.0.model_family|GPR：统一的生成式模型，直接输出带价值的 top-K 广告；U-Token，用户，O-Token，自然内容，E-Token，环境，I-Token，item 序列；双 decoder 的 HHD
 stages.0.details|离线架构研究，见表 2，以 HSTU decoder-only 的 18.98 为基线：OneRec 式 encoder-decoder +4.6%；混合 attention +8.3%；token-aware FFN +15.8%；完整 GPR 27.32，即 +43.9%。对齐研究见表 3：MTP 基础 平均 final_value 0.3868；+VAFT 0.3925；+DPO 0.4383；+HEPO 0.4413，模拟环境。
 id_tokenization.approach|面向广告和自然内容的多级 Semantic ID
@@ -34,5 +34,6 @@ unknown_fields.2|已部署模型的总参数量
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|腾讯微信视频号广告系统
 deployment.baseline|成熟的级联
-deployment.notes.0|之后四次上线分别再增加 GMV +0.70%、+0.63%、+0.71% 和 +0.58%，每次都相对上一版本。
+deployment.notes.0|表 4 给出的后续版本 GMV 增量为 +0.70%、+0.63%、+0.71% 和 +0.58%。其中 v0.4 的 PTD 在正文中写为 +0.58%。
 deployment.online_lifts.0.metric|GMV，首次上线 v0.1
+updates.0.note|标明 v0.4 的 GMV 幅度在表 4 与正文间存在差异。

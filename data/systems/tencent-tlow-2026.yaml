@@ -11,8 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3799682.3840087"
 added_on: "2026-11-03"
-last_verified: "2026-11-03"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Kept pathway UCTR distinct from sitewide CTR and moved training duration out of the A/B duration field.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Tlow normalizes item embeddings with a flow so tokenization is independent and parallel; WeChat A/B lifted new-picture CTR +1.94% and pathway UCTR +10.32%."
@@ -46,7 +48,7 @@ scale:
 - metric: Token vocabulary
   value: "4,096 token embeddings from 16 codebooks of 256, replacing tens of millions of item embeddings"
   note: "paper, Sec 3.6.2"
-results_reported: "Online pathway comparison, Table 6: in single-domain the Tlow pathway shows CTR +4.79% and UCTR +10.32%, and on new items CTR +8.46% with UCTR +11.64%; in the cross-domain scenario CTR +6.23% and UCTR +7.20%, and on new items CTR +9.09% with UCTR +9.45%. Core A/B metrics beyond pathway comparison: in single-domain, 24-hour overall CTR +0.78% and newly-published-picture CTR +1.94%; in cross-domain, per-capita picture CTR +1.05% with a 1.15% decrease in top-tier accounts' exposure share, which the paper reads as long-tail benefit. The abstract summarizes global CTR +10.32% and new-item +11.64% for the retrieval model based on token IDs. Offline, four public datasets show tokenization and codebook guidance significantly improving recommendation performance, with cross-domain and multimodal evaluations confirming the benefit in a simplified embedding space."
+results_reported: "Online pathway comparison, Table 6: in single-domain the Tlow pathway shows CTR +4.79% and UCTR +10.32%, and on new items CTR +8.46% with UCTR +11.64%; in the cross-domain scenario CTR +6.23% and UCTR +7.20%, and on new items CTR +9.09% with UCTR +9.45%. Core A/B metrics beyond pathway comparison: in single-domain, 24-hour overall CTR +0.78% and newly-published-picture CTR +1.94%; in cross-domain, per-capita picture CTR +1.05% with a 1.15% decrease in top-tier accounts' exposure share, which the paper reads as long-tail benefit. Offline, four public datasets show tokenization and codebook guidance significantly improving recommendation performance, with cross-domain and multimodal evaluations confirming the benefit in a simplified embedding space."
 caveats:
 - "The paper reports only relative differences for online metric comparisons due to privacy considerations."
 unknown_fields:
@@ -110,7 +112,7 @@ deployment:
   online_evidence: online_numbers
   scenario: "Tlow token IDs powering a Transformer-decoder retrieval pathway beside the primary DSSM retrieval on WeChat picture recommendation"
   ab_traffic: not_reported
-  ab_duration: "Both arms trained two weeks on identical data; test duration not reported"
+  ab_duration: not_reported
   baseline: "The same sequential model using randomly assigned item-ID embeddings"
   online_lifts:
   - metric: "24-hour overall CTR, single-domain"
@@ -125,6 +127,7 @@ deployment:
   inference_cost: not_reported
   hardware: "A single GPU for daily tokenization of new items"
   notes:
+  - "Both model variants were trained for two weeks on the same data."
   - "Pathway-level gains on new items reach UCTR +11.64% single-domain and +9.45% cross-domain."
   - "Top-tier accounts' exposure share falls 1.15% in cross-domain, which the paper reads as long-tail benefit."
   - "Sequential model learns 4,096 token embeddings instead of tens of millions of item embeddings; tokenization of new items runs off the request path"
@@ -133,4 +136,4 @@ deployment:
   - "Sec 3.6.3: 24-hour overall CTR +0.78%, new-picture CTR +1.94% single-domain; per-capita +1.05%, top-tier share -1.15% cross-domain"
   - "Sec 3.6.2: 16 codebooks of 256, 4,096 token embeddings, two weeks, 70 and 200 million daily records, 1M-item flow training"
   basis: full_text
-  checked_on: "2026-11-03"
+  checked_on: "2026-11-26"

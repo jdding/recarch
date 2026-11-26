@@ -2,14 +2,14 @@
 id: alibaba-hisac-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 9b056b1c0c5d3950
+content_hash: 66dceb1a4d4b8dda
 drop: []
 items:
 - key: what
   q_en: What is HiSAC, in one sentence?
-  a_en: HiSAC compresses histories of up to 10,000 interactions into personalized semantic-ID interest agents; on Taobao's homepage feed it lifted CTR 1.65% and cut serving latency by over 40%.
+  a_en: HiSAC compresses histories of up to 10,000 interactions into personalized semantic-ID interest agents. The Taobao homepage A/B reported CTR +1.65%.
   q_zh: HiSAC 一句话是什么？
-  a_zh: HiSAC 把最长 10,000 条交互的用户历史压缩成个性化语义 ID 兴趣代理；在淘宝首页信息流上 CTR 提升 1.65%，服务延迟降低 40% 以上。
+  a_zh: HiSAC 把最长 10,000 条交互的用户历史压缩成个性化语义 ID 兴趣代理。淘宝首页 A/B 报告 CTR +1.65%。
   fields:
   - tldr
 - key: who

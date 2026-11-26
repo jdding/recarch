@@ -2,14 +2,14 @@
 id: alibaba-urm-2025
 reviewed: false
 generated_by: templates over card fields
-content_hash: ce39ae43f57f0180
+content_hash: df61b107db33fd6c
 drop: []
 items:
 - key: what
   q_en: What is URM, in one sentence?
-  a_en: URM turns a fine-tuned Qwen-7B LLM into a universal generative retriever driven by text objectives; an online A/B lifted advertising revenue +3.01%.
+  a_en: URM uses a fine-tuned language model to retrieve items for text-specified objectives. An online ad test reports revenue growth of 3.01%.
   q_zh: URM 一句话是什么？
-  a_zh: URM 把微调后的 Qwen-7B LLM 变成由文本目标驱动的通用生成式检索器；线上 A/B 广告收入 +3.01%。
+  a_zh: URM 用微调后的语言模型按文本指定的目标召回物品。广告线上实验报告收入提升 3.01%。
   fields:
   - tldr
 - key: who
@@ -39,9 +39,9 @@ items:
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of URM?
-  a_en: Retrieval results are precomputed asynchronously per 10-minute window, so the online path is not per-request LLM inference. The abstract states the core metric improved by 3% and the introduction says over 3%; Sec 5.5 Table 6 gives the exact +3.01% for advertising revenue.
+  a_en: URM precomputes candidates using an asynchronous 10-minute window. Online retrieval reads the stored results. The abstract states the core metric improved by 3% and the introduction says over 3%; Sec 5.5 Table 6 gives the exact +3.01% for advertising revenue.
   q_zh: 读 URM 的结果时要注意什么？
-  a_zh: 检索结果按 10 分钟窗口异步预计算，线上路径不是每次请求都跑一遍 LLM 推理。 摘要写核心指标提升 3%，引言写超过 3%；5.5 节表 6 给出广告收入的精确值 +3.01%。
+  a_zh: URM 按 10 分钟窗口异步预计算候选，在线召回读取存储中的结果。 摘要写核心指标提升 3%，引言写超过 3%；5.5 节表 6 给出广告收入的精确值 +3.01%。
   fields:
   - caveats.0
   - caveats.1

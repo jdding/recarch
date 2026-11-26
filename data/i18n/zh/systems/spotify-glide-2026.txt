@@ -8,7 +8,8 @@ scale_short|A/B 每个分组约 2000 万次曝光
 key_result|Spotify 首页 A/B 中，人均非惯常播客播放量 +5.4%
 results_reported|第 5.3 节报告了 Spotify 首页 21 天的用户级随机 A/B，覆盖英语市场过去 30 天内活跃的播客听众。每个分组约 2000 万次曝光。在原有单集排序器前加入 GLIDE 后，人均非惯常播客播放量增长 5.4%，新节目中的非惯常播放量增长 14.3%。实验组约 34% 的推荐来自 GLIDE。
 version_note|KDD 应用数据科学赛道的正式论文使用另一标题。部署证据核对自作者全文与 Spotify Research，ACM 托管的正式全文待核。
-serving_infra|通过事件触发请求，在适用时预计算并缓存。服务使用束搜索生成单集 ID，将其映射成候选后交给现有单集排序器。
+updates.0.note|增加服务吞吐改善及语义 ID 冲突的处理方式。
+serving_infra|通过事件触发请求，在适用时预计算并缓存。服务用束搜索生成单集语义 ID。同一个 ID 对应多集时，在满足展示资格的单集中选热度最高的一集，再交给现有单集排序器。
 stages.0.model_family|使用连续用户提示的指令微调语言模型
 stages.0.details|束搜索生成单集 ID，查目录后将候选交给现有单集排序器。
 id_tokenization.approach|对播客单集嵌入做残差 k-means 量化
@@ -30,9 +31,11 @@ results_table.online.1.versus|未加入 GLIDE 候选源的生产系统
 caveats.0|34% 是实验组中来自 GLIDE 的推荐比例，随机 A/B 的流量分配未公开。
 caveats.1|收益针对符合实验条件的首页播客听众。原文未量化长期效果和更广听众群体的结果。
 unknown_fields.0|A/B 流量分配和随机分组的用户数
-unknown_fields.1|生产延迟、吞吐、硬件和推理费用
+unknown_fields.1|生产延迟和吞吐的绝对值、硬件和推理费用
 unknown_fields.2|原文所述部署及实验之外的推广范围
 deployment.scenario|Spotify 首页，英语市场过去 30 天内活跃的播客听众
+deployment.serving_qps|保持相同延迟目标时，服务优化后的吞吐最高为原来的 8 倍
+deployment.notes.0|吞吐改善后，束宽从 14 提到 30，仍满足生产延迟目标。
 deployment.ab_duration|21 天
 deployment.baseline|未加入 GLIDE 候选源的生产系统，下游排序器相同
 deployment.online_lifts.0.metric|人均非惯常播客播放量

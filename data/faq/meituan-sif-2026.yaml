@@ -2,7 +2,7 @@
 id: meituan-sif-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 870d0cfc49fe9f39
+content_hash: b4885e3e9564d0df
 drop: []
 items:
 - key: what
@@ -46,9 +46,9 @@ items:
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of SIF?
-  a_en: The 5% figure is the reported holdout share. The paper gives no allocation for each experiment arm. The online results cover the reported food-delivery deployment. The paper does not give serving latency or hardware.
+  a_en: The 5% figure is the reported holdout share. The paper gives no allocation for each experiment arm. The online results cover the reported food-delivery deployment. The hardware disclosure covers the offline experiments.
   q_zh: 读 SIF 的结果时要注意什么？
-  a_zh: 5% 是原文报告的保留流量比例，各实验组分别占多少流量未报告。 结果来自论文描述的外卖上线场景，服务延迟和硬件未报告。
+  a_zh: 5% 是原文报告的保留流量比例，各实验组分别占多少流量未报告。 线上结果来自论文描述的外卖场景。文中披露的硬件用于离线实验。
   fields:
   - caveats.0
   - caveats.1

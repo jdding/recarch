@@ -18,7 +18,7 @@ updates:
   note: "Checked the SIGIR 2018 proceedings. Section 3.3 distinguishes the deployed BASE control from ESMM’s offline AUC results."
 system_type: recommendation
 evidence_level: research_only
-tldr: "ESMM trains CTR and CTCVR over the entire impression space so conversion rate is estimated without sample-selection bias; public-data CVR AUC 68.56 vs 66.00 baseline."
+tldr: "ESMM trains CTR and CTCVR over the entire impression space to reduce selection bias in conversion-rate estimation; public-data CVR AUC 68.56 vs 66.00 baseline."
 summary: 'SIGIR 2018 paper from Alibaba: Entire Space Multi-Task Model estimates post-click conversion rate over all impressions by
   training CTR and CTCVR tasks over the entire space with a shared embedding table, and deriving pCVR = pCTCVR / pCTR implicitly, since pCTCVR = pCTR x pCVR, which addresses sample selection bias and data sparsity. Evaluated offline on Taobao recommender logs; the paper does
   not state a production launch of ESMM itself.'

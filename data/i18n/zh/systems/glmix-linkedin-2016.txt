@@ -1,28 +1,31 @@
 surface|职位推荐，如「你可能感兴趣的职位」等
 era_reason|广义线性混合模型，每个成员和每个条目有各自的线性系数；没有深度网络
-tldr|广义线性混合模型在全局模型之上加入每个成员和每个职位的系数；LinkedIn 职位推荐的职位申请数提升 20% 到 40%。
+tldr|GLMix 在全局模型上加入成员和职位各自的系数。LinkedIn 线上 A/B 中，相比 LR-Cosine，申请按钮点击增加 20% 到 40%。
 summary|广义线性混合模型，在全局模型之上加入每个成员和每个职位的随机效应系数，用 Spark 上的并行块坐标下降拟合；已在 Photon ML 中开源。
 core_idea|在全局模型之上加入每个成员和每个职位的随机效应系数。
 deployed_in|LinkedIn 职位推荐，「你可能感兴趣的职位」
 scale_short|来源中没有说明
-key_result|LinkedIn 职位推荐中，活跃求职者的职位申请总数提升 20% 到 40%
-results_reported|论文：已部署在 LinkedIn 职位推荐中，使活跃求职者的职位申请总数提升 20% 到 40%。
-serving_infra|Spark；代码已作为 Photon ML 开源
+key_result|LinkedIn 职位推荐 A/B 中，申请按钮点击比 LR-Cosine 高 20% 到 40%
+results_reported|线上 A/B 为每个模型抽取 2% 的成员，论文给出 2015 年十一月一周的结果。对照生产 LR-Cosine，申请按钮点击量每天增加 20% 到 40%，职位详情页访问量增加 10% 到 20%。论文把申请点击定义为点击申请按钮。
+serving_infra|生产系统离线用 Lucene 和 GLMix 分两阶段打分。Hadoop MapReduce 将推荐结果写入 Voldemort，职位首页读取列表并做新鲜度筛选。
 stages.0.model_family|全局加每个用户、每个条目的 logistic 回归系数
 stages.0.details|所报告的职位推荐实验中，约 2K 个成员特征和约 2K 个职位特征。
 id_tokenization.approach|成员和职位 ID 级别的随机效应
 features_signals.0|成员和职位特征
-features_signals.1|申请和点击的反馈
+features_signals.1|申请按钮点击
 training.mode|离线分布式
 training.objectives.0|Logistic 反馈预测
 training.notes|在 Apache Spark 和 YARN 上，按 BSP 并行化的 BCD。
 results_table.online.0.setting|LinkedIn 职位推荐
-results_table.online.0.metric|活跃求职者的职位申请总数
-results_table.online.0.versus|此前的推荐系统
+results_table.online.0.metric|职位申请按钮点击
+results_table.online.0.versus|生产 LR-Cosine
 unknown_fields.0|延迟
 unknown_fields.1|成员规模
 code.repos.0.note|实现 GLMix 和 GAME 的 Spark 库。近期没有活动。后继项目：linkedin/gdmix。
 deployment.scenario|LinkedIn 职位推荐，「你可能感兴趣的职位」
-deployment.baseline|此前的推荐系统
+deployment.baseline|生产 LR-Cosine
 deployment.hardware|训练使用 Apache Spark on YARN；没有描述服务部分
-deployment.online_lifts.0.metric|活跃求职者的职位申请总数
+deployment.online_lifts.0.metric|职位申请按钮点击
+deployment.ab_traffic|每个模型使用随机抽取的 2% 成员
+deployment.ab_duration|论文报告 2015 年十一月一周的结果
+updates.0.note|明确申请按钮点击的指标口径、线上对照和服务架构。

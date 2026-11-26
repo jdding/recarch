@@ -7,7 +7,7 @@ deployed_in|字节跳动直播排序，合计用户超过 10 亿
 scale_short|4 层 LUCID 编码，每层 64 个聚类，排序模型训练样本 168B 条
 key_result|对比线上基线的 A/B，优质观看时长 +0.55%，冷启动直播间曝光 +2.05%，活跃时长 +0.05%
 results_reported|对比线上基线的 A/B，三个实验组为 +Slice、-ID 和 FLUID。FLUID：优质观看时长 +0.55%，优质观看场次 +0.51%，冷启动直播间曝光 +2.05%，小众直播间曝光 +2.87%，去重观看标签数 +1.63%，停留时长 +0.07%，活跃时长 +0.05%。+Slice 的优质观看时长 +0.43%，冷启动直播间曝光 +1.15%，留存不显著；只去掉 item ID 时，优质观看时长 -0.02%，冷启动直播间曝光 +1.58%，停留时长 -0.05%。离线 CTR AUC：基线 0.7784，加切片 LUCID 为 0.7801，去掉 item ID 为 0.7748，FLUID 为 0.7802，对应的 logloss 为 0.1264、0.1263、0.1273 和 0.1262。前缀 n-gram embedding 的 AUC 为 0.7802，逐层解码为 0.7793；独立的切片表和直播间表为 0.7802，共享表为 0.7798。早融合各种变体使 AUC 变化 -0.13% 到 +0.01%，直接联合训练为 +0.00%。分阶段预热在第一到第三阶段的 AUC 分别为 +0.22%、+0.11% 和 +0.23%。编码器方面，Live Q2I R@10 从 CLIP-B/32 加 Albert-V2 的 43.96 提升到使用 Qwen3-Embedding 和 SigLIP2 后的 47.44。
-version_note|数字核对自所有者文库里的 ACM RecSys 2026 论文集 PDF，DOI 10.1145/3773078.3831918。没有找到 arXiv 版本。
+version_note|RecSys 2026 正式版 DOI 为 10.1145/3773078.3831918。公开作者版标题采用 Industrial-Scale Livestreaming Recommendation，第 4.2 节表 4 可查线上实验结果。
 serving_infra|LUCID 按 2 分钟切片计算，排序模型查两张分别对应切片和直播间编码的 embedding 表来取代 item ID。延迟、QPS、硬件和成本等服务细节均未报告。
 stages.0.model_family|来自 Zenith++ 流水线的基于 token 的类 transformer 排序骨干，输入有用户、历史、切片 LUCID 和直播间 LUCID 的 token，没有候选 item ID
 stages.0.details|与生产的 Zenith++ 流水线一样，在 168B 条样本、4,552 个特征和 98 个目标上训练；离线表格使用 CTR 目标。
@@ -46,3 +46,4 @@ unknown_fields.3|代码是否开源
 deployment.scenario|字节跳动直播平台的生产直播排序模型，合计用户超过 10 亿
 deployment.baseline|带 item ID 的生产排序模型
 deployment.notes.0|论文称它已经部署在线上直播排序模型上，并且排序模型在没有 item ID 的情况下继续生产的流式在线训练。
+updates.0.note|补公开作者版的全文链接，更正首次公开月份。

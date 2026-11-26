@@ -69,7 +69,8 @@ code.repos.0.note|自动化的第三方复现；其页面称作者没有提供�
 deployment.scenario|抖音和抖音极速版短视频精排
 deployment.ab_duration|一个月
 deployment.baseline|STCA 10K 加 TWIN V2
-deployment.inference_cost|100K 个事件下，超长分支的训练 FLOPs 比直接用 STCA 少 49.9 倍，推理少 63.9 倍
-deployment.notes.0|sketch 缓存在 TTL 为 1 小时时命中率约 0.6。
+deployment.inference_cost|在 100K 个事件下，根据服务阶段的复用率和缓存命中率估算，超长分支每个目标的 FLOPs 约为直接使用 STCA 的 1/63.9。
+deployment.notes.0|缓存 TTL 为 1 小时时，命中率约为 0.6。按训练时的复用和缓存假设，附录估算超长分支 FLOPs 约为 STCA 的 1/49.9。
 deployment.online_lifts.0.metric|抖音时长
 deployment.online_lifts.2.metric|抖音极速版时长
+updates.0.note|标明 FLOPs 是在复用和缓存假设下估算的分支计算量。

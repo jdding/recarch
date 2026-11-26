@@ -11,20 +11,22 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3799682.3840090"
 added_on: "2026-10-29"
-last_verified: "2026-11-03"
+last_verified: "2026-11-26"
 updates:
 - date: "2026-11-03"
   note: "Full rewrite against arXiv v2 with the CIKM 2026 venue and DOI, complete offline and online numbers, serving and training details; the earlier card lacked the venue and had empty tokenizer fields."
+- date: "2026-11-26"
+  note: Separated the asynchronous refresh, component benchmark and production A/B. Marked the experiment control and backbone as undisclosed.
 system_type: ads
 evidence_level: production_described
-tldr: "URM turns a fine-tuned Qwen-7B LLM into a universal generative retriever driven by text objectives; an online A/B lifted advertising revenue +3.01%."
-summary: "Universal Retrieval Model: a fully fine-tuned LLM, Qwen-7B by default, that takes serialized user features, a natural-language retrieval objective and a set of fixed learnable query tokens, and generates candidates from about 10^7 items through a mapping matrix decomposed into discriminative and transferable parts, with probabilistic sampling over ANN neighbors cutting generation cost. Served asynchronously in 10-minute windows through vLLM with a single prefill pass, it replaces task-specific retrieval channels; an online A/B on the advertising platform lifted advertising revenue by 3.01%."
+tldr: URM uses a fine-tuned language model to retrieve items for text-specified objectives. An online ad test reports revenue growth of 3.01%.
+summary: URM takes serialized user features, a text retrieval objective and learnable query tokens. It samples candidates from about 10^7 items using a mapping with discriminative and transferable components. The main experiments use Qwen-7B. The implementation refreshes candidates asynchronously in 10-minute windows and stores them for online retrieval.
 paradigms:
 - llm-based
 - generative-retrieval
 stages:
 - stage: retrieval
-  model_family: "LLM feature generator, Qwen-7B by default with Qwen-1.8B, LLaMA2-13B and DeepSeek-V2-Lite 16B also validated, M=128 fixed learnable query tokens, mapping W = U (Vdis + Vtrans)^T with H=128 and D=4096"
+  model_family: "LLM feature generator with Qwen-7B as the default experiment backbone. Qwen-1.8B, LLaMA2-13B and DeepSeek-V2-Lite 16B are also tested. It uses M=128 fixed learnable queries and W = U (Vdis + Vtrans)^T with H=128 and D=4096."
   details: "Multi-query representation scores an item by the max over M query-token inner products; matrix decomposition splits the item mapping into a fully learnable discriminative part Vdis and a text-derived transferable part Vtrans from a General Text Embedding; probabilistic sampling runs T=4 steps over ANN neighbors with tau=0.07, K=1000 and up to 32 neighbors, replacing semantic-ID autoregression with a single LLM forward pass."
 id_tokenization:
   approach: "Full item IDs, not semantic IDs"
@@ -53,7 +55,7 @@ scale:
 - metric: Training
   value: "Qwen-7B on 64 NVIDIA H20 GPUs, 25 hours for 50 million examples"
   note: "paper, Appendix B.3"
-- metric: Latency
+- metric: Model inference benchmark latency
   value: "p99 50 ms at input length 1024 for the 1.5B model, 233 ms for 7B"
   note: "paper, Appendix B.4 Table 7"
 - metric: Sampling module
@@ -61,14 +63,14 @@ scale:
   note: "paper, Appendix B.4; the paper states a candidate space of approximately 10 to the 7"
 results_reported: "Online, Sec 5.5 Table 6, April 28 to May 14, 2025: advertising revenue, the core metric that only the full text names, +3.01%; CTR +0.78%; CVR +1.24%; proportion of long-tail items +2.23%. The abstract states 3% and the introduction over 3% for the same key metric. Public datasets, Sec 5.1 Table 1, four datasets: URM beats the strongest baseline by an average of 46% HR@5 and 29% NDCG@5; per-dataset relative improvement: Sports +70.9% HR@5 and +49.7% NDCG@5, Beauty +50.3% and +38.1%, Toys +35.6% and +9.2%, Yelp +26.1% and +18.1%; on Beauty, URM reaches HR@5 0.0929 against 0.0618 for the strongest baseline IDGenRec. Industrial data, Sec 5.2 Table 2, R@1000 averaged over 9 objectives: URM 0.403 against 0.363 for the strongest baseline, the multi-task Attention-DNN with PLE, best on 66 out of 99 model-objective cells, an average relative improvement of 11.0%; on Retrieval with Query URM reaches 0.835 without task-specific design against 0.822 for a dedicated three-tower model. Universal retrieval, Sec 5.4 Table 5: scenario objectives raise performance by over 20%, with RSA +20.5%, RSB +31.0% and RSC +30.2%; the serendipity objective lifts the share of new-category items from 18.8% to 46.2% and SR R@1000 by 82.3% relative. Ablations: Table 4, the retrieval precision of probabilistic sampling converges at T=4 with 91.0%, 91.1% at T=5 and 0.2% at T=1; Table 3, CPR R@1000 with Vdis alone 0.256, Vtrans alone 0.152 and Vdis+Vtrans 0.263 on all items and 0.130 on unseen items. Efficiency: Sec 3.3, sampling cuts the mapping FLOPS from 5000G to 2G in the paper's setting; Appendix B.4 Table 7, p99 latency at input length 1024 is 50 ms for the 1.5B model, the paper's stated online limit, and 233 ms for the default 7B backbone. Backbones, Appendix C.2: LLaMA2-13B reaches Beauty HR@5 0.0905 and DeepSeek-V2-Lite an industrial average of 0.394, close to Qwen-7B."
 caveats:
-- "Retrieval results are precomputed asynchronously per 10-minute window, so the online path is not per-request LLM inference."
+- URM precomputes candidates using an asynchronous 10-minute window. Online retrieval reads the stored results.
 - "The abstract states the core metric improved by 3% and the introduction says over 3%; Sec 5.5 Table 6 gives the exact +3.01% for advertising revenue."
-- "The 50 ms latency behind the tens-of-milliseconds claim is measured on the 1.5B model at input length 1024; the default 7B backbone shows 233 ms p99 at the same length in Table 7."
+- Table 7 measures model inference on H20 GPUs. The paper leaves the A/B backbone and end-to-end production latency undisclosed.
 - "Appendix A.1 Limitations: LLMs increase training and inference cost, mitigated by hourly aggregation, 5% data sampling and the 10-minute async window; URM adapts to new objectives only when they are close to the training objectives, and entirely new objectives remain hard."
 - "The exact candidate-set size is withheld for data security, and the platform is described only as our advertising platform."
 - "The paper states the public-dataset code will be released upon acceptance."
 unknown_fields:
-- "A/B traffic share and bucketing"
+- A/B traffic share, bucketing, control configuration and deployed backbone
 - "Serving QPS and the GPU fleet for online inference"
 - "Whether URM retrieval serves full traffic after the A/B"
 - "Exact candidate-set size"
@@ -82,14 +84,14 @@ sources:
 - title: "URM, arXiv 2502.03041"
   url: "https://arxiv.org/abs/2502.03041"
   type: paper
-version_note: "Card written from arXiv 2502.03041 v2, revised 2025-05-19, read in full on 2026-11-03; the published full text was not readable at card time. The CIKM 2026 DOI 10.1145/3799682.3840090 was verified on Crossref with a matching title and pages 8319-8327, and the paper appears in the official CIKM 2026 program under session 2A. Recheck every number against the ACM version after the conference, then mark the card as checked against the published version."
+version_note: The CIKM 2026 proceedings list the paper on pages 8319-8327. The deployment evidence was rechecked in arXiv v2. The ACM-hosted full text remains unchecked.
 needs_fulltext: false
 fulltext:
-  pdf_url: https://arxiv.org/pdf/2502.03041
+  pdf_url: https://arxiv.org/pdf/2502.03041v2
   local_pdf: "full text read from arXiv HTML v2, file not redistributed"
   sections_read: "Abstract, Secs 1-6, Appendix A limitations and broader impacts, Appendix B implementation and latency Table 7, Appendix C.1-C.2 backbone comparisons"
-  verified_on: "2026-11-03"
-  published_pdf: "not read; ACM version located via Crossref DOI 10.1145/3799682.3840090, pages 8319-8327"
+  verified_on: "2026-11-26"
+  published_pdf: ACM proceedings metadata was verified. The hosted full text remains unchecked.
 code:
   status: none
   checked_on: "2026-11-03"
@@ -105,22 +107,22 @@ results_table:
     method: URM
     metric: Advertising revenue, the core metric
     result: "+3.01%"
-    versus: "Incumbent serving of the platform"
+    versus: Control configuration undisclosed
   - setting: "Alibaba advertising platform, online A/B, April 28 to May 14, 2025"
     method: URM
     metric: CTR
     result: "+0.78%"
-    versus: "Incumbent serving of the platform"
+    versus: Control configuration undisclosed
   - setting: "Alibaba advertising platform, online A/B, April 28 to May 14, 2025"
     method: URM
     metric: CVR
     result: "+1.24%"
-    versus: "Incumbent serving of the platform"
+    versus: Control configuration undisclosed
   - setting: "Alibaba advertising platform, online A/B, April 28 to May 14, 2025"
     method: URM
     metric: Proportion of long-tail items
     result: "+2.23%"
-    versus: "Incumbent serving of the platform"
+    versus: Control configuration undisclosed
   offline:
   - setting: "Sports, Beauty, Toys, Yelp, Table 1"
     method: URM
@@ -143,13 +145,13 @@ results_table:
     metric: Share of new-category items
     result: "46.2%"
     versus: "18.8% with the CPR objective"
-  note: "Sampling precision in Table 4 converges at T=4 with 91.0%; the 50 ms figure behind the tens-of-milliseconds claim is the 1.5B model at input length 1024, while the default 7B backbone shows 233 ms p99 at the same length in Table 7. The abstract states 3% for the revenue lift; Table 6 gives +3.01%."
+  note: Table 7 measures p99 model inference at input length 1024. The 1.5B model takes 50 ms and the 7B model takes 233 ms. Table 6 separately reports the +3.01% revenue result.
 deployment:
   online_evidence: online_numbers
   scenario: "Retrieval on the Alibaba advertising platform: URM retrieval results are generated asynchronously in 10-minute windows and stored for the online retrieval stage"
   ab_traffic: not_reported
   ab_duration: "April 28 to May 14, 2025"
-  baseline: "The incumbent serving of the advertising platform in the A/B test; the paper does not name the control arm"
+  baseline: not_reported
   online_lifts:
   - metric: Advertising revenue
     value: "+3.01%"
@@ -160,14 +162,15 @@ deployment:
   - metric: Proportion of long-tail items
     value: "+2.23%"
   training_compute: "Qwen-7B on 64 NVIDIA H20 GPUs, 25 hours for 50 million training examples, after 5% data sampling"
-  serving_latency: "Asynchronous 10-minute windows; hashtable lookup within a few milliseconds, sampling under 10 ms; p99 at input length 1024 is 50 ms for 1.5B and 233 ms for the default 7B"
+  serving_latency: H20 model inference benchmark at input length 1024. P99 is 50 ms for 1.5B and 233 ms for 7B.
   serving_qps: not_reported
-  inference_cost: "Probabilistic sampling cuts mapping FLOPS from 5000G to 2G in the paper's setting; the limitations state LLM training and inference still cost more than traditional recommendation models"
+  inference_cost: not_reported
   hardware: "NVIDIA H20 GPUs for training and latency measurement"
   notes:
-  - "The 50 ms figure is for the 1.5B model; the deployed default is Qwen-7B."
+  - Candidates refresh asynchronously in a 10-minute window. The production backbone and end-to-end latency are undisclosed.
   - "The abstract gives 3% for the core metric; Table 6 gives +3.01%."
   - "The exact candidate-set size is withheld for data security."
+  - Section 3.3 reports a reduction from 5000G to 2G FLOPs for the item-mapping calculation in its benchmark.
   fulltext_refs:
   - "Sec 5.5 Table 6: online results April 28 to May 14, 2025: revenue +3.01%, CTR +0.78%, CVR +1.24%, long-tail items +2.23%"
   - "Sec 4 and Appendix B.4: ten-minute async window, hashtable lookup within a few milliseconds, sampling under 10 ms, Table 7 p99 50 ms at input length 1024 for 1.5B and 233 ms for 7B"
@@ -175,4 +178,4 @@ deployment:
   - "Appendix B.3: 64 NVIDIA H20 GPUs, 25 hours, 50 million examples, 5% sampling"
   - "Appendix A.1: hourly aggregation and 5% sampling within a 24-hour budget, 10-minute async window"
   basis: full_text
-  checked_on: "2026-11-03"
+  checked_on: "2026-11-26"

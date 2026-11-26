@@ -7,7 +7,8 @@ deployed_in|论文撰写时已在今日头条信息流预排序全量上线
 scale_short|线上预排序模型参数量分别为 310 万和 860 万
 key_result|今日头条线上 A/B 中，相比此前的线上预排序模型，应用使用时长提升 0.4%
 results_reported|第 4.6 节报告了今日头条线上 A/B。与此前的线上预排序模型相比，应用使用时长 +0.4%，活跃天数 +0.05%，CTR +3.0%。作者报告两者在线延迟相当，CPU 用量下降 6%。轻量模型打分后，前 550 个候选进入更强的模型，约占候选集的 30%。论文撰写时，HAP 已全量部署 9 个月。表 3 的 ToutiaoRec 离线实验中，HAP 在困难负样本上的 AUC 为 0.8023，HCCP 为 0.7917。
-version_note|WWW 2026 工业赛道官方名单确认收录。数据核对自 arXiv 上带 DOI 的作者全文，ACM 托管的正式全文待核。
+version_note|WWW 2026 工业赛道官方名单确认收录。数字核对自 arXiv v1，ACM 托管的正式全文待核。
+updates.0.note|补入路由消融的延迟和训练算力，并与主要生产 A/B 分开呈现。
 serving_infra|线上预排序把轻量模型打分最高的 550 个候选交给更强的模型，约占已打分候选集的 30%。日志在同一请求的候选间共享用户特征，延迟到达的交互会异步关联。
 stages.0.model_family|采用精简特征模型和高容量模型的级联式判别预排序
 stages.0.details|轻量模型为每个召回候选打分。高容量模型对得分靠前的候选重新打分，然后交给现有精排模型。
@@ -36,12 +37,13 @@ caveats.0|30% 是单次请求内进入高容量模型的候选比例。论文未
 caveats.1|9 个月是论文撰写时的全量部署时长，线上 A/B 的时长未报告。
 caveats.2|表 5 是独立的路由消融，有单独的延迟与 CTR 结果。这里的线上 A/B 数值来自第 4.6 节。
 unknown_fields.0|A/B 流量分配与时长
-unknown_fields.1|线上部署延迟的毫秒数、QPS 和硬件
+unknown_fields.1|主上线实验的绝对延迟、生产 QPS 和硬件
 unknown_fields.2|详细的生产训练算力与推理费用
 code.note|HAP 官方仓库提供说明、图片和数据集链接，未找到模型实现。
 deployment.scenario|今日头条信息流预排序，约 30% 的候选进入高容量模型
 deployment.baseline|此前的线上预排序模型
 deployment.online_lifts.0.metric|应用使用时长
 deployment.online_lifts.1.metric|活跃天数
-deployment.serving_latency|与此前的线上模型相当
+deployment.training_compute|大规模日志上的路由消融中，HAP 训练用 39.2 h·kcores，单一大模型用 38.1 h·kcores。
+deployment.serving_latency|主要 A/B 中与此前的线上模型相当。路由消融中 HAP 为 203 ms，单一大模型为 225 ms。
 deployment.inference_cost|CPU 用量比此前的线上模型低 6%

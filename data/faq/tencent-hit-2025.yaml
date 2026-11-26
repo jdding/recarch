@@ -2,7 +2,7 @@
 id: tencent-hit-2025
 reviewed: false
 generated_by: templates over card fields
-content_hash: bc9a91697300fee0
+content_hash: 2e4489fd41061ec5
 drop: []
 items:
 - key: what
@@ -30,9 +30,9 @@ items:
   - core_idea
 - key: results
   q_en: What results does HIT report?
-  a_en: In a five-day online A/B test, HIT improved GMV by 1.66% and ROI by 1.55% relative to MVKE. The downstream pipeline was identical across arms. Figure 6 compares response time and success rate at the service benchmark of 35,000 QPS and reports efficiency close to a vanilla two-tower model.
+  a_en: Table 4 reports GMV +1.66% and ROI +1.55% in a five-day online A/B against MVKE. The downstream pipeline was identical across arms. Figure 6 compares average model response time and success rate at the 35,000 QPS service threshold and reports overall efficiency close to a vanilla two-tower model.
   q_zh: HIT 报告了哪些结果？
-  a_zh: 五天线上 A/B 中，相比 MVKE，GMV 相对提升 1.66%，ROI 相对提升 1.55%。两组使用相同的下游链路。图 6 在每秒 35,000 次查询的服务基准下比较响应时间和成功率，HIT 的效率接近普通双塔。
+  a_zh: 表 4 报告为期五天的线上 A/B。相比 MVKE，GMV +1.66%，ROI +1.55%。两组使用相同的下游链路。图 6 在 35,000 QPS 的服务门槛下比较模型平均响应时间和成功率，HIT 的整体效率接近普通双塔。
   fields:
   - results_reported
 - key: online
@@ -46,12 +46,11 @@ items:
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of HIT?
-  a_en: Figure 6 uses 35,000 QPS as the benchmark threshold. The paper gives no measured production traffic volume for HIT. In the author version, the paragraph before Table 4 assigns 1.55% to GMV. Table 4, the abstract and the conclusion agree on 1.66% GMV and 1.55% ROI.
+  a_en: Figure 6 uses 35,000 QPS as the benchmark threshold. The paper gives no measured production traffic volume for HIT.
   q_zh: 读 HIT 的结果时要注意什么？
-  a_zh: 图 6 的 35,000 QPS 是基准门槛，论文未披露 HIT 的生产实际流量。 作者版表 4 前的正文把 1.55% 写给了 GMV。表 4、摘要和结论一致，GMV +1.66%，ROI +1.55%。
+  a_zh: 图 6 的 35,000 QPS 是基准门槛，论文未披露 HIT 的生产实际流量。
   fields:
   - caveats.0
-  - caveats.1
 - key: stage
   q_en: Which stages of the pipeline does HIT cover?
   a_en: 'Pre-ranking: Interaction-enhanced two-tower scoring.'

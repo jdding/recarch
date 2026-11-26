@@ -11,7 +11,10 @@ venue_year: 2003
 published_version_checked: true
 primary_source: "https://doi.org/10.1109/MIC.2003.1167344"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Removed the generic half-second design target from the measured serving-latency field.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Item-to-item collaborative filtering precomputes a similar-items table offline, so online recommendation is a lookup that scales independently of the number of customers."
@@ -97,11 +100,12 @@ deployment:
   baseline: not_reported
   online_lifts: not_reported
   training_compute: not_reported
-  serving_latency: Online step is a table lookup; many applications need results in no more than half a second
+  serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
   hardware: not_reported
   notes:
   - The paper gives no experimental metrics, only qualitative statements about click-through and conversion.
-  basis: card_content
-  checked_on: '2026-10-31'
+  - Online serving looks up similar items. The half-second figure describes a general response-time requirement.
+  basis: full_text
+  checked_on: '2026-11-26'

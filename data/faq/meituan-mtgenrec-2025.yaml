@@ -2,14 +2,14 @@
 id: meituan-mtgenrec-2025
 reviewed: false
 generated_by: templates over card fields
-content_hash: 553e02d3d288ccdc
+content_hash: 4124e0fc66bdbfa0
 drop: []
 items:
 - key: what
   q_en: What is MTGenRec, in one sentence?
-  a_en: MTGenRec trains Meituan's generative recommenders 1.6x to 2.4x faster on over 100 GPUs with dynamic embedding tables and sequence balancing; Take-away A/B lifted orders +1.22%.
+  a_en: MTGenRec trains recommender models 1.6–2.4× faster than TorchRec on over 100 GPUs. In a separate takeout A/B, the 110G ranker lifted page-view CTR by 1.90% against the deployed DLRM.
   q_zh: MTGenRec 一句话是什么？
-  a_zh: MTGenRec 用动态嵌入表和序列均衡让美团生成式推荐器在 100 多张 GPU 上训练快 1.6 至 2.4 倍；外卖 A/B 订单 +1.22%。
+  a_zh: 动态嵌入表和序列均衡让美团生成式推荐器在 100 多张 GPU 上的训练吞吐达到 TorchRec 的 1.6 至 2.4 倍。用它训练的 110G 排序模型在外卖 A/B 中比生产 DLRM 的 PV_CTR 高 1.90%。
   fields:
   - tldr
 - key: who

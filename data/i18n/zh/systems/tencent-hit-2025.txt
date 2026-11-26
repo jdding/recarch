@@ -15,9 +15,10 @@ training.notes|辅助目标让双塔各自保留用户与广告交叉交互的�
 serving_infra|用户和广告的表示可以独立计算和缓存。预排序选出的广告进入原有下游链路。
 scale.0.metric|线上实验模型的训练数据
 scale.0.value|超过 36 亿条样本、超过 10 亿用户、1000 万个候选广告
-results_reported|五天线上 A/B 中，相比 MVKE，GMV 相对提升 1.66%，ROI 相对提升 1.55%。两组使用相同的下游链路。图 6 在每秒 35,000 次查询的服务基准下比较响应时间和成功率，HIT 的效率接近普通双塔。
+results_reported|表 4 报告为期五天的线上 A/B。相比 MVKE，GMV +1.66%，ROI +1.55%。两组使用相同的下游链路。图 6 在 35,000 QPS 的服务门槛下比较模型平均响应时间和成功率，HIT 的整体效率接近普通双塔。
 caveats.0|图 6 的 35,000 QPS 是基准门槛，论文未披露 HIT 的生产实际流量。
-caveats.1|作者版表 4 前的正文把 1.55% 写给了 GMV。表 4、摘要和结论一致，GMV +1.66%，ROI +1.55%。
+results_table.note|这里采用与摘要和结论一致的表 4 列项。作者版表 4 前的一段正文把 1.55% 写给了 GMV。
+updates.0.note|将 GMV 数字在表格和正文间的差异放到结果表旁，并标明服务基准测量范围。
 unknown_fields.0|实验分流比例与样本量
 unknown_fields.1|生产延迟、吞吐、硬件与单次请求成本
 version_note|CIKM 官方程序确认 Applied Research 赛道。架构与部署数字已核对 arXiv v2 作者全文，ACM 出版全文待核。
@@ -32,5 +33,5 @@ deployment.scenario|腾讯展示广告预排序
 deployment.ab_duration|五天
 deployment.baseline|对照为内部数据上表现最强的 MVKE，两组共用相同的下游模块
 deployment.notes.0|实验中，预排序为每位用户选出数百条广告交给下游模块。
-deployment.notes.1|图 6 在 35,000 QPS 服务门槛下比较响应时间和成功率，HIT 在该基准下的效率接近普通双塔。
+deployment.notes.1|图 6 在 35,000 QPS 服务门槛下测模型平均响应时间与成功率。整条广告链路的延迟未披露。
 code.repos.0.owner|HIT 作者团队

@@ -11,11 +11,13 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3799682.3840124"
 added_on: "2026-11-03"
-last_verified: "2026-11-03"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Separated the serving workload and cache measurements from the production experiment and inference cost.
 system_type: recommendation
 evidence_level: production_described
-tldr: "HiSAC compresses histories of up to 10,000 interactions into personalized semantic-ID interest agents; on Taobao's homepage feed it lifted CTR 1.65% and cut serving latency by over 40%."
+tldr: HiSAC compresses histories of up to 10,000 interactions into personalized semantic-ID interest agents. The Taobao homepage A/B reported CTR +1.65%.
 summary: "HiSAC, built by an Alibaba Group team listed as Taobao and Tmall Group of Alibaba on the conference program, is a sequence compression framework that turns ultra-long user behavior histories, exceeding 10,000 interactions for highly active users, into compact personalized interest representations for the ranking stage. Items are tokenized into multi-level semantic IDs by a frozen multimodal encoder and RQ-VAE over a global hierarchical codebook; a hierarchical voting mechanism sparsely activates per-user interest-agents on a global semantic tree, and a Soft-Routing Attention aggregates all historical signals weighted by similarity to limit quantization error and preserve long-tail preferences. Deployed on Taobao's \"Guess What You Like\" homepage serving hundreds of millions of daily active users, it delivered a 1.65% CTR uplift, a 2.24% CTCVR improvement and 2.56% more orders in a two-week A/B test against the strongest prior compression method in production, while reducing end-to-end inference latency by over 40% to about 21 ms per request."
 paradigms:
 - semantic-id
@@ -92,7 +94,7 @@ code:
 core_idea: "Sparsely activated personalized interest agents over a hierarchical semantic codebook compress ultra-long behavior sequences for the ranking stage."
 deployed_in: "Ranking-stage sequence modeling on Taobao homepage \"Guess What You Like\""
 scale_short: "Serves hundreds of millions of daily active users with histories up to 10,000 interactions at about 21 ms per request"
-key_result: "Two-week A/B on Taobao homepage: CTR +1.65%, IPV +1.93%, CTCVR +2.24%, orders +2.56%; per-request latency from over 100 ms to about 21 ms"
+key_result: "Two-week A/B on Taobao homepage: CTR +1.65%, IPV +1.93%, CTCVR +2.24% and orders +2.56%"
 results_table:
   online:
   - setting: "Taobao homepage \"Guess What You Like\", two-week A/B"
@@ -155,16 +157,17 @@ deployment:
   training_compute: "NVIDIA H20 GPUs stated for training; GPU count not reported"
   serving_latency: "With 2,000 candidates and 10k-length histories, vanilla MHA exceeds 100 ms per request; HiSAC compression alone about 35 ms; with the three production optimizations about 21 ms, a 40% reduction over the compressed baseline"
   serving_qps: not_reported
-  inference_cost: "Cache-enhanced MHA cuts projection FLOPs by about 72% and per-request latency by 38% at a cache hit rate above 99%; candidate queries precomputed offline and refreshed every 2 hours; offline agent construction daily adds no online cost"
+  inference_cost: not_reported
   hardware: "NVIDIA H20 GPUs, stated for training"
   notes:
   - "All improvements in Table 3 are reported as statistically significant."
   - "Latency figures are stated for the 2,000-candidate, 10k-history configuration."
   - "The paper reports no traffic share or bucket counts for the A/B test."
+  - Cache-enhanced MHA cuts projection FLOPs by about 72% and per-request latency by 38% at a cache hit rate above 99%. Candidate queries refresh every 2 hours.
   fulltext_refs:
   - "Sec 4.7: a controlled two-week A/B test on Taobao's \"Guess What You Like\" homepage against the strongest prior compression method in production; Table 3: IPV +1.93%, CTR +1.65%, CTCVR +2.24%, Orders +2.56%, all statistically significant"
   - "Sec 4.7: top 10% of items capture over 90% of exposure; CTR outside the top 10% improves by 12.6%; distinct categories per user +5.7%"
   - "Sec 3.5: with 2,000 candidates and 10k-length histories vanilla MHA exceeds 100 ms, HiSAC compression alone about 35 ms, all three optimizations about 21 ms, a 40% reduction; projection FLOPs cut by about 72%, per-request latency by 38%, cache hit rate above 99%, candidate queries refreshed every 2 hours"
   - "Sec 4.1: NVIDIA H20 GPUs, Adam and Adagrad, initial learning rate 1e-3, 3 seeds with standard deviation below 0.0003"
   basis: full_text
-  checked_on: "2026-11-03"
+  checked_on: "2026-11-26"

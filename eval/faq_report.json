@@ -1,5 +1,5 @@
 {
- "candidates": 1027,
+ "candidates": 1026,
  "kept": 1008,
  "discarded": [
   {
@@ -34,11 +34,6 @@
   },
   {
    "id": "bytedance-lemur-2025",
-   "key": "results",
-   "reason": "answer too long"
-  },
-  {
-   "id": "tencent-lfm4ads-2025",
    "key": "results",
    "reason": "answer too long"
   },
@@ -108,7 +103,7 @@
  },
  "cards": 126,
  "discard_reasons": {
-  "answer too long": 10,
+  "answer too long": 9,
   "card has no such field": 8,
   "parentheses in Chinese copy": 1
  }

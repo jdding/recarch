@@ -2,14 +2,14 @@
 id: bytedance-lemur-2025
 reviewed: false
 generated_by: templates over card fields
-content_hash: c741ae6adc880b75
+content_hash: 7fbe855270db13cd
 drop: []
 items:
 - key: what
   q_en: What is LEMUR, in one sentence?
-  a_en: LEMUR trains ByteDance's multimodal encoders end to end with the Douyin Search ranker and serves history from a memory bank; a 14-day A/B cut the query change rate by 0.843% with offline QAUC +0.81%.
+  a_en: LEMUR trains multimodal encoders jointly with the Douyin Search ranker and reuses history from a memory bank. A 14-day Douyin test reported fewer query changes.
   q_zh: LEMUR 一句话是什么？
-  a_zh: LEMUR 让字节的多模态编码器与抖音搜索排序器端到端联合训练，并用记忆库服务行为序列；14 天 A/B 查询改写率下降 0.843%，离线 QAUC +0.81%。
+  a_zh: LEMUR 联合训练多模态编码器和抖音搜索排序器，并从记忆库复用历史表示。抖音搜索 14 天 A/B 报告查询改写率下降。
   fields:
   - tldr
 - key: who
@@ -30,9 +30,9 @@ items:
   - core_idea
 - key: online
   q_en: Does LEMUR have online evidence, and how long was the A/B?
-  a_en: 'Online evidence: Online numbers. A/B duration: 14 days. A/B traffic: not reported.'
+  a_en: 'Online evidence: Online, no figures. A/B duration: 14 days. A/B traffic: not reported.'
   q_zh: LEMUR 有线上证据吗，A/B 做了多久？
-  a_zh: 线上证据：有线上数据。A/B 时长：14 天。A/B 流量：未报告。
+  a_zh: 线上证据：有线上描述，无具体数字。A/B 时长：14 天。A/B 流量：未报告。
   fields:
   - deployment.online_evidence
   - deployment.ab_duration

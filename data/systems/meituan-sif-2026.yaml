@@ -11,7 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: https://doi.org/10.1145/3773078.3831746
 added_on: "2026-11-25"
-last_verified: "2026-11-25"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the GPU setup for offline training and kept it separate from online serving.
 system_type: recommendation
 evidence_level: production_described
 tldr: Meituan SIF keeps the context of each past interaction in compressed tokens. Against the production HyFormer ranker, CTR rose 2.03% in a seven-day A/B test.
@@ -41,7 +44,7 @@ scale:
 results_reported: 'In Section 4.5 and Table 5, a 5% traffic holdout over 7 days against the production HyFormer ranker reports CTR +2.03%, CVR +1.21% and GMV per session +1.35%. CTR rose 0.53% for users with fewer than 10 interactions and 3.12% for users with at least 500 interactions.'
 caveats:
 - The 5% figure is the reported holdout share. The paper gives no allocation for each experiment arm.
-- The online results cover the reported food-delivery deployment. The paper does not give serving latency or hardware.
+- The online results cover the reported food-delivery deployment. The hardware disclosure covers the offline experiments.
 unknown_fields:
 - Absolute serving latency and throughput
 - Production training compute, serving hardware and inference cost
@@ -78,14 +81,14 @@ deployment:
   - {metric: CTR, value: "+2.03%"}
   - {metric: CVR, value: "+1.21%"}
   - {metric: GMV per session, value: "+1.35%"}
-  training_compute: not_reported
+  training_compute: Offline comparison models were trained on 8 NVIDIA A100 GPUs with 80 GB per GPU.
   serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
-  hardware: not_reported
+  hardware: NVIDIA A100 GPUs for offline experiments
   fulltext_refs:
   - Sections 3.2 to 3.4 describe sample tokenization, mixing and the serving path.
-  - Section 4.1 reports the evaluation data scale.
+  - Section 4.1 reports evaluation scale and training on 8 A100 GPUs with 80 GB per GPU.
   - Section 4.5 and Table 5 report the holdout and results.
   basis: full_text
-  checked_on: "2026-11-25"
+  checked_on: "2026-11-26"

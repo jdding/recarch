@@ -11,10 +11,12 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3799682.3840110"
 added_on: "2026-11-03"
-last_verified: "2026-11-25"
+last_verified: "2026-11-26"
 updates:
 - date: "2026-11-25"
   note: Checked the DOI-bearing author revision and clarified the online control and overlapping channel attribution.
+- date: "2026-11-26"
+  note: Identified the latency and throughput figures as measurements of the generative recall service.
 system_type: search
 evidence_level: production_described
 tldr: "Taobao's CQ-SID turns semantic IDs into category-constrained cluster identifiers and aligns recall with ranking via EG-GRPO; two-week TmallAPP A/B: GMV +1.15%, UCTCVR +0.40%."
@@ -133,8 +135,8 @@ deployment:
   - metric: UCTCVR
     value: "+0.40%"
   training_compute: "CQ-SID quantizer trained 10 epochs on 4 GPUs; LLM stages 2k to 5k steps; total compute not aggregated"
-  serving_latency: "Approximately 40 ms average end-to-end latency"
-  serving_qps: "Over 200 QPS"
+  serving_latency: "Approximately 40 ms end-to-end on average for the generative recall service"
+  serving_qps: "Over 200 QPS across the 8 GPUs serving generative recall"
   inference_cost: not_reported
   hardware: "8 GPUs for online serving"
   notes:
@@ -148,4 +150,4 @@ deployment:
   - "Sec 3.1.2: 1,711 valid categories; three-level codebook sizes 2048x1024x1024"
   - "Sec 3.4: pool of approximately 21 million items filtered from hundreds of millions, dynamically updated daily"
   basis: full_text
-  checked_on: "2026-11-25"
+  checked_on: "2026-11-26"

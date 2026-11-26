@@ -6,7 +6,7 @@ core_idea|记录每个槽位的占用 ID 并线性探测，淘汰过期条目时
 deployed_in|Meta 的视频后期排序模型与 HSTU 视频检索模型
 scale_short|40 亿行用户表，服务约 30 亿月活用户
 key_result|用户嵌入零冲突，17 个任务中 14 个 NE 提升；检索 A/B 新视频曝光 +0.83%
-results_reported|冲突研究，表 1，1.5 亿唯一用户 ID：Sigrid 哈希基线在 3.33 倍容量下仍有 13.61% 冲突率，MPZCH 在 1.33 倍容量、探测深度 256 时冲突率为 0.0000%，此时 Sigrid 为 29.65%；在 2.0 倍容量、深度 64 时同样 0.0000%，此时 Sigrid 为 21.31%；深度 8 且 1.00 倍容量时为 12.09%，Sigrid 为 36.79%。内核基准见表 2：HBM 即 CUDA 批处理延迟在深度 8 到 512 间保持 0.8 到 0.9 毫秒，UVM 批处理 4.4 毫秒，CPU 即 DRAM 批处理 6.1 到 8.9 毫秒、非批处理 94.2 到 102.7 毫秒。用户嵌入见表 3：在生产视频后期排序模型部署 MPZCH 后，17 个预测任务中 14 个 Normalized Entropy 改善、3 个持平，含视频观看时长 +0.38%、视频观看完成率 100 +0.12%、跳过 +0.12%，论文称鉴于该模型已经多年迭代优化，这些提升具有统计显著性。物品嵌入见 4.2 节：在 Post ID 24 小时、Owner ID 72 小时 TTL 的 HSTU 视频检索模型中，A/B 使 48 小时内发布的新视频曝光提升 0.83%；同一创作者视频嵌入相似度从 0.66% 升至 0.91%，当天与次日均 +38%，总体从 0.62% 升至 0.77% 即 +25%。
+results_reported|冲突研究，表 1，1.5 亿唯一用户 ID：Sigrid 哈希基线在 3.33 倍容量下仍有 13.61% 冲突率，MPZCH 在 1.33 倍容量、探测深度 256 时冲突率为 0.0000%，此时 Sigrid 为 29.65%；在 2.0 倍容量、深度 64 时同样 0.0000%，此时 Sigrid 为 21.31%；深度 8 且 1.00 倍容量时为 12.09%，Sigrid 为 36.79%。内核基准见表 2：HBM 即 CUDA 批处理延迟在深度 8 到 512 间保持 0.8 到 0.9 毫秒，UVM 批处理 4.4 毫秒，CPU 即 DRAM 批处理 6.1 到 8.9 毫秒、非批处理 94.2 到 102.7 毫秒。用户嵌入见表 3：在生产视频后期排序模型部署 MPZCH 后，17 个预测任务中 14 个 Normalized Entropy 改善、3 个持平，含分享 +0.38%、视频观看时长 +0.12%、视频观看完成率 100 +0.12%、跳过 +0.09%，论文称鉴于该模型已经多年迭代优化，这些提升具有统计显著性。物品嵌入见 4.2 节：在 Post ID 24 小时、Owner ID 72 小时 TTL 的 HSTU 视频检索模型中，A/B 使 48 小时内发布的新视频曝光提升 0.83%；同一创作者视频嵌入相似度从 0.66% 升至 0.91%，当天与次日均 +38%，总体从 0.62% 升至 0.77% 即 +25%。
 serving_infra|发布时辅助张量冻结、元数据张量从快照中移除，推理只做只读查找。HBM 即 CUDA 批处理内核在探测深度 8 到 512 下均为 0.8 到 0.9 毫秒；非批处理 CPU 即 DRAM 达 94.2 到 102.7 毫秒，论文以此说明必须 GPU 加速。探测深度对延迟影响可忽略。
 stages.0.model_family|推荐模型的嵌入表索引层，与 TorchRec 嵌入集合同分片
 stages.0.details|本身不是排序模型：MPZCH 服务视频后期排序器的用户嵌入表，以及 HSTU 视频检索模型的 Post ID 与 Owner ID 表，TTL 按特征分别配置。
@@ -32,15 +32,19 @@ caveats.0|未报告 A/B 流量占比、时长与显著性水平。
 caveats.1|论文说明 MPZCH 需要表容量超过 ID 基数并配合足够探测深度如 512 才能保证零冲突。
 caveats.2|多数作者来自 Meta，一位共同作者在 OpenAI，一位在 Periodic Labs。
 unknown_fields.0|A/B 流量占比、时长与显著性水平
-unknown_fields.1|除所列三个之外的 17 个预测任务
+unknown_fields.1|除所列四个之外的 17 个预测任务
 unknown_fields.2|训练硬件细节
 code.repos.0.owner|含 Meta 作者在内的 TorchRec 维护者
 code.repos.0.note|论文说明该方案已在开源 TorchRec 库中发布；该仓库为官方主页。
 version_note|读的是 arXiv 2602.17050 v4 的 PDF，带完整 RecSys 2026 ACM 引用和 DOI 10.1145/3773078.3831866；DOI 已在 Crossref 核对，页码 1333-1342。
 deployment.scenario|服务约 30 亿月活用户的视频后期排序模型与 HSTU 视频检索模型的嵌入索引
 deployment.baseline|标准哈希方法 torcharrow sigrid hash，Meta 多数模型的默认算法
-deployment.serving_latency|HBM 即 CUDA 批处理内核在深度 8 到 512 下为 0.8 到 0.9 毫秒；探测深度对延迟影响可忽略
-deployment.serving_qps|通过输入特征去重，训练 QPS 与既有方法保持相当
-deployment.notes.2|发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积
+deployment.serving_latency|HBM 即 CUDA 批处理内核基准在深度 8 到 512 下为 0.8 到 0.9 毫秒
+deployment.notes.3|发布模型剔除元数据张量并冻结身份只读；辅助张量为模型增加身份张量的体积
 deployment.notes.0|17 个预测任务中 14 个 NE 改善、3 个持平；论文称鉴于模型成熟度，提升具有统计显著性。
 deployment.notes.1|检索部署中 Post ID 的 TTL 为 24 小时、Owner ID 为 72 小时。
+deployment.notes.2|输入去重后，训练吞吐与原有方案相当。
+results_table.online.0.metric|NE 改善，分享预测
+deployment.online_lifts.0.metric|NE 改善，排序模型的分享预测
+deployment.online_lifts.1.metric|NE 改善，排序模型的视频观看完成率 100
+updates.0.note|按表 3 更正预测任务指标，并区分内核基准、训练吞吐和线上服务吞吐。

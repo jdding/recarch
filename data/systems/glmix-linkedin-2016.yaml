@@ -11,10 +11,13 @@ venue_year: 2016
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/2939672.2939684"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Clarified the application-click metric, experimental control and serving architecture.
 system_type: recommendation
 evidence_level: production_described
-tldr: "Generalized linear mixed model adds per-member and per-job coefficients to a global model; the LinkedIn job recommender saw 20% to 40% more job applications."
+tldr: "GLMix adds per-member and per-job coefficients to a global model. In LinkedIn's A/B test, clicks on the Apply button rose 20% to 40% against LR-Cosine."
 summary: Generalized linear mixed model adding per-member and per-job random-effect coefficients to a global model, fit with parallel
   block coordinate descent on Spark; open-sourced in Photon ML.
 paradigms:
@@ -29,16 +32,15 @@ id_tokenization:
   details: null
 features_signals:
 - Member and job features
-- Application/click responses
+- Clicks on the Apply button
 training:
   mode: Offline distributed
   objectives:
   - Logistic response prediction
   notes: Parallelized BCD under BSP on Apache Spark/YARN.
-serving_infra: Spark; code open-sourced as Photon ML
+serving_infra: The production system uses Lucene and GLMix in an offline two-stage scorer. Hadoop MapReduce writes recommendations to Voldemort, and the jobs homepage fetches the list and applies freshness controls.
 scale: []
-results_reported: 'Paper: deployed in the LinkedIn job recommender, improving total job applications from active job seekers by 20%
-  to 40%.'
+results_reported: The online A/B sampled 2% of members per model and reported one week of results in November 2015. Against production LR-Cosine, daily job application clicks rose 20% to 40% and job detail views rose 10% to 20%. The paper defines application clicks as clicks on the Apply button.
 caveats: []
 unknown_fields:
 - latency
@@ -64,27 +66,29 @@ code:
 core_idea: Add per-member and per-job random-effect coefficients to a global model.
 deployed_in: LinkedIn job recommender, Jobs you may be interested in
 scale_short: Not stated in the sources
-key_result: Total job applications from active job seekers up 20% to 40% in the LinkedIn job recommender
+key_result: In the LinkedIn jobs A/B, clicks on the Apply button rose 20% to 40% against LR-Cosine
 results_table:
   online:
   - setting: LinkedIn job recommender
     method: GLMix
-    metric: Total job applications from active job seekers
+    metric: Job application clicks
     result: +20% to +40%
-    versus: Previous recommender
+    versus: Production LR-Cosine
 deployment:
   online_evidence: online_numbers
   scenario: LinkedIn job recommender, Jobs you may be interested in
-  ab_traffic: not_reported
-  ab_duration: not_reported
-  baseline: Previous recommender
+  ab_traffic: 2% of members sampled per model
+  ab_duration: One week of results from November 2015
+  baseline: Production LR-Cosine
   online_lifts:
-  - metric: Total job applications from active job seekers
+  - metric: Job application clicks
     value: +20% to +40%
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
   inference_cost: not_reported
   hardware: Apache Spark on YARN for training; serving not described
-  basis: card_content
-  checked_on: '2026-10-31'
+  fulltext_refs:
+  - Section 2.1 defines the metric as Apply-button clicks. Sections 4.2 and 4.3 and Figure 6 give serving and A/B details.
+  basis: full_text
+  checked_on: '2026-11-26'

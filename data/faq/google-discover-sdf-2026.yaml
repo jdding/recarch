@@ -2,7 +2,7 @@
 id: google-discover-sdf-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 91febfc149e0a7c3
+content_hash: 8ed8cdfca253e41a
 drop: []
 items:
 - key: what
@@ -30,9 +30,9 @@ items:
   - core_idea
 - key: results
   q_en: What results does SDF report?
-  a_en: Section 4.2 reports stale-content prevalence deltas of -6.91 percentage points for SDF and -0.10 for the age-cutoff plus engagement-cliff baseline. Each delta compares the stale shares of promoted and demoted items sampled over four consecutive weeks. In the separate two-month joint holdback with both filters disabled for controls, dismissal rate fell 0.16%, feed diversity rose 0.13%, and positive engagement rose 0.26%. Section 4.3 reports 54.9% fewer user-filed staleness reports over two years versus the pre-deployment baseline. In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.
+  a_en: Section 4.2 reports stale-content prevalence deltas of -6.91 percentage points for SDF and -0.10 for the age-cutoff plus engagement-cliff baseline. Each delta subtracts the stale share among items whose views fell from the stale share among items whose views rose. Items were sampled weekly over four weeks. In the separate two-month joint holdback with both filters disabled for controls, dismissal rate changed by -0.16 ± 0.07%, feed diversity by +0.13 ± 0.04%, and positive engagement by +0.26 ± 0.18%. The ranges are 95% confidence intervals. Section 4.3 reports 54.9% fewer user-filed staleness reports over two years versus the pre-deployment baseline. In the first quarter of 2026, serving CPU and TPU hours fell 4.76% for the relational filter and an additional 3.98% for the intrinsic filter.
   q_zh: SDF 报告了哪些结果？
-  a_zh: 第 4.2 节报告，SDF 的过时内容占比差为 -6.91 个百分点，发布时间阈值加互动骤降的基线为 -0.10 个百分点。每个占比差比较连续四周抽样中曝光增加与曝光减少的内容。另做两个月的联合保留组实验，对照组禁用两道过滤器，SDF 的划走率下降 0.16%，信息流多样性提升 0.13%，正向互动提升 0.26%。第 4.3 节报告，相比部署前，两年内用户提交的过时投诉减少 54.9%。2026 年第一季度，两道过滤器分别节省服务侧 CPU 和 TPU 用时 4.76% 和额外的 3.98%。
+  a_zh: 第 4.2 节报告，SDF 的过时占比差为 -6.91 个百分点，发布时间阈值加互动骤降的基线为 -0.10 个百分点。占比差等于浏览量增加组的过时占比减去浏览量减少组的过时占比，样本连续四周按周抽取。另做两个月的联合保留组实验，禁用对照组的两道过滤器。划走率变化为 -0.16 ± 0.07%，信息流多样性为 +0.13 ± 0.04%，正向互动为 +0.26 ± 0.18%，区间为 95% 置信区间。第 4.3 节报告，相比部署前，两年内用户提交的过时投诉减少 54.9%。2026 年第一季度，两道过滤器分别节省服务侧 CPU 和 TPU 用时 4.76% 和额外的 3.98%。
   fields:
   - results_reported
 - key: online
@@ -46,9 +46,9 @@ items:
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of SDF?
-  a_en: The prevalence delta compares two sampled sets of items. It measures a different outcome from the joint-holdback experiment. The two-year report count is deployment monitoring across model upgrades and locale expansion.
+  a_en: The item sample is weighted by the size of the view change. An item counts as stale when at least three of five raters agree. The estimate describes the sampled items the filter moved. The two-year report count is deployment monitoring across model upgrades and locale expansion.
   q_zh: 读 SDF 的结果时要注意什么？
-  a_zh: 过时内容占比差来自两组抽样内容，与联合保留组实验衡量的结果不同。 两年的投诉数来自线上监测，期间包含模型升级和地区扩展。
+  a_zh: 抽样按浏览量变化幅度加权。五位独立标注员中至少三位判为过时才计入过时。该估计描述过滤器改变浏览量的抽样内容。 两年的投诉数来自线上监测，期间包含模型升级和地区扩展。
   fields:
   - caveats.0
   - caveats.1

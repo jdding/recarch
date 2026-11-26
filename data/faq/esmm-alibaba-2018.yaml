@@ -2,14 +2,14 @@
 id: esmm-alibaba-2018
 reviewed: false
 generated_by: templates over card fields
-content_hash: 58f4ce39fe7eec9e
+content_hash: 66fb42df91d39bdf
 drop: []
 items:
 - key: what
   q_en: What is ESMM, in one sentence?
-  a_en: ESMM trains CTR and CTCVR over the entire impression space so conversion rate is estimated without sample-selection bias; public-data CVR AUC 68.56 vs 66.00 baseline.
+  a_en: ESMM trains CTR and CTCVR over the entire impression space to reduce selection bias in conversion-rate estimation; public-data CVR AUC 68.56 vs 66.00 baseline.
   q_zh: ESMM 一句话是什么？
-  a_zh: ESMM 在整个曝光空间上训练 CTR 和 CTCVR，从而在没有样本选择偏差的情况下估计转化率；公开数据上 CVR AUC 为 68.56，对比基线 66.00。
+  a_zh: ESMM 在整个曝光空间上训练 CTR 和 CTCVR，以缓解转化率估计中的样本选择偏差；公开数据上 CVR AUC 为 68.56，对比基线 66.00。
   fields:
   - tldr
 - key: who

@@ -2,7 +2,7 @@
 id: tencent-lfm4ads-2025
 reviewed: false
 generated_by: templates over card fields
-content_hash: 83d3ea196a3ecbbe
+content_hash: 7fc45b80ad00971e
 drop: []
 items:
 - key: what
@@ -28,20 +28,27 @@ items:
   a_zh: 把大型广告基础模型的三类表示按特征、模块和模型三个层级迁移进下游任务。
   fields:
   - core_idea
+- key: results
+  q_en: What results does LFM4Ads report?
+  a_en: The revised author version reports a platform-wide 2.45% GMV lift across more than 10 launches since Q4 2024 (abstract and Sec. 5.4). Scenario GMV lifts were 2.16% in Moments and 1.18% in Channels. Table 2 reports feature-level GMV lifts of +0.42% for Moments pCTR, +2.53% for Moments pCVR, +0.70% for Channels matching, +1.75% for Search Ads matching, +0.76% for DSP pCTR and +0.93% for Internet Service pLTV. Module-level launches lifted GMV by 1.88%. For standalone retrieval in Weixin Channels, v2 reports GMV +1.17%, CTR +1.83%, CTCVR +3.34%, dwell time +1.66% and quick-slip −0.36%. The earlier author version reported neutral GMV for its 5% test. Table 3 reports Weixin Moments online ablations. AUC was 0.8515 without LFM features, 0.8520 with dual-branch SUM and 0.8525 with full LFM4Ads. Full LFM4Ads improved AUC by 0.0005 over dual-branch SUM. Relative to the baseline without LFM representations, GMV rose 0.79% with dual-branch SUM and 1.35% with the full model. On public KuaiRand-1K (Table 1), weighted AUC gains were 0.0025 for feature gating over SUM, 0.0016 for module fine-tuning over Vanilla and 0.0189 for retrieval over TwoTower. Table 4 reports online ablations of upstream sequences, with AUC gains of 0.031 for content, 0.042 for ads and 0.052 for both.
+  q_zh: LFM4Ads 报告了哪些结果？
+  a_zh: 摘要和第 5.4 节报告，2024 年第四季度以来的 10 多次上线合计使平台 GMV 提升 2.45%。朋友圈与视频号的场景 GMV 分别提升 2.16% 和 1.18%。表 2 列出特征级上线的 GMV 增量。朋友圈 pCTR 和 pCVR 分别 +0.42% 和 +2.53%，视频号召回、搜索广告召回、DSP pCTR 和互联网服务 pLTV 分别 +0.70%、+1.75%、+0.76% 和 +0.93%。模块级上线的 GMV 增量为 1.88%。视频号独立召回在 v2 中报告 GMV +1.17%、CTR +1.83%、CTCVR +3.34%、平均停留时长 +1.66%、快速划走率 −0.36%。早期作者稿中的 5% 流量实验报告 GMV 持平。表 3 是朋友圈线上消融，无 LFM 特征、双分支 SUM 和完整 LFM4Ads 的 AUC 分别为 0.8515、0.8520 和 0.8525。完整模型的 AUC 比双分支 SUM 高 0.0005。相对无 LFM 表示的基线，双分支 SUM 和完整模型的 GMV 分别高 0.79% 和 1.35%。公开数据集 KuaiRand-1K 的表 1 报告加权 AUC 增量。特征门控比 SUM 高 0.0025，模块微调比 Vanilla 高 0.0016，召回比 TwoTower 高 0.0189。表 4 的上游行为序列线上消融中，内容序列、广告序列以及双域序列带来的 AUC 增量分别为 0.031、0.042 和 0.052。
+  fields:
+  - results_reported
 - key: online
   q_en: Does LFM4Ads have online evidence, and how long was the A/B?
-  a_en: 'Online evidence: Online numbers. A/B duration: No duration is given for the reported online tests; the paper notes full-scale downstream evaluation takes over 1 week and the LEE framework reduces validation to mere hours. A/B traffic: 5% of traffic stated only for the model-level usage A/B test in Weixin Channels; traffic shares for the other online evaluations are unstated.'
+  a_en: 'Online evidence: Online numbers. A/B duration: not reported. A/B traffic: not reported.'
   q_zh: LFM4Ads 有线上证据吗，A/B 做了多久？
-  a_zh: 线上证据：有线上数据。A/B 时长：所报线上测试未给出时长；论文说明全量下游评估需超过 1 周，LEE 框架把验证缩短到数小时。A/B 流量：仅视频号模型级用法 A/B 写明占 5% 流量；其余线上评估的流量占比未说明。
+  a_zh: 线上证据：有线上数据。A/B 时长：未报告。A/B 流量：未报告。
   fields:
   - deployment.online_evidence
   - deployment.ab_duration
   - deployment.ab_traffic
 - key: caveats
   q_en: What should I keep in mind when reading the results of LFM4Ads?
-  a_en: The paper states that during the 5% online A/B test of model-level standalone retrieval the GMV was neutral, with improvements only in user experience metrics. Table 1 marks the same-branch SUM, the linear-fusion variant and the no-aggregation variant as No Launch; only dual-branch SUM and full LFM4Ads were launched.
+  a_en: The earlier author version reported neutral GMV for standalone retrieval in its 5% test. Version 2 reports +1.17% and gives no traffic share for that result. The platform-wide GMV number summarizes launches across multiple downstream tasks. No common experiment window or platform-level control is specified.
   q_zh: 读 LFM4Ads 的结果时要注意什么？
-  a_zh: 论文说明模型级独立检索的 5% 线上 A/B 中 GMV 持平，提升只体现在用户体验指标上。 表 1 将同分支 SUM、线性融合变体与去聚合变体标注为 No Launch；只有双分支 SUM 与完整 LFM4Ads 完成上线。
+  a_zh: 早期作者稿在 5% 流量的独立召回实验中报告 GMV 持平。v2 报告 +1.17%，未说明流量占比。 平台 GMV 汇总多项下游上线结果。没有披露统一的实验窗口和平台级对照。
   fields:
   - caveats.0
   - caveats.1
@@ -63,13 +70,3 @@ items:
   - scale.1
   - scale.2
   - scale.3
-- key: serving
-  q_en: What serving latency, QPS, cost or hardware does LFM4Ads report?
-  a_en: 'Serving latency: not reported. Serving QPS: 500K QPS for representation serving. Inference cost: FLOPS stated at 1.45B; module-level usage uses DCN-V2 experts chosen for low online inference complexity. Hardware: not reported.'
-  q_zh: LFM4Ads 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：未报告。 服务 QPS：表示服务吞吐 500K QPS。 推理成本：FLOPS 论文表述为 1.45B；模块级用法选用 DCN-V2 专家以降低在线推理复杂度。 硬件：未报告。
-  fields:
-  - deployment.serving_latency
-  - deployment.serving_qps
-  - deployment.inference_cost
-  - deployment.hardware

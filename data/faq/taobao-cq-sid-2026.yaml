@@ -2,7 +2,7 @@
 id: taobao-cq-sid-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: 6760dc65955b7c72
+content_hash: 06842775acc3148a
 drop: []
 items:
 - key: what
@@ -64,9 +64,9 @@ items:
   - scale.3
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does CQ-SID report?
-  a_en: 'Serving latency: Approximately 40 ms average end-to-end latency. Serving QPS: Over 200 QPS. Inference cost: not reported. Hardware: 8 GPUs for online serving.'
+  a_en: 'Serving latency: Approximately 40 ms end-to-end on average for the generative recall service. Serving QPS: Over 200 QPS across the 8 GPUs serving generative recall. Inference cost: not reported. Hardware: 8 GPUs for online serving.'
   q_zh: CQ-SID 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：平均端到端延迟约 40 毫秒。 服务 QPS：超过 200 QPS。 推理成本：未报告。 硬件：8 块 GPU 用于线上服务。
+  a_zh: 服务延迟：生成式召回服务的平均端到端延迟约 40 毫秒。 服务 QPS：生成式召回服务的 8 块 GPU 共承载超过 200 QPS。 推理成本：未报告。 硬件：8 块 GPU 用于线上服务。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

@@ -2,7 +2,7 @@
 id: bytedance-hap-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: c9b37c68abced5a0
+content_hash: 74f1c7202e15117f
 drop: []
 items:
 - key: what
@@ -54,9 +54,9 @@ items:
   - caveats.1
 - key: serving
   q_en: What serving latency, QPS, cost or hardware does HAP report?
-  a_en: 'Serving latency: Comparable to the prior production model. Serving QPS: not reported. Inference cost: CPU usage 6% lower than the prior production model. Hardware: not reported.'
+  a_en: 'Serving latency: Comparable to the prior production model in the main A/B. The routing ablation reports 203 ms for HAP and 225 ms for the single large model. Serving QPS: not reported. Inference cost: CPU usage 6% lower than the prior production model. Hardware: not reported.'
   q_zh: HAP 报告了怎样的服务延迟、QPS、成本和硬件？
-  a_zh: 服务延迟：与此前的线上模型相当。 服务 QPS：未报告。 推理成本：CPU 用量比此前的线上模型低 6%。 硬件：未报告。
+  a_zh: 服务延迟：主要 A/B 中与此前的线上模型相当。路由消融中 HAP 为 203 ms，单一大模型为 225 ms。 服务 QPS：未报告。 推理成本：CPU 用量比此前的线上模型低 6%。 硬件：未报告。
   fields:
   - deployment.serving_latency
   - deployment.serving_qps

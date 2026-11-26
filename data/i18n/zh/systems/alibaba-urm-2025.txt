@@ -1,7 +1,7 @@
 surface|阿里巴巴广告平台的检索，以 10 分钟窗口异步生成候选集
 era_reason|由文本目标驱动的 LLM 在完整候选空间上生成检索结果；生成式 LLM 技术栈是核心机制。
-tldr|URM 把微调后的 Qwen-7B LLM 变成由文本目标驱动的通用生成式检索器；线上 A/B 广告收入 +3.01%。
-summary|URM 即 Universal Retrieval Model：默认用 Qwen-7B 做全参数微调的 LLM，输入序列化用户特征、自然语言检索目标与一组固定可学习查询 token，经分解为判别与可迁移两部分的映射矩阵从约 10^7 个物品中生成候选，概率采样沿 ANN 邻居压缩生成开销。系统以 10 分钟窗口经 vLLM 单次预填充异步服务，取代各任务专属检索通道；广告平台线上 A/B 将广告收入提升 3.01%。
+tldr|URM 用微调后的语言模型按文本指定的目标召回物品。广告线上实验报告收入提升 3.01%。
+summary|URM 接收序列化用户特征、文本检索目标和可学习查询 token。系统用包含判别和迁移两部分的映射，从约 10^7 个物品中采样候选。主实验采用 Qwen-7B。系统按 10 分钟窗口聚合行为后异步刷新候选，写入存储供在线召回读取。
 core_idea|一个微调后的 LLM 按任意文本描述的目标在完整候选集上生成检索结果
 deployed_in|阿里巴巴广告平台的检索
 scale_short|候选池约 10^7 个物品
@@ -27,45 +27,45 @@ scale.2.metric|工业数据集
 scale.2.value|数亿条样本，用户行为序列中超过 10 亿的不同物品
 scale.3.metric|训练
 scale.3.value|Qwen-7B 用 64 块 NVIDIA H20 GPU，25 小时处理 5000 万条样本
-scale.4.metric|延迟
+scale.4.metric|模型推理基准延迟
 scale.4.value|输入长度 1024 时 p99，1.5B 为 50 ms，7B 为 233 ms
 scale.5.metric|采样模块
 scale.5.value|在 1000 万物品候选空间内低于 10 ms
 results_table.online.0.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
-results_table.online.0.versus|平台现行服务
+results_table.online.0.versus|对照配置未披露
 results_table.online.1.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
-results_table.online.1.versus|平台现行服务
+results_table.online.1.versus|对照配置未披露
 results_table.online.2.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
-results_table.online.2.versus|平台现行服务
+results_table.online.2.versus|对照配置未披露
 results_table.online.3.setting|阿里巴巴广告平台线上 A/B，2025 年四月 28 日至五月 14 日
-results_table.online.3.versus|平台现行服务
+results_table.online.3.versus|对照配置未披露
 results_table.offline.0.setting|Sports、Beauty、Toys、Yelp，表 1
 results_table.offline.1.setting|Sports、Beauty、Toys、Yelp，表 1
 results_table.offline.2.setting|工业数据，表 2，9 个目标的 R@1000 平均
 results_table.offline.2.versus|PLE 多任务 Attention-DNN 0.363
 results_table.other.0.setting|工业数据，表 5，惊喜度检索
 results_table.other.0.versus|CPR 目标下为 18.8%
-results_table.note|表 4 中概率采样的检索精度在 T=4 收敛于 91.0%；数十毫秒说法背后的 50 ms 是 1.5B 模型在输入长度 1024 的结果，默认 7B 骨干在同长度下表 7 显示 233 ms p99。摘要写收入提升 3%，表 6 给出 +3.01%。
-caveats.0|检索结果按 10 分钟窗口异步预计算，线上路径不是每次请求都跑一遍 LLM 推理。
+results_table.note|表 7 在输入长度 1024 时测模型推理的 p99。1.5B 模型为 50 ms，7B 模型为 233 ms。表 6 单独报告广告收入 +3.01%。
+caveats.0|URM 按 10 分钟窗口异步预计算候选，在线召回读取存储中的结果。
 caveats.1|摘要写核心指标提升 3%，引言写超过 3%；5.5 节表 6 给出广告收入的精确值 +3.01%。
-caveats.2|数十毫秒说法背后的 50 ms 是 1.5B 模型在输入长度 1024 的测量值；默认 7B 骨干在同长度下表 7 显示 233 ms p99。
+caveats.2|表 7 在 H20 GPU 上测模型推理。原文未披露 A/B 使用的骨干和生产端到端延迟。
 caveats.3|附录 A.1 的局限性说明：LLM 推高训练与推理成本，用按小时聚合、5% 数据抽样和 10 分钟异步窗口缓解；URM 对新目标的适配只在接近训练目标时成立，全新目标仍然困难。
 caveats.4|候选集的精确数量因数据安全不予公开，且平台只被描述为我们的广告平台。
 caveats.5|论文说明公开数据集代码将在录用后发布。
-unknown_fields.0|A/B 流量占比与分桶方式
+unknown_fields.0|A/B 流量占比、分桶方式、对照配置与部署骨干
 unknown_fields.1|线上推理的 QPS 与 GPU 规模
 unknown_fields.2|A/B 之后 URM 检索是否服务全量流量
 unknown_fields.3|候选集的精确数量
 code.note|2026-11-03 检索未发现官方代码：论文与 arXiv 页面均无仓库链接，网页与 GitHub 搜索也没有结果。论文说明公开数据集代码将在录用后发布，ACM 论文集条目标注日期为 2026 年 11 月 6 日。这里记录的是一次搜索结果，不构成不存在代码的证明。
 updates.0.note|依据 arXiv v2 全文重写，补入 CIKM 2026 会议信息与 DOI、完整的离线与线上数字、服务与训练细节；旧卡缺会议字段且分词字段为空。
-version_note|卡片依据 arXiv 2502.03041 v2，即 2025-05-19 修订版，2026-11-03 全文读取；写作时正式版全文尚不可读。CIKM 2026 DOI 10.1145/3799682.3840090 已在 Crossref 核对，标题一致，页码 8319-8327，论文也出现在 CIKM 2026 官方 program 的 2A 场次。会后请逐个数字对照 ACM 正式版复核，然后将卡片标记为已对照正式版核对。
+version_note|CIKM 2026 论文集列于第 8319-8327 页。部署证据已复核 arXiv v2，ACM 托管全文待核。
 deployment.scenario|阿里巴巴广告平台的检索：URM 检索结果以 10 分钟窗口异步生成并持久化，供线上检索阶段使用
 deployment.ab_duration|2025 年四月 28 日至五月 14 日
-deployment.baseline|A/B 测试中广告平台的现行服务；论文未明确写出对照组
 deployment.training_compute|Qwen-7B 用 64 块 NVIDIA H20 GPU，25 小时处理 5000 万条训练样本，先做 5% 数据抽样
-deployment.serving_latency|10 分钟异步窗口；哈希表查找在几毫秒内，采样低于 10 ms；输入长度 1024 时 p99，1.5B 为 50 ms，默认 7B 为 233 ms
-deployment.inference_cost|概率采样把论文设定下映射 FLOPS 从 5000G 降到 2G；论文自述的局限性说明 LLM 训练与推理成本仍高于传统推荐模型
+deployment.serving_latency|在 H20 上以输入长度 1024 做模型推理基准。p99 延迟为 1.5B 模型 50 ms、7B 模型 233 ms。
 deployment.hardware|NVIDIA H20 GPU 用于训练与延迟测量
-deployment.notes.0|50 ms 是 1.5B 模型的数值；线上部署默认骨干为 Qwen-7B。
+deployment.notes.0|候选以 10 分钟窗口异步刷新。线上骨干和端到端延迟未披露。
 deployment.notes.1|摘要给核心指标 3%；表 6 给 +3.01%。
 deployment.notes.2|候选集的精确数量因数据安全不予公开。
+deployment.notes.3|第 3.3 节报告，特定设置下物品映射计算量从 5000G 降至 2G FLOPs。
+updates.1.note|分开标注异步刷新、模型基准和生产 A/B，并将实验对照与上线骨干列为未披露。

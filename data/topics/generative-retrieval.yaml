@@ -1,14 +1,14 @@
 title: Generative retrieval
 summary: Systems where a model writes the answer instead of looking it up by embedding search, compared across nineteen RecArch cards.
 framing:
-  - A classic retrieval stack finds items by nearest-neighbor search over embeddings. Generative retrieval has a model write the answer. It produces a short code for each item, called a semantic ID, or it produces text, and the output is mapped back to items. All systems below report production use except TIGER, which reports public datasets only.
+  - A classic retrieval stack finds items by nearest-neighbor search over embeddings. A generative model can produce item IDs, intent codes or query text, which are then mapped to items. The cases below include live experiments and production launches. TIGER provides a reference on public datasets.
   - The word covers very different designs. Some replace the whole retrieval, pre-rank and rank cascade. Some add one more retrieval channel. Some generate things other than item IDs. The sections after the table explain the differences that change cost and risk.
 problem: A model writes the recommendation instead of searching for it. What does that change in your stack, your serving cost and your risk?
 question: Should you replace the retrieval cascade, or add one generative channel next to it?
 decisions:
   - when: You want the smallest rollout risk.
-    then: Add a channel next to your existing retrieval, as GEAR, BARGE, DPGR, URM and AIGQ do. An added channel is easier to roll back and to measure.
-    cards: [bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026]
+    then: Add a channel next to your existing retrieval, as GEAR, BARGE, URM and AIGQ do. An added channel is easier to roll back and to measure.
+    cards: [bytedance-gear-2026, tencent-tgr-2026, alibaba-urm-2025, taobao-aigq-2026]
   - when: You want fewer stages and can put the whole result on one model.
     then: Replace the cascade, as GPR and OneSearch do. This removes stages but puts the whole result on one model.
     cards: [tencent-gpr-2025, kuaishou-onesearch-2025]
@@ -65,7 +65,7 @@ differences:
     text: Most systems write semantic IDs. DPGR writes a few intent codes and lets ANN search find the items for each code. AIGQ writes query text. URM asks an LLM for a set of items from a text description of the goal. GenPage writes a whole page, with one token for each row and each entity. HiGR writes a whole slate of semantic IDs, planned with one embedding per slate position. Check this first, because it decides what you must build besides the model.
     cards: [tiger-google-2023, meituan-dpgr-2026, taobao-aigq-2026, alibaba-urm-2025, netflix-genpage-2026, tencent-higr-2025]
   - heading: Replace the cascade or add a channel
-    text: GPR and OneSearch replace the retrieval, pre-rank and rank cascade. Gwhere and OneRec are single-stage systems, and HiGR generates a whole slate and is compared with a multi-stage system. GEAR, BARGE, DPGR, URM and AIGQ are added next to existing retrieval sources, and SnapLGR is launched as one retrieval source. An added channel is easier to roll back and to measure. A replacement removes stages but puts the whole result on one model.
+    text: GPR and OneSearch replace the retrieval, pre-rank and rank cascade. Gwhere and OneRec are single-stage systems, and HiGR generates a whole slate and is compared with a multi-stage system. GEAR, BARGE, URM, AIGQ and SnapLGR add a retrieval source. DPGR tests a change from two-tower retrieval to intent-conditioned retrieval while keeping downstream ranking fixed. An added channel is easier to roll back and to measure.
     cards: [tencent-gpr-2025, kuaishou-onesearch-2025, amap-gwhere-2026, onerec-kuaishou, tencent-higr-2025, bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026, snap-snaplgr-2026]
   - heading: The tokenizer is the hard part
     text: Several cards spend most of their effort on semantic IDs themselves. TIGER adds a fourth token to separate items that collide. QuaSID pushes colliding items apart. GEAR uses a residual quantizer meant to avoid dead codes. SnapLGR adds a co-engagement loss that raises codebook utilization and reduces collisions. HiGR adds a prefix-level contrastive loss so that items sharing a prefix are close. UNIQUE moved to one flat codebook of 16,384 codes, from a 128 x 128 hierarchical layout.

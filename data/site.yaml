@@ -58,3 +58,9 @@ events:
     note: "EdgeRec, Kuaishou short-video reranking, Kwai Playback and RecGPT-Mobile show how phones and cloud services divide recommendation work."
     note_zh: "EdgeRec、快手端侧短视频重排、Kwai Playback 和 RecGPT-Mobile 展示了手机与云端怎样分担推荐决策。"
     topics: [device-cloud-recommendation]
+  - date: "2026-11-26"
+    title: "RecArch reviewed all 126 systems and updated 30 cards"
+    title_zh: "复审全部 126 张系统卡，更新 30 张"
+    note: "The updates clarify online results, experiment baselines and serving measurements. The Generative Retrieval and Semantic ID topics also reflect the corrected evidence."
+    note_zh: "本批修正线上指标、实验对照和服务测量的口径，并同步更新生成式召回与 Semantic ID 两个专题。"
+    topics: [generative-retrieval, semantic-id-tokenization]

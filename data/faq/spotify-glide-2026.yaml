@@ -2,7 +2,7 @@
 id: spotify-glide-2026
 reviewed: false
 generated_by: templates over card fields
-content_hash: d8265634d9cf653e
+content_hash: 15630695807c1c4c
 drop: []
 items:
 - key: what
@@ -64,9 +64,9 @@ items:
   - features_signals.2
 - key: unknown
   q_en: What does the source of GLIDE not report?
-  a_en: 'The source does not report: A/B traffic split and randomized user count; Production latency, throughput, hardware and monetary inference cost; Extent of rollout beyond the reported deployment and experiment.'
+  a_en: 'The source does not report: A/B traffic split and randomized user count; Absolute production latency and throughput, hardware and monetary inference cost; Extent of rollout beyond the reported deployment and experiment.'
   q_zh: GLIDE 的原文有哪些没有报告？
-  a_zh: 原文没有报告：A/B 流量分配和随机分组的用户数；生产延迟、吞吐、硬件和推理费用；原文所述部署及实验之外的推广范围。
+  a_zh: 原文没有报告：A/B 流量分配和随机分组的用户数；生产延迟和吞吐的绝对值、硬件和推理费用；原文所述部署及实验之外的推广范围。
   fields:
   - unknown_fields.0
   - unknown_fields.1

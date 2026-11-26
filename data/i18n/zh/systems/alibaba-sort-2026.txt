@@ -46,6 +46,8 @@ deployment.baseline|增量训练了一年多的线上 DLRM
 deployment.training_compute|每个模型视规模使用 4 到 32 块 A100 GPU 训练 1 到 10 天；MFU 在 base 规模从 13% 提升到 22%，在 large 规模达到 45%
 deployment.serving_latency|相对线上 DLRM 平均延迟 -62%，分场景从 -51% 到 -72%；绝对值未报告
 deployment.serving_qps|平均吞吐 +589%，分场景从 +325% 到 +1180%；绝对 QPS 未报告
-deployment.inference_cost|推理优化相对未优化基线带来 29.4% 的吞吐提升和 29.3% 的延迟下降；base 模型每个样本需要 24G FLOPs
+deployment.inference_cost|SORT-Base 每个样本需要 24G FLOPs。未披露货币成本。
 deployment.hardware|训练使用 A100 GPU；线上服务硬件未报告
-deployment.notes.0|线上部署的是 base 规模模型，只用最近三个月的数据。
+deployment.notes.1|线上部署的是 base 规模模型，只用最近三个月的数据。
+deployment.notes.0|另一个服务优化实验以未优化模型为对照，吞吐增加 29.4%，延迟下降 29.3%。
+updates.0.note|区分服务优化对照实验、计算量与线上 A/B。

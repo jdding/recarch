@@ -12,8 +12,10 @@ venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831864"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Identified the FLOP estimate as a branch-level calculation with reuse and cache assumptions.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Douyin's fine-ranker compresses 100K behaviors into a cacheable fixed-size sketch with Sketch Attention, plus STCA over a recent 10K; replaces TWIN V2; 1-month A/B: Finish +2.33%, Duration +1.5%."
@@ -162,10 +164,11 @@ deployment:
   training_compute: not_reported
   serving_latency: not_reported
   serving_qps: not_reported
-  inference_cost: Ultra-long branch at 100K events needs 49.9 times fewer FLOPs in training and 63.9 times fewer
-    at inference than direct STCA
+  inference_cost: At 100K events, the ultra-long branch requires an estimated 1/63.9 of direct STCA's FLOPs per target under the serving reuse and cache assumptions.
   hardware: not_reported
   notes:
-  - Sketch cache hit rate is about 0.6 at a 1-hour TTL.
+  - Sketch cache hit rate is about 0.6 at a 1-hour TTL. The appendix also estimates 49.9× lower FLOPs for the ultra-long branch under the training reuse and cache assumptions.
+  fulltext_refs:
+  - Appendix G.6, equations 74 and 75. Training assumes a reuse ratio of 40 and a cache hit rate of 0.5. Serving assumes a reuse ratio of 300 and a hit rate of 0.6.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

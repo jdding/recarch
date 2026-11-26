@@ -11,7 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3770855.3818425"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Disclosed the disagreement between Table 4 and the prose about the v0.4 GMV result.
 system_type: ads
 evidence_level: production_described
 tldr: "One generative model replaces Weixin Channels ads' retrieval, pre-rank and rank cascade, using multi-level semantic IDs; five online launches each lifted GMV, with +2.11% for v0.1."
@@ -46,7 +49,7 @@ training:
 serving_infra: null
 scale: []
 results_reported: 'Five sequential online A/B launches against the mature cascade, GMV (primary KPI) lifts: v0.1 HSD+NTP+DPO +2.11%;
-  v0.2 +HEPO w/o ARR +0.70%; v0.3 +MTP+Thinking +0.63%; v0.4 +PTD +0.71%; v0.5 +HEPO w/ ARR +0.58%, as incremental changes; the abstract only says significant GMV and CTCVR gains. Table 5 gives stratified GMV/CTR/CVR/CTCVR by user group and new vs non-new ads.'
+  v0.2 +HEPO w/o ARR +0.70%; v0.3 +MTP+Thinking +0.63%; v0.4 +PTD +0.71% in Table 4 (+0.58% in the accompanying prose); v0.5 +HEPO w/ ARR +0.58%, as incremental changes; the abstract only says significant GMV and CTCVR gains. Table 5 gives stratified GMV/CTR/CVR/CTCVR by user group and new vs non-new ads.'
 caveats:
 - Table 4 has additional columns (GMV-Normal, Costs); the mapping of numbers to columns was read from extracted text and should be confirmed
   in the PDF before quoting beyond GMV.
@@ -98,7 +101,7 @@ results_table:
     metric: GMV
     result: +0.63%
     versus: Previous version
-  - setting: Online A/B, v0.4
+  - setting: Online A/B, v0.4, Table 4
     method: Add PTD
     metric: GMV
     result: +0.71%
@@ -123,6 +126,6 @@ deployment:
   inference_cost: not_reported
   hardware: not_reported
   notes:
-  - Four later launches add +0.70%, +0.63%, +0.71% and +0.58% GMV, each against the previous version.
+  - Table 4 reports +0.70%, +0.63%, +0.71% and +0.58% GMV for successive later launches. The prose gives +0.58% for v0.4 (PTD).
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

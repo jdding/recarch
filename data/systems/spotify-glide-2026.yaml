@@ -11,7 +11,10 @@ venue_year: 2026
 published_version_checked: false
 primary_source: https://doi.org/10.1145/3770855.3818419
 added_on: "2026-11-25"
-last_verified: "2026-11-25"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Added the serving throughput improvement and how the system resolves Semantic ID collisions.
 system_type: recommendation
 evidence_level: production_described
 tldr: Spotify adds a podcast retrieval source that generates episode IDs from long-term preferences and recent listens. Non-habitual streams per user rose 5.4% in a Home A/B test.
@@ -33,7 +36,7 @@ training:
   objectives:
   - Learn the correspondence between episode metadata and semantic IDs
   - Retrieve episodes under instructions about the listener's familiarity and listening habits
-serving_infra: Event-triggered requests allow precomputation and caching when appropriate. The service decodes episode IDs with beam search and passes resolved candidates to the existing episode ranker.
+serving_infra: Event-triggered requests allow precomputation and caching when appropriate. Beam search outputs episode Semantic IDs. When a Semantic ID maps to multiple episodes, the service picks the most popular eligible episode and passes it to the existing ranker.
 scale:
 - metric: Home A/B exposure
   value: About 20M impressions per cell
@@ -44,7 +47,7 @@ caveats:
 - Reported gains apply to the eligible podcast audience on Home. Long-term effects and wider audience results were not quantified.
 unknown_fields:
 - A/B traffic split and randomized user count
-- Production latency, throughput, hardware and monetary inference cost
+- Absolute production latency and throughput, hardware and monetary inference cost
 - Extent of rollout beyond the reported deployment and experiment
 sources:
 - title: 'From Habits to Discovery: Deploying LLMs for Personalized Generative Recommendations at Spotify'
@@ -80,11 +83,13 @@ deployment:
   - {metric: New-show non-habitual streams, value: +14.3%}
   training_compute: not_reported
   serving_latency: not_reported
-  serving_qps: not_reported
+  serving_qps: Up to 8× throughput after serving optimizations at the same latency objective
   inference_cost: not_reported
   hardware: not_reported
+  notes:
+  - The throughput improvement enabled beam width to increase from 14 to 30 at the production latency target.
   fulltext_refs:
-  - Sections 4.1 through 4.4 describe the tokenizer, contextual prompt, training and serving.
+  - Section 4.4.1 documents collision resolution. Section 4.4.4 reports up to 8× throughput and a beam change from 14 to 30.
   - Section 5.3 describes the eligible audience, experiment conditions and lifts.
   basis: full_text
-  checked_on: "2026-11-25"
+  checked_on: "2026-11-26"

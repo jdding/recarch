@@ -11,10 +11,13 @@ venue_year: null
 published_version_checked: null
 primary_source: "https://engineering.fb.com/2024/12/02/production-engineering/meta-andromeda-advantage-automation-next-gen-personalized-ads-retrieval-engine/"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Matched the selected-segment qualifier to the ads-quality metric in the engineering post.
 system_type: ads
 evidence_level: production_described
-tldr: "Meta's ads retrieval engine: a deep network co-designed with Grace Hopper hardware and a hierarchical index; the blog reports +6% recall and +8% ads quality."
+tldr: "Meta's ads retrieval engine: a deep network co-designed with Grace Hopper hardware and a hierarchical index; Meta reports +6% retrieval recall and +8% ads quality in selected segments."
 summary: 'Next-generation ads retrieval engine: a deep neural network co-designed with NVIDIA Grace Hopper hardware and a hierarchical
   index, trained jointly with the retrieval model, to pick a few thousand ads from tens of millions of candidates.'
 paradigms:
@@ -52,7 +55,7 @@ scale:
 - metric: End-to-end QPS
   value: '>3x'
   note: blog
-results_reported: 'Blog: +6% recall improvement and +8% ads quality improvement on selected segments.'
+results_reported: 'Meta reports a 6% improvement in retrieval recall and an 8% improvement in ads quality on selected segments. The post gives no evaluation protocol.'
 caveats:
 - Engineering blog; no paper, no ablations.
 unknown_fields:
@@ -73,19 +76,19 @@ code:
 core_idea: A deep neural network co-designed with Grace Hopper hardware and a hierarchical index, trained jointly with retrieval.
 deployed_in: Ads retrieval on Facebook and Instagram
 scale_short: Picks a few thousand ads from tens of millions of candidates
-key_result: 'Blog: +6% recall and +8% ads quality on selected segments'
+key_result: 'Retrieval recall +6%. Ads quality +8% in selected segments.'
 results_table:
   other:
-  - setting: Selected segments, per the blog
+  - setting: Retrieval, per the engineering post
     method: Andromeda
     metric: Recall
     result: +6%
-    versus: Previous retrieval
+    versus: Comparison setup undisclosed
   - setting: Selected segments, per the blog
     method: Andromeda
     metric: Ads quality
     result: +8%
-    versus: Previous retrieval
+    versus: Comparison setup undisclosed
 deployment:
   online_evidence: online_numbers
   scenario: Ads retrieval on Facebook and Instagram
@@ -93,7 +96,7 @@ deployment:
   ab_duration: not_reported
   baseline: not_reported
   online_lifts:
-  - metric: Recall, selected segments
+  - metric: Retrieval recall
     value: +6%
   - metric: Ads quality, selected segments
     value: +8%

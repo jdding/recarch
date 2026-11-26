@@ -28,5 +28,6 @@ unknown_fields.1|刷新频率
 unknown_fields.2|A/B 结果
 code.note|没有找到官方代码：论文和博客文本中没有代码链接，公司的 GitHub 组织下没有匹配的仓库，2026-10-30 通过 GitHub 搜索和网页搜索也没有找到。这只是记录了一次搜索结果，不能证明代码不存在。
 deployment.scenario|Amazon.com 首页、购物车和邮件营销活动
-deployment.serving_latency|在线步骤是查表；许多应用要求在不超过半秒内返回结果
+updates.0.note|从服务延迟栏移除论文列举的通用半秒响应目标。
 deployment.notes.0|论文没有给出实验指标，只有关于点击率和转化率的定性说法。
+deployment.notes.1|上线服务查相似商品表。半秒是论文举出的通用响应目标。

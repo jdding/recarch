@@ -11,10 +11,13 @@ venue_year: 2025
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3705328.3748050"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Replaced the headline estimate with the per-surface A/B and separated it from the offline cold-start study.
 system_type: recommendation
 evidence_level: production_described
-tldr: "A 20B+ parameter pretrained user-sequence foundation model coupled into Home Feed and Related Items rankers; DCAT gives +600% throughput, +20% new-item engagement."
+tldr: "An activity-sequence foundation model feeds Pinterest rankers. Fresh Saves rose 5.70% in Home Feed and fell 0.82% in Related Items, where the cold-start changes were absent."
 summary: 'Pretrained user-activity-sequence foundation model with 20B+ parameters for Pinterest: trained on years of user actions with
   an InfoNCE next-positive-item objective, then fine-tuned and coupled into downstream rankers such as Home Feed and Related Items Feed via a Deduplicated Cross-Attention Transformer, DCAT, and int4 embedding quantization to keep cost neutral.'
 paradigms:
@@ -54,15 +57,12 @@ scale:
 - metric: Reach
   value: deployed for more than half a billion users across applications (abstract)
   note: paper
-results_reported: Throughput +600% from DCAT (internal data); +20% engagement with new (fresh) items attributed to learning user-sequence/candidate
-  interactions; deployed to Home Feed and Related Items Feed with neutral cost and marginal latency increase. Per-surface online lifts
-  are in the paper's tables and are not reproduced here.
+results_reported: "In Table 7, adding PinFM to the Home Feed ranker raised sitewide Saves 1.20%, Home Feed Saves 2.60% and Fresh Saves 5.70%. In Related Items ranking the corresponding changes were +0.72%, +2.09% and -0.82%. The reported confidence level is 95%. The Home Feed treatment used the cold-start changes; the Related Items treatment omitted them. In the separate offline Home Feed study (Table 2), Save HIT@3 for items younger than 28 days was -4.40% for PinFM without cold-start handling and +17.72% with the full cold-start recipe, both against the ranker without PinFM. The paper also reports DCAT throughput +600% on internal data."
 caveats:
-- Per-surface online A/B percentages were not extracted, so only abstract-level claims are listed.
-- The 20% fresh-item engagement figure is from the paper's abstract; its experimental setup was not re-derived here.
+- The abstract summarizes a 20% new-item engagement improvement. Table 2 concerns offline Save HIT@3 and Table 7 gives the measured online Fresh Saves for each product surface.
+- The online traffic split and measurement duration are not disclosed.
 - Embedding table serving is on a single CPU host, which the authors note limits flexibility.
 unknown_fields:
-- per-surface online metric lifts
 - GPU type and count
 - absolute latency
 sources:
@@ -87,36 +87,50 @@ code:
 core_idea: A pretrained user-activity sequence model feeds downstream rankers through a deduplicated cross-attention transformer.
 deployed_in: Pinterest Home Feed and Related Items Feed
 scale_short: 20B+ parameters, sequences up to 16,000 actions, more than half a billion users
-key_result: +20% engagement with fresh items in the deployed Home Feed and Related Items Feed
+key_result: "Fresh Saves +5.70% in the Home Feed test and -0.82% in the Related Items test"
 results_table:
   online:
-  - setting: Deployed in Home Feed and Related Items Feed
-    method: PinFM
-    metric: Engagement with new items
-    result: +20%
-    versus: Without learning user-sequence and candidate interactions
+  - setting: Home Feed ranking, Table 7
+    method: PinFM with cold-start handling
+    metric: Fresh Saves, Surface Saves, Sitewide Saves
+    result: "+5.70%, +2.60%, +1.20%"
+    versus: Existing Home Feed ranker
+  - setting: Related Items ranking, Table 7
+    method: PinFM without cold-start handling
+    metric: Fresh Saves, Surface Saves, Sitewide Saves
+    result: "-0.82%, +2.09%, +0.72%"
+    versus: Existing Related Items ranker
   offline:
+  - setting: Home Feed, items younger than 28 days, Table 2
+    method: PinFM with the full cold-start recipe
+    metric: Save HIT@3
+    result: "+17.72% against no PinFM, versus -4.40% for PinFM without cold-start handling"
+    versus: Ranker without PinFM for both variants
   - setting: Internal data
     method: DCAT
     metric: Throughput
     result: +600%
     versus: Without DCAT
-  note: Per-surface online lifts are in the paper's tables and are not reproduced here.
 deployment:
   online_evidence: online_numbers
   scenario: Pinterest Home Feed and Related Items Feed
   ab_traffic: not_reported
   ab_duration: not_reported
-  baseline: not_reported
+  baseline: Existing surface-specific rankers, which already used smaller sequence Transformers
   online_lifts:
-  - metric: Engagement with new items
-    value: +20%
+  - metric: Fresh Saves, Home Feed
+    value: +5.70%
+  - metric: Fresh Saves, Related Items
+    value: -0.82%
   training_compute: not_reported
   serving_latency: Marginal latency increase; no absolute number
   serving_qps: not_reported
-  inference_cost: Neutral serving cost reported; DCAT gives +600% throughput on Pinterest internal data
+  inference_cost: The authors report no significant increase in serving cost.
   hardware: Embedding table on CPU hosts; transformer on GPU inference hosts
   notes:
   - A two-week online test of int4 embedding quantization was statistically neutral against full precision.
+  fulltext_refs:
+  - "Table 2: offline Home Feed cold-start Save HIT@3 by item age"
+  - "Sec. 5.2 and Table 7: online Home Feed and Related Items results"
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

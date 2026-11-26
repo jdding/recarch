@@ -11,12 +11,14 @@ venue_year: 2024
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3637528.3671648"
 added_on: "2026-10-29"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Limited the map-order conclusion to the mobile test and used the larger experiment for the headline.
 system_type: search
 evidence_level: production_described
-tldr: "Airbnb finds the order of top map pins doesn't matter, so it drops rank-based attention and a Bookability Filter shows fewer pins; alpha 1.0 gave +1.7% uncanceled bookings."
-summary: KDD 2024 paper by Airbnb on re-designing ranking for map results. A randomization A/B on map-originated searches shows the
-  order of the top map pins does not matter, so the list-based attention model, where attention decays with rank, is replaced by uniform attention
+tldr: "Shuffling the top results on mobile map searches showed no booking drop. In a separate, larger test, displaying fewer pins with the Bookability Filter lifted uncanceled bookings by 1.9%."
+summary: KDD 2024 paper by Airbnb on re-designing ranking for map results. Shuffling top results for searches started by moving the map on mobile showed no booking drop. The authors used this result to replace list-based attention, where attention decays with rank, with uniform attention
   over pins. This gives a 'Less Is More' principle and a Bookability Filter that shows only listings whose logit is within alpha of
   the best listing, a dynamic number of pins instead of a fixed 18. Later steps add a robust anchor, two-tier pins, regular and mini-pins, on desktop, and a greedy map-center search using a 2-D attention decay map.
 paradigms:
@@ -171,4 +173,4 @@ deployment:
   notes:
   - The paper cites strict search latency budgets as the reason for a greedy heuristic, and gives no numbers.
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

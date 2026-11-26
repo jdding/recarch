@@ -12,10 +12,13 @@ deployed_year: 2021
 published_version_checked: false
 primary_source: "https://doi.org/10.1145/3534678.3539156"
 added_on: "2026-10-30"
-last_verified: "2026-10-30"
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Corrected the time-spent scope and identified the Homefeed ranking control.
 system_type: recommendation
 evidence_level: production_described
-tldr: "Causal transformer over a user's last 256 actions yields a 256-d daily-batch user embedding; reported Homefeed Repins +7.5%, Time Spent +1%."
+tldr: "Pinterest replaces the PinnerSage feature in its Homefeed ranker with a 256-dimensional user embedding computed daily. Homefeed saves rose 7.5% and time spent across Pinterest rose 1%."
 summary: >-
   Causal transformer over a user's last up to 256 actions producing a 256-d user embedding, trained with a dense all-action
   loss to predict engagement over a future window and computed in daily batch.
@@ -35,7 +38,7 @@ training:
   notes: null
 serving_infra: KV store + HNSW index; daily incremental inference.
 scale: []
-results_reported: "Reported Homefeed Repins +7.5% and Time Spent +1% (per paper)."
+results_reported: "In the Homefeed ranking A/B, PinnerFormer replaced an aggregate of PinnerSage embeddings. Homefeed saves rose 7.5% and sitewide time spent rose 1% (Table 7)."
 caveats: []
 unknown_fields: [model size, QPS]
 sources:
@@ -51,29 +54,29 @@ code:
 core_idea: A causal transformer over recent actions produces a user embedding in daily batch.
 deployed_in: Pinterest Homefeed and Ads ranking as a user embedding feature, and retrieval
 scale_short: Up to 256 actions per user, 256-d user embedding
-key_result: Homefeed Repins +7.5% and Time Spent +1%, as reported in the paper
+key_result: Homefeed saves +7.5% and sitewide time spent +1% in the same Homefeed ranking test
 results_table:
   online:
   - setting: Pinterest Homefeed
     method: PinnerFormer
     metric: Repins
     result: +7.5%
-    versus: Previous Homefeed
-  - setting: Pinterest Homefeed
+    versus: Homefeed ranker using an aggregate of PinnerSage embeddings
+  - setting: Homefeed A/B, sitewide metric
     method: PinnerFormer
-    metric: Time Spent
+    metric: Time spent
     result: +1%
-    versus: Previous Homefeed
+    versus: Homefeed ranker using an aggregate of PinnerSage embeddings
 deployment:
   online_evidence: online_numbers
   scenario: Pinterest Homefeed and Ads ranking, and retrieval
   ab_traffic: not_reported
   ab_duration: not_reported
-  baseline: Previous Homefeed
+  baseline: Homefeed ranker using an aggregate of PinnerSage embeddings
   online_lifts:
   - metric: Homefeed Repins
     value: +7.5%
-  - metric: Homefeed Time Spent
+  - metric: Sitewide time spent
     value: +1%
   training_compute: Training on 16 GPUs across 2 machines for sequence length 512 and 32 GPUs across 4 machines
     for length 1024
@@ -84,6 +87,7 @@ deployment:
   notes:
   - Embeddings are inferred in daily batches, not in real time, and served from a KV store with an HNSW index.
   fulltext_refs:
-  - 'Sec 5: 16 GPUs/2 machines for 512 sequence length, 32 GPUs/4 machines for 1024'
+  - 'Sec 4.3.1 and Table 7: Homefeed intervention with sitewide time spent'
+  - 'Sec 4.2.7: 16 GPUs/2 machines for 512 sequence length, 32 GPUs/4 machines for 1024'
   basis: full_text
-  checked_on: '2026-10-31'
+  checked_on: "2026-11-26"

@@ -1,7 +1,7 @@
 surface|地图和列表搜索结果
 era_reason|面向地图结果的 pairwise 和 listwise 神经排序模型；不是生成式
-tldr|Airbnb 发现排在前面的地图标记点顺序并不重要，于是去掉基于排名的注意力，并用 Bookability Filter 显示更少的标记点；alpha 为 1.0 时未取消预订 +1.7%。
-summary|Airbnb 的 KDD 2024 论文，讲的是重新设计地图结果的排序。在由地图发起的搜索上做随机化 A/B，结果显示排在前面的地图标记点顺序并不重要，因此注意力随排名衰减的列表式注意力模型被换成对标记点的均匀注意力。由此得到「Less Is More」原则和 Bookability Filter，它只显示 logit 与最优房源相差不超过 alpha 的房源，标记点数量是动态的，不再固定为 18 个。后续步骤加入稳健锚点、桌面端的双层标记点，即常规标记点和迷你标记点，以及利用 2-D 注意力衰减图的贪心地图中心搜索。
+tldr|在移动端地图搜索中，打乱靠前的结果未观察到预订下降。另一场规模更大的实验中，用 Bookability Filter 精简图钉后，未取消预订增加 1.9%。
+summary|Airbnb 的 KDD 2024 论文，讲的是重新设计地图结果的排序。在移动端，随机打乱由移动地图发起的搜索中靠前的结果，未观察到预订下降。作者据此把注意力随排名衰减的列表模型换成对标记点的均匀注意力。由此得到「Less Is More」原则和 Bookability Filter，它只显示 logit 与最优房源相差不超过 alpha 的房源，标记点数量是动态的，不再固定为 18 个。后续步骤加入稳健锚点、桌面端的双层标记点，即常规标记点和迷你标记点，以及利用 2-D 注意力衰减图的贪心地图中心搜索。
 core_idea|只把与最优房源接近的房源显示为地图标记点，不再固定显示 18 个。
 deployed_in|Airbnb 地图和列表搜索结果
 scale_short|超过 770 万个在线房源，最终 A/B 每个实验组有 3400 万名搜索用户
@@ -61,3 +61,4 @@ deployment.baseline|每次 A/B 测试的对照组
 deployment.notes.0|论文称，严格的搜索延迟预算是采用贪心启发式的原因，但没有给出数字。
 deployment.online_lifts.0.metric|未取消预订，最终实验，alpha 为 1.0
 deployment.online_lifts.1.metric|5 星行程，最终实验，alpha 为 1.0
+updates.0.note|把顺序结论限定在移动端随机实验，摘要采用规模更大的过滤实验结果。

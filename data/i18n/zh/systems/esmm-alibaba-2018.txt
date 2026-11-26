@@ -1,6 +1,6 @@
 surface|淘宝推荐数据上的点击后 CVR 预估
 era_reason|全空间多任务神经 CVR 模型
-tldr|ESMM 在整个曝光空间上训练 CTR 和 CTCVR，从而在没有样本选择偏差的情况下估计转化率；公开数据上 CVR AUC 为 68.56，对比基线 66.00。
+tldr|ESMM 在整个曝光空间上训练 CTR 和 CTCVR，以缓解转化率估计中的样本选择偏差；公开数据上 CVR AUC 为 68.56，对比基线 66.00。
 summary|来自阿里巴巴的 SIGIR 2018 论文：Entire Space Multi-Task Model 通过共享 embedding 表，在整个空间上训练 CTR 和 CTCVR 两个任务，再隐式推导 pCVR = pCTCVR / pCTR，因为 pCTCVR = pCTR x pCVR，借此估计所有曝光上的点击后转化率，解决样本选择偏差和数据稀疏问题。在淘宝推荐日志上做了离线评估；论文没有说明 ESMM 本身已在线上部署。
 core_idea|用共享 embedding 表在整个空间上训练 CTR 和 CTCVR，再由它们推导 CVR。
 deployed_in|淘宝推荐数据上的点击后 CVR 预估，离线评估

@@ -11,8 +11,10 @@ venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3774904.3792797"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Distinguished valid item ID density from the valid draft rate measured on production data.
 system_type: ads
 evidence_level: production_described
 tldr: "NEZHA adds a self-drafting head and hash-set verification to generative retrieval, cutting Taobao ad latency from over 1000 ms to under 30 ms; A/B revenue +1.2%."
@@ -26,7 +28,7 @@ stages:
   details: "The draft head combines a logit head over the LLM's final-layer hidden states with an autoregressive component that consumes previously drafted tokens; drafted candidate sequences are filtered in place against the hash set of valid semantic IDs, retaining only items in the intersection."
 id_tokenization:
   approach: "Multi-token semantic IDs encoded as integers in a pre-computed hash set"
-  details: "Each item's semantic ID maps to an integer index; verification is a constant-time hash lookup. The paper reports the ratio of valid IDs among raw generations is around 0.1% in production data, and verification lifts the valid drafted-candidate ratio from 43% to over 93%."
+  details: "Each item's semantic ID maps to an integer index for hash-set lookup. Valid item IDs occupy about 0.1% of the possible code space. On production data, the share of valid drafted candidates increased from 43% to over 93% with verification."
 features_signals:
 - "Query and user interaction sequence serialized for the LLM"
 - "Semantic-ID token stream generated autoregressively"
@@ -126,4 +128,4 @@ deployment:
   - "Sec 3.3: 43% to over 93% valid ratio, 12 percentage point uplift"
   - "Table 3: Qwen Beauty 0.0451, Games 0.0239 significant, normalized latency 7.00 and 4.41 against beam search 74.21 and 47.70"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-26"

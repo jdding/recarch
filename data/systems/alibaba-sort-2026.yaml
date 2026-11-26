@@ -11,8 +11,10 @@ venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3799682.3840109"
 added_on: "2026-11-01"
-last_verified: "2026-11-01"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Separated the serving-optimization benchmark from compute and the production A/B.
 system_type: recommendation
 evidence_level: production_described
 tldr: "Alibaba International's SORT is a Transformer ranker with request-centric samples and generative pre-training; on AliExpress it gives orders +7.47%, GMV +8.65% and latency -62%."
@@ -130,13 +132,14 @@ deployment:
   training_compute: 'Each model trains on 4 to 32 A100 GPUs for 1 to 10 days depending on size; MFU rises from 13% to 22% at base scale and reaches 45% at large scale'
   serving_latency: 'Latency -62% on average against the production DLRM, from -51% to -72% by scenario; absolute values not reported'
   serving_qps: 'Throughput +589% on average, from +325% to +1180% by scenario; absolute QPS not reported'
-  inference_cost: 'Inference optimizations give a 29.4% throughput increase and a 29.3% latency reduction over the unoptimized baseline; the base model needs 24G FLOPs per sample'
+  inference_cost: 'SORT-Base requires 24G FLOPs per sample. Monetary serving cost is undisclosed.'
   hardware: 'A100 GPUs for training; serving hardware not reported'
   notes:
+  - 'The separate serving-optimization comparison against the unoptimized model gives 29.4% more throughput and 29.3% lower latency.'
   - 'The deployed model is base scale and uses only the recent three months of data.'
   fulltext_refs:
   - 'Table 5 and Sec 4.6: one-month A/B in four scenarios, macro average orders +7.47%, buyers +6.67%, GMV +8.65%, latency -62%, throughput +589%; scenario ranges latency -51% to -72%, throughput +325% to +1180%'
   - 'Sec 4.1.3: 4 to 32 A100 GPUs for 1 to 10 days; Sec 3.3: MFU 13% to 22% at base scale, 45% at large scale; 29.4% throughput increase and 29.3% latency reduction'
   - 'Sec 4.6: deployed SORT is base scale trained on the recent three months, the DLRM baseline incrementally on over a year'
   basis: full_text
-  checked_on: '2026-11-01'
+  checked_on: "2026-11-26"

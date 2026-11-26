@@ -1,6 +1,6 @@
 surface|YouTube 观看页与首页多任务生产排序模型、以及基础 Transformer 检索模型内的 Semantic ID 特征流
 era_reason|核心主张是统一的离散 token 空间：稠密内容嵌入被量化为 Semantic ID token 并按需重建，正是生成式推荐体系所依赖的 token 基础设施。
-tldr|双用途 Semantic ID 把稠密内容嵌入压成 token 按需重建；在 YouTube 使观看页满足感互动 +0.80%，并打破 I/O 瓶颈。
+tldr|双用途 Semantic ID 把稠密内容嵌入压成 token 按需重建；在 YouTube 使观看页满足感互动 +0.80%，并降低离线输入 I/O 开销。
 summary|SiDec 来自 YouTube 并有 Google DeepMind 作者参与，让同一串 Semantic ID token 在推荐模型里承担两个角色。作为协同身份，token 经 unigram、重叠 bigram、嵌套 n-gram 或 Sentence-Piece 表示变成层次化类别特征。作为内容，一个轻量 Semantic Decoder 在模型图内从码本查找重建原始稠密内容嵌入，训练日志与服务不再存储、传输和 join 浮点向量。该框架部署在一个多任务生产排序模型中，使用候选视频、正在观看的视频和观看历史三组 Semantic ID 特征，也部署在以观看历史为输入的基础 Transformer 检索模型中。由于生产基线已使用 Semantic ID token 嵌入，线上收益隔离的是新增内容重建流的效果。
 core_idea|把稠密内容嵌入压成 Semantic ID token 并在模型内按需重建，让同一串 token 同时承担协同身份与内容两种角色。
 deployed_in|YouTube 观看页与首页排序及一个基础检索模型
@@ -49,6 +49,7 @@ version_note|读的是 arXiv 2607.24865 v1 预印本；RecSys 2026 的 DOI 10.11
 deployment.scenario|观看页与首页多任务生产排序模型、以及基础 Transformer 检索模型中的 SiDec 内容重建流
 deployment.baseline|已使用 Semantic ID token 嵌入的生产系统；报告的收益隔离的是新增 SiDec 流
 deployment.training_compute|固定步数预算下的检索模型离线研究：Control 16.80 steps/s，原始嵌入 12.07，码本解码 14.53 到 15.41；生产训练算力未报告
-deployment.inference_cost|每物品存储从 d x 32 比特降到 K x log2 V 比特，典型 50-100 倍；重建成本被描述为不超过一个普通稀疏嵌入特征，token 在基线服务路径中已缓存
+deployment.inference_cost|基线已缓存这些 token。论文把解码开销描述为约等于新增一个稀疏嵌入特征，未报告实测服务成本。
 deployment.notes.0|表 1 注明报告的指标可能是所列名称的专有变体。
 deployment.notes.1|论文称这些绝对提升在 YouTube 的规模下高度统计显著，并对新账户和长尾内容收益更大。
+updates.0.note|区分离线输入与存储结果、推理开销和服务成本。

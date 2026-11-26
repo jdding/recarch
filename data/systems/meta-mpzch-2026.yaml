@@ -11,8 +11,10 @@ venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3773078.3831866"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Corrected the prediction-task metrics in Table 3 and separated the kernel benchmark and training throughput from serving throughput.
 system_type: training_infrastructure
 evidence_level: production_described
 tldr: "MPZCH removes embedding-table collisions with linear probing and TTL eviction; at Meta it reached zero collisions for 150M users and +0.83% impressions for new videos."
@@ -45,14 +47,14 @@ scale:
 - metric: Collision study
   value: 150 million unique user IDs
   note: "paper, Table 1"
-results_reported: "Collision study, Table 1, on 150 million unique user IDs: the Sigrid hash baseline keeps a 13.61% collision rate even at 3.33x capacity, while MPZCH reaches a 0.0000% collision rate at 1.33x capacity with probe depth 256, where Sigrid retains 29.65%, and at 2.0x capacity with probe depth 64, where Sigrid retains 21.31%; at probe depth 8 and 1.00x capacity it sits at 12.09% versus Sigrid 36.79%. Kernel benchmark, Table 2: batched HBM or CUDA latency stays at 0.8 to 0.9 ms for probe depths 8 through 512, UVM batched 4.4 ms, CPU or DRAM batched 6.1 to 8.9 ms and non-batched 94.2 to 102.7 ms. User embeddings, Table 3: deploying MPZCH in the production Video Late-Stage Ranking model improved Normalized Entropy in 14 of 17 prediction tasks with 3 neutral, including Video View Duration +0.38%, Video View Percentage 100 +0.12% and Skip +0.12%, gains the paper calls statistically significant given years of prior optimization. Item embeddings, Sec 4.2: in the HSTU-based video retrieval model with 24-hour Post ID and 72-hour Owner ID TTLs, A/B testing yielded 0.83% more impressions for new videos posted within 48 hours; intra-creator embedding similarity rose from 0.66% to 0.91% same day and same-and-next day, +38%, and overall from 0.62% to 0.77%, +25%."
+results_reported: "Collision study, Table 1, on 150 million unique user IDs: the Sigrid hash baseline keeps a 13.61% collision rate even at 3.33x capacity, while MPZCH reaches a 0.0000% collision rate at 1.33x capacity with probe depth 256, where Sigrid retains 29.65%, and at 2.0x capacity with probe depth 64, where Sigrid retains 21.31%; at probe depth 8 and 1.00x capacity it sits at 12.09% versus Sigrid 36.79%. Kernel benchmark, Table 2: batched HBM or CUDA latency stays at 0.8 to 0.9 ms for probe depths 8 through 512, UVM batched 4.4 ms, CPU or DRAM batched 6.1 to 8.9 ms and non-batched 94.2 to 102.7 ms. User embeddings, Table 3: deploying MPZCH in the production Video Late-Stage Ranking model improved Normalized Entropy in 14 of 17 prediction tasks with 3 neutral, including Share +0.38%, Video View Duration +0.12%, Video View Percentage 100 +0.12% and Skip +0.09%, gains the paper calls statistically significant given years of prior optimization. Item embeddings, Sec 4.2: in the HSTU-based video retrieval model with 24-hour Post ID and 72-hour Owner ID TTLs, A/B testing yielded 0.83% more impressions for new videos posted within 48 hours; intra-creator embedding similarity rose from 0.66% to 0.91% same day and same-and-next day, +38%, and overall from 0.62% to 0.77%, +25%."
 caveats:
 - "The A/B traffic share, duration and significance levels are not reported."
 - "The paper notes that MPZCH requires table capacity to exceed ID cardinality and a sufficient probe depth, for example 512, to guarantee zero collisions."
 - "Most authors are Meta employees; one co-author is at OpenAI and one at Periodic Labs."
 unknown_fields:
 - A/B traffic share, duration and significance levels
-- The 17 prediction tasks beyond the three listed
+- The 17 prediction tasks beyond the four listed
 - Training hardware details
 sources:
 - title: "Multi-Probe Zero Collision Hash (MPZCH): Mitigating Embedding Collisions and Enhancing Model Freshness in Large-Scale Recommenders, RecSys 2026"
@@ -88,7 +90,7 @@ results_table:
   online:
   - setting: "Video Late-Stage Ranking, user embedding table, A/B"
     method: MPZCH
-    metric: "NE, Video View Duration"
+    metric: "NE improvement, Share"
     result: "+0.38%"
     versus: "Sigrid hash production baseline"
   - setting: "HSTU video retrieval, Post and Owner ID tables, A/B"
@@ -109,25 +111,26 @@ deployment:
   ab_duration: not_reported
   baseline: "The standard hash-based method, torcharrow sigrid hash, the default for most models at Meta"
   online_lifts:
-  - metric: "NE, Video View Duration, ranking"
+  - metric: "NE improvement, Share, ranking"
     value: "+0.38%"
-  - metric: "NE, Video View Percentage 100, ranking"
+  - metric: "NE improvement, Video View Percentage 100, ranking"
     value: "+0.12%"
   - metric: "Impressions for new videos within 48 hours, retrieval"
     value: "+0.83%"
   training_compute: not_reported
-  serving_latency: "Batched HBM or CUDA kernel 0.8 to 0.9 ms flat across probe depths 8 to 512; probe depth has negligible latency impact"
-  serving_qps: "Training QPS maintained comparable to existing methods through input feature deduplication"
+  serving_latency: "Batched HBM or CUDA kernel benchmark, 0.8 to 0.9 ms across probe depths 8 to 512; probe depth has negligible latency impact"
+  serving_qps: not_reported
   inference_cost: not_reported
   hardware: not_reported
   notes:
   - "NE improved in 14 of 17 prediction tasks with 3 neutral; the paper calls the gains statistically significant given the model's maturity."
   - "TTL set to 24 hours for Post IDs and 72 hours for Owner IDs in the retrieval deployment."
+  - "Input deduplication maintains training QPS at a level comparable to the existing method."
   - "Published model drops the metadata tensor and freezes identities read-only; auxiliary tensors add the identities tensor to model size"
   fulltext_refs:
   - "Table 1: 150M IDs, Sigrid 13.61% at 3.33x capacity, MPZCH zero at 1.33x with probe 256"
   - "Table 2: 0.8 to 0.9 ms batched HBM, 94.2 to 102.7 ms non-batched CPU"
-  - "Table 3 and Sec 4.1: 14 of 17 tasks, VVD +0.38%, VVP100 +0.12%, Skip +0.12%, about 3 billion MAU, 4 billion rows"
+  - "Table 3 and Sec 4.1: 14 of 17 tasks, Share +0.38%, VVD +0.12%, VVP100 +0.12%, Skip +0.09%, about 3 billion MAU, 4 billion rows"
   - "Sec 4.2: +0.83% new-video impressions, similarity 0.66% to 0.91% same day +38%"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-26"

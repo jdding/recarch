@@ -11,7 +11,8 @@ serving_infra|部署在淘宝搜索广告的候选生成阶段。2.6 倍算法�
 stages.0.model_family|LLM 生成式检索器，基准用 Llama-1B 与 Qwen3-0.8B 骨干，扩展自回归草稿头与哈希集验证
 stages.0.details|草稿头由 LLM 末层隐状态上的 logit 头与消费已草拟 token 的自回归组件构成；草稿候选序列就地对照合法语义 ID 哈希集过滤，只保留交集中的物品。
 id_tokenization.approach|多 token 语义 ID 编码为整数并预计算哈希集
-id_tokenization.details|每个物品的语义 ID 映射为整数索引，验证是常数时间哈希查找。论文报告生产数据中原始生成的合法 ID 比例约 0.1%，验证把合法草稿候选比例从 43% 提到 93% 以上。
+id_tokenization.details|每个物品的语义 ID 映射为整数索引，通过哈希集合校验。合法物品 ID 约占所有可能编码的 0.1%。在生产数据上，校验把草稿候选的合法比例从 43% 提到 93% 以上。
+updates.0.note|区分编码空间中的合法 ID 占比和生产数据上的草稿合法率。
 features_signals.0|序列化进 LLM 的查询与用户交互序列
 features_signals.1|自回归生成的语义 ID token 流
 features_signals.2|带 KV cache 的 beam search 作为基线解码路径

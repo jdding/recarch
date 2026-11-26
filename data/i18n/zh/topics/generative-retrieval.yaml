@@ -1,14 +1,14 @@
 title: 生成式召回
 summary: 由模型直接写出答案、而不是用 embedding 检索去查找的系统，在十九张 RecArch 卡片之间做对比。
 framing:
-- 经典的召回栈通过对 embedding 做最近邻搜索来找到 item。生成式召回则让模型直接写出答案：它为每个 item 生成一段简短的编码，称为 Semantic ID，或者生成文本，再把输出映射回 item。下面所有系统都报告了线上使用，只有 TIGER 例外，它只报告了公开数据集。
+- 经典的召回栈通过向量最近邻搜索找物品。生成模型可以输出物品 ID、意图码或查询文本，再把输出映射到物品。以下案例包括生产流量实验和正式上线，TIGER 提供公开数据集上的参照。
 - 这个词涵盖了差别很大的设计。有的取代整个召回、预排序和排序的级联。有的只是多加一路召回通道。有的生成的不是 item ID。表格之后的各节解释了会改变成本和风险的那些差别。
 problem: 让模型直接写出推荐结果，而不是去检索。这会怎样改变你的技术栈、服务成本和风险？
 question: 你应该取代整个召回级联，还是在旁边新增一路生成式通道？
 decisions:
 - when: 你想把上线风险降到最低。
-  then: 在现有召回旁边新增一路通道，GEAR、BARGE、DPGR、URM 和 AIGQ 都是这样做的。新增通道更容易回滚和衡量。
-  cards: [bytedance-gear-2026, tencent-tgr-2026, meituan-dpgr-2026, alibaba-urm-2025, taobao-aigq-2026]
+  then: 在现有召回旁边新增一路通道，GEAR、BARGE、URM 和 AIGQ 都是这样做的。新增通道更容易回滚和衡量。
+  cards: [bytedance-gear-2026, tencent-tgr-2026, alibaba-urm-2025, taobao-aigq-2026]
 - when: 你想减少阶段，并且能把全部结果压在一个模型上。
   then: 取代级联，GPR 和 OneSearch 就是这样做的。这样去掉了阶段，但把全部结果压在一个模型上。
   cards: [tencent-gpr-2025, kuaishou-onesearch-2025]
@@ -64,7 +64,7 @@ differences:
 - heading: 模型写出的是什么
   text: 大多数系统写出 Semantic ID。DPGR 写出少量意图编码，再让 ANN 搜索为每个编码找到 item。AIGQ 写出 query 文本。URM 让 LLM 根据对目标的文字描述给出一组 item。GenPage 写出整个页面，每一行和每个实体各用一个 token。HiGR 写出整个 slate 的 Semantic ID，规划时每个 slate 位置一个 embedding。先检查这一点，因为它决定了除模型之外你还必须构建什么。
 - heading: 取代级联，还是新增通道
-  text: GPR 和 OneSearch 取代召回、预排序和排序的级联。Gwhere 和 OneRec 是单阶段系统，HiGR 生成整个 slate，对比的是多阶段系统。GEAR、BARGE、DPGR、URM 和 AIGQ 加在现有召回来源旁边，SnapLGR 则作为一路召回来源上线。新增通道更容易回滚和衡量。取代级联则去掉了阶段，但把全部结果压在一个模型上。
+  text: GPR 和 OneSearch 取代召回、预排序和排序的级联。Gwhere 和 OneRec 是单阶段系统，HiGR 一次生成整个展示列表，对照是多阶段系统。GEAR、BARGE、URM、AIGQ 和 SnapLGR 新增一路召回。DPGR 测试了从双塔召回切换到意图驱动的召回，保留原有下游排序。新增通道更容易回滚和衡量。
 - heading: tokenizer 是难点
   text: 有几张卡片把大部分精力花在 Semantic ID 本身。TIGER 加上第四个 token 来区分冲突的 item。QuaSID 把冲突的 item 推开。GEAR 使用旨在避免死码的残差量化器。SnapLGR 加入共同互动损失，提高码本利用率并减少冲突。HiGR 加入前缀级对比损失，让共享前缀的物品彼此接近。UNIQUE 从 128 x 128 的分层结构，改成了 16,384 个编码的单层扁平码本。
 - heading: 如何让服务成本可承受

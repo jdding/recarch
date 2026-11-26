@@ -11,11 +11,13 @@ venue_year: 2026
 published_version_checked: true
 primary_source: "https://doi.org/10.1145/3770854.3783925"
 added_on: "2026-11-02"
-last_verified: "2026-11-02"
-updates: []
+last_verified: "2026-11-26"
+updates:
+- date: "2026-11-26"
+  note: Used the 2% traffic from Table 1 and the comparisons with the matching variants, and kept the repeated headline figures separate.
 system_type: training_infrastructure
 evidence_level: production_described
-tldr: "MTGenRec trains Meituan's generative recommenders 1.6x to 2.4x faster on over 100 GPUs with dynamic embedding tables and sequence balancing; Take-away A/B lifted orders +1.22%."
+tldr: "MTGenRec trains recommender models 1.6–2.4× faster than TorchRec on over 100 GPUs. In a separate takeout A/B, the 110G ranker lifted page-view CTR by 1.90% against the deployed DLRM."
 summary: "MTGenRec, built by Wuhan University with Meituan, is a distributed training system for generative recommendation models, the HSTU-plus-MMoE stack Meituan serves across its applications. Built on TorchRec, it fixes two production blockers: hash-based dynamic embedding tables replace static tables so new users, items and menu changes insert and delete embeddings in real time, and two-stage ID deduplication plus automatic table merging cut embedding lookup and communication. Dynamic sequence batching balances variable-length user sequences across GPUs without truncation, which generative models need to keep. The system is deployed for many Meituan applications and handles hundreds of millions of requests daily; on the Take-away platform a GRM trained with MTGenRec beat the long-running deep recommendation baseline on both offline GAUC and online business metrics."
 paradigms:
 - sequential-transformer
@@ -50,7 +52,7 @@ scale:
 - metric: Company scale
   value: over 770 million transacting users and a daily peak above 98 million orders in 2024
   note: "paper, Sec 1"
-results_reported: "The GRM is trained from scratch on 10 days of logs. On the Meituan Take-away application, Table 1 compares the GRM against the most advanced online DRM baseline, a DLRM continuously learning for 2 years, with an A/B test on 2% of traffic: offline, GRM 4G improves CTR GAUC +0.0036 and CTCVR GAUC +0.0154 and GRM 110G improves them +0.0153 and +0.0288; online, GRM 4G improves PV_CTR +1.04% and UV_CTCVR +0.04% and GRM 110G improves them +1.90% and +1.02%. The abstract reports a 1.22% growth in user order volume and a 1.31% enhancement in online PV_CTR on the delivery platform, and the introduction summarizes the offline gain as a 2.88pp CTCVR GAUC increase. System results: training time against TorchRec falls 2.44x; Table 2 decomposes 100 steps for GRM 4G 1D into lookup 7.0 to 3.2 seconds, forward 14.8 to 14.0 and backward 50.7 to 32.6, and for GRM 110G 64D into lookup 95.2 to 14.4, forward 27.8 to 19.9 and backward 177.7 to 54.7. Sequence balancing improves throughput 1.75x on average in the introduction, 26.5% on average for GRM 110G peaking at 33.5% on 64 GPUs, raising batch sizes from 480 to 496 with GPU memory utilization 86.3% to 95.7% for GRM 4G 1D and from 80 to 116 with 75.3% to 90.3% for GRM 110G 1D, while pre-balancing synchronization delays reach 25.8 ms. Two-stage ID deduplication yields a 53% throughput improvement in the introduction and 1.1x to 3.7x over no deduplication. The dynamic embedding table reaches 1.47x to 2.22x over TorchRec Managed Collision Handling, 47.59% for GRM 4G 1D up to 97.4% for GRM 110G 8D, where MCH goes out of memory at 64D. At 128 GPUs MTGenRec retains 62.75% to 78.5% of ideal speedup, and GRM and TorchRec reach the same GAUC at equal data, Figure 9."
+results_reported: "The GRM is trained from scratch on 10 days of logs. On the Meituan Take-away application, Table 1 compares the GRM against the most advanced online DRM baseline, a DLRM continuously learning for 2 years, with an A/B test on 2% of traffic: offline, GRM 4G improves CTR GAUC +0.0036 and CTCVR GAUC +0.0154 and GRM 110G improves them +0.0153 and +0.0288; online, GRM 4G improves PV_CTR +1.04% and UV_CTCVR +0.04% and GRM 110G improves them +1.90% and +1.02%. The +0.0288 offline CTCVR GAUC change is 2.88 percentage points. The abstract reports a 1.22% growth in user order volume and a 1.31% enhancement in online PV_CTR on the delivery platform, without naming the tested variant or traffic allocation for those two numbers. MTGR reports the same headline figures on Meituan Take-away. The public papers do not establish whether the underlying tests were independent. System results: training time against TorchRec falls 2.44x; Table 2 decomposes 100 steps for GRM 4G 1D into lookup 7.0 to 3.2 seconds, forward 14.8 to 14.0 and backward 50.7 to 32.6, and for GRM 110G 64D into lookup 95.2 to 14.4, forward 27.8 to 19.9 and backward 177.7 to 54.7. Sequence balancing improves throughput 1.75x on average in the introduction, 26.5% on average for GRM 110G peaking at 33.5% on 64 GPUs, raising batch sizes from 480 to 496 with GPU memory utilization 86.3% to 95.7% for GRM 4G 1D and from 80 to 116 with 75.3% to 90.3% for GRM 110G 1D, while pre-balancing synchronization delays reach 25.8 ms. Two-stage ID deduplication yields a 53% throughput improvement in the introduction and 1.1x to 3.7x over no deduplication. The dynamic embedding table reaches 1.47x to 2.22x over TorchRec Managed Collision Handling, 47.59% for GRM 4G 1D up to 97.4% for GRM 110G 8D, where MCH goes out of memory at 64D. At 128 GPUs MTGenRec retains 62.75% to 78.5% of ideal speedup, and GRM and TorchRec reach the same GAUC at equal data, Figure 9."
 caveats:
 - "The paper states that MTGenRec is developed based on TorchRec, and TorchRec is the only PyTorch-native GRM training framework, so no alternative baselines are compared."
 - "The online A/B baseline is the production DLRM that has been continuously learning for 2 years, while the GRM is trained from scratch on 10 days of logs, which the paper itself notes as a significantly lower training data volume."
@@ -83,18 +85,18 @@ code:
 core_idea: "Give generative recommenders a training system with dynamic hash embedding tables, deduplicated lookups and sequence balancing, so full-length sequences train at over 100 GPUs."
 deployed_in: "Meituan recommendation training, many applications including Take-away"
 scale_short: "Trains on daily logs above 200 million sequences across up to 128 A100 GPUs"
-key_result: "Take-away A/B at 2% traffic vs the 2-year DLRM: orders +1.22%, PV_CTR +1.31%; training 2.44x faster than TorchRec"
+key_result: "Training up to 2.44× faster than TorchRec. GRM 110G in the 2% A/B improved PV_CTR by 1.90% against the production DLRM."
 results_table:
   online:
   - setting: "Meituan Take-away, A/B at 2% traffic"
-    method: "GRM trained by MTGenRec"
-    metric: "User order volume"
-    result: "+1.22%"
+    method: GRM 4G trained by MTGenRec
+    metric: PV_CTR / UV_CTCVR
+    result: "+1.04% / +0.04%"
     versus: "Online DLRM, 2 years of learning"
   - setting: "Meituan Take-away, A/B at 2% traffic"
-    method: "GRM trained by MTGenRec"
-    metric: PV_CTR
-    result: "+1.31%"
+    method: GRM 110G trained by MTGenRec
+    metric: PV_CTR / UV_CTCVR
+    result: "+1.90% / +1.02%"
     versus: "Online DLRM, 2 years of learning"
   offline:
   - setting: "10 days of Meituan logs"
@@ -114,12 +116,10 @@ deployment:
   ab_duration: not_reported
   baseline: "The most advanced online DRM, a DLRM continuously learning for 2 years"
   online_lifts:
-  - metric: "User order volume"
-    value: "+1.22%"
-  - metric: PV_CTR
-    value: "+1.31%"
   - metric: "PV_CTR, GRM 110G variant"
     value: "+1.90%"
+  - metric: "UV_CTCVR, GRM 110G variant"
+    value: "+1.02%"
   training_compute: "Up to 16 nodes of 8 NVIDIA A100 SXM4 80GB GPUs, 128 GPUs total, NVLink 600 GB/s and InfiniBand 200 GB/s; throughput 1.6x to 2.4x over TorchRec at over 100 GPUs, retaining 62.75% to 78.5% of ideal speedup at 128 GPUs"
   serving_latency: not_reported
   serving_qps: not_reported
@@ -127,10 +127,11 @@ deployment:
   hardware: "NVIDIA A100 SXM4 80GB, 8 per node, up to 16 nodes"
   notes:
   - "The system handles hundreds of millions of requests daily across many Meituan applications."
+  - "Table 1 tests models trained on MTGenRec against the production DLRM. The production numbers are not an isolated effect of the training framework."
   - "Meituan served over 770 million transacting users with a daily peak above 98 million orders in 2024."
   fulltext_refs:
   - "Table 1: GRM 4G CTR GAUC +0.0036, CTCVR GAUC +0.0154, PV_CTR +1.04%, UV_CTCVR +0.04%; GRM 110G +0.0153, +0.0288, +1.90%, +1.02%, 2% traffic, DLRM baseline"
   - "Abstract: orders +1.22%, PV_CTR +1.31%, 1.6x to 2.4x throughput, over 100 GPUs, hundreds of millions of daily requests"
   - "Table 2 and Table 4: phase times, 47.59% to 97.4% gains over Managed Collision Handling"
   basis: full_text
-  checked_on: "2026-11-02"
+  checked_on: "2026-11-26"
