@@ -211,6 +211,30 @@ Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬�
 - [Agent 如何使用推荐能力](../data/i18n/zh/topics/agentic-recommendation.yaml) 对比 RecBot 的指令驱动工具链、Meta 的在线重排和快手 EvoRec 的近线补充召回。评测阅读分别覆盖多轮约束、兴趣变化和集合效用。
 - 两个专题共用现有双语专题模板。新增书目链接仅用于延伸阅读，专题表里的部署数字继续取自系统卡。YouTube 与 RecBot 正式出版全文待核，两张卡的线上数字均指向已经查阅的公开作者全文。
 
+### 两个专题的文献复扫 · 2026-11-26
+
+公开资料窗口为 2023 年 1 月至 2026 年 11 月 26 日。先通过 Zotero KB 的实时只读查询发现候选，再查 arXiv、RecSys 与 KDD 2026 会议清单、ACL Anthology、NeurIPS、PMLR、OpenReview 和官方工程资料。沿两篇综述与重点工作回溯引文。下表的命中数含预印本和正式版重复、正文提及及无关命中，不能视为论文总数。
+
+| 专题 | Zotero 实际查询串 | 返回 |
+|---|---|---|
+| [推荐算法的 RSI](../data/i18n/zh/topics/recommendation-rsi.yaml) | `recursive self-improvement recommender systems`、`self-evolving recommender systems`、`automated recommender model optimization`、`agent recommender architecture evolution`、`agent iterative recommendation experiments`、`recommender systems research agent`、`2609.01622`、`2607.29241`、`NOVA A Verification-Aware Agent Harness`、`10.1145/3773078.3831898`、`2606.27243`、`推荐系统 自我进化` | 12 次，85 条 |
+| [Agent 如何使用推荐能力](../data/i18n/zh/topics/agentic-recommendation.yaml) | `2609.30297`、`agentic recommender systems`、`interactive recommendation agent`、`agentic recommender systems benchmark`、`agent tool use recommendation catalog`、`conversational recommendation retrieval agent`、`agent uses recommendation tools user tasks`、`multi-turn recommendation constraints`、`shopping agent product recommendation`、`Agent 推荐工具`、`对话推荐 召回 排序` | 11 次，101 条 |
+
+公开检索用同类关键词增加 `online A/B`、`production` 或评测关键词和会议域名。RSI 从[评估综述](https://www.preprints.org/manuscript/202610.2336/v1)、[RecHarness](https://arxiv.org/html/2607.29241v2)和 [NOVA](https://arxiv.org/html/2606.27243v3)追踪被引用工作，覆盖试验预算、代码验证、代理指标与真实流量。Agent 专题从 [Lin 等的综述](https://arxiv.org/abs/2607.04433)、[τ-Rec](https://taubench.com/community/tau-rec.html)与 RecSys 工业和资源赛道条目补查，覆盖意图澄清、工具选择、目录候选和任务验收。Zotero 精确标识找到 RecEvolve、RecHarness 和 Spotify。NOVA 的标题和 arXiv ID 查询只返回关联命中，最终用公开作者全文核证。
+
+同一研究按 DOI、arXiv ID 和标题归并。同一系统的版本保留在原卡。两页的「检索与筛选」列出实际评审的候选与去留理由，正文可跳到已经纳入的工业系统，延伸阅读说明每篇方法或基准回答的问题。Google RecEvolve 的产品未披露，暂未发现其是 YouTube 排序研发卡的同一实现。RecHarness 实验改变广告排序器的商业序列编码，AgentX 卡描述跨业务的研发谱系，作者资料分别描述两套方法。
+
+| 优先复核 | 本地处理与证据 |
+|---|---|
+| RecEvolve | 新卡。RecSys 工业赛道书目第 1437–1442 页，作者稿正文延续到最后一页，按约六页规则审查。第 5.7 节和表 2 比较入选双塔与现网模型。论文未披露产品、时长及流量。 [正式书目](https://doi.org/10.1145/3773078.3831898) · [作者全文](https://arxiv.org/html/2609.01622v1#S5.SS7) |
+| RecHarness | 新卡。公司署名的 arXiv 作者版在观察期内，v2 第 3.5 节和表 4 报告 7 天、覆盖 10% 生产流量的短视频广告实验。对照配置和组间分流未披露。 [作者全文](https://arxiv.org/html/2607.29241v2#S3.SS5) |
+| NOVA | 新卡。采用 v3 第 5.7 节与表 4 的 6 天、5% 流量、按用户随机口径。NOVA 用于生产研发，论文把入选排序改动的全量推广列为后续计划。arXiv 作者版处于观察期。 [作者全文](https://arxiv.org/html/2606.27243v3#S5.SS7) |
+| Spotify | 新卡。RecSys 工业赛道正式书目共 10 页。第 4.3 节用仅支持调整当前会话的旧体验作对照。两周 A/B 触达约 1500 万用户，效果对应完整体验。 [正式书目](https://doi.org/10.1145/3773078.3831910) · [作者全文](https://arxiv.org/html/2609.30297v1#S4.SS3) |
+
+RSI 含五张正文系统卡和十篇延伸阅读。Meta Shape Your Feed 放在 RSI 的反馈对齐相关阅读中，并继续作为 Agent 专题案例。Agent 专题含四张正文系统卡和十一篇延伸阅读。EvoPilot、Astar、TGR-EvoDAG 等的下一步证据问题记在专题页。RecEvolve 和 Spotify 的指标已核作者全文，ACM 托管的出版全文待核。维护者批准两个专题与四张新卡同批发布，本批保留 122 张活跃卡。
+
+本地双语构建各有 122 张活跃卡。准入审计为 103 张达标、19 张豁免通过，FAQ 校验和 15 项 JavaScript 测试通过。已访问 18 个本机预览地址，并用桌面和窄屏浏览器核对专题筛选跳转。
+
 ### 后续每周记录
 
 在同一维护会话从本表继续，记录本地变更、来源、构建与测试结论、延期原因和下周首项。公开数据用原文链接和章节、图表定位。内部检索材料留在本机。需要提交、推送、开 PR、发布、登录云端或使用付费服务时，另行取得维护者授权。

@@ -1,0 +1,86 @@
+id: kuaishou-recharness-2026
+name: RecHarness
+company: Kuaishou
+surface: Agent-driven model development for short-video advertising ranking
+year: 2026
+era: generative
+era_reason: A language model generates executable recommender edits within a search directed by observed trial outcomes.
+first_public: '2026-07'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2607.29241v2
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: RecHarness allocates a limited trial budget among expert-defined directions using a bandit. A language model implements the selected edit and validation feedback guides later trials.
+summary: Engineers define the objective, evaluation metric and edit directions. A Thompson-sampling router allocates trials among directions, while an experiment skill supplies evidence from recent attempts to the coding agent. The selected production candidate adds self-attention within commerce behavior sequences.
+paradigms: [llm-based, attention-ctr]
+stages:
+  - stage: other
+    model_family: Thompson-sampling router, experiment skill and coding agent
+    details: Validation feedback updates how the router allocates trials. A structural edit direction can open when local changes stall.
+  - stage: rank
+    model_family: Shared-bottom advertising ranker with sequence encoders
+    details: The tested change adds self-attention within each commerce behavior sequence, then feeds the compressed sequence representations to the ranker.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - User, item and cross features in the production model
+  - Real-time commerce behavior sequences
+  - Offline validation scores and prior trial records
+training:
+  mode: Budgeted trials with feedback-driven selection of model edits
+  objectives:
+    - Allocate trials among expert-defined editing directions.
+    - Advance a candidate based on validation and then verify it on live traffic.
+  notes: The budget cap in the BERT4Rec case study applies to that offline comparison rather than the production experiment.
+serving_infra: The model-development agent works outside the request path. A sequence-encoder candidate was tested inside the short-video advertising ranker.
+scale:
+  - {metric: Production A/B coverage, value: '10% of production traffic over 7 days', note: Section 3.5 reports the experiment coverage, with no per-arm split.}
+results_reported: Section 3.5 and Table 4 report a 7-day short-video advertising A/B test on 10% of production traffic. For the selected sequence-encoder candidate, Advertiser Value increased 2.084%, revenue increased 0.534% and exposure increased 0.559%.
+caveats:
+  - The production experiment measures one promoted candidate. The paper compares trial-allocation policies offline.
+  - Experts define the available edit directions and the optimization objective.
+unknown_fields:
+  - Detailed control configuration and treatment split within the reported traffic
+  - Production search budget, serving latency, throughput and hardware
+sources:
+  - {title: RecHarness author full text, url: 'https://arxiv.org/html/2607.29241v2', type: paper}
+version_note: The expanded author version reports the production A/B and is within the arXiv observation period. A formal venue version was not confirmed.
+code:
+  status: official_full
+  checked_on: '2026-11-26'
+  repos:
+    - {url: 'https://github.com/6lyc/RecHarness', owner: RecHarness authors, official: true, note: Public research implementation linked from the paper. The production ad ranker and live experiment infrastructure are not included.}
+core_idea: Use observed validation returns to decide which type of model change gets the next trial.
+deployed_in: A large-scale short-video advertising ranking system
+scale_short: Production A/B on 10% of traffic over 7 days
+key_result: Advertiser Value +2.084%, revenue +0.534% and exposure +0.559% for the selected sequence-encoder candidate.
+results_table:
+  online:
+    - {setting: Short-video advertising, method: Selected sequence-encoder edit, metric: Advertiser Value, result: '+2.084%', versus: A/B control}
+    - {setting: Short-video advertising, method: Selected sequence-encoder edit, metric: Revenue, result: '+0.534%', versus: A/B control}
+    - {setting: Short-video advertising, method: Selected sequence-encoder edit, metric: Exposure, result: '+0.559%', versus: A/B control}
+deployment:
+  online_evidence: online_numbers
+  scenario: Short-video advertising ranker with the selected sequence-encoder change
+  ab_traffic: '10% of production traffic'
+  ab_duration: '7 days'
+  baseline: The live A/B control. Its detailed model configuration is undisclosed.
+  online_lifts:
+    - {metric: Advertiser Value, value: '+2.084%'}
+    - {metric: Revenue, value: '+0.534%'}
+    - {metric: Exposure, value: '+0.559%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - The traffic figure describes the experiment coverage. The paper does not give the control–treatment split.
+  fulltext_refs:
+    - Sections 2.2–2.4 cover routing, the experiment skill and structural edits.
+    - Section 3.5 and Table 4 report the candidate, traffic, duration and online metrics.
+  basis: full_text
+  checked_on: '2026-11-26'

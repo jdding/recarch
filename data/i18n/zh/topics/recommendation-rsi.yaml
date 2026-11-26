@@ -1,48 +1,74 @@
 title: 推荐算法的递归自我改进
-summary: 推荐研发 Agent 怎样提出改动、分配试验预算、验证候选，并把试验结果用于下一轮。
+summary: 推荐研发 Agent 怎样分配试验、验证模型改动，再把结果用于下一轮。
 problem: 推荐模型完整训练耗时，线上指标又来得晚。每一轮新实验都需要用上之前的结果。
 question: Agent 提出的改动，什么情况下值得完整重训或分配真实流量？
 framing:
-  - Agent 可以提出新的损失函数、改写训练组件，或组合两种模型改动。要让实验连续推进，需要记录改了什么、用哪个对照验收，以及结果如何影响下一步。
-  - YouTube 和 AgentX 直接修改推荐模型或训练方案。Meta Shape Your Feed 是一条边界参照，它用用户反馈对齐既有打分策略，线上实验评估带反馈入口的整条服务链路。
+  - 研发 Agent 可以改损失函数、改写序列编码器，或者组合多个组件。每一轮都应记录改了什么、用哪个对照验收，以及结果如何影响下一步。
+  - 正文比较模型与训练代码的迭代。延伸阅读还覆盖评测基准、训练数据和反馈对齐。专题附有检索与筛选记录。
 decisions:
   - when: 完整训练和线上流量都很贵。
-    then: 先设便宜的代理指标筛选，优先候选再完整训练并用真实流量验证业务指标。代理分和线上结果分别记入实验日志。
+    then: 先用便宜的代理指标筛选，优先候选再完整重训，用独立的线上指标验证。把两次结果都写入试验记录。
     cards: [youtube-self-evolving-recsys-2026]
-  - when: 大量改动都超过当前业务基线。
-    then: 同时记录直接父版本和可比的历史最优版本。固定业务基线便于对照各次运行，谱系记录能说明某条研究分支是否继续向前。
+  - when: 很多改动方向争夺有限的试验预算。
+    then: 先确定允许尝试的改动，再根据实际验证结果分配下一轮。比较分配策略时使用相同的离线预算。
+    cards: [kuaishou-recharness-2026]
+  - when: 代码能跑，也可能偏离预期架构。
+    then: 训练前先查模型语义，并记录违反了哪个接口或建模规则。下一轮用这条规则拦下重复错误。
+    cards: [tencent-nova-2026]
+  - when: 改动本身可能改变代理评估的难度。
+    then: 候选晋级时固定评估人群和候选集。上线前用独立试验复核实际任务的表现。
+    cards: [google-recevolve-2026]
+  - when: 多个改动都超过当前业务基线。
+    then: 同时记录直接父版本和可比的历史最优版本。业务对照回答是否上线，谱系记录帮助判断下一步研究哪条分支。
     cards: [kuaishou-agentx]
-  - when: 用户反馈暴露了上线打分器与用户偏好的偏差。
-    then: 沿用打分接口，用行为反馈和评审得到的偏好样本校正策略。离线更新和改动反馈入口的效果分别验证。
-    cards: [meta-shape-your-feed-2026]
-  - when: 需要比较不同的研发 Agent。
-    then: 固定起始模型、评估切分和资源预算。比较入选的改动前，先报告短训、完整重训、失败试验与总算力。
-    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
 members:
   - id: youtube-self-evolving-recsys-2026
-    approach: 在离线筛选优化器、架构与奖励改动，再完整训练入选版本，用延迟返回的线上业务指标验收。
+    approach: 离线筛选优化器、架构与奖励改动，对入选版本完整训练，再用延迟返回的线上指标验收。
+  - id: kuaishou-recharness-2026
+    approach: 通过多臂老虎机在专家定义的改动方向间分配试验，选出序列编码改动并接入短视频广告排序做 A/B。
+  - id: tencent-nova-2026
+    approach: 用结构语义检查和历史失败约束候选，选出离线方案，在生产广告转化率模型上做 A/B。
+  - id: google-recevolve-2026
+    approach: 提案、评审和编码 Agent 共用研发记录，选出双塔召回模型，对照现网做实验。
   - id: kuaishou-agentx
-    approach: 在固定业务沙箱中为模型改动保留业务基线、直接父版本和已有证据，再评审哪些候选值得做生产 A/B。
-  - id: meta-shape-your-feed-2026
-    approach: 边界参照。把用户行为和评审反馈用于离线训练，对齐既有 Agent 排序策略。
+    approach: 在业务沙箱中为模型改动保留现网基线、直接父版本和已有证据。
 differences:
-  - heading: 每轮改动什么
-    text: YouTube 改优化器、架构和奖励。AgentX 会复现、组合机制并延续有价值的分支。Shape Your Feed 用反馈校正线上打分策略。
-    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
-  - heading: 哪种结果决定下一个试验
-    text: YouTube 的日志分别收代理评估和延迟返回的业务指标。AgentX 追踪业务基线及可比的历史版本。对同一候选，这两个参照能回答不同的问题。
-    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
-  - heading: 怎么核算试验预算
-    text: 找到一个值得重训的改动也需要成本。记录失败运行、重复评估和总 GPU 预算。训练提速和线上服务成本各自需要对应的测量。
-    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
-  - heading: 哪部分经过了线上验收
-    text: YouTube 行对应一次架构上线。AgentX 行摘自对照各异的入选评审。Shape Your Feed 的实验覆盖反馈按钮和后续服务链路，具体分母和对照以卡片为准。
-    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
+  - heading: 哪些历史结果决定下一个试验
+    text: RecHarness 用验证分数决定哪个改动方向获得试验。NOVA 把语义检查发现的错误转换为约束。AgentX 把模型谱系和评估记录放在一起。
+    cards: [kuaishou-recharness-2026, tencent-nova-2026, kuaishou-agentx]
+  - heading: 离线分数究竟验证了什么
+    text: YouTube 先用便宜的代理评估，再等业务指标。RecEvolve 发现减少批内负样本会使代理评估变简单，因此回滚了这项改动。NOVA 在运行候选前检查改动的语义。
+    cards: [youtube-self-evolving-recsys-2026, google-recevolve-2026, tencent-nova-2026]
+  - heading: 哪部分经过了生产 A/B
+    text: 各行线上结果都对应入选模型和各自的现网对照。AgentX 报告的是不同场景的入选评审。RecHarness 和 NOVA 另用离线实验比较了研发流程。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-recharness-2026, tencent-nova-2026, google-recevolve-2026, kuaishou-agentx]
 readings:
   - Huang 等用短训后的排序表现筛选代码改动，实验对齐的是完整重训次数。
   - Gan 等围绕机制假设组织试验，让结果决定下一轮要验证什么。
-  - 用固定优化预算和留出评估比较不同编程 Agent 的基准。
-  - 用 bandit 分配各类改动的试验机会，论文也报告了入选广告候选的线上试验。
-  - 在生产双塔上做离线研究，展示了代理指标可以被改动抬高，仍需单独验证实际任务。
+  - 用固定优化预算和留出评估比较不同编码 Agent 的基准。
   - 用模型诊断与模拟用户反馈引导后续改动，是短训筛选论文的直接对照之一。
+  - 亚马逊图书推荐的离线研究比较了迭代召回模型和物品分词器的成本，也记录了代理指标失真的例子。
+  - 用可复审的运行记录核对工业模型研发轨迹，帮助判断一轮试验的峰值能否在后续验证中保留。
+  - 用运维约束和线上反馈调整推荐链路配置。工作坊论文提供了配置调优的对照材料。
   - 训练数据层的参照。迭代生成并筛选训练样本。
+  - 反馈对齐的边界参照。线上实验覆盖反馈入口与后续服务的组合效果。
+  - 这篇预印本可用于追溯原始论文，并核对不同工作怎样衡量研发进展。
+screening:
+  scope:
+    - 检索覆盖 2023 年 1 月至 2026 年 11 月 26 日。关注研发 Agent 改推荐模型或训练流程，以及如何用试验结果决定下一轮改动。
+    - 来源包括本地书目索引的只读结果、arXiv、RecSys 2026 论文集与官方研究资料。另沿评估综述、RecHarness、NOVA 的参考文献回溯。检索词包括 recursive self-improvement、self-evolving、automated model optimization、architecture evolution、research agent 和「推荐系统 自我进化」。书目索引的 12 次查询返回 85 条命中，含同篇重复与正文提及。
+    - 先按 DOI、arXiv ID 和标题去重，再核公司、产品与系统谱系。系统卡要求工业工作流、原文和生产证据。报告生产 A/B 的近期 arXiv 工作按观察期规则审查。直接回答其中一个研发或评测问题的方法与基准进入延伸阅读。
+    - 下列记录覆盖这些来源和引文中的已审候选，也记下需要继续核对的线索。
+  excluded:
+    - 已并入原卡。六月报告与九月模型研发续篇属同一 AgentX 谱系，原卡保留两个来源。
+    - 暂缓。论文用反馈优化生产推荐链路配置，仍需逐项核对产品、线上对照和它与现有 Google 案例的关系。
+    - 待审。论文把 Video Deep Dive 的真实流量实验与纠正后的离线比较分开报告。建卡需把各项结果分别对应到受试召回配置与对照。
+    - 暂缓。需定位真正进到线上流量的改动，并核对它和 Meta Ranking Engineer Agent 的谱系。
+    - 待审。论文有 Lazada 生产证据，下轮需把提案模型、执行后的改动和线上对照对应到同一项干预。
+    - 暂缓。作者报告广告 A/B，公开稿正文止于第 5 页，按长文规则等待扩展版本。与本库快手 EvoRec 仅同名。
+    - 待审。原文报告线上召回试验，需确认入选模型能否并入已有腾讯 TGR 卡，以及研发工作流的独立性。
+    - 暂未建卡。主要结果是研发执行与试验协调，仍需定位可归因到推荐改动的线上业务证据。
+    - 相邻方向。工作从随机试验数据中学习分人群的干预策略，本专题主线关注推荐模型、训练及研发流程的迭代改动。
+    - 相邻方向。Agent 在允许的参数空间内调排序目标权重，证据对应策略干预，尚未覆盖底层模型的反复研发。
+    - 相邻方向。论文改进由用户查询触发的搜索排序，研究对象超出本专题的推荐范围。
+    - 已收录在 Agent 使用推荐专题。它迭代的是对话与工具调用指令，线上 A/B 比较两种完整收听体验。

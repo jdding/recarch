@@ -93,7 +93,7 @@ Withdrawn sources: cards whose source was withdrawn by its authors move to `data
 
 Backfill note: rounds 1-7 had no dates on cards, so `added_on` for the 62 existing cards is an approximation (2026-10-29 or 2026-10-30, by build round). From now on set it when the card is created and add an `updates` entry for every later edit.
 
-`data/site.yaml`: `newsletter` (provider, `publication_id`, `embed_url`) and site-level `events` (title, date, note). `data/newsletter/<slug>.yaml`: one file per issue, see `templates/newsletter_issue.example.yaml`.
+`data/site.yaml` defines newsletter settings and dated site-level events. An event may list `topics` by slug. The latest linked event within the carousel window appears on the home page with links in the current language. Each newsletter issue lives in `data/newsletter/<slug>.yaml`.
 
 ## Home taxonomy (`data/taxonomy.yaml`)
 Home filters show six paradigm *families* instead of the 17 raw tags; the raw tags and evidence levels live in a collapsed "More filters" panel. `taxonomy.yaml` maps every paradigm tag to exactly one family and every pipeline stage to exactly one stage group; `build.py` fails if a tag or stage is unmapped, mapped twice, or unknown. When adding a paradigm tag, add it to `PARADIGMS` in `build.py`, here, and to a family.
@@ -211,10 +211,11 @@ Rules. Values come only from verified card content or the full text, never from 
 | `members` | list, at least 3 | items `{id, approach}`; `id` is an active card, `approach` is one plain line |
 | `differences` | list | items `{heading, text, cards}`; `cards` are member ids |
 | `readings` | optional list | items `{title, url, note}` linking public primary sources with a qualitative note. The Chinese file lists the translated notes in the same order. |
+| `screening` | optional mapping | `scope` lists search and selection paragraphs. `excluded` lists items `{title, url, note}` with a public source and reason. The Chinese file translates the paragraphs and lists the reasons in the same order. |
 
 Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. `problem`, `question` and `decisions` follow the same rules, and every card in `decisions` must be a member. The Chinese file mirrors them, with the same card ids in each decision. Each page links its member cards and offers a Compare button for the first three.
 
-Page layout, all generated from card data: hero with the problem, four stats (systems, years covered, production described, online numbers), the key question, jump links, overview, decision guide, lineage by year with company marks and era colors, one tile per member (company, year, venue, era badge, deployment evidence), the comparison table with a sticky header and first column and the not-comparable note above it, the differences, a related topics strip and the subscribe box. Stats, years, era mix and company marks on `/topics/` are computed from the cards, so nothing on a topic page carries a number that is not on a card. Company marks are letters, not logos, so no third-party artwork is shipped.
+The page has a hero, overview, decision guide, timeline, system tiles, comparison table, differences, optional readings and screening record, related topics and a subscribe box. The four hero stats, era mix and deployment measurements come from the cards. Dates and hit counts in the screening record describe the literature search. Company marks use letters.
 
 
 ## Bilingual site (added 2026-10-31, owner decision: Chinese by default, English switchable)

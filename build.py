@@ -700,7 +700,7 @@ def events(cards, site, issues):
         for n, u in enumerate(c.get("updates") or []):
             ev.append({"date": u["date"], "kind": "updated", "title": c["name"], "note": u["note"], "path": f"systems/{c['id']}/", "key": f"update:{c['id']}:{n}", "summary": u["note"]})
     for n, e in enumerate(site.get("events") or []):
-        ev.append({"date": e["date"], "kind": "site", "title": e["title"], "note": e.get("note", ""), "path": "changelog/", "key": f"site:{n}", "summary": e.get("note", "")})
+        ev.append({"date": e["date"], "kind": "site", "title": e["title"], "note": e.get("note", ""), "path": "changelog/", "key": f"site:{n}", "summary": e.get("note", ""), "topics": e.get("topics", [])})
     for i in issues:
         ev.append({"date": i["date"], "kind": "issue", "title": i["title"], "note": i["summary"], "path": f"newsletter/{i['slug']}/", "key": f"issue:{i['slug']}", "summary": i["summary"]})
     order = {"issue": 0, "site": 1, "updated": 2, "added": 3}
@@ -731,15 +731,23 @@ def carousel_select(cards, today, size=6, window=7):
             slides[-1] = addition
     return slides
 
-def strip(ev, root, today, cards=None):
+def strip(ev, root, today, cards=None, topics=()):
     """Home carousel of recently added/updated cards (replaces the old text list). Pure HTML; static/carousel.js adds the behaviour."""
     size = int((SITE or {}).get("carousel_size", 6)); window = int((SITE or {}).get("carousel_window_days", 7))
     # The launch batch (every card added on or before launch_batch_until) is the baseline, not "this week's additions": events up to that date are ignored.
     base = str((SITE or {}).get("launch_batch_until") or "")
-    week = [e for e in ev if (datetime.date.fromisoformat(today) - datetime.date.fromisoformat(e["date"])).days < window and e["kind"] in ("added", "updated") and e["date"] > base]
+    target_date = datetime.date.fromisoformat(today)
+    recent = [e for e in ev if e["date"] > base and 0 <= (target_date - datetime.date.fromisoformat(e["date"])).days < window]
+    week = [e for e in recent if e["kind"] in ("added", "updated")]
     na = sum(1 for e in week if e["kind"] == "added"); nu = sum(1 for e in week if e["kind"] == "updated")
     key = "car.week" if na and nu else "car.week_added" if na else "car.week_updated"
     pill = f'<span class="pill">{E(T(key, na=na, nu=nu))}</span>' if week else ""   # nothing new beyond the baseline: no pill at all
+    topic_event = next((e for e in recent if e.get("topics")), None)
+    topic_update = ""
+    if topic_event:
+        titles = {t["slug"]: t["title"] for t in topics}
+        links = " &middot; ".join(f'<a href="{root}topics/{E(slug)}/">{E(titles[slug])}</a>' for slug in topic_event["topics"])
+        topic_update = f'<p class="car-topics"><strong>{E(topic_event["title"])}</strong> &middot; {links}</p>'
     sel = carousel_select(cards or [], today, size, window); n = len(sel)
     slides = ""
     for i, it in enumerate(sel):
@@ -749,7 +757,7 @@ def strip(ev, root, today, cards=None):
 <h3><a href="{root}systems/{E(c['id'])}/">{E(c['name'])}</a></h3><div class="co">{E(c['company'])}</div><p class="slide-tldr">{E(c['tldr'].strip())}</p>{note}<a class="slide-more" href="{root}systems/{E(c['id'])}/">{E(T('car.read'))} &rarr;</a></article>"""
     dots = "".join(f'<button type="button" class="dot" data-go="{i}" aria-label="{E(T("car.go", n=i + 1))}" aria-current="{"true" if i == 0 else "false"}"></button>' for i in range(n))
     return f"""<section class="carousel" aria-roledescription="carousel" aria-label="{E(T('car.aria'))}" data-autoplay="5000" data-count="{n}"><div class="car-h"><h2>{E(T('car.title'))}</h2>{pill}<span class="strip-links"><a href="{root}changelog/">{E(T('car.full_changelog'))}</a> &middot; <a href="{root}feed.xml">RSS</a></span></div>
-<div class="car-body"><button type="button" class="car-btn car-prev" aria-label="{E(T('car.prev'))}">&#8249;</button><div class="car-view" tabindex="0" aria-live="off"><div class="car-track">{slides}</div></div><button type="button" class="car-btn car-next" aria-label="{E(T('car.next'))}">&#8250;</button></div>
+{topic_update}<div class="car-body"><button type="button" class="car-btn car-prev" aria-label="{E(T('car.prev'))}">&#8249;</button><div class="car-view" tabindex="0" aria-live="off"><div class="car-track">{slides}</div></div><button type="button" class="car-btn car-next" aria-label="{E(T('car.next'))}">&#8250;</button></div>
 <div class="car-foot"><div class="car-dots">{dots}</div><button type="button" class="car-pause" aria-pressed="false">{E(T('js.pause'))}</button></div></section>"""
 
 def changelog_page(ev):
@@ -800,7 +808,7 @@ def issue_page(i, by_id):
 {subscribe_box("issue:" + i["slug"], T("sub.heading_issue")).replace("{ROOT}", root)}</article></div>"""
     return page(T("nl.issue_title", title=i["title"]), clip(i["summary"], 158), body, root, f"newsletter/{i['slug']}/")
 
-def home(cards, ev=(), today=""):
+def home(cards, ev=(), today="", topics=()):
     root = ""
     cards = [c for c in cards if is_active(c)]
     n = len(cards)
@@ -810,7 +818,7 @@ def home(cards, ev=(), today=""):
     body = f"""<div class="wrap"><section class="hero"><div class="hero-l"><h1>{E(T('hero.h1'))}</h1>
 <p>{E(T('hero.p'))}</p></div>
 <div class="hero-r">{subscribe_box("home", T("sub.heading_default"), compact=True).replace("{ROOT}", root)}</div></section>
-{strip(ev, root, today, cards)}
+{strip(ev, root, today, cards, topics)}
 <section class="filters" aria-label="{E(T('home.filters'))}"><input id="q" class="search" type="search" placeholder="{E(T('home.search_ph'))}" aria-label="{E(T('home.search_aria'))}">
 {chips("era", list(ERAS), ERAS)}{chips("stage", [g["id"] for g in sg], sg_labels)}{chips("family", [f["id"] for f in fam], fam_labels)}
 <div class="toggles"><label class="tog"><input type="checkbox" id="f-prod"> {E(T('home.prod_only'))}</label><label class="tog"><input type="checkbox" id="f-official"> {E(T('home.has_code'))}</label></div>
@@ -1106,18 +1114,24 @@ def load_topics(by_id):
         if extra: errs.append(f"{n}: framing has numbers not on any member card: {sorted(extra)}")
         alltext = " ".join([t["title"], t["summary"], t["problem"], t["question"]] + t["framing"] + [x for d_ in t["decisions"] if isinstance(d_, dict) for x in (d_.get("when", ""), d_.get("then", ""))] + [m.get("approach", "") for m in mem] + [x for s_ in t["differences"] if isinstance(s_, dict) for x in (s_.get("heading", ""), s_.get("text", ""))])
         if re.search(r"[()]", alltext): errs.append(f"{n}: no parentheses in topic text")
-        readings = t.get("readings", [])
-        if not isinstance(readings, list):
-            errs.append(f"{n}: readings must be a list of papers")
-        else:
-            for r in readings:
+        screening = t.get("screening", {})
+        if "screening" in t and (not isinstance(screening, dict) or
+                not isinstance(screening.get("scope"), list) or not screening["scope"] or
+                not all(isinstance(p, str) and p.strip() for p in screening["scope"])):
+            errs.append(f"{n}: screening needs a list of scope paragraphs")
+            screening = {}
+        for field, papers in (("readings", t.get("readings", [])), ("screening.excluded", screening.get("excluded", []))):
+            if not isinstance(papers, list):
+                errs.append(f"{n}: {field} must be a list of papers")
+                continue
+            for r in papers:
                 if not isinstance(r, dict) or not all(isinstance(r.get(k), str) and r[k].strip() for k in ("title", "url", "note")):
-                    errs.append(f"{n}: each reading needs a title, URL and note")
+                    errs.append(f"{n}: each {field} entry needs a title, URL and note")
                     continue
                 url = urlparse(r["url"])
                 if url.scheme != "https" or not url.hostname or url.username or url.password or re.search(r"\s", r["url"]):
-                    errs.append(f"{n}: readings need public HTTPS URLs")
-                if _NUM(r["note"]) or PARENS.search(r["note"]):
+                    errs.append(f"{n}: {field} needs public HTTPS URLs")
+                if field == "readings" and (_NUM(r["note"]) or PARENS.search(r["note"])):
                     errs.append(f"{n}: reading notes are qualitative and have no parentheses")
         topics.append(t)
     if errs: raise SystemExit("TOPIC ERRORS:\n  " + "\n  ".join(errs))
@@ -1144,6 +1158,16 @@ def zh_topics(topics, by_id, errs, warns):
         readings, notes = t.get("readings", []), z.get("readings", [])
         if not isinstance(notes, list) or len(notes) != len(readings) or any(not isinstance(note, str) for note in notes):
             errs.append(f"{n}: readings needs one Chinese note per English paper")
+        if "screening" in t:
+            localized = z.get("screening")
+            if not isinstance(localized, dict):
+                errs.append(f"{n}: missing translated screening record")
+            else:
+                for key in ("scope", "excluded"):
+                    lines = localized.get(key, [])
+                    if (not isinstance(lines, list) or len(lines) != len(t["screening"].get(key, []))
+                            or not all(isinstance(line, str) and CJK.search(line) for line in lines)):
+                        errs.append(f"{n}: screening.{key} needs one Chinese line per English entry")
         if len(errs) > e0: out.append(t); continue
         pools = {m["id"]: _NUM(json.dumps(by_id[m["id"]], ensure_ascii=False)) for m in t["members"]}
         allpool = set().union(*pools.values())
@@ -1161,6 +1185,10 @@ def zh_topics(topics, by_id, errs, warns):
         zt = dict(t); zt.update({"title": z["title"], "summary": z["summary"], "framing": z["framing"], "problem": z["problem"], "question": z["question"]})
         for k, note in enumerate(notes): chk(f"readings.{k}", note, set())
         zt["readings"] = [dict(r, note=note) for r, note in zip(readings, notes)]
+        if "screening" in t:
+            zt["screening"] = {"scope": localized["scope"], "excluded": [
+                dict(row, note=note) for row, note in zip(t["screening"].get("excluded", []), localized.get("excluded", []))
+            ]}
         zt["decisions"] = []
         for k, (sec, zs) in enumerate(zip(t["decisions"], z["decisions"])):
             pool = set().union(*(pools[i] for i in sec["cards"]))
@@ -1208,6 +1236,17 @@ def topic_page(t, by_id, topics=()):
         jumps.append(("readings", "topic.readings"))
         papers = "".join(f'<li><a href="{E(r["url"])}">{E(r["title"])}</a><div class="stage-d">{E(r["note"])}</div></li>' for r in t["readings"])
         readings = f'<section class="blk" id="readings"><h2>{E(T("topic.readings"))}</h2><ul class="clean">{papers}</ul></section>'
+    screening = ""
+    if t.get("screening"):
+        jumps.insert(1, ("screening", "topic.screening"))
+        scope = "".join(f'<p>{E(p)}</p>' for p in t["screening"]["scope"])
+        selected = f'<a href="#systems">{E(T("topic.tiles"))} · {f["n"]}</a>'
+        if readings:
+            selected += f' · <a href="#readings">{E(T("topic.readings"))} · {len(t["readings"])}</a>'
+        excluded = "".join(f'<li><a href="{E(r["url"])}">{E(r["title"])}</a><div class="stage-d">{E(r["note"])}</div></li>'
+                           for r in t["screening"].get("excluded", []))
+        screening = (f'<section class="blk" id="screening"><h2>{E(T("topic.screening"))}</h2>{scope}<p>{selected}</p>'
+                     + (f'<h3>{E(T("topic.screened_out"))}</h3><ul class="clean">{excluded}</ul>' if excluded else "") + '</section>')
     jump = f'<nav class="jump" aria-label="{E(T("topic.jump"))}">' + "".join(f'<a href="#{a}">{E(T(k))}</a>' for a, k in jumps) + '</nav>'
     overview = f'<section class="blk" id="overview"><h2>{E(T("topic.overview"))}</h2>' + "".join(f'<p class="lead">{E(p_)}</p>' for p_ in t["framing"]) + '</section>'
     # decision guide
@@ -1257,7 +1296,7 @@ def topic_page(t, by_id, topics=()):
         rel += (f'<a class="rtile" href="{root}topics/{E(o["slug"])}/"><b>{E(o["title"])}</b><span>{E(o["problem"])}</span>'
                 + (f'<small>{E(T("topic.shared_one" if shared == 1 else "topic.shared_many", n=shared))}</small>' if shared else "") + '</a>')
     related = f'<section class="blk" id="related"><h2>{E(T("topic.related"))}</h2><div class="rtiles">{rel}</div></section>' if rel else ""
-    body = (f'<div class="wrap"><article class="sys topicpage">{hero}{jump}{overview}{decide}{lineage}{systems}<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>{differ}{cta}{readings}{related}'
+    body = (f'<div class="wrap"><article class="sys topicpage">{hero}{jump}{overview}{decide}{lineage}{systems}<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>{differ}{cta}{readings}{screening}{related}'
             + subscribe_box("topic:" + t["slug"], T("sub.heading_topic")).replace("{ROOT}", root) + '</article></div>')
     return page(T("topic.title", t=t["title"]), t["summary"], body, root, f'topics/{t["slug"]}/')
 
@@ -1463,6 +1502,11 @@ def main():
     allc = load_cards(); SITE = load_site(); check_v2(allc); check_deployment(allc); TAXONOMY.update(load_taxonomy()); diag_en = load_diagrams(allc); CITES.update(load_citations(allc))
     by_id = {c["id"]: c for c in allc}; issues = load_issues(by_id)
     topics = load_topics(by_id)
+    topic_slugs = {t["slug"] for t in topics}
+    for event in SITE.get("events") or []:
+        links = event.get("topics", [])
+        if not isinstance(links, list) or any(not isinstance(slug, str) or slug not in topic_slugs for slug in links):
+            sys.exit(f"site.yaml event references unknown topics: {event['title']}")
     ailayer.set_faq(ailayer.load_faq({c["id"] for c in allc if is_active(c)}))   # data/faq/<id>.yaml; only files with reviewed: true are published
     # Chinese data: every required string present, no number or parenthesis the English source does not have
     errs, warns = [], []
@@ -1489,7 +1533,7 @@ def main():
         issues_l = [loc_issue(i, lang) for i in issues]; ev = events(cards, loc_site(SITE, lang), issues_l)
         topics_l = topics_zh if lang == "zh" else topics
         w = lambda path, content: write(pre + path, content)
-        w("index.html", home(cards, ev, today))
+        w("index.html", home(cards, ev, today, topics_l))
         for c in cl: w(f"systems/{c['id']}/index.html", card_page(c))
         w("topics/index.html", topics_index(topics_l, by_idl))
         for t in topics_l: w(f"topics/{t['slug']}/index.html", topic_page(t, by_idl, topics_l))

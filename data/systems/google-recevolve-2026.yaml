@@ -1,0 +1,89 @@
+id: google-recevolve-2026
+name: RecEvolve
+company: Google
+surface: Automated model research for an unnamed production two-tower retrieval service
+year: 2026
+era: generative
+era_reason: Agents generate and review executable changes to a production retrieval model.
+first_public: '2026-07'
+venue: RecSys 2026 Industry
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3773078.3831898
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: A proposal agent, critic and coding agent use a shared research record to improve a production two-tower retriever. Google tested the selected model against the incumbent on live traffic.
+summary: The orchestrator passes candidate ideas through a critic, then runs approved code changes in isolated branches. Model evaluations and failures feed back into a shared knowledge base. An exploratory run exposed a proxy that improved when the batch contained fewer negatives.
+paradigms: [llm-based, two-tower]
+stages:
+  - stage: other
+    model_family: Orchestrator, ideator, critic and coding agent
+    details: The orchestrator proposes, screens and isolates edits, then records completed runs and failures for subsequent trials.
+  - stage: retrieval
+    model_family: Two-tower retrieval model
+    details: The production experiment compares the selected trained candidate with the incumbent retrieval model.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - Previous hypotheses, code changes and failure logs
+  - Offline ranking and auxiliary validation metrics
+training:
+  mode: Full training of approved model changes in isolated experiment branches
+  objectives:
+    - Advance changes that meet the main and auxiliary offline criteria.
+    - Record failed hypotheses and constraint violations for future trials.
+  notes: The paper reports that shrinking a training batch from 8k to 1k reduced the number of in-batch negatives and artificially boosted a proxy. The team rolled back this exploratory change.
+serving_infra: The research workflow runs outside the request path. The selected model was deployed in a production A/B test.
+scale:
+  - metric: Completed autonomous training runs from scratch
+    value: More than 40
+    note: Describes the research runs rather than the production experiment population.
+results_reported: Section 5.7 and Table 2 compare the selected model with the production baseline. The reported relative changes were +3.77% user satisfaction, +7.44% unique content and −16.50% cold-start discovery time.
+caveats:
+  - The online test covers a selected trained model. The paper does not attribute the result to any one edit in isolation.
+  - The batch-size shortcut was a separate exploratory run and was rolled back.
+unknown_fields:
+  - Product name, A/B duration, traffic share and allocation unit
+  - Serving latency, throughput, cost and hardware
+sources:
+  - {title: RecEvolve, url: 'https://doi.org/10.1145/3773078.3831898', type: paper}
+  - {title: Author full text, url: 'https://arxiv.org/html/2609.01622v1', type: paper}
+version_note: The RecSys Industry proceedings record spans pages 1437–1442. The author's conclusion extends to page six. Architecture and metrics were checked in the author manuscript. The publisher full text remains unchecked.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The paper does not link a public implementation of RecEvolve.
+core_idea: Keep an experiment record that can reject cheap proxy shortcuts and carry validated evidence into the next architecture change.
+deployed_in: A Google production two-tower retrieval service whose product name is undisclosed
+scale_short: More than 40 completed autonomous training runs from scratch
+key_result: User satisfaction +3.77% and unique content +7.44% for the selected model against the production baseline.
+results_table:
+  online:
+    - {setting: Live retrieval A/B, method: Selected trained model, metric: User satisfaction, result: '+3.77%', versus: Incumbent production model}
+    - {setting: Live retrieval A/B, method: Selected trained model, metric: Unique content, result: '+7.44%', versus: Incumbent production model}
+    - {setting: Live retrieval A/B, method: Selected trained model, metric: Cold-start discovery time, result: '−16.50%', versus: Incumbent production model}
+deployment:
+  online_evidence: online_numbers
+  scenario: A selected two-tower retrieval model in a production A/B test
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Incumbent production retrieval model in the same experiment
+  online_lifts:
+    - {metric: User satisfaction, value: '+3.77%'}
+    - {metric: Unique content, value: '+7.44%'}
+    - {metric: Cold-start discovery time, value: '−16.50%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - The paper describes the cold-start improvement as faster discovery of new items.
+    - The paper reports one selected candidate and does not disclose the experiment duration or allocation.
+  fulltext_refs:
+    - Section 3 and Figures 1–2 describe the agent roles and the research loop.
+    - Section 5.2 describes the proxy shortcut. Section 5.7 and Table 2 give the production comparison.
+  basis: full_text
+  checked_on: '2026-11-26'

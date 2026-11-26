@@ -67,10 +67,22 @@ for (const s of slugs) {
   ok(ly.length === members.length, `${s}: lineage lists every member once, found ${ly.length}`);
   const yrs = [...d.querySelectorAll("#lineage .ly-y")].map((e) => +e.textContent);
   ok(yrs.join() === memberYears.join(), `${s}: lineage shows every member year in order`);
-  const readingURLs = [...y.matchAll(/^\s+url: (https:\/\/\S+)/gm)].map((m) => m[1]);
+  const [topicYaml, screeningYaml] = y.split(/^screening:$/m);
+  const paperURLs = (yaml) => [...yaml.matchAll(/^\s+url: (https:\/\/\S+)/gm)].map((m) => m[1]);
+  const readingURLs = paperURLs(topicYaml);
   const readingLinks = [...d.querySelectorAll("#readings li a")].map((a) => a.getAttribute("href"));
   ok(readingURLs.join() === readingLinks.join(), `${s}: reading links come from topic data`);
   ok(jumps.includes("#readings") === (readingURLs.length > 0), `${s}: jump link follows reading section availability`);
+  ok(jumps.includes("#screening") === Boolean(screeningYaml), `${s}: jump link follows screening availability`);
+  if (screeningYaml) {
+    const review = d.querySelector("#screening");
+    const exclusions = [...review.querySelectorAll("li a")];
+    ok(exclusions.map((a) => a.getAttribute("href")).join() === paperURLs(screeningYaml).join(), `${s}: screening links match the data`);
+    ok(exclusions.every((a) => a.parentElement.querySelector(".stage-d")?.textContent.trim()), `${s}: every exclusion shows a reason`);
+    ok(review.querySelector("a[href='#systems']").textContent.endsWith(String(members.length)), `${s}: screening shows the included card count`);
+    const readingCount = review.querySelector("a[href='#readings']");
+    ok(readingURLs.length ? readingCount?.textContent.endsWith(String(readingURLs.length)) : !readingCount, `${s}: screening shows the further reading count`);
+  }
   const cav = d.querySelector("p.caveat#note");
   ok(!!cav && /not comparable|不能跨行直接比较/.test(cav.textContent), `${s}: online lifts not comparable note is visible above the table`);
   const wrap = d.querySelector(".tbl-topic");

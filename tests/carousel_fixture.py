@@ -73,6 +73,13 @@ def pill_tests():
         assert "2" in txt and "1" in txt and "4" not in txt, (lang, txt)   # 2 added and 1 updated: the baseline add is left out
         build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
         assert pill([ev("added", 3)]) == 1, "no baseline configured: everything counts"
+        topics = [{"slug": "example-topic", "title": "专题" if lang == "zh" else "Topic"}]
+        event = dict(ev("site", 6), topics=["example-topic"])
+        notice = build.strip([event], "", TODAY, cards, topics)
+        assert f'href="topics/example-topic/">{topics[0]["title"]}</a>' in notice
+        assert 'class="pill"' not in notice, "site events do not count as added system cards"
+        expired = build.strip([dict(event, date=day(7))], "", TODAY, cards, topics)
+        assert 'class="car-topics"' not in expired
     build.set_lang("zh"); build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
     print("pill baseline tests: ALL PASS")
 

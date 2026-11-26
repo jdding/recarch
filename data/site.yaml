@@ -46,3 +46,9 @@ events:
     title_zh: "上线推荐算法 RSI 与 Agent 内推荐能力两个专题"
     note: "The topics cover how research agents test recommender changes and how serving agents use retrieval, filtering and ranking. Four new system cards accompany the release."
     note_zh: "两个专题分别介绍研发 Agent 怎样验证推荐算法改动，以及服务 Agent 怎样使用召回、过滤和排序。随专题发布四张系统卡。"
+  - date: "2026-11-26"
+    title: "Two topic reviews expanded with 4 new system cards"
+    title_zh: "两个专题完成复扫，新增 4 张系统卡"
+    note: "Both topics now show their search scope and selection decisions. New cards cover Google RecEvolve, Kuaishou RecHarness, Tencent NOVA and Spotify's conversational recommendation agent."
+    note_zh: "两个专题补充了检索范围和逐项取舍。新卡覆盖 Google RecEvolve、快手 RecHarness、腾讯 NOVA 和 Spotify 对话推荐 Agent。"
+    topics: [recommendation-rsi, agentic-recommendation]

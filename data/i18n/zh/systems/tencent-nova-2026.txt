@@ -1,0 +1,46 @@
+surface|为生产广告转化排序模型研发架构
+era_reason|研发 Agent 提出并实现架构改动，将失败诊断用于后续搜索。
+tldr|NOVA 在花费一次训练前，先检查生成的架构是否实现了预期设计。失败原因用于引导下一轮，并选取离线候选上线验证。
+summary|NOVA 依据候选改动、语义检查与历史诊断，为生产排序器提出协同改动。验证从结构语义进入本地执行、离线指标与线上效果。任务风险决定何时需要工程师参与。
+stages.0.model_family|带分层验证的架构搜索
+stages.0.details|先检查接口和结构约束，再本地执行和完整训练。拒绝候选的原因进入下一轮搜索。
+stages.1.model_family|多任务广告转化率排序模型
+stages.1.details|线上候选将 TokenMixer-Large 适配到已有的转化预测排序器。
+features_signals.0|模型代码、结构要求和候选改动记录
+features_signals.1|本地验证诊断与离线 AUC
+training.mode|在固定试验预算下做多轮模型修改和分层验证
+training.objectives.0|在训练前拦下能运行但违反模型语义的改动。
+training.objectives.1|用生产 A/B 验证合格的离线最优候选。
+training.notes|高风险任务仍需工程师参与。线上结果对应一项从论文迁移到生产模型的候选。
+serving_infra|搜索和验证在请求链路之外运行。入选迁移候选用生产广告请求对照现网模型。
+scale.0.metric|线上实验覆盖范围
+scale.0.value|6 天内覆盖 5% 的生产流量
+results_reported|最新修订稿第 5.7 节和表 4 报告按用户随机分组的 6 天 A/B，覆盖 5% 的生产流量。入选候选在 pCVR 目标 1、2、3 上的 GMV 分别 +1.25%、+1.70% 和 +2.02%，对应的绝对 pCVR 偏差相对变化分别为 −58.8%、−66.7% 和 −37.3%。
+caveats.0|三组指标对应不同目标，论文未报告合并后的 GMV 效果。
+caveats.1|A/B 对照的是入选的排序改动。Agent 对比和验证流程分析来自其他实验。
+caveats.2|论文报告 NOVA 已用于生产研发，排序改动已完成 A/B。对该改动的全量上线是作者在文中给出的后续计划。
+unknown_fields.0|组间流量分配及全量上线是否完成
+unknown_fields.1|各目标的名称、绝对服务延迟、吞吐和逐请求成本
+version_note|最新修订稿披露 A/B 时长，并说明按用户随机分组。作者版仍在 arXiv 观察期，正式出版版本待核。
+code.note|附录给出部分提示模板和记录样例，未确认有公开的 NOVA 实现仓库。
+core_idea|先验证架构改动的语义，再花资源训练，并把拒绝候选的原因变成下一轮约束。
+deployed_in|腾讯生产广告转化率排序
+scale_short|覆盖 5% 生产流量的 6 天 A/B，按用户随机分组
+key_result|对照现网模型，入选模型在报告目标上的 GMV 提升 +1.25% 至 +2.02%。
+results_table.online.0.setting|生产 pCVR 任务 1
+results_table.online.0.method|入选迁移方案
+results_table.online.0.versus|现网 pCVR 模型
+results_table.online.1.setting|生产 pCVR 任务 2
+results_table.online.1.method|入选迁移方案
+results_table.online.1.versus|现网 pCVR 模型
+results_table.online.2.setting|生产 pCVR 任务 3
+results_table.online.2.method|入选迁移方案
+results_table.online.2.versus|现网 pCVR 模型
+deployment.scenario|在生产 pCVR 排序器中接入入选的 TokenMixer-Large 迁移方案
+deployment.ab_traffic|5% 的生产流量，按用户随机分组
+deployment.ab_duration|6 天
+deployment.baseline|相同广告服务中的现网 pCVR 模型
+deployment.online_lifts.0.metric|任务 1 的 GMV
+deployment.online_lifts.1.metric|任务 2 的 GMV
+deployment.online_lifts.2.metric|任务 3 的 GMV
+deployment.notes.0|同次试验的各目标绝对校准偏差下降，论文未报告合并效果。

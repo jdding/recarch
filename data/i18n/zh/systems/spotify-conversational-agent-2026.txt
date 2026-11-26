@@ -1,0 +1,46 @@
+surface|Spotify DJ 的多轮内容发现与收听会话调整
+era_reason|LLM 跨轮规划并调用内容工具。
+tldr|Spotify 的 Agent 根据对话状态创建或调整收听会话，并回答与音乐有关的后续问题。
+summary|Agent 读取用户的自然语言请求，选择创建歌单、调整现有歌单等内容操作。后续对话可以收窄早前的请求，也能引用已经返回的内容。上线前，团队用合成对话检验这些行为，再用编码 Agent 辅助修改规划指令和工具定义。
+stages.0.model_family|对话规划器与音乐内容工具
+stages.0.details|规划器根据当前和历史请求查找内容、调整收听会话或回答后续问题。论文示例展示了保留先前的约束和定位已返回的内容。
+features_signals.0|当前请求和前几轮对话
+features_signals.1|收听会话和工具返回的目录内容
+training.mode|上线前生成多轮对话、评估并迭代 Agent 的规划方式
+training.objectives.0|找出意图变化、约束保留和工具调用中的失败。
+training.objectives.1|根据稳定复现的失败模式修改提示和工具定义。
+training.notes|Agent 提出的改动由工程师审查后合入。
+serving_infra|受试版本的 Spotify DJ 支持多轮音乐会话和信息问答。论文说明生产 A/B 后推广了该版本。
+scale.0.metric|生产实验触达人数
+scale.0.value|约 1500 万名用户
+results_reported|多市场、多设备的两周 A/B 触达约 1500 万名用户。相比仅支持调整当前会话的旧版，论文报告收听量 +14%、周活跃用户 +5%、跳过率 −5%。
+caveats.0|生产实验比较的是两个完整的产品体验。编码 Agent 和单个推荐工具的贡献未单独测量。
+caveats.1|论文未披露底层排序模型及候选打分方式。
+unknown_fields.0|各组流量占比、各市场效果和指标分母
+unknown_fields.1|服务延迟、吞吐、基础设施和硬件
+version_note|Spotify 正式发布文章早于论文，描述了 DJ 的对话功能。架构与数字已核作者全文，出版全文待核。
+code.note|作者描述了 Agent 与评估流程，未链接公开实现。
+core_idea|用当前歌单和先前的偏好约束，决定下一轮调用哪个内容工具。
+deployed_in|Spotify DJ 的多轮音乐推荐
+scale_short|两周的 A/B 触达约 1500 万名用户
+key_result|相比仅支持调整当前会话的旧版，收听量 +14%、周活跃用户 +5%、跳过率 −5%。
+results_table.online.0.setting|多市场 DJ A/B
+results_table.online.0.method|多轮对话推荐体验
+results_table.online.0.metric|收听量
+results_table.online.0.versus|仅支持调整当前会话的旧版
+results_table.online.1.setting|多市场 DJ A/B
+results_table.online.1.method|多轮对话推荐体验
+results_table.online.1.metric|周活跃用户
+results_table.online.1.versus|仅支持调整当前会话的旧版
+results_table.online.2.setting|多市场 DJ A/B
+results_table.online.2.method|多轮对话推荐体验
+results_table.online.2.metric|跳过率
+results_table.online.2.versus|仅支持调整当前会话的旧版
+deployment.scenario|Spotify DJ 在生产 A/B 中对比多轮音乐会话与问答的新体验和旧版
+deployment.ab_traffic|多个市场和设备，触达约 1500 万名用户
+deployment.ab_duration|两周
+deployment.baseline|仅支持调整当前会话的旧版
+deployment.online_lifts.0.metric|收听量
+deployment.online_lifts.1.metric|周活跃用户
+deployment.online_lifts.2.metric|跳过率
+deployment.notes.0|A/B 比较两个完整的 DJ 产品体验。提示优化和工具选择在上线前另有评估。

@@ -1,40 +1,42 @@
 title: How agents use recommendation
-summary: Where an agent calls recommendation, which constraints and preferences it passes, and what happens to the returned candidates.
-problem: An agent handling a user's task needs usable candidates that reflect current intent, fit hard constraints, and can be ranked within the service budget.
-question: Which recommendation decisions belong to the agent, and which should stay in the retrieval or ranking service?
+summary: When an agent calls a recommender, how it supplies constraints and preferences, and what it does with the returned items.
+problem: An agent helping a user complete a task needs to find suitable catalog items, respect constraints and use the results in the next action.
+question: Which recommendation decisions belong to the agent, and which go to retrieval and ranking tools?
 framing:
-  - Start with a user task such as finding a product or changing what a feed shows. The agent translates the task into constraints and preferences, chooses which recommendation operation to call, then uses the returned candidates to continue the task.
-  - The systems here put the agent at different points. RecBot plans changes to the next feed from user commands. Shape Your Feed keeps a profile for pruning and reranking, and EvoRec plans an additional retrieval channel nearline.
+  - Start with the user's task, such as finding a product or building a listening session. The agent turns the request into constraints and preferences, chooses an operation and uses the resulting items to advance the task.
+  - RecBot, Spotify and Meta use explicit user input. Kuaishou EvoRec infers nearline demand and supplies candidates to a downstream ranker. The readings cover the planning, catalog and task-evaluation choices that production papers disclose unevenly.
 decisions:
-  - when: Users combine must-have constraints and softer requests in the same command.
-    then: Have the agent produce typed preferences. Enforce the hard constraints with a filter, then apply matching, attenuation and score fusion to the remaining candidates.
+  - when: A request combines hard constraints with soft preferences.
+    then: Have the agent express both as typed inputs. Apply deterministic filters first, then match, downweight and combine signals for the remaining items.
     cards: [alibaba-recbot-2025]
-  - when: Explicit interests should influence an established feed.
-    then: Persist a semantic profile and use it to prune or rerank candidates alongside the existing engagement scores. Compare the full integration with the interface-only treatment where evidence is available.
+  - when: A user refines a previous recommendation or refers to an item already returned.
+    then: Keep the current list with the constraints it must satisfy. Evaluate the next tool call on both the requested change and what the user wanted to preserve.
+    cards: [spotify-conversational-agent-2026]
+  - when: A user wants explicit feedback to affect an existing feed.
+    then: Retain the semantic profile and filter or re-rank candidates using both the profile and existing engagement scores. Measure the feedback entry point separately when the experiment permits.
     cards: [meta-shape-your-feed-2026]
-  - when: A fresh language-model call is too expensive on the request path.
-    then: Compute needs and retrieval plans nearline. Refresh items independently and let the live stack consume the resulting candidates as an extra route.
+  - when: The request path cannot afford a fresh language-model call for every visit.
+    then: Infer demand and plan retrieval nearline. Let the current serving stack take the additional candidates and keep the catalog index fresh independently.
     cards: [kuaishou-evorec-2026]
-  - when: A recommendation looks plausible but may miss the user's actual goal.
-    then: Measure constraint satisfaction and the final task outcome alongside ranking quality. Track which action or tool call changed the recommendation.
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
 members:
   - id: alibaba-recbot-2025
-    approach: Parse user commands into structured positive and negative preferences, then compile a tool sequence to adjust the next feed.
-  - id: meta-shape-your-feed-2026
-    approach: Persist a Semantic Profile from user feedback. Use it to prune and rerank an existing candidate list with its production scores.
+    approach: Parse commands into positive and negative preferences and use a structured tool chain to adjust the next recommendation feed.
+  - id: spotify-conversational-agent-2026
+    approach: Use dialogue state to create or refine a listening session and refer back to recommended music in later turns.
   - id: kuaishou-evorec-2026
-    approach: Infer current needs and allocate retrieval resources nearline. Publish the candidates to an extra channel for the existing live rankers.
+    approach: Infer demand and select retrieval tools nearline. Supply additional candidates for the existing online ranker.
+  - id: meta-shape-your-feed-2026
+    approach: Write feedback to a semantic profile and use it with production engagement scores to filter and re-rank the feed.
 differences:
-  - heading: What moves from the agent to the recommender
-    text: RecBot passes typed constraints and preferences to a tool chain. Shape Your Feed passes a durable interest profile to a list-wise scorer. EvoRec passes plans and query vectors to an executor that can run again after an index update.
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
-  - heading: Where the work runs
-    text: RecBot adapts recommendations after user commands. Shape Your Feed puts alignment scoring on the serving path and gathers some candidates asynchronously. EvoRec moves the language-model planning off the request path and publishes candidates in advance.
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
-  - heading: Which intervention the live test covered
-    text: RecBot reports the complete homepage treatment. Shape Your Feed restricts its online test to the feedback-pill interface. EvoRec adds a single candidate route for local-services lead ads and retains the downstream models. Use the same catalog and downstream components when isolating the effect of agent decisions.
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+  - heading: What the agent passes to the recommender
+    text: RecBot passes typed constraints and preferences. Spotify uses the request and the current listening session to choose the next operation. Meta retains a semantic interest profile. EvoRec produces a retrieval plan and candidate queries.
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
+  - heading: Where the agent runs
+    text: RecBot and Spotify act when a user makes a request. Meta applies the profile when scoring the live feed. EvoRec plans nearline and passes precomputed candidates to the existing online stack.
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
+  - heading: What the online comparison changes
+    text: RecBot tests the homepage experience and Spotify tests the expanded DJ experience. Meta measures a feedback entry point and its downstream feed. EvoRec adds a retrieval channel and keeps the downstream rankers. For component-level attribution, align the catalog, tools, ranking and available feedback across experimental arms.
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
 readings:
   - title: 'Recommender AI Agent: Integrating Large Language Models for Interactive Recommendations'
     url: https://doi.org/10.1145/3731446
@@ -42,12 +44,70 @@ readings:
   - title: Thought-Augmented Planning for LLM-Powered Interactive Recommender Agent
     url: https://arxiv.org/html/2506.23485
     note: TAIRA studies how learned planning patterns help a manager agent coordinate recommendation subtasks.
+  - title: Personalized Recommendation Tool Learning via Autonomous Language Agents
+    url: https://arxiv.org/abs/2607.19739
+    note: PRTA lets a planner choose among recommendation models exposed as tools. It is a method comparator for tool selection.
+  - title: 'HARPO: Hierarchical Agentic Reasoning for User-Aligned Conversational Recommendation'
+    url: https://aclanthology.org/2026.acl-long.1646/
+    note: Studies how to choose the next action while the user is still revealing requirements.
   - title: 'τ-Rec: A Verifiable Benchmark for Agentic Recommender Systems'
     url: https://taubench.com/community/tau-rec.html
     note: Catalog tools and programmatic checks let the benchmark evaluate constraint discovery and policy compliance across turns.
+  - title: 'τ-Rec-Books: A Disclosure-Controlled Benchmark for Requirement Elicitation in Agentic Recommender Systems'
+    url: https://arxiv.org/abs/2611.04459
+    note: Changes when a user reveals each requirement while holding the request fixed. It tests whether the agent asks or infers an unstated constraint.
   - title: 'AgentRecBench: Benchmarking LLM Agent-based Personalized Recommender Systems'
     url: https://proceedings.neurips.cc/paper_files/paper/2025/hash/e2d6f7249add096e26679eade1b4cc6f-Abstract-Datasets_and_Benchmarks_Track.html
     note: A recommendation simulator with changing interests and cold-start cases.
   - title: 'RecoAtlas: A Benchmark and RL Environment for LLM Recommendation Agents Optimizing Set-Level Utility'
     url: https://arxiv.org/html/2605.18805v2
     note: Agents search a catalog with retrieval and complementarity tools and are scored on the utility of the returned set.
+  - title: 'EComAgentBench: Benchmarking Shopping Agents on Long-Horizon Tasks with Distributed Hidden Intent'
+    url: https://aclanthology.org/2026.emnlp-industry.61/
+    note: Tests product selection when requirements are distributed across a visible query, a profile tool and follow-up answers.
+  - title: 'Beyond Expert Users: Agents Should Help Users Construct Preferences, Not Just Elicit Them'
+    url: https://arxiv.org/abs/2606.30863
+    note: CoShop tests whether the agent can help users form workable preferences before selecting catalog items.
+  - title: 'From Scoring to Workflow: A Survey of Agentic Recommender Systems'
+    url: https://www.sciencedirect.com/science/article/abs/pii/S0306457326005546
+    note: A wider recommender-system taxonomy. Its discussion of user states, candidates and feedback helps locate the interface choices compared here.
+screening:
+  scope:
+    - We searched January 2023 through November 26, 2026 for work that shows how an agent serving a user task obtains, filters, ranks or assembles catalog candidates and acts on the result.
+    - We used a read-only bibliography index, arXiv, public listings from RecSys 2026, KDD 2026, ACL Anthology and NeurIPS, official product material and references from Lin and colleagues and the τ-Rec paper. Queries combined agentic recommenders, conversational recommendation, recommendation tools, catalog retrieval, shopping agents and multi-turn constraints. The index also searched Chinese equivalents and returned 101 rows across 11 queries, including repeats and mentions.
+    - We normalized DOI, arXiv ID and title, then checked system lineage. Production cases must expose an agent decision and a recommendation interface, along with full text and deployment evidence. Papers and benchmarks join the readings if they explain a planning, catalog, preference or task-evaluation choice.
+    - The selection record covers candidates screened from these sources and citation trails. General user simulation, tool selection for arbitrary tasks and model development without a user task are adjacent topics.
+  excluded:
+    - title: 'Melo: A Production LLM-Powered Music Recommendation Agent'
+      url: https://arxiv.org/abs/2607.23718
+      note: The paper describes a deployed playlist agent. The catalog’s standing admission rule excludes Melo.
+    - title: Building a Production Shopping Agent at Scale
+      url: https://doi.org/10.1145/3805712.3808408
+      note: Deferred as a system card. The SIGIR proceedings entry is five pages in total. Check a qualifying long version and the recommendation-specific online comparison.
+    - title: Uncertainty-Aware Planning for Disambiguating User Intent in Interactive LLM Agents
+      url: https://doi.org/10.1145/3770854.3783943
+      note: Deferred. The Baidu Maps application is relevant to clarification. Exact catalog selection and the online comparison still need verification in the original full text.
+    - title: NewsRec-Chat
+      url: https://aclanthology.org/2026.acl-industry.130/
+      note: Adjacent module. The paper studies grounded item ID generation from news dialogue and evaluates that retrieval design. It does not establish a deployed agent’s choice and reuse of recommendation tools.
+    - title: 'STEPS: A Self-Triggered Agentic Push Recommendation System'
+      url: https://arxiv.org/abs/2608.01949
+      note: Adjacent scope, with industrial evidence. Its agents decide whether and when to send a notification. The decision under review here is how to use catalog candidates to meet a user task.
+    - title: Tool Recommendation for Multi-Step Agents
+      url: https://arxiv.org/abs/2610.23707
+      note: Adjacent scope. It retrieves tool definitions for agents, including tools unrelated to giving a user item recommendations.
+    - title: 'Autonomous Information Seeking: A Roadmap for Agentic Recommender Systems'
+      url: https://arxiv.org/abs/2607.04433
+      note: Used for reference tracing. Its taxonomy also covers agents as user simulators and is broader than the tool and catalog interface examined here.
+    - title: Who Are We Recommending To?
+      url: https://arxiv.org/abs/2609.11945
+      note: A position paper on agents as consumers of recommendations. It motivates the question but does not specify or test a catalog workflow.
+    - title: AgentSociety Challenge
+      url: https://arxiv.org/abs/2502.18754
+      note: The selected AgentRecBench paper provides the benchmark methods and scenarios. The challenge overview belongs to the same evaluation lineage.
+    - title: Internalizing Multi-Agent Reasoning for Accurate and Efficient LLM-Based Recommendation
+      url: https://aclanthology.org/2026.findings-acl.2134/
+      note: Adjacent scope. It distills multi-agent reasoning into a recommender model. The evaluated interface does not show how a user-facing agent chooses and uses catalog tools.
+    - title: 'TRACE: A Conversational Framework for Sustainable Tourism Recommendation with Agentic Counterfactual Explanations'
+      url: https://arxiv.org/abs/2604.14223
+      note: Adjacent method. Its evidence focuses on counterfactual explanations for tourism recommendations. The selected readings provide more direct comparisons for tool choice and task completion.

@@ -1,0 +1,47 @@
+surface|为生产双塔召回模型做自动化研发，论文未公开产品名称
+era_reason|Agent 生成和审核生产召回模型的可执行改动。
+tldr|提案、评审和编码 Agent 共用研发记录，迭代生产双塔召回模型。Google 用真实流量比较入选模型和现网模型。
+summary|编排器先让评审 Agent 筛选提案，再在隔离分支中实现和训练通过的改动。模型评估和失败记录进入共享知识库，供后续试验使用。一次探索发现，减少批内负样本会使代理指标虚高。
+stages.0.model_family|编排器、提案 Agent、评审 Agent 和编码 Agent
+stages.0.details|编排器安排提案、筛选、隔离实验与结果记录。下一轮可以取用已完成的试验与失败原因。
+stages.1.model_family|双塔召回模型
+stages.1.details|生产实验比较选中的训练模型与现网召回模型。
+features_signals.0|历史假设、代码改动和失败日志
+features_signals.1|离线排序和辅助校验指标
+training.mode|通过评审的模型改动在隔离分支上完整训练
+training.objectives.0|推进同时满足主要指标和辅助离线条件的改动。
+training.objectives.1|记录失败假设和违反约束的改动，供后续试验使用。
+training.notes|论文记录了一次把训练批量从 8k 降到 1k 的探索。批内负样本减少后，代理指标被抬高。团队回滚了这次改动。
+serving_infra|研发流程在请求链路外运行。入选模型在生产流量上做了 A/B。
+scale.0.metric|从头完成的自主训练运行数
+scale.0.value|超过 40 次
+results_reported|第 5.7 节和表 2 比较入选模型与生产基线。论文报告用户满意度指标相对提升 3.77%，独特内容指标相对提升 7.44%，冷启动发现时间相对降低 16.50%。
+caveats.0|线上试验覆盖整套入选模型，论文没有对单项改动做线上归因。
+caveats.1|批量缩小的例子来自另一轮探索，该改动已回滚。
+unknown_fields.0|产品名称、A/B 时长、流量比例和随机化单位
+unknown_fields.1|服务延迟、吞吐、成本与硬件
+version_note|RecSys 工业赛道正式书目为第 1437–1442 页。作者稿的结论延续到最后一页。架构与指标已核作者全文，出版全文待核。
+code.note|论文未链接 RecEvolve 的公开实现。
+core_idea|用试验记录识别会抬高代理指标的改动，把验证过的证据带到下一次架构修改。
+deployed_in|Google 的生产双塔召回服务，产品名未披露
+scale_short|从头完成超过 40 次自主训练
+key_result|对比生产基线，入选模型的用户满意度指标 +3.77%，独特内容指标 +7.44%。
+results_table.online.0.setting|线上召回 A/B
+results_table.online.0.method|入选模型
+results_table.online.0.metric|用户满意度指标
+results_table.online.0.versus|现网模型
+results_table.online.1.setting|线上召回 A/B
+results_table.online.1.method|入选模型
+results_table.online.1.metric|独特内容指标
+results_table.online.1.versus|现网模型
+results_table.online.2.setting|线上召回 A/B
+results_table.online.2.method|入选模型
+results_table.online.2.metric|冷启动发现时间
+results_table.online.2.versus|现网模型
+deployment.scenario|生产双塔召回模型入选方案的线上 A/B
+deployment.baseline|同次实验中的现网召回模型
+deployment.online_lifts.0.metric|用户满意度指标
+deployment.online_lifts.1.metric|独特内容指标
+deployment.online_lifts.2.metric|冷启动发现时间
+deployment.notes.0|论文将冷启动指标的改善解释为更快发现新物品。
+deployment.notes.1|论文报告一项入选方案，未披露实验时长和分流设置。

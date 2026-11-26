@@ -1,0 +1,50 @@
+surface|短视频广告排序模型的 Agent 辅助研发
+era_reason|语言模型生成可执行的推荐模型改动，搜索方向由已观测试验结果引导。
+tldr|RecHarness 用多臂老虎机在专家定义的改动方向之间分配有限试验次数。语言模型实现被选中的改动，验证结果决定后续分配。
+summary|工程师定义目标、评估指标和改动方向。Thompson 采样路由器分配试验，实验技能把过去的证据交给编码 Agent。进入生产试验的候选在商业行为序列内部加入自注意力。
+stages.0.model_family|Thompson 采样路由器、实验技能和编码 Agent
+stages.0.details|路由器根据验证反馈调整试验分配。本地改动陷入停滞时，可以开启结构改动方向。
+stages.1.model_family|带序列编码器的共享底座广告排序模型
+stages.1.details|受试改动在各商业行为序列内加入自注意力，将压缩后的序列表示输入排序器。
+features_signals.0|生产模型的用户、物品与交叉特征
+features_signals.1|实时商业行为序列
+features_signals.2|离线验证分数和历史试验记录
+training.mode|在有限预算内试验，用验证反馈选择模型改动
+training.objectives.0|在工程师定义的改动方向之间分配试验次数。
+training.objectives.1|根据验收指标推进候选，再上真实流量验证。
+training.notes|BERT4Rec 案例中的预算上限仅用于该离线对比。
+serving_infra|Agent 在请求链路之外改模型。序列编码候选接入短视频广告排序器做生产试验。
+scale.0.metric|生产 A/B 覆盖范围
+scale.0.value|7 天内覆盖 10% 的生产流量
+results_reported|第 3.5 节和表 4 报告短视频广告的 7 天 A/B，覆盖 10% 的生产流量。入选的序列编码改动使广告主价值提升 2.084%，收入提升 0.534%，曝光提升 0.559%。
+caveats.0|生产实验测量的是一项入选的排序改动。试验分配策略的对比在离线完成。
+caveats.1|改动方向和优化目标由工程师定义。
+unknown_fields.0|对照模型细节及两组各自占用的流量
+unknown_fields.1|生产研发预算、服务延迟、吞吐与硬件
+version_note|扩写后的作者版报告了生产 A/B，仍在 arXiv 观察期。正式出版版本待核。
+code.repos.0.owner|RecHarness 作者
+code.repos.0.note|论文链接了公开研究实现，生产广告排序器和线上实验基础设施未公开。
+core_idea|根据已经观察到的验证收益，把下一次试验分给合适的模型改动方向。
+deployed_in|大规模短视频广告排序系统
+scale_short|生产 A/B 覆盖 10% 流量，持续 7 天
+key_result|入选序列编码改动的广告主价值 +2.084%、收入 +0.534%、曝光 +0.559%。
+results_table.online.0.setting|短视频广告
+results_table.online.0.method|入选序列编码改动
+results_table.online.0.metric|广告主价值
+results_table.online.0.versus|A/B 对照组
+results_table.online.1.setting|短视频广告
+results_table.online.1.method|入选序列编码改动
+results_table.online.1.metric|收入
+results_table.online.1.versus|A/B 对照组
+results_table.online.2.setting|短视频广告
+results_table.online.2.method|入选序列编码改动
+results_table.online.2.metric|曝光
+results_table.online.2.versus|A/B 对照组
+deployment.scenario|短视频广告排序器接入入选的序列编码改动
+deployment.ab_traffic|10% 的生产流量
+deployment.ab_duration|7 天
+deployment.baseline|线上 A/B 对照组，模型配置未披露。
+deployment.online_lifts.0.metric|广告主价值
+deployment.online_lifts.1.metric|收入
+deployment.online_lifts.2.metric|曝光
+deployment.notes.0|流量比例指试验总体覆盖范围，论文未披露对照组与处理组的分配。

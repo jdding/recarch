@@ -1,0 +1,86 @@
+id: tencent-nova-2026
+name: NOVA
+company: Tencent
+surface: Architecture development for production advertising conversion ranking
+year: 2026
+era: generative
+era_reason: Research agents propose and implement architecture edits and reuse failure diagnostics in subsequent searches.
+first_public: '2026-06'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2606.27243v3
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: NOVA checks that an architecture implements the intended design before training. It uses recorded failures to guide the next candidate and promotes an offline winner for online testing.
+summary: NOVA reuses candidate outcomes, semantics checks and diagnostic history to propose coordinated edits to a production ranker. Verification progresses from architectural semantics to execution, offline metrics and online impact. Risk levels determine when an engineer must participate.
+paradigms: [llm-based, multi-task]
+stages:
+  - stage: other
+    model_family: Architecture search with staged verification
+    details: The agent inspects interface and architecture constraints before local execution and full training. A record of rejected edits informs the next search round.
+  - stage: rank
+    model_family: Multi-task advertising conversion ranker
+    details: The production candidate adapts TokenMixer-Large to the existing conversion-prediction ranker.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - Model code, structural requirements and candidate change records
+  - Local verification diagnostics and offline AUC
+training:
+  mode: Multi-round model edits with fixed trial budgets and staged verification
+  objectives:
+    - Catch executable changes that violate model semantics before training.
+    - Use production A/B to verify the best eligible offline candidate.
+  notes: Higher-risk tasks remain under engineer review. The online result refers to a literature-to-production candidate.
+serving_infra: The search and verification run outside the request path. The selected transfer candidate was compared with the live model on production advertising requests.
+scale:
+  - {metric: Online experiment coverage, value: '5% of production traffic for 6 days', note: Section 5.7 specifies user-level randomization.}
+results_reported: Section 5.7 and Table 4 of the July revision report a 6-day user-randomized A/B on 5% of production traffic. The selected candidate showed GMV gains of +1.25%, +1.70% and +2.02% on pCVR objectives 1, 2 and 3, with absolute pCVR bias changing −58.8%, −66.7% and −37.3% respectively.
+caveats:
+  - The three pairs of metrics are reported separately for different objectives. No pooled GMV effect is given.
+  - The A/B tests the selected ranker change. The agent comparisons and verification analysis use separate experiments.
+  - The authors planned full rollout of this ranker variant after the test. The paper reports use of NOVA in production and completion of the A/B.
+unknown_fields:
+  - Per-arm split within the selected traffic and whether full rollout was completed
+  - Names of the three objectives, absolute serving latency, throughput and request cost
+sources:
+  - {title: 'NOVA author full text, July revision', url: 'https://arxiv.org/html/2606.27243v3', type: paper}
+version_note: The July revision reports the A/B duration and user-level randomization. The author manuscript is within the arXiv observation period. A formal venue version was not confirmed.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The supplement provides artifact excerpts and templates. No public repository implementing NOVA was confirmed.
+core_idea: Verify the meaning of an architectural change before training it and turn rejected candidates into constraints for the next round.
+deployed_in: Tencent production advertising ranking for conversion prediction
+scale_short: A/B on 5% of production traffic for 6 days, randomized by user
+key_result: The selected model raised GMV by +1.25% to +2.02% across three reported objectives against the live baseline.
+results_table:
+  online:
+    - {setting: Production pCVR task 1, method: Selected transfer candidate, metric: GMV, result: '+1.25%', versus: Live pCVR model}
+    - {setting: Production pCVR task 2, method: Selected transfer candidate, metric: GMV, result: '+1.70%', versus: Live pCVR model}
+    - {setting: Production pCVR task 3, method: Selected transfer candidate, metric: GMV, result: '+2.02%', versus: Live pCVR model}
+deployment:
+  online_evidence: online_numbers
+  scenario: A selected transfer of TokenMixer-Large into the production pCVR ranker
+  ab_traffic: '5% of production traffic, randomized by user'
+  ab_duration: '6 days'
+  baseline: The existing live pCVR model in the same advertising service
+  online_lifts:
+    - {metric: GMV for task 1, value: '+1.25%'}
+    - {metric: GMV for task 2, value: '+1.70%'}
+    - {metric: GMV for task 3, value: '+2.02%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - Per-objective absolute calibration bias fell in the same experiment. The paper does not give an aggregate lift.
+  fulltext_refs:
+    - Sections 4.3–4.5 specify the search feedback, verification gates and implementation.
+    - Section 5.7 and Table 4 give the control, user-level randomization, traffic coverage and separate objective results.
+  basis: full_text
+  checked_on: '2026-11-26'

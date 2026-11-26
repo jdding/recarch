@@ -1,43 +1,69 @@
 title: Agent 如何使用推荐能力
-summary: Agent 在哪里调用推荐、向推荐组件传递哪些约束和偏好，以及怎样处理返回的候选。
-problem: Agent 在帮用户完成任务时，需要在服务预算内找到符合当前意图、满足硬约束的候选。
-question: 哪些推荐决策由 Agent 做，哪些交给召回和排序服务？
+summary: Agent 在哪里调用推荐、向推荐组件传递哪些约束和偏好，以及怎样处理返回的物品。
+problem: Agent 在帮用户完成任务时，需要找到符合意图、满足约束的物品，再用候选推进下一步。
+question: 哪些推荐决策由 Agent 做，哪些交给召回和排序工具？
 framing:
-  - 从用户任务出发，例如找合适的商品，或调整首页接下来展示的内容。Agent 将任务转成约束与偏好，选择需要的推荐操作，再用返回的候选推进任务。
-  - 三个案例接入位置不同。RecBot 根据用户指令调整下一轮供给，Shape Your Feed 用持续保留的画像筛选和重排，EvoRec 提前为线上准备一个补充召回通道。
+  - 从用户任务出发，例如找合适的商品或创建一次收听会话。Agent 将请求转成约束和偏好，选择推荐操作，再用返回的物品推进任务。
+  - RecBot、Spotify 和 Meta 使用用户的显式输入。快手 EvoRec 在近线推断需求、为下游排序准备候选。延伸阅读补充生产论文披露较少的规划、目录操作和任务评估。
 decisions:
   - when: 一条用户指令同时包含硬约束和软偏好。
-    then: 让 Agent 输出有类型的偏好。先用过滤工具执行硬约束，再对剩余候选做匹配、降权和分数融合。
+    then: 让 Agent 输出有类型的偏好。先用确定性的过滤工具执行硬约束，再对剩余候选做匹配、降权和分数融合。
     cards: [alibaba-recbot-2025]
-  - when: 想让用户的显式兴趣影响既有推荐流。
-    then: 保留语义画像，在原有互动分基础上筛除或重排候选。证据允许时，用仅保留反馈入口的试验对照完整方案。
+  - when: 用户要调整上次的推荐，或引用已经返回的某个物品。
+    then: 保留当前列表和仍需满足的约束。评估下一次调用时，同时检查它是否完成新要求、是否保留用户仍在意的条件。
+    cards: [spotify-conversational-agent-2026]
+  - when: 想让用户的显式反馈影响既有推荐流。
+    then: 保留语义画像，结合既有互动分筛除或重排候选。实验条件允许时，单独测量反馈入口和下游改动的影响。
     cards: [meta-shape-your-feed-2026]
-  - when: 请求路径承受不起每次新调用语言模型。
-    then: 把需求推断和召回规划放到近线，独立更新物品索引。线上保留原有链路，并从额外通道取预生成候选。
+  - when: 请求链路承受不起每次调用语言模型。
+    then: 把需求推断和召回规划放到近线。现有排序链路接收额外候选，物品索引独立更新。
     cards: [kuaishou-evorec-2026]
-  - when: 推荐结果看起来合理，仍可能没完成用户的目标。
-    then: 排序指标与约束满足度、任务成功率一起评估。记录是哪一步决策或哪个工具调用改变了推荐结果。
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
 members:
   - id: alibaba-recbot-2025
-    approach: 把用户指令解析为结构化正负偏好，再编排工具链调整下一轮推荐流。
-  - id: meta-shape-your-feed-2026
-    approach: 将用户反馈写入语义画像，基于画像和原有生产打分筛除并重排候选。
+    approach: 把用户指令解析为结构化正负偏好，再编排推荐工具调整下一轮信息流。
+  - id: spotify-conversational-agent-2026
+    approach: 用对话状态创建或调整收听会话，支持在后续对话里引用已经推荐的内容。
   - id: kuaishou-evorec-2026
-    approach: 在近线推断当前需求、分配召回资源，生成补充候选供现有线上排序使用。
+    approach: 在近线推断需求和选择召回工具，为现有线上排序提供补充候选。
+  - id: meta-shape-your-feed-2026
+    approach: 将用户反馈写入语义画像，结合现有互动分筛除或重排候选。
 differences:
   - heading: Agent 给推荐组件传什么
-    text: RecBot 给工具链传有类型的约束和偏好。Shape Your Feed 给列表打分器传持续保留的兴趣画像。EvoRec 向执行器传计划和查询向量，物品索引更新后可以再次召回。
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
-  - heading: 在请求链路哪一段运行
-    text: RecBot 接收用户指令后调整下一轮推荐。Shape Your Feed 在线计算对齐分，也会异步积累候选。EvoRec 的语言模型在近线规划，线上取预先生成的候选。
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
-  - heading: 线上实验覆盖了哪一处改动
-    text: RecBot 报告完整的电商首页方案。Shape Your Feed 的线上入口限于反馈按钮。EvoRec 为本地生活线索广告增加一个召回通道，并沿用下游模型。要比较 Agent 决策的作用，可固定候选目录和下游组件。
-    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+    text: RecBot 传有类型的约束和偏好。Spotify 用请求和当前收听会话决定下一步操作。Meta 保留语义兴趣画像。EvoRec 输出召回计划和候选查询。
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
+  - heading: Agent 在链路哪里运行
+    text: RecBot 和 Spotify 响应用户请求。Meta 在线给信息流打分时使用画像。EvoRec 在近线规划，线上链路读取预先生成的候选。
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
+  - heading: 线上对照改变了哪部分体验
+    text: RecBot 测量首页方案，Spotify 对照扩展前后的 DJ 体验。Meta 测量反馈入口及后续信息流，EvoRec 新增召回通道并沿用下游排序。要对单个组件归因，需要各组对齐目录、工具、排序和能获取的反馈。
+    cards: [alibaba-recbot-2025, spotify-conversational-agent-2026, kuaishou-evorec-2026, meta-shape-your-feed-2026]
 readings:
   - InteRecAgent 把对话规划器接到独立的查询、召回和排序工具。
-  - TAIRA 研究如何用学习得到的规划模式来协调推荐子任务。
+  - TAIRA 研究如何用学到的规划模式协调推荐子任务。
+  - PRTA 把多个推荐模型作为工具，由规划器按需求选择，适合比较工具选择方法。
+  - 研究用户还在逐步透露要求时，Agent 怎样决定下一步。
   - 用目录工具和程序化验收检查跨轮发现约束、遵守策略与完成推荐。
+  - 在同一需求下改变用户披露约束的时机，评估 Agent 是否会追问或从拒绝中推断要求。
   - 用推荐模拟器评估兴趣变化和冷启动等场景。
   - 让 Agent 用召回和互补性等工具查找目录，并检验整组推荐的效用。
+  - 把购买条件分别放在初始请求、可调用的用户画像与后续回答中，检验 Agent 怎样确认并选中商品。
+  - CoShop 评估 Agent 能否先帮助用户形成可用的偏好，再从目录选出物品。
+  - 范围更广的推荐工作流综述。可用来定位这里比较的用户状态、候选与反馈接口。
+screening:
+  scope:
+    - 检索覆盖 2023 年 1 月至 2026 年 11 月 26 日。纳入描述 Agent 如何在用户任务中获得、筛选、排序或组合目录候选，以及如何使用返回结果的工作。
+    - 来源包括本地书目索引的只读结果、arXiv、RecSys 2026、KDD 2026、ACL Anthology、NeurIPS 与官方产品资料。另沿 Lin 等人的综述和 τ-Rec 回溯。检索词包括 agentic recommenders、conversational recommendation、recommendation tools、catalog retrieval、shopping agents、multi-turn constraints 和「对话推荐 召回 排序」。书目索引的 11 次查询返回 101 条命中，含重复及正文提及。
+    - 先按 DOI、arXiv ID 和标题去重，再核系统谱系。工业案例需要说明 Agent 的决策、推荐接口、原文和部署证据。能回答规划、目录利用、偏好澄清或任务验收问题的方法与基准进入延伸阅读。
+    - 下列记录覆盖已对照本专题审查的候选和需要继续核对的线索。通用用户模拟、为任意 Agent 检索工具、不涉及用户任务的模型研发属于相邻方向。
+  excluded:
+    - 现行卡片准入规则指定不收 Melo。论文确实报告了上线歌单 Agent。
+    - 暂缓建卡。SIGIR 论文集条目共 5 页，需核符合长文标准的版本及可对应到推荐决策的线上对照。
+    - 待审。百度地图的意图消歧与澄清有关，需在原文核对目录候选选择与线上实验。
+    - 相邻模块。论文研究如何由新闻对话生成有依据的物品 ID，验证的是召回设计。仍缺上线 Agent 如何选择并复用推荐工具的证据。
+    - 相邻方向，已有工业上线。Agent 主要决定是否推送与何时推送，这里的对照关注如何调用目录候选以完成用户任务。
+    - 相邻方向。论文给 Agent 检索工具定义，也覆盖大量与面向用户推荐物品无关的工具。
+    - 用于沿参考文献补查。它还覆盖 Agent 作为用户模拟器，范围比本专题的推荐接口更广。
+    - 立场论文，讨论 Agent 作为推荐接收方的意义，未定义或验证具体目录工作流。
+    - 同一评测谱系已收 AgentRecBench，后者给出评测方法与使用场景。
+    - 相邻方向。将多 Agent 推理蒸馏进推荐模型，验证的接口未展示服务用户的 Agent 怎样选择和调用目录工具。
+    - 相邻方法。主要评估旅游推荐的反事实解释，选入的相关阅读对工具选择和任务完成提供了更直接的对照。

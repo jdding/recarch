@@ -165,6 +165,7 @@ details#more .group{margin:8px 0}
 /* home carousel */
 .carousel{margin:20px 0 4px;background:var(--card);border:1px solid var(--line-strong);border-radius:var(--r);padding:16px 18px 14px}
 .car-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.car-h h2{margin:0;font-size:var(--type-card-title);font-weight:700}.car-h .strip-links{margin-left:auto;font-size:var(--type-small);color:var(--mut)}
+.car-topics{margin:8px 0 0;font-size:var(--type-small);color:var(--mut)}
 .car-body{position:relative;display:flex;align-items:center;gap:8px;margin-top:10px}
 .car-view{overflow:hidden;flex:1;border-radius:var(--r);outline-offset:2px;touch-action:pan-y}
 .car-track{display:flex;transition:transform .45s ease;will-change:transform}

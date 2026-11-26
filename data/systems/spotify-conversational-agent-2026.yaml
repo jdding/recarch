@@ -1,0 +1,84 @@
+id: spotify-conversational-agent-2026
+name: Spotify Conversational Recommendation Agent
+company: Spotify
+surface: Multi-turn discovery and session refinement in Spotify DJ
+year: 2026
+era: generative
+era_reason: An LLM plans and invokes content tools across conversational turns.
+first_public: '2026-04'
+venue: RecSys 2026 Industry
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3773078.3831910
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: Spotify's agent uses conversation state to plan calls that create or refine a listening session and answer follow-up questions about music.
+summary: The agent takes a natural-language request and selects content actions, such as generating or refining a playlist. Later turns can narrow an earlier request or refer to returned items. Before launch, synthetic conversations exercised these behaviors and a coding agent helped revise planning instructions and tool definitions.
+paradigms: [llm-based]
+stages:
+  - stage: other
+    model_family: Conversational planner and music tools
+    details: The planner uses current and earlier user requests to find content, refine the active session or answer a follow-up. The examples show the agent retaining constraints and resolving references to returned items.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - Current request and previous dialogue turns
+  - Listening session and catalog items returned by tools
+training:
+  mode: Pre-launch synthetic multi-turn evaluation and iterative refinement of agent planning
+  objectives:
+    - Detect failures in intent changes, constraint retention and tool calls.
+    - Revise prompts and tool definitions based on consistent failure patterns.
+  notes: Engineers review proposed changes before merging them.
+serving_infra: The tested DJ experience supports multi-turn music sessions and informational intents. The paper reports rollout after its production A/B.
+scale:
+  - {metric: People exposed during the production test, value: Approximately 15 million users, note: Several markets and device types over two weeks.}
+results_reported: In the two-week A/B across several markets and device types, approximately 15 million users were exposed. The paper reports +14% listening, +5% weekly active users and −5% skip rate against the previous session-refinement-only experience.
+caveats:
+  - The production experiment compares whole product experiences. The contribution of the coding agent or an individual recommendation tool was not isolated.
+  - The paper does not specify the underlying ranking model or how candidates are scored.
+unknown_fields:
+  - Per-arm traffic share, per-market effects and metric denominators
+  - Serving latency, throughput, infrastructure and hardware
+sources:
+  - {title: Bootstrapping Conversational Recommendation Agents at Spotify, url: 'https://doi.org/10.1145/3773078.3831910', type: paper}
+  - {title: Author full text, url: 'https://arxiv.org/html/2609.30297v1', type: paper}
+  - {title: Spotify DJ product announcement, url: 'https://newsroom.spotify.com/2026-04-20/deeper-music-features-about-the-song-dj-songdna/', type: documentation}
+version_note: The DJ product announcement predates the publication and describes the new conversational features. The architecture and metrics were checked in the author manuscript. The publisher full text remains unchecked.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The authors describe the agent and its evaluation pipeline without linking a public implementation.
+core_idea: Let the agent use its current playlist and past constraints when choosing content tools for the next turn.
+deployed_in: Spotify DJ multi-turn music recommendation
+scale_short: Approximately 15 million users exposed during the two-week A/B
+key_result: Listening +14%, weekly active users +5% and skip rate −5% against the session-refinement-only experience.
+results_table:
+  online:
+    - {setting: Multi-market DJ A/B, method: Multi-turn recommendation experience, metric: Listening, result: '+14%', versus: Prior session-refinement-only experience}
+    - {setting: Multi-market DJ A/B, method: Multi-turn recommendation experience, metric: Weekly active users, result: '+5%', versus: Prior session-refinement-only experience}
+    - {setting: Multi-market DJ A/B, method: Multi-turn recommendation experience, metric: Skip rate, result: '−5%', versus: Prior session-refinement-only experience}
+deployment:
+  online_evidence: online_numbers
+  scenario: Spotify DJ compares multi-turn music sessions and informational intents with the prior experience
+  ab_traffic: Approximately 15 million users exposed across several markets and device types
+  ab_duration: Two weeks
+  baseline: The previous experience, which supported session refinement only
+  online_lifts:
+    - {metric: Listening, value: '+14%'}
+    - {metric: Weekly active users, value: '+5%'}
+    - {metric: Skip rate, value: '−5%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - The A/B varies the complete DJ experience. Prompt optimization and tool decisions were evaluated separately before launch.
+  fulltext_refs:
+    - Figure 1 and Sections 3.1–3.2 describe the agent interaction and how planners and tools were exercised.
+    - Section 4.3 gives the control, exposure, duration and engagement metrics.
+  basis: full_text
+  checked_on: '2026-11-26'
