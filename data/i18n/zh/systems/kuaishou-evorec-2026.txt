@@ -1,0 +1,49 @@
+surface|本地生活线索广告的近线候选召回
+era_reason|语言模型 Agent 生成结构化用户需求、召回计划及反思提示，召回组件执行这些计划。
+tldr|EvoRec 在近线规划召回，为快手现有广告系统提供额外候选通道，部署实验沿用现有预排序和排序模型。
+summary|EvoRec 从用户历史和近期意图推断需求，再选择召回工具并在长期兴趣和当前需求之间分配预算。确定性的执行器在最新物品索引上运行缓存的计划。反思 Agent 把验证过的修复策略写进后续计划的上下文。
+stages.0.model_family|需求与规划 Agent，接确定性执行器
+stages.0.details|规划 Agent 选工具、预算份额及融合权重。执行器从当前索引召回候选，去重并融合排序。
+stages.1.model_family|动态反思树
+stages.1.details|把错误定位到需求、计划或记忆，验证后的修复策略进入之后的提示。
+id_tokenization.approach|检索查询与物品的稠密向量
+id_tokenization.details|查询向量和计划一起缓存，新增物品编码后进入索引。
+features_signals.0|用户记忆和近期行为
+features_signals.1|广告咨询消息和近期搜索提供的显式需求
+features_signals.2|之前推荐的反馈及错误诊断结果
+training.mode|参数固定，在推理阶段反思
+training.objectives.0|改进后续计划对用户需求相关广告的召回
+training.notes|修复先通过回放验证再写入。生产接入保留原有预排序和排序模型，无需额外训练下游。
+serving_infra|近线计算并存储需求、计划和查询向量。物品索引由独立链路更新。执行器通过 Kafka 异步发布候选供线上读取。
+results_reported|第 4.4 节报告 2026 年八月 28 日至九月 3 日的七天 A/B，每组约占符合条件流量的 5%。表 6 中，计费广告收入 +4.6%、CTCVR +3.5%、曝光 +0.8%，报告的成本指标 +3.6%。收入 +14.5% 对应高意图人群。
+caveats.0|实验覆盖线索广告的一个补充召回通道，指标只对应受测业务。
+caveats.1|高意图人群根据显式咨询或搜索意图定义。
+caveats.2|表 6 报告的是广告业务成本指标。推理成本未披露。
+unknown_fields.0|实验以外的全量范围与原有服务模型的具体配置
+unknown_fields.1|生产延迟、吞吐、硬件以及系统推理成本
+version_note|依据快手 2026 年十一月的作者预印本。六月使用同一方法名的论文描述另一套系统。
+code.note|已核作者稿未给出这个 EvoRec 系统的官方实现。
+core_idea|近线缓存召回计划和查询向量，让独立执行器用最新目录补充线上候选。
+deployed_in|快手本地生活线索广告
+scale_short|七天 A/B，每组约占符合条件流量的 5%
+key_result|在受测范围内，计费广告收入 +4.6%、CTCVR +3.5%。
+results_table.online.0.setting|快手本地生活线索广告
+results_table.online.0.method|在现有链路加入 EvoRec
+results_table.online.0.metric|计费广告收入
+results_table.online.0.versus|原有推荐链路
+results_table.online.1.setting|快手本地生活线索广告
+results_table.online.1.method|在现有链路加入 EvoRec
+results_table.online.1.versus|原有推荐链路
+results_table.online.2.setting|快手本地生活线索广告
+results_table.online.2.method|在现有链路加入 EvoRec
+results_table.online.2.metric|论文报告的广告成本指标
+results_table.online.2.versus|原有推荐链路
+deployment.scenario|快手本地生活推荐中的线索广告
+deployment.ab_traffic|每组约占符合条件流量的 5%
+deployment.ab_duration|七天，2026 年八月 28 日至九月 3 日
+deployment.baseline|对照使用现有召回通道和下游模型。实验组额外接入独立的 EvoRec 召回通道。
+deployment.online_lifts.0.metric|计费广告收入
+deployment.online_lifts.2.metric|曝光
+deployment.online_lifts.3.metric|论文报告的广告成本指标
+deployment.notes.0|需求与规划的语言模型推理发生在近线。线上直接读取预先算好的候选。
+deployment.notes.1|高意图人群计费广告收入 +14.5%，报告的广告成本指标 +5.7%。

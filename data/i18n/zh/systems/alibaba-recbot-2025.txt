@@ -1,0 +1,42 @@
+surface|未具名亚洲电商平台首页的可交互推荐流
+era_reason|语言模型生成结构化用户偏好和可执行的推荐工具链。
+tldr|RecBot 理解用户对接下来推荐内容的指令，再用工具过滤、匹配、降权和合并候选分数。
+summary|RecBot 从自然语言指令与对话状态中提取正负偏好。规划 Agent 根据结构化偏好选择工具及执行顺序。工具执行硬约束、计算相关性并压低不喜欢的软属性，再调整后续首页推荐。
+stages.0.model_family|读取对话状态的语言模型解析器，输出有类型的偏好
+stages.0.details|分别表示正负偏好，并区分硬约束和软偏好。
+stages.1.model_family|由规划 Agent 编排 Filter、Matcher、Attenuator 和 Aggregator
+stages.1.details|Filter 执行硬约束。Matcher 结合语义和协同行为。Attenuator 对软负偏好降权，Aggregator 合并得分。
+features_signals.0|自然语言指令和整合后的对话状态
+features_signals.1|商品属性与语义匹配
+features_signals.2|用于协同匹配的行为历史
+training.mode|使用模拟交互扩充样本，蒸馏解析器和规划器
+training.objectives.0|将自然语言指令解析为结构化偏好
+training.objectives.1|生成能把用户偏好落实到推荐流的工具链
+training.notes|用模拟的用户交互扩充小模型的训练数据。
+serving_infra|解析器与规划器调用推荐工具。论文报告了生产首页部署。
+results_reported|第 4.3 节报告三个月首页 A/B。表 5 中负反馈频率 -0.71%、点击商品类目多样性 +1.44%、加购 +1.28%、GMV +1.40%。为保密，论文对随时间变化的曲线做了归一化。
+caveats.0|论文给出电商首页这个业务入口，未披露平台名称。
+caveats.1|线上试验评估整套 RecBot 方案。各工具的增量在离线实验里比较。
+unknown_fields.0|具体分流及对照组的完整配置
+unknown_fields.1|生产延迟和下游推荐链路容量
+version_note|KDD 2026 官方程序确认录用题名。线上方案和数字以作者全文为依据，ACM 托管的出版全文待核。
+code.note|已核论文和会议资料中未找到 RecBot 的官方实现。
+core_idea|把用户指令转成有类型的偏好，再对推荐流的候选执行适应当前需求的工具链。
+deployed_in|未具名亚洲电商平台的首页推荐流
+scale_short|三个月生产 A/B
+key_result|首页实验中负反馈频率 -0.71%、GMV +1.40%。
+results_table.online.0.setting|三个月首页 A/B
+results_table.online.0.metric|负反馈频率
+results_table.online.0.versus|原有首页推荐系统
+results_table.online.1.setting|三个月首页 A/B
+results_table.online.1.versus|原有首页推荐系统
+results_table.online.2.setting|三个月首页 A/B
+results_table.online.2.metric|加购
+results_table.online.2.versus|原有首页推荐系统
+deployment.scenario|未具名亚洲电商平台的首页推荐流
+deployment.ab_duration|三个月
+deployment.baseline|原有首页推荐系统。论文未披露详细配置。
+deployment.online_lifts.0.metric|负反馈频率
+deployment.online_lifts.2.metric|加购
+deployment.online_lifts.3.metric|点击商品类目多样性
+deployment.notes.0|表 5 对比整套 RecBot 和原有首页推荐。

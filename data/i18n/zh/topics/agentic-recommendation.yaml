@@ -1,0 +1,43 @@
+title: Agent 如何使用推荐能力
+summary: Agent 在哪里调用推荐、向推荐组件传递哪些约束和偏好，以及怎样处理返回的候选。
+problem: Agent 在帮用户完成任务时，需要在服务预算内找到符合当前意图、满足硬约束的候选。
+question: 哪些推荐决策由 Agent 做，哪些交给召回和排序服务？
+framing:
+  - 从用户任务出发，例如找合适的商品，或调整首页接下来展示的内容。Agent 将任务转成约束与偏好，选择需要的推荐操作，再用返回的候选推进任务。
+  - 三个案例接入位置不同。RecBot 根据用户指令调整下一轮供给，Shape Your Feed 用持续保留的画像筛选和重排，EvoRec 提前为线上准备一个补充召回通道。
+decisions:
+  - when: 一条用户指令同时包含硬约束和软偏好。
+    then: 让 Agent 输出有类型的偏好。先用过滤工具执行硬约束，再对剩余候选做匹配、降权和分数融合。
+    cards: [alibaba-recbot-2025]
+  - when: 想让用户的显式兴趣影响既有推荐流。
+    then: 保留语义画像，在原有互动分基础上筛除或重排候选。证据允许时，用仅保留反馈入口的试验对照完整方案。
+    cards: [meta-shape-your-feed-2026]
+  - when: 请求路径承受不起每次新调用语言模型。
+    then: 把需求推断和召回规划放到近线，独立更新物品索引。线上保留原有链路，并从额外通道取预生成候选。
+    cards: [kuaishou-evorec-2026]
+  - when: 推荐结果看起来合理，仍可能没完成用户的目标。
+    then: 排序指标与约束满足度、任务成功率一起评估。记录是哪一步决策或哪个工具调用改变了推荐结果。
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+members:
+  - id: alibaba-recbot-2025
+    approach: 把用户指令解析为结构化正负偏好，再编排工具链调整下一轮推荐流。
+  - id: meta-shape-your-feed-2026
+    approach: 将用户反馈写入语义画像，基于画像和原有生产打分筛除并重排候选。
+  - id: kuaishou-evorec-2026
+    approach: 在近线推断当前需求、分配召回资源，生成补充候选供现有线上排序使用。
+differences:
+  - heading: Agent 给推荐组件传什么
+    text: RecBot 给工具链传有类型的约束和偏好。Shape Your Feed 给列表打分器传持续保留的兴趣画像。EvoRec 向执行器传计划和查询向量，物品索引更新后可以再次召回。
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+  - heading: 在请求链路哪一段运行
+    text: RecBot 接收用户指令后调整下一轮推荐。Shape Your Feed 在线计算对齐分，也会异步积累候选。EvoRec 的语言模型在近线规划，线上取预先生成的候选。
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+  - heading: 线上实验覆盖了哪一处改动
+    text: RecBot 报告完整的电商首页方案。Shape Your Feed 的线上入口限于反馈按钮。EvoRec 为本地生活线索广告增加一个召回通道，并沿用下游模型。要比较 Agent 决策的作用，可固定候选目录和下游组件。
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+readings:
+  - InteRecAgent 把对话规划器接到独立的查询、召回和排序工具。
+  - TAIRA 研究如何用学习得到的规划模式来协调推荐子任务。
+  - 用目录工具和程序化验收检查跨轮发现约束、遵守策略与完成推荐。
+  - 用推荐模拟器评估兴趣变化和冷启动等场景。
+  - 让 Agent 用召回和互补性等工具查找目录，并检验整组推荐的效用。

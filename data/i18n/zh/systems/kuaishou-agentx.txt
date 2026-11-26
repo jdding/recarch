@@ -1,0 +1,47 @@
+surface|快手多个业务场景的自动化推荐模型研究
+era_reason|研究 Agent 提议模型改动，编码及训练 Agent 在推荐沙箱内实现和验证。
+versions.0.note|初代搭建生产策略的迭代流程，连接实现、线上反馈和后续实验。
+versions.1.note|扩展到模型研究，利用已有运行证据，并保留人工上线审批。
+version_note|本卡呈现九月的 AgentX-Model 作者报告，六月报告保留在版本历史中。九月报告的正式发表版本未确认。
+tldr|AgentX 记录模型实验、直接父版本和每次改动的证据，让后续研究可以接着做。论文报告了最近五次上线评审对应的生产 A/B。
+summary|AgentX-Model 在固定数据接口与预测任务的业务沙箱中工作。研究 Agent 依据既往证据提出改动，训练 Agent 实现并运行实验。记录保留每次运行与其父版本、业务对照的关系，最终上线评审由人负责。
+stages.0.model_family|研究 Agent、训练 Agent 与固定的业务沙箱
+stages.0.details|Reproduce 复现已发表想法，Follow-up 修订既有实验，Composition 测试已知改动的组合，Diagnose 找证据定位问题。
+stages.1.model_family|在既有业务推荐模型内修改机制
+stages.1.details|论文例子包括更改注意力、训练目标或分层聚合，预测接口保持一致。
+features_signals.0|研究论文、业务反馈和已完成的实验
+features_signals.1|记录实验结果、对照与父实验的运行资料
+training.mode|在业务沙箱内连续运行受控的模型实验
+training.objectives.0|相对固定的业务基线和可比较祖先追踪验证表现
+training.objectives.1|遵循生产约束，在真实流量上验证入选的候选
+training.notes|论文分别统计离线完成的实验和后续的上线评审样本。
+serving_infra|模型研究在部署前进行。进入上线评审的候选在现有生产环境做 A/B。
+scale.0.metric|完成且结果有效的模型改动实验
+results_reported|离线评估中，636 次完成的模型改动有 560 次的 AUC 超过各自业务基线。论文另做谱系分析，比较直接父模型和此前最优结果。表 6 给出五次近期上线评审的粗粒度区间。第 3 项剪除辅助任务，两个客户端的观看时长 +0.3% 至 +0.8%，FLOPs 和参数量约降 10%。第 1 项使用自适应注意力温度，获客效率 +10% 至 +15%。
+caveats.0|AUC 次数以业务基线为参照。超越谱系里所有早期版本的次数另算。
+caveats.1|线上区间来自入选的上线评审，各业务场景使用各自的对照。
+unknown_fields.0|上线评审的 A/B 时长、分流比例与对照细节
+unknown_fields.1|绝对服务延迟、吞吐、硬件与研究总算力
+code.note|已核的作者报告未给出 AgentX-Model 的公开实现。
+core_idea|把每次改动和业务基线、直接父版本及研究假设关联起来，让后续实验用得上之前的证据。
+deployed_in|快手生产推荐系统的模型研发和评估流程
+scale_short|离线评估涵盖 636 次已完成的模型改动
+key_result|入选评审中，剪除辅助任务的候选在两个客户端的观看时长 +0.3% 至 +0.8%。
+results_table.online.0.setting|第 3 项上线评审
+results_table.online.0.method|剪除辅助任务的训练目标
+results_table.online.0.metric|两个客户端的观看时长
+results_table.online.0.versus|该项评审各自的对照组
+results_table.online.1.setting|第 1 项上线评审
+results_table.online.1.method|自适应注意力温度
+results_table.online.1.metric|获客效率
+results_table.online.1.versus|该项评审各自的对照组
+results_table.offline.0.setting|跨业务场景离线评估
+results_table.offline.0.metric|AUC 超过业务基线的已完成模型改动
+results_table.offline.0.result|636 次中有 560 次
+results_table.offline.0.versus|各场景固定的业务基线
+deployment.scenario|快手推荐模型改动入选的上线评审
+deployment.baseline|各项 A/B 使用各自的上线对照，论文未说明具体配置。
+deployment.online_lifts.0.metric|第 3 项评审的两个客户端观看时长
+deployment.online_lifts.1.metric|第 1 项评审的获客效率
+deployment.notes.0|同一个剪除辅助任务的模型，FLOPs 和参数量约降 10%。
+deployment.notes.1|模型改动离线结果和上线评审是不同样本，各有自己的验收口径。

@@ -1,6 +1,6 @@
 {
- "candidates": 931,
- "kept": 912,
+ "candidates": 963,
+ "kept": 944,
  "discarded": [
   {
    "id": "taobao-cq-sid-2026",
@@ -106,7 +106,7 @@
   "prompt_injection": 20,
   "pdf_request": 15
  },
- "cards": 114,
+ "cards": 118,
  "discard_reasons": {
   "answer too long": 10,
   "card has no such field": 8,

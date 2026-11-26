@@ -1,0 +1,62 @@
+title: Recursive self-improvement for recommenders
+summary: How agents propose recommender changes, spend trial budgets, validate candidates, and use the results to guide the next round.
+problem: Training is expensive and live feedback arrives late, yet each new recommender experiment should build on the evidence from previous runs.
+question: When does an agent-proposed change earn a full retraining run or production traffic?
+framing:
+  - An agent can propose a new loss, rewrite a training component, or combine two model changes. The loop becomes cumulative when it records what was changed, compares it with the right control, and uses the result to choose the next experiment.
+  - YouTube and AgentX change recommender code or training recipes. Shape Your Feed is a boundary case in which user feedback is used to align the existing scoring policy. Its online experiment covers the user-facing system, including the feedback interface.
+decisions:
+  - when: Full training and live traffic are expensive.
+    then: Screen candidates with a cheap proxy, then send the strongest to full training and a live test on business metrics. Keep proxy scores and live results under separate fields in the experiment journal.
+    cards: [youtube-self-evolving-recsys-2026]
+  - when: Many changes beat the current business baseline.
+    then: Keep the parent and strongest comparable ancestor for each experiment. A stable business baseline helps compare runs, while the lineage shows whether a branch actually advanced.
+    cards: [kuaishou-agentx]
+  - when: User feedback exposes mismatches in a deployed scorer.
+    then: Keep the scorer interface and tune its policy with behavior and judged preference examples. Evaluate the offline update separately from the effect of changing the user interface.
+    cards: [meta-shape-your-feed-2026]
+  - when: You need to compare different research agents.
+    then: Hold the starting model, evaluation split and resource budget fixed. Report short trials, complete retrainings, failed runs and total compute before comparing the accepted changes.
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+members:
+  - id: youtube-self-evolving-recsys-2026
+    approach: Screen optimizer, architecture and reward changes offline, then train and validate promoted variants against delayed online objectives.
+  - id: kuaishou-agentx
+    approach: Record the business baseline, direct parent and supporting evidence for model changes in a fixed sandbox, then review candidates for production A/B.
+  - id: meta-shape-your-feed-2026
+    approach: Boundary case. Use behavioral and judged feedback to align the existing agentic ranking policy during offline training.
+differences:
+  - heading: What gets changed
+    text: YouTube modifies optimizers, architectures and rewards. AgentX reproduces and combines candidate model mechanisms and continues promising branches. Shape Your Feed consumes feedback to tune the serving policy.
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
+  - heading: Which result buys the next experiment
+    text: YouTube's journal separates proxy outcomes from delayed business metrics. AgentX tracks both the business baseline and comparable ancestors. These references answer different questions and can give different verdicts on the same candidate.
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+  - heading: How to compare experiment budgets
+    text: Count the cost of locating a promising change as well as the cost of training it fully. Record failed runs, repeated evaluation and the total GPU budget. A shorter training run and a lower serving cost need separate measurements.
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+  - heading: What went live
+    text: The YouTube row reports a single architecture launch. The AgentX row summarizes selected launch reviews with different controls. The Shape Your Feed test covers feedback pills and the resulting serving pipeline. Use the cards for the specific denominator and comparison.
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
+readings:
+  - title: 'Try Before You Evolve: Ranking-Scored Trials for Recursive Self-Improvement of Recommender Systems'
+    url: https://arxiv.org/html/2610.39352v1
+    note: Huang and colleagues use short ranking-scored trials to decide which changes merit full retraining. Their comparison matches the number of full retrainings.
+  - title: 'RecRSI: Mechanism-Guided Discovery of Recommendation Algorithms'
+    url: https://arxiv.org/html/2611.02487v1
+    note: Gan and colleagues organize experiments around mechanism hypotheses so findings inform what they test next.
+  - title: 'AutoRSE: Evaluating LLM Agents as Recommendation Engineers for Self-Evolving Recommender Systems'
+    url: https://arxiv.org/html/2610.37228v2
+    note: A benchmark for comparing coding agents under a fixed optimization budget and held-out evaluation.
+  - title: 'RecHarness: A Bandit-Routed Agentic Harness for Self-Evolving Recommender Systems'
+    url: https://arxiv.org/html/2607.29241v2
+    note: A bandit allocates trials across edit directions. The authors also report an online test of a selected advertising candidate.
+  - title: 'RecEvolve: A Knowledge-Driven Autonomous Agent System for Recommender Systems'
+    url: https://arxiv.org/html/2609.01622
+    note: Offline experiments on a production two-tower model show how a change can inflate a proxy metric without resolving the underlying task.
+  - title: 'Self-EvolveRec: Self-Evolving Recommender Systems with LLM-based Directional Feedback'
+    url: https://openreview.net/forum?id=KCcpSuocz0
+    note: Uses model diagnostics and simulated user feedback to guide the next change. It is a direct comparison in Try Before You Evolve.
+  - title: 'Can Recommender Systems Teach Themselves? A Recursive Self-Improving Framework with Fidelity Control'
+    url: https://proceedings.mlr.press/v306/zhang26gf.html
+    note: A companion example that improves training data through iterative generation and filtering.

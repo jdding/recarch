@@ -1,0 +1,48 @@
+title: 推荐算法的递归自我改进
+summary: 推荐研发 Agent 怎样提出改动、分配试验预算、验证候选，并把试验结果用于下一轮。
+problem: 推荐模型完整训练耗时，线上指标又来得晚。每一轮新实验都需要用上之前的结果。
+question: Agent 提出的改动，什么情况下值得完整重训或分配真实流量？
+framing:
+  - Agent 可以提出新的损失函数、改写训练组件，或组合两种模型改动。要让实验连续推进，需要记录改了什么、用哪个对照验收，以及结果如何影响下一步。
+  - YouTube 和 AgentX 直接修改推荐模型或训练方案。Meta Shape Your Feed 是一条边界参照，它用用户反馈对齐既有打分策略，线上实验评估带反馈入口的整条服务链路。
+decisions:
+  - when: 完整训练和线上流量都很贵。
+    then: 先设便宜的代理指标筛选，优先候选再完整训练并用真实流量验证业务指标。代理分和线上结果分别记入实验日志。
+    cards: [youtube-self-evolving-recsys-2026]
+  - when: 大量改动都超过当前业务基线。
+    then: 同时记录直接父版本和可比的历史最优版本。固定业务基线便于对照各次运行，谱系记录能说明某条研究分支是否继续向前。
+    cards: [kuaishou-agentx]
+  - when: 用户反馈暴露了上线打分器与用户偏好的偏差。
+    then: 沿用打分接口，用行为反馈和评审得到的偏好样本校正策略。离线更新和改动反馈入口的效果分别验证。
+    cards: [meta-shape-your-feed-2026]
+  - when: 需要比较不同的研发 Agent。
+    then: 固定起始模型、评估切分和资源预算。比较入选的改动前，先报告短训、完整重训、失败试验与总算力。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+members:
+  - id: youtube-self-evolving-recsys-2026
+    approach: 在离线筛选优化器、架构与奖励改动，再完整训练入选版本，用延迟返回的线上业务指标验收。
+  - id: kuaishou-agentx
+    approach: 在固定业务沙箱中为模型改动保留业务基线、直接父版本和已有证据，再评审哪些候选值得做生产 A/B。
+  - id: meta-shape-your-feed-2026
+    approach: 边界参照。把用户行为和评审反馈用于离线训练，对齐既有 Agent 排序策略。
+differences:
+  - heading: 每轮改动什么
+    text: YouTube 改优化器、架构和奖励。AgentX 会复现、组合机制并延续有价值的分支。Shape Your Feed 用反馈校正线上打分策略。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
+  - heading: 哪种结果决定下一个试验
+    text: YouTube 的日志分别收代理评估和延迟返回的业务指标。AgentX 追踪业务基线及可比的历史版本。对同一候选，这两个参照能回答不同的问题。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+  - heading: 怎么核算试验预算
+    text: 找到一个值得重训的改动也需要成本。记录失败运行、重复评估和总 GPU 预算。训练提速和线上服务成本各自需要对应的测量。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx]
+  - heading: 哪部分经过了线上验收
+    text: YouTube 行对应一次架构上线。AgentX 行摘自对照各异的入选评审。Shape Your Feed 的实验覆盖反馈按钮和后续服务链路，具体分母和对照以卡片为准。
+    cards: [youtube-self-evolving-recsys-2026, kuaishou-agentx, meta-shape-your-feed-2026]
+readings:
+  - Huang 等用短训后的排序表现筛选代码改动，实验对齐的是完整重训次数。
+  - Gan 等围绕机制假设组织试验，让结果决定下一轮要验证什么。
+  - 用固定优化预算和留出评估比较不同编程 Agent 的基准。
+  - 用 bandit 分配各类改动的试验机会，论文也报告了入选广告候选的线上试验。
+  - 在生产双塔上做离线研究，展示了代理指标可以被改动抬高，仍需单独验证实际任务。
+  - 用模型诊断与模拟用户反馈引导后续改动，是短训筛选论文的直接对照之一。
+  - 训练数据层的参照。迭代生成并筛选训练样本。

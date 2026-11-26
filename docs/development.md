@@ -205,6 +205,12 @@ Compare 已展示对照、A/B 流量和时长、延迟、吞吐、成本与硬�
 
 下次每周轮到的 10 张依次是 HAP、Google Discover SDF、美团 SIF、淘宝 CQ-SID、腾讯 HIT、快手 GloRank、Meta Unity、Meta Lattice、阿里 URM、Spotify GLIDE。先核正式全文与作者版差异，检查 Unity 的 Pollen 实验和 Lattice 的指标定义。ICE/JBM 的独立性可并行判断，容量按实际复审结果计算。
 
+### 专题开发 · 2026-11-26
+
+- [推荐算法的递归自我改进](../data/i18n/zh/topics/recommendation-rsi.yaml) 以 YouTube 和快手 AgentX 的模型迭代流程为主，Meta Shape Your Feed 用作反馈对齐的边界参照。正文比较试验筛选、完整重训、上线验收和下一轮证据，延伸阅读收录两篇同名 RecRSI 及相关基准。
+- [Agent 如何使用推荐能力](../data/i18n/zh/topics/agentic-recommendation.yaml) 对比 RecBot 的指令驱动工具链、Meta 的在线重排和快手 EvoRec 的近线补充召回。评测阅读分别覆盖多轮约束、兴趣变化和集合效用。
+- 两个专题共用现有双语专题模板。新增书目链接仅用于延伸阅读，专题表里的部署数字继续取自系统卡。YouTube 与 RecBot 正式出版全文待核，两张卡的线上数字均指向已经查阅的公开作者全文。
+
 ### 后续每周记录
 
 在同一维护会话从本表继续，记录本地变更、来源、构建与测试结论、延期原因和下周首项。公开数据用原文链接和章节、图表定位。内部检索材料留在本机。需要提交、推送、开 PR、发布、登录云端或使用付费服务时，另行取得维护者授权。

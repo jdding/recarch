@@ -41,3 +41,8 @@ events:
     title_zh: "RecArch 现已提供中英双语"
     note: "The site opens in Chinese by default, and every page has an English version one click away through the language switch."
     note_zh: "网站默认显示中文，每个页面都可通过语言切换一键进入英文版。"
+  - date: "2026-11-26"
+    title: "New topics on recommender RSI and recommendation in agents"
+    title_zh: "上线推荐算法 RSI 与 Agent 内推荐能力两个专题"
+    note: "The topics cover how research agents test recommender changes and how serving agents use retrieval, filtering and ranking. Four new system cards accompany the release."
+    note_zh: "两个专题分别介绍研发 Agent 怎样验证推荐算法改动，以及服务 Agent 怎样使用召回、过滤和排序。随专题发布四张系统卡。"

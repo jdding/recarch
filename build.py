@@ -1106,6 +1106,19 @@ def load_topics(by_id):
         if extra: errs.append(f"{n}: framing has numbers not on any member card: {sorted(extra)}")
         alltext = " ".join([t["title"], t["summary"], t["problem"], t["question"]] + t["framing"] + [x for d_ in t["decisions"] if isinstance(d_, dict) for x in (d_.get("when", ""), d_.get("then", ""))] + [m.get("approach", "") for m in mem] + [x for s_ in t["differences"] if isinstance(s_, dict) for x in (s_.get("heading", ""), s_.get("text", ""))])
         if re.search(r"[()]", alltext): errs.append(f"{n}: no parentheses in topic text")
+        readings = t.get("readings", [])
+        if not isinstance(readings, list):
+            errs.append(f"{n}: readings must be a list of papers")
+        else:
+            for r in readings:
+                if not isinstance(r, dict) or not all(isinstance(r.get(k), str) and r[k].strip() for k in ("title", "url", "note")):
+                    errs.append(f"{n}: each reading needs a title, URL and note")
+                    continue
+                url = urlparse(r["url"])
+                if url.scheme != "https" or not url.hostname or url.username or url.password or re.search(r"\s", r["url"]):
+                    errs.append(f"{n}: readings need public HTTPS URLs")
+                if _NUM(r["note"]) or PARENS.search(r["note"]):
+                    errs.append(f"{n}: reading notes are qualitative and have no parentheses")
         topics.append(t)
     if errs: raise SystemExit("TOPIC ERRORS:\n  " + "\n  ".join(errs))
     return topics
@@ -1128,6 +1141,9 @@ def zh_topics(topics, by_id, errs, warns):
         if len(z["framing"]) != len(t["framing"]): errs.append(f"{n}: framing needs {len(t['framing'])} paragraphs")
         if [m.get("id") for m in z["members"]] != [m["id"] for m in t["members"]]: errs.append(f"{n}: members must list the same ids in the same order")
         if len(z["differences"]) != len(t["differences"]): errs.append(f"{n}: differences needs {len(t['differences'])} entries")
+        readings, notes = t.get("readings", []), z.get("readings", [])
+        if not isinstance(notes, list) or len(notes) != len(readings) or any(not isinstance(note, str) for note in notes):
+            errs.append(f"{n}: readings needs one Chinese note per English paper")
         if len(errs) > e0: out.append(t); continue
         pools = {m["id"]: _NUM(json.dumps(by_id[m["id"]], ensure_ascii=False)) for m in t["members"]}
         allpool = set().union(*pools.values())
@@ -1143,6 +1159,8 @@ def zh_topics(topics, by_id, errs, warns):
         for m in z["members"]: chk(f"member {m['id']}", m["approach"], pools[m["id"]], [m["id"]])
         chk("problem", z["problem"], allpool); chk("question", z["question"], allpool)
         zt = dict(t); zt.update({"title": z["title"], "summary": z["summary"], "framing": z["framing"], "problem": z["problem"], "question": z["question"]})
+        for k, note in enumerate(notes): chk(f"readings.{k}", note, set())
+        zt["readings"] = [dict(r, note=note) for r, note in zip(readings, notes)]
         zt["decisions"] = []
         for k, (sec, zs) in enumerate(zip(t["decisions"], z["decisions"])):
             pool = set().union(*(pools[i] for i in sec["cards"]))
@@ -1184,8 +1202,13 @@ def topic_page(t, by_id, topics=()):
             f'<span class="eyebrow">{E(T("topic.eyebrow"))}</span><h1>{E(t["title"])}</h1><p class="problem">{E(t["problem"])}</p>'
             f'<div class="stats">{stats}</div>'
             f'<div class="keyq"><span class="keyq-l">{E(T("topic.question"))}</span><p>{E(t["question"])}</p></div></header>')
-    jump = (f'<nav class="jump" aria-label="{E(T("topic.jump"))}">' + "".join(f'<a href="#{a}">{E(T(k))}</a>' for a, k in (
-        ("overview", "topic.overview"), ("decide", "topic.decide"), ("lineage", "topic.lineage"), ("systems", "topic.tiles"), ("table", "topic.compared"), ("differ", "topic.differ"))) + '</nav>')
+    jumps = [("overview", "topic.overview"), ("decide", "topic.decide"), ("lineage", "topic.lineage"), ("systems", "topic.tiles"), ("table", "topic.compared"), ("differ", "topic.differ")]
+    readings = ""
+    if t.get("readings"):
+        jumps.append(("readings", "topic.readings"))
+        papers = "".join(f'<li><a href="{E(r["url"])}">{E(r["title"])}</a><div class="stage-d">{E(r["note"])}</div></li>' for r in t["readings"])
+        readings = f'<section class="blk" id="readings"><h2>{E(T("topic.readings"))}</h2><ul class="clean">{papers}</ul></section>'
+    jump = f'<nav class="jump" aria-label="{E(T("topic.jump"))}">' + "".join(f'<a href="#{a}">{E(T(k))}</a>' for a, k in jumps) + '</nav>'
     overview = f'<section class="blk" id="overview"><h2>{E(T("topic.overview"))}</h2>' + "".join(f'<p class="lead">{E(p_)}</p>' for p_ in t["framing"]) + '</section>'
     # decision guide
     dec = "".join(f'<li class="dec"><div class="dec-if"><span>{E(T("topic.decide_if"))}</span>{E(d_["when"])}</div><div class="dec-then"><span>{E(T("topic.decide_then"))}</span>{E(d_["then"])}</div>'
@@ -1234,7 +1257,7 @@ def topic_page(t, by_id, topics=()):
         rel += (f'<a class="rtile" href="{root}topics/{E(o["slug"])}/"><b>{E(o["title"])}</b><span>{E(o["problem"])}</span>'
                 + (f'<small>{E(T("topic.shared_one" if shared == 1 else "topic.shared_many", n=shared))}</small>' if shared else "") + '</a>')
     related = f'<section class="blk" id="related"><h2>{E(T("topic.related"))}</h2><div class="rtiles">{rel}</div></section>' if rel else ""
-    body = (f'<div class="wrap"><article class="sys topicpage">{hero}{jump}{overview}{decide}{lineage}{systems}<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>{differ}{cta}{related}'
+    body = (f'<div class="wrap"><article class="sys topicpage">{hero}{jump}{overview}{decide}{lineage}{systems}<section class="blk" id="table"><h2>{E(T("topic.compared"))}</h2>{table}</section>{differ}{cta}{readings}{related}'
             + subscribe_box("topic:" + t["slug"], T("sub.heading_topic")).replace("{ROOT}", root) + '</article></div>')
     return page(T("topic.title", t=t["title"]), t["summary"], body, root, f'topics/{t["slug"]}/')
 

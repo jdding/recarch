@@ -326,6 +326,7 @@ topic.tiles || Systems at a glance || 系统一览
 topic.read_card || Read the card || 阅读卡片
 topic.caveat_h || Read this first. || 先看这一点。
 topic.related || Related topics || 相关专题
+topic.readings || Further reading || 延伸阅读
 topic.shared_one || {n} system in common || 共有 {n} 个相同系统
 topic.shared_many || {n} systems in common || 共有 {n} 个相同系统
 topic.open || Open the topic || 查看专题

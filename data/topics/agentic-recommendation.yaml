@@ -1,0 +1,53 @@
+title: How agents use recommendation
+summary: Where an agent calls recommendation, which constraints and preferences it passes, and what happens to the returned candidates.
+problem: An agent handling a user's task needs usable candidates that reflect current intent, fit hard constraints, and can be ranked within the service budget.
+question: Which recommendation decisions belong to the agent, and which should stay in the retrieval or ranking service?
+framing:
+  - Start with a user task such as finding a product or changing what a feed shows. The agent translates the task into constraints and preferences, chooses which recommendation operation to call, then uses the returned candidates to continue the task.
+  - The systems here put the agent at different points. RecBot plans changes to the next feed from user commands. Shape Your Feed keeps a profile for pruning and reranking, and EvoRec plans an additional retrieval channel nearline.
+decisions:
+  - when: Users combine must-have constraints and softer requests in the same command.
+    then: Have the agent produce typed preferences. Enforce the hard constraints with a filter, then apply matching, attenuation and score fusion to the remaining candidates.
+    cards: [alibaba-recbot-2025]
+  - when: Explicit interests should influence an established feed.
+    then: Persist a semantic profile and use it to prune or rerank candidates alongside the existing engagement scores. Compare the full integration with the interface-only treatment where evidence is available.
+    cards: [meta-shape-your-feed-2026]
+  - when: A fresh language-model call is too expensive on the request path.
+    then: Compute needs and retrieval plans nearline. Refresh items independently and let the live stack consume the resulting candidates as an extra route.
+    cards: [kuaishou-evorec-2026]
+  - when: A recommendation looks plausible but may miss the user's actual goal.
+    then: Measure constraint satisfaction and the final task outcome alongside ranking quality. Track which action or tool call changed the recommendation.
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+members:
+  - id: alibaba-recbot-2025
+    approach: Parse user commands into structured positive and negative preferences, then compile a tool sequence to adjust the next feed.
+  - id: meta-shape-your-feed-2026
+    approach: Persist a Semantic Profile from user feedback. Use it to prune and rerank an existing candidate list with its production scores.
+  - id: kuaishou-evorec-2026
+    approach: Infer current needs and allocate retrieval resources nearline. Publish the candidates to an extra channel for the existing live rankers.
+differences:
+  - heading: What moves from the agent to the recommender
+    text: RecBot passes typed constraints and preferences to a tool chain. Shape Your Feed passes a durable interest profile to a list-wise scorer. EvoRec passes plans and query vectors to an executor that can run again after an index update.
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+  - heading: Where the work runs
+    text: RecBot adapts recommendations after user commands. Shape Your Feed puts alignment scoring on the serving path and gathers some candidates asynchronously. EvoRec moves the language-model planning off the request path and publishes candidates in advance.
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+  - heading: Which intervention the live test covered
+    text: RecBot reports the complete homepage treatment. Shape Your Feed restricts its online test to the feedback-pill interface. EvoRec adds a single candidate route for local-services lead ads and retains the downstream models. Use the same catalog and downstream components when isolating the effect of agent decisions.
+    cards: [alibaba-recbot-2025, meta-shape-your-feed-2026, kuaishou-evorec-2026]
+readings:
+  - title: 'Recommender AI Agent: Integrating Large Language Models for Interactive Recommendations'
+    url: https://doi.org/10.1145/3731446
+    note: InteRecAgent connects a conversational planner to separate querying, retrieval and ranking tools.
+  - title: Thought-Augmented Planning for LLM-Powered Interactive Recommender Agent
+    url: https://arxiv.org/html/2506.23485
+    note: TAIRA studies how learned planning patterns help a manager agent coordinate recommendation subtasks.
+  - title: 'τ-Rec: A Verifiable Benchmark for Agentic Recommender Systems'
+    url: https://taubench.com/community/tau-rec.html
+    note: Catalog tools and programmatic checks let the benchmark evaluate constraint discovery and policy compliance across turns.
+  - title: 'AgentRecBench: Benchmarking LLM Agent-based Personalized Recommender Systems'
+    url: https://proceedings.neurips.cc/paper_files/paper/2025/hash/e2d6f7249add096e26679eade1b4cc6f-Abstract-Datasets_and_Benchmarks_Track.html
+    note: A recommendation simulator with changing interests and cold-start cases.
+  - title: 'RecoAtlas: A Benchmark and RL Environment for LLM Recommendation Agents Optimizing Set-Level Utility'
+    url: https://arxiv.org/html/2605.18805v2
+    note: Agents search a catalog with retrieval and complementarity tools and are scored on the utility of the returned set.

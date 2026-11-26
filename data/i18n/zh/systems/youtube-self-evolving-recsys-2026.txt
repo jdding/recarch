@@ -1,0 +1,42 @@
+surface|YouTube 推荐模型的自动化研发，包括视频观看页排序
+era_reason|Gemini Agent 生成可执行的模型和训练改动，论文上线案例使用现有生产排序链路。
+tldr|YouTube 用离线快环提出并筛选排序模型改动，用线上慢环测试优先候选，并把线上读数写回下一轮。
+summary|Gemini Agent 探索优化器、排序架构和奖励函数改动。离线 Agent 测试代理指标并记录试验。线上 Agent 选择候选、监控完整训练和线上实验，再把结果写回实验日志供下一轮和工程师审核使用。
+stages.0.model_family|离线实验 Agent 与线上评估 Agent
+stages.0.details|共享的实验日志记录候选、代理指标、训练状态和延迟返回的业务指标。
+stages.1.model_family|用强化学习训练的生产 DNN 排序模型
+stages.1.details|观看页使用独立的排序模型。Agent 在请求链路之外修改模型和训练方案。
+features_signals.0|离线损失与目标信号的相关性
+features_signals.1|生产 A/B 中延迟返回的 YouTube 全站与入口业务指标
+training.mode|反复做离线筛选，对进入下一阶段的改动完整训练
+training.objectives.0|在线上试验前改善代理损失或奖励对齐
+training.objectives.1|以延迟返回的业务指标验证入选改动
+training.notes|观看页生产排序模型使用强化学习。实验流程测试其优化器、架构与奖励函数的改动。
+serving_infra|Agent 接入已有训练和实验基础设施，入选的排序模型版本导出至线上实验。
+scale.0.metric|观看页排序模型通常的训练时间
+scale.0.value|小时量级
+results_reported|在 YouTube 主要入口的 Gated Path 上线试验中，YouTube 全站指标相对提升 0.06%，入口指标相对提升 0.14%，见表 1。表 2 报告另一入口。第 5.2 节描述连续两次调整带来的八倍训练提速。
+caveats.0|表 1 的指标名称经过匿名化，数值对应特定上线改动和入口。
+caveats.1|训练提速来自两次对训练配置的调整，论文未给出这些改动的请求延迟。
+unknown_fields.0|分流比例、单项实验时长与指标完整定义
+unknown_fields.1|实际排序模型的服务延迟、吞吐与硬件配置
+version_note|RecSys 的正式记录和作者稿标注同一 DOI。架构与数字已核作者全文，ACM 托管的出版全文待核。
+code.note|论文与 Google Research 的正式记录均未给出该实验工作流的公开实现。
+core_idea|用离线代理指标筛选可执行的模型改动，再由真实流量的业务指标决定哪些改动继续推进。
+deployed_in|YouTube 推荐入口，包括视频观看页排序
+scale_short|生产排序模型训练通常为小时量级
+key_result|Gated Path 的一次上线试验中，YouTube 全站指标 +0.06%，入口指标 +0.14%。
+results_table.online.0.setting|YouTube 主要入口
+results_table.online.0.method|Gated Path 架构
+results_table.online.0.metric|YouTube 全站指标
+results_table.online.0.versus|该次上线实验的对照组
+results_table.online.1.setting|YouTube 主要入口
+results_table.online.1.method|Gated Path 架构
+results_table.online.1.metric|入口指标
+results_table.online.1.versus|该次上线实验的对照组
+deployment.scenario|YouTube 生产排序模型的实验版本
+deployment.baseline|每次实验的对照为工程师原有的排序版本，本卡展示 Gated Path 上线试验。
+deployment.online_lifts.0.metric|YouTube 全站指标
+deployment.online_lifts.1.metric|入口指标
+deployment.notes.0|线上结果写回实验日志，工程师审核上线指标。
+deployment.notes.1|表 1 报告的 Gated Path 区间分别为 +0.02% 至 +0.11% 和 +0.08% 至 +0.21%。

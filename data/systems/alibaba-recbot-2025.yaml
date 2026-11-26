@@ -1,0 +1,94 @@
+id: alibaba-recbot-2025
+name: RecBot
+company: Alibaba
+surface: Interactive recommendation feed on the homepage of an unnamed Asian e-commerce platform
+year: 2025
+era: generative
+era_reason: A language model generates structured user preferences and an executable recommendation tool chain.
+first_public: '2025-09'
+venue: KDD 2026
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3770855.3817619
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: RecBot interprets commands about what to show next and uses domain tools to filter, match, downweight and combine candidate scores for the feed.
+summary: RecBot parses natural-language commands and recent dialogue into positive and negative preferences. A Planner Agent uses structured preferences to select and sequence recommendation tools. The tools enforce hard constraints, score desired attributes and reduce the weight of softer dislikes before the next feed is ranked.
+paradigms: [llm-based, learning-to-rank]
+stages:
+- stage: other
+  model_family: Language-model parser with dialogue state and typed preferences
+  details: The parser distinguishes positive and negative preferences as well as strict requirements and soft guidance.
+- stage: re-rank
+  model_family: Planner with Filter, Matcher, Attenuator and Aggregator tools
+  details: Filter enforces hard constraints. Matcher combines semantic and collaborative evidence. Attenuator scores soft dislikes and Aggregator combines the scores.
+id_tokenization: {approach: null, details: null}
+features_signals:
+- Natural-language commands and their consolidated dialogue state
+- Item attributes and semantic match
+- Behavior history for collaborative matching
+training:
+  mode: Simulation-augmented distillation of a parser and planner
+  objectives:
+  - Parse natural-language commands into structured preferences
+  - Generate tool chains that apply those preferences to a recommendation feed
+  notes: Simulated user interactions enlarge the training data for smaller models.
+serving_infra: The parser and planner are used with a recommendation tool suite. The paper reports a production homepage deployment.
+scale: []
+results_reported: Section 4.3 reports a three-month homepage A/B. Table 5 reports relative changes in negative feedback frequency of -0.71%, click item category diversity of +1.44%, add-to-cart of +1.28%, and GMV of +1.40%. The paper normalizes the time series for confidentiality.
+caveats:
+- The paper names the product surface as an e-commerce homepage and leaves the platform unnamed.
+- The online result covers the full RecBot treatment. The comparisons between individual tools are offline.
+unknown_fields:
+- Exact traffic allocation and detailed baseline configuration
+- Production latency and capacity of the underlying recommendation pipeline
+sources:
+- title: Interactive Recommendation Agent with Active User Commands, KDD 2026
+  url: https://doi.org/10.1145/3770855.3817619
+  type: paper
+- title: Full author manuscript with architecture and deployment results
+  url: https://arxiv.org/html/2509.21317
+  type: paper
+- title: KDD 2026 accepted papers
+  url: https://kdd2026.kdd.org/papers/
+  type: documentation
+version_note: The KDD 2026 program confirms the title. The A/B design and results were checked against the author manuscript. The ACM-hosted full text remains unchecked.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The reviewed paper and conference materials did not identify an official RecBot implementation.
+core_idea: Turn user commands into typed preferences and execute an adaptive tool chain over feed candidates.
+deployed_in: Homepage feed of an unnamed Asian e-commerce platform
+scale_short: Three months of production A/B testing
+key_result: Negative feedback frequency -0.71% and GMV +1.40% in the reported homepage experiment.
+results_table:
+  online:
+  - {setting: Three-month homepage A/B, method: RecBot, metric: Negative feedback frequency, result: '-0.71%', versus: Incumbent homepage system}
+  - {setting: Three-month homepage A/B, method: RecBot, metric: GMV, result: '+1.40%', versus: Incumbent homepage system}
+  - {setting: Three-month homepage A/B, method: RecBot, metric: Add-to-cart, result: '+1.28%', versus: Incumbent homepage system}
+deployment:
+  online_evidence: online_numbers
+  scenario: Homepage recommendation feed at an unnamed Asian e-commerce platform
+  ab_traffic: not_reported
+  ab_duration: Three months
+  baseline: Incumbent homepage recommendation system. The paper does not specify its detailed configuration.
+  online_lifts:
+  - {metric: Negative feedback frequency, value: '-0.71%'}
+  - {metric: GMV, value: '+1.40%'}
+  - {metric: Add-to-cart, value: '+1.28%'}
+  - {metric: Click item category diversity, value: '+1.44%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Table 5 compares the complete RecBot treatment with the incumbent feed.
+  fulltext_refs:
+  - Sections 3.2 and 3.3 describe the parser, planner and recommendation tools.
+  - Section 4.3 and Table 5 give the homepage A/B setting and relative lifts.
+  basis: full_text
+  checked_on: '2026-11-26'

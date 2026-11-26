@@ -1,0 +1,94 @@
+id: youtube-self-evolving-recsys-2026
+name: Self-Evolving Recommendation System
+company: Google / YouTube
+surface: Automated model development for YouTube recommendation, including video watch-page ranking
+year: 2026
+era: generative
+era_reason: Gemini agents generate executable model and training changes. The deployment cases concern existing production rankers.
+first_public: '2026-02'
+venue: RecSys 2026
+venue_year: 2026
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3773078.3831919
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: YouTube uses a fast offline agent to propose and screen ranker changes, and a slower online agent to test promising candidates and feed results back into the next round.
+summary: Gemini agents explore changes to optimizers, ranker architectures and reward functions. An offline agent runs proxy evaluations and logs its trials in an Experiment Journal. An online agent chooses candidates, monitors full training and live experiments, then reports results for the next iteration and final engineer review.
+paradigms: [llm-based]
+stages:
+- stage: other
+  model_family: Offline experiment agent and online evaluation agent
+  details: A shared journal records candidates, proxy results, training state and delayed business metrics across iterations.
+- stage: rank
+  model_family: Production DNN ranker trained with reinforcement learning
+  details: The watch-page case uses a separate ranking model. The agents change its training and architecture outside the user request path.
+id_tokenization: {approach: null, details: null}
+features_signals:
+- Offline loss and correlation with target signals
+- Delayed YouTube-level and surface-level metrics from production A/B experiments
+training:
+  mode: Iterative offline screening and full training for promoted changes
+  objectives:
+  - Improve proxy loss or reward alignment before an online trial
+  - Validate selected changes against delayed business metrics
+  notes: The production watch-page ranker uses reinforcement learning. The experimental pipeline tests changes to its optimizer, architecture and reward.
+serving_infra: The agents interact with the existing training and experimentation infrastructure. Selected ranker variants are exported to live experiments.
+scale:
+- metric: Typical training time for the watch-page ranker
+  value: On the order of hours
+  note: Section 5.1 describes this training time for the underlying production model.
+results_reported: On the primary YouTube surface, the Gated Path architecture improved the reported YouTube-level metric by 0.06% and the surface-level metric by 0.14%. Table 1 reports these as relative changes in one launch. Table 2 reports results for a separate surface. Section 5.2 describes an eightfold training speedup through two successive changes.
+caveats:
+- Table 1 uses anonymized metric names. The numbers refer to their specific launch and surface.
+- The reported training speedup covers two changes to training configuration. Serving latency was not reported for those changes.
+unknown_fields:
+- Traffic share, per-test duration and absolute metric definitions
+- Serving latency, throughput and hardware configuration for the resulting rankers
+sources:
+- title: Self-Evolving Recommendation System, RecSys 2026
+  url: https://doi.org/10.1145/3773078.3831919
+  type: paper
+- title: Full author manuscript, Sections 4 and 5
+  url: https://arxiv.org/html/2602.10226
+  type: paper
+- title: Google Research publication record
+  url: https://research.google/pubs/self-evolving-recommendation-system-end-to-end-autonomous-model-optimization-with-llm-agents/
+  type: documentation
+version_note: The RecSys record and author manuscript carry the same DOI. The architecture and figures were checked in the author manuscript. The ACM-hosted full text remains unchecked.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The paper and Google Research record provide no public implementation of the experiment workflow.
+core_idea: Use an offline proxy to screen executable model changes and live business metrics to decide which of them advance.
+deployed_in: YouTube recommendation surfaces including watch-page video ranking
+scale_short: Production ranker training typically takes hours
+key_result: In one launch of Gated Path, YouTube-level metric +0.06% and surface-level metric +0.14%.
+results_table:
+  online:
+  - {setting: Primary YouTube surface, method: Gated Path architecture, metric: YouTube-level metric, result: '+0.06%', versus: Launch control}
+  - {setting: Primary YouTube surface, method: Gated Path architecture, metric: Surface-level metric, result: '+0.14%', versus: Launch control}
+deployment:
+  online_evidence: online_numbers
+  scenario: Experimental versions of YouTube's production ranking models
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Respective existing human-engineered ranker, shown here for the Gated Path launch
+  online_lifts:
+  - {metric: YouTube-level metric, value: '+0.06%'}
+  - {metric: Surface-level metric, value: '+0.14%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - Online results are written back to the Experiment Journal. Engineers review the launch metrics.
+  - The Gated Path results in Table 1 have reported intervals of +0.02% to +0.11% and +0.08% to +0.21%, respectively.
+  fulltext_refs:
+  - Section 4 explains the fast and slow loops and the Experiment Journal.
+  - Table 1 reports Gated Path at +0.06% with interval +0.02% to +0.11% and +0.14% with interval +0.08% to +0.21%. Section 5 describes rollout and training efficiency.
+  basis: full_text
+  checked_on: '2026-11-26'

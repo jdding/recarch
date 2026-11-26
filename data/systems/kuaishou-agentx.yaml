@@ -1,0 +1,103 @@
+id: kuaishou-agentx
+name: AgentX
+company: Kuaishou
+surface: Automated model research for Kuaishou recommendation systems across several business settings
+year: 2026
+era: generative
+era_reason: A research agent proposes changes and a coding agent implements and evaluates them in a recommender sandbox.
+first_public: '2026-06'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2609.30001v1
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+version: AgentX-Model
+versions:
+- name: AgentX
+  first_public: '2026-06'
+  source: https://arxiv.org/html/2606.26859v2
+  note: Introduces a loop for production strategy changes, including development, online feedback and passing evidence into the next iteration.
+- name: AgentX-Model
+  first_public: '2026-09'
+  source: https://arxiv.org/html/2609.30001v1
+  note: Extends AgentX to model research using recorded evidence and human-controlled launch gates.
+version_note: The main card uses the September AgentX-Model author report. The June report appears in the version history. A formal publication of the September report was not confirmed.
+system_type: training_infrastructure
+evidence_level: production_described
+tldr: AgentX makes model research cumulative by recording experiments, their direct parents and the evidence behind each change. The authors report production A/B results for five recent launch reviews.
+summary: AgentX-Model uses a business-specific sandbox that fixes data interfaces and prediction tasks. A Research Agent proposes model changes based on previous outcomes, while a Training Agent implements and runs them. Logs preserve how runs relate to their parents and business baselines. Launch review remains under human control.
+paradigms: [llm-based]
+stages:
+- stage: other
+  model_family: Research Agent with a Training Agent and a fixed business sandbox
+  details: Reproduce implements a published idea, Follow-up revises an existing experiment, Composition tests a combination, and Diagnose collects evidence for a repair.
+- stage: rank
+  model_family: Existing business recommenders with model-level changes
+  details: The reviewed examples change attention, training objectives or hierarchical aggregation behind the established prediction interfaces.
+id_tokenization: {approach: null, details: null}
+features_signals:
+- Research papers, business feedback and completed experiments
+- Run artifacts documenting outcomes, baselines and parent experiments
+training:
+  mode: Repeated controlled model experiments in a business-specific sandbox
+  objectives:
+  - Track validation performance against a fixed business baseline and comparable ancestors
+  - Retain deployment constraints and evaluate promoted candidates on production traffic
+  notes: The study separates completed offline experiments from the later launch-review samples.
+serving_infra: Model research takes place before deployment. Candidate models reaching launch review are evaluated in existing production environments.
+scale:
+- metric: Completed model-changing experiments with valid results
+  value: '636'
+  note: Offline production evaluation across the reported settings.
+results_reported: In the offline production evaluation, 560 of 636 completed model-changing experiments exceeded their setting's business baseline on AUC. A separate lineage analysis compares changes with their direct parents and strongest earlier results. Table 6 reports five recent launch reviews with coarse ranges. Review 3 reports multi-task objective pruning with watch time up 0.3% to 0.8% across two clients and FLOPs and parameter count approximately 10% lower. Review 1 reports acquisition efficiency up 10% to 15% with adaptive attention temperature.
+caveats:
+- The AUC count uses the business baseline as the reference. It does not count record-setting improvements over every ancestor.
+- The reported online ranges cover selected launch reviews. The corresponding controls differ across business settings.
+unknown_fields:
+- A/B duration, traffic allocation and exact control configuration for the reported launch reviews
+- Absolute serving latency, throughput, hardware and total research compute
+sources:
+- title: Advancing Model Research in AgentX, September author report
+  url: https://arxiv.org/html/2609.30001v1
+  type: paper
+- title: AgentX, June author report
+  url: https://arxiv.org/html/2606.26859v2
+  type: paper
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The reviewed author reports do not link a public implementation of AgentX-Model.
+core_idea: Link each model change to its baseline, parent and hypothesis so later experiments can act on accumulated evidence.
+deployed_in: Model-development and evaluation workflows for Kuaishou production recommenders
+scale_short: 636 completed model-changing experiments in the offline production evaluation
+key_result: Selected launch reviews include +0.3% to +0.8% watch time for multi-task objective pruning.
+results_table:
+  online:
+  - {setting: Launch review 3, method: Multi-task objective pruning, metric: Watch time across two clients, result: '+0.3% to +0.8%', versus: Respective launch control}
+  - {setting: Launch review 1, method: Adaptive attention temperature, metric: Acquisition efficiency, result: '+10% to +15%', versus: Respective launch control}
+  offline:
+  - {setting: Offline evaluation across business settings, method: AgentX-Model, metric: Completed model changes exceeding the AUC baseline, result: '560 of 636', versus: Each setting's fixed business baseline}
+deployment:
+  online_evidence: online_numbers
+  scenario: Selected launch reviews for Kuaishou recommender model changes
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: Respective launch controls for independent tests. The paper does not give their detailed configurations.
+  online_lifts:
+  - {metric: 'Watch time across two clients, launch review 3', value: '+0.3% to +0.8%'}
+  - {metric: 'Acquisition efficiency, launch review 1', value: '+10% to +15%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The same objective-pruning candidate used approximately 10% fewer FLOPs and parameters.
+  - Model-changing results and launch reviews represent separate samples with different acceptance criteria.
+  fulltext_refs:
+  - Section 4.3 and Tables 4 and 5 report the offline business-baseline comparisons.
+  - Table 6 reports relative online gains from the five latest launch reviews.
+  basis: full_text
+  checked_on: '2026-11-26'

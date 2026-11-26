@@ -210,6 +210,7 @@ Rules. Values come only from verified card content or the full text, never from 
 | `decisions` | list, at least 3 | items `{when, then, cards}` for the "what to choose when" block; `cards` are member ids that illustrate the advice |
 | `members` | list, at least 3 | items `{id, approach}`; `id` is an active card, `approach` is one plain line |
 | `differences` | list | items `{heading, text, cards}`; `cards` are member ids |
+| `readings` | optional list | items `{title, url, note}` linking public primary sources with a qualitative note. The Chinese file lists the translated notes in the same order. |
 
 Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. `problem`, `question` and `decisions` follow the same rules, and every card in `decisions` must be a member. The Chinese file mirrors them, with the same card ids in each decision. Each page links its member cards and offers a Compare button for the first three.
 

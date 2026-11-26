@@ -1,0 +1,91 @@
+id: kuaishou-evorec-2026
+name: EvoRec
+company: Kuaishou
+surface: Nearline candidate retrieval for local-services lead-generation ads
+year: 2026
+era: generative
+era_reason: Language-model agents generate structured user needs, retrieval plans and reflection guidance. Candidate retrieval executes those plans.
+first_public: '2026-11'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/html/2611.01977v1
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: ads
+evidence_level: production_described
+tldr: EvoRec plans retrieval nearline and supplies an extra candidate channel to Kuaishou's existing ads stack. The deployment test leaves downstream pre-ranking and ranking models fixed.
+summary: EvoRec infers needs from user history and recent intent, then chooses retrieval tools and splits their budgets between past interests and current needs. A deterministic executor runs the saved plan against the current item index. A reflection agent stores verified repair strategies for later plans without retraining the agents.
+paradigms: [llm-based, embedding-based-retrieval]
+stages:
+- stage: retrieval
+  model_family: Need Agent and Planning Agent with a deterministic executor
+  details: The planner selects tools, budget shares and fusion weights. The executor retrieves, deduplicates and orders candidates from the current index.
+- stage: other
+  model_family: Dynamic Reflection Tree
+  details: Feedback is localized to need, plan or memory errors. Verified repair strategies are attached to later prompts.
+id_tokenization:
+  approach: Dense embeddings of retrieval queries and items
+  details: Query vectors are stored with plans. New items receive embeddings before they enter the retrieval index.
+features_signals:
+- User memory and recent behavior
+- Ad inquiry messages and recent searches as explicit signals of need
+- Outcomes and error diagnoses from previous recommendations
+training:
+  mode: Inference-time reflection with fixed agent parameters
+  objectives:
+  - Improve how future plans retrieve ads aligned with a user's needs
+  notes: Replay checks proposed repairs before storing them. The production integration reports no extra training of downstream pre-ranking or ranking models.
+serving_infra: Nearline workers compute and store needs, plans and query embeddings. An independent pipeline updates the item index. The executor publishes candidates asynchronously through Kafka for online consumption.
+scale: []
+results_reported: Section 4.4 reports a seven-day A/B from August 28 to September 3, 2026 with approximately 5% of eligible traffic per arm. Table 6 gives relative gains of +4.6% billed ad revenue, +3.5% CTCVR and +0.8% impressions within the deployment scope. The reported cost metric increased 3.6%. The +14.5% revenue result applies to the high-intent subgroup.
+caveats:
+- The experiment adds a retrieval channel for lead-generation ads. Effects describe that deployment scope.
+- The high-intent subgroup is defined using explicit inquiry or search intent signals.
+- The paper reports an advertising cost metric in Table 6. System inference cost is undisclosed.
+unknown_fields:
+- Full rollout scope beyond the A/B and the detailed model configurations in the incumbent stack
+- Production latency, throughput, hardware and system inference cost
+sources:
+- title: 'EvoRec: A Unified Self-Evolving Agentic Recommender with Dynamic Reflection Trees'
+  url: https://arxiv.org/html/2611.01977v1
+  type: paper
+version_note: Based on the November 2026 Kuaishou author preprint. The June 2026 paper with the same method name studies a separate system.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The reviewed author manuscript does not link an official implementation of this EvoRec system.
+core_idea: Cache a learned plan and query vectors nearline, then let a separate executor use the latest catalog to produce candidates.
+deployed_in: Kuaishou local-services lead-generation ads
+scale_short: Seven-day A/B with about 5% of eligible traffic per arm
+key_result: Advertising revenue +4.6% and CTCVR +3.5% within the tested deployment scope.
+results_table:
+  online:
+  - {setting: Kuaishou local-services lead-generation ads, method: Existing stack with EvoRec channel, metric: Billed advertising revenue, result: '+4.6%', versus: Existing recommendation stack}
+  - {setting: Kuaishou local-services lead-generation ads, method: Existing stack with EvoRec channel, metric: CTCVR, result: '+3.5%', versus: Existing recommendation stack}
+  - {setting: Kuaishou local-services lead-generation ads, method: Existing stack with EvoRec channel, metric: Reported advertising cost metric, result: '+3.6%', versus: Existing recommendation stack}
+deployment:
+  online_evidence: online_numbers
+  scenario: Lead-generation ads in Kuaishou local-services recommendation
+  ab_traffic: Approximately 5% of eligible traffic per arm
+  ab_duration: Seven days, August 28 to September 3, 2026
+  baseline: Existing recommendation routes and downstream models. The treatment adds EvoRec as an independent candidate channel.
+  online_lifts:
+  - {metric: Billed advertising revenue, value: '+4.6%'}
+  - {metric: CTCVR, value: '+3.5%'}
+  - {metric: Impressions, value: '+0.8%'}
+  - {metric: Reported advertising cost metric, value: '+3.6%'}
+  training_compute: not_reported
+  serving_latency: not_reported
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+  - The language-model inference for need and planning is nearline. The live service consumes the precomputed candidates.
+  - The high-intent subgroup showed +14.5% billed advertising revenue and +5.7% on the reported cost metric.
+  fulltext_refs:
+  - Section 3.4 and Figure 3 describe the nearline user pipeline, index updates and online consumption.
+  - Section 4.4 and Table 6 give traffic, duration and relative performance, including the high-intent cost metric of +5.7%.
+  basis: full_text
+  checked_on: '2026-11-26'
