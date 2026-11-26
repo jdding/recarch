@@ -9,6 +9,9 @@ const slugs = fs.readdirSync(T).filter((f) => f.endsWith(".yaml")).map((f) => f.
 ok(slugs.length >= 2, `at least 2 topics, found ${slugs.length}`);
 const sysJson = JSON.parse(fs.readFileSync(`${dist}/data/systems.json`, "utf8")), actIds = new Set(sysJson.map((c) => c.id));
 const cardYears = new Map(sysJson.map((c) => [c.id, c.year]));
+const enData = path.join(dist, "en/data/systems.json");
+const enCards = fs.existsSync(enData) ? JSON.parse(fs.readFileSync(enData, "utf8")) : sysJson;
+const cardBrands = new Map(enCards.map((c) => [c.id, c.company.trim().split(/[\s/,.\-]+/)[0].toLowerCase()]));
 ok(sysJson.every((c) => c.deployment && c.deployment.scenario), "every active card carries a deployment block in compare data");
 const sitemap = fs.readFileSync([path.join(dist, "sitemap.xml"), path.join(dist, "../sitemap.xml")].find((f) => fs.existsSync(f)), "utf8");
 const idx = dom(`${dist}/topics/index.html`);
@@ -25,7 +28,8 @@ for (const s of slugs) {
   if (tile) {
     ok(!!tile.querySelector(".ttile-p"), `${s}: index tile shows the problem statement`);
     ok(tile.querySelectorAll(".stat").length >= 2, `${s}: index tile has stats`);
-    ok(tile.querySelectorAll(".marks .mono").length >= 3, `${s}: index tile has company marks`);
+    const brandCount = new Set(members.map((id) => cardBrands.get(id))).size;
+    ok(tile.querySelectorAll(".marks .mono").length === Math.min(6, brandCount), `${s}: index tile shows distinct company marks`);
     ok(!!tile.querySelector(".mixbar"), `${s}: index tile has the era mix bar`);
     ok(tile.querySelector(".stat b").textContent === String(members.length), `${s}: index tile system count equals members`);
   }
@@ -67,24 +71,19 @@ for (const s of slugs) {
   ok(ly.length === members.length, `${s}: lineage lists every member once, found ${ly.length}`);
   const yrs = [...d.querySelectorAll("#lineage .ly-y")].map((e) => +e.textContent);
   ok(yrs.join() === memberYears.join(), `${s}: lineage shows every member year in order`);
-  const [topicYaml, screeningYaml] = y.split(/^screening:$/m);
-  const paperURLs = (yaml) => [...yaml.matchAll(/^\s+url: (https:\/\/\S+)/gm)].map((m) => m[1]);
-  const readingURLs = paperURLs(topicYaml);
+  const readingURLs = [...y.matchAll(/^\s+url: (https:\/\/\S+)/gm)].map((m) => m[1]);
   const readingLinks = [...d.querySelectorAll("#readings li a")].map((a) => a.getAttribute("href"));
   ok(readingURLs.join() === readingLinks.join(), `${s}: reading links come from topic data`);
   ok(jumps.includes("#readings") === (readingURLs.length > 0), `${s}: jump link follows reading section availability`);
-  ok(jumps.includes("#screening") === Boolean(screeningYaml), `${s}: jump link follows screening availability`);
-  if (screeningYaml) {
-    const review = d.querySelector("#screening");
-    const exclusions = [...review.querySelectorAll("li a")];
-    ok(exclusions.map((a) => a.getAttribute("href")).join() === paperURLs(screeningYaml).join(), `${s}: screening links match the data`);
-    ok(exclusions.every((a) => a.parentElement.querySelector(".stage-d")?.textContent.trim()), `${s}: every exclusion shows a reason`);
-    ok(review.querySelector("a[href='#systems']").textContent.endsWith(String(members.length)), `${s}: screening shows the included card count`);
-    const readingCount = review.querySelector("a[href='#readings']");
-    ok(readingURLs.length ? readingCount?.textContent.endsWith(String(readingURLs.length)) : !readingCount, `${s}: screening shows the further reading count`);
+  const scope = d.getElementById("screening"), hasScope = /^scope: /m.test(y);
+  ok(Boolean(scope) === hasScope && jumps.includes("#screening") === hasScope, `${s}: scope and its jump follow the topic data`);
+  if (scope) {
+    ok(["Source coverage", "资料范围"].includes(scope.querySelector("h2")?.textContent), `${s}: scope has a reader-facing title`);
+    ok(scope.querySelectorAll("p").length === 1 && !scope.querySelector("h3, ul"), `${s}: scope is a single paragraph without candidate lists`);
   }
+  ok(!/Deferred and excluded candidates|暂缓与未纳入的候选/.test(d.body.textContent), `${s}: candidate review does not appear on the page`);
   const cav = d.querySelector("p.caveat#note");
-  ok(!!cav && /not comparable|不能跨行直接比较/.test(cav.textContent), `${s}: online lifts not comparable note is visible above the table`);
+  ok(!!cav && /not comparable|不能跨行直接比较/.test(cav.textContent), `${s}: the note about comparing online metrics is visible above the table`);
   const wrap = d.querySelector(".tbl-topic");
   ok(!!wrap && wrap.getAttribute("tabindex") === "0" && wrap.getAttribute("role") === "region", `${s}: table scroll box is keyboard reachable`);
   ok(rows.every((r) => r.querySelector("th[scope=row]") && r.querySelectorAll("td").length === 4), `${s}: row headers and four data cells per row`);

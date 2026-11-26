@@ -210,7 +210,7 @@ dep.scenario || Scenario || 场景
 dep.ab_traffic || A/B traffic || A/B 流量
 dep.ab_duration || A/B duration || A/B 时长
 dep.baseline || Compared with || 对比基线
-dep.lifts || Online lifts || 线上收益
+dep.lifts || Online metrics || 线上指标
 dep.compute || Training compute || 训练算力
 dep.latency || Serving latency || 服务延迟
 dep.qps || Serving throughput || 服务吞吐
@@ -234,7 +234,7 @@ topic.th_approach || Approach || 做法
 topic.th_online || Online result || 线上结果
 topic.th_latency || Serving latency || 服务延迟
 topic.th_hardware || Hardware || 硬件
-topic.foot || The online result and serving columns come from the Deployment and cost block of each card. Lifts are against different baselines, so they are not comparable across rows. || 线上结果和服务相关列来自各卡片的“部署与成本”部分。各行的收益对应不同的对比基线，因此不能跨行直接比较。
+topic.foot || The online metrics and serving figures come from the Deployment and cost block of each card. Metrics and test conditions vary, so the figures are not comparable across rows. || 线上指标与服务数据来自各卡片的「部署与成本」。各案例的指标和测试条件不同，不能跨行直接比较。
 topic.cards || Cards: || 相关卡片：
 topic.compared || Systems compared || 对比的系统
 topic.differ || How the approaches differ || 各方案有何不同
@@ -300,7 +300,7 @@ js.row_training || Training || 训练
 js.row_serving || Serving || 服务
 js.row_scale || Scale (stated) || 规模，来源所述
 js.row_online_evidence || Online evidence || 线上证据
-js.row_lifts || Online lifts || 线上收益
+js.row_lifts || Online metrics || 线上指标
 js.row_ab_traffic || A/B traffic || A/B 流量
 js.row_ab_duration || A/B duration || A/B 时长
 js.row_latency || Serving latency || 服务延迟
@@ -327,8 +327,7 @@ topic.read_card || Read the card || 阅读卡片
 topic.caveat_h || Read this first. || 先看这一点。
 topic.related || Related topics || 相关专题
 topic.readings || Further reading || 延伸阅读
-topic.screening || Search and selection || 检索与筛选
-topic.screened_out || Deferred and excluded candidates || 暂缓与未纳入的候选
+topic.scope || Source coverage || 资料范围
 topic.shared_one || {n} system in common || 共有 {n} 个相同系统
 topic.shared_many || {n} systems in common || 共有 {n} 个相同系统
 topic.open || Open the topic || 查看专题

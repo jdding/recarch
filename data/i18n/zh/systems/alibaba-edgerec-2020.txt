@@ -1,0 +1,53 @@
+surface|手机淘宝首页信息流
+era_reason|用神经网络编码用户行为，再以注意力模型重排云侧下发的候选。
+tldr|淘宝在云端保留候选服务和嵌入表。手机根据最新行为，重排已经收到且尚未曝光的候选。
+summary|云侧下发候选、特征和查表所得的嵌入。手机淘宝根据本地事件更新曝光和物品交互状态，再触发轻量注意力模型调整未曝光的部分。端上交互日志回传给云端训练。
+stages.0.model_family|淘宝现有推荐服务与键值嵌入查表
+stages.0.details|现有服务提供经过初排的候选和嵌入特征，大型嵌入表留在云侧。
+stages.1.model_family|循环行为编码器与候选条件注意力
+stages.1.details|手机增量更新曝光和交互历史，观察到相关行为后重排未曝光的候选。
+id_tokenization.approach|学习得到的物品特征嵌入
+id_tokenization.details|云侧查取类目和品牌嵌入，作为候选特征下发。
+features_signals.0|随候选下发的物品特征和嵌入
+features_signals.1|端侧即时观察到的曝光与物品交互
+training.mode|云侧用交互日志训练，按版本向端上交付模型
+training.objectives.0|用最新用户行为重排后续候选。
+training.notes|将训练好的模型拆开，端上运行行为编码和重排组件，云侧保存嵌入表。
+serving_infra|客户端用阿里 MNN 推理。端上触发后重排缓存候选，后续翻页继续从云侧取候选。
+scale.0.metric|云侧返回候选数和分页大小
+scale.0.value|分页大小为 50，云侧返回 100 个候选
+scale.1.metric|端侧模型大小
+scale.1.value|约 3 MB，嵌入表另存
+scale.2.metric|云侧品牌嵌入表
+scale.2.value|约 230 MB
+results_reported|在近两周的实验中，完整 EdgeRec 对比原有手机淘宝推荐，GMV 提升 10.92%，CTR 提升 7.18%，点击提升 8.87%。流量高峰的系统响应由不超过 1 s 降到不超过 100 ms，行为感知延迟由不超过 1 min 降到不超过 300 ms。
+caveats.0|生产实验评估完整的 EdgeRec，包括云侧候选载荷和端侧重排器。
+caveats.1|延迟来自文中的线上环境。论文未说明具体机型、CPU 和能耗影响。
+unknown_fields.0|各组流量比例、设备规格与每次请求的载荷大小
+unknown_fields.1|电量消耗与请求尾延迟
+version_note|CIKM 正式书目共八页。架构与数字已核作者全文。
+code.note|论文给出 MNN 推理框架名称，未确认有 EdgeRec 推荐系统的公开实现。
+core_idea|云端下发候选嵌入，手机在新行为发生时更新展示顺序。
+deployed_in|手机淘宝首页信息流
+scale_short|分页大小为 50，云侧返回 100 个候选，端侧模型约 3 MB
+key_result|对照原手机淘宝推荐，GMV +10.92%，CTR +7.18%。
+results_table.online.0.setting|手机淘宝首页
+results_table.online.0.method|完整 EdgeRec
+results_table.online.0.metric|GMV
+results_table.online.0.versus|原淘宝推荐系统
+results_table.online.1.setting|手机淘宝首页
+results_table.online.1.method|完整 EdgeRec
+results_table.online.1.metric|CTR
+results_table.online.1.versus|原淘宝推荐系统
+results_table.online.2.setting|手机淘宝首页
+results_table.online.2.method|完整 EdgeRec
+results_table.online.2.metric|点击
+results_table.online.2.versus|原淘宝推荐系统
+deployment.scenario|手机淘宝首页信息流中的完整 EdgeRec
+deployment.ab_traffic|每组随机分配数百万用户，流量比例未披露。
+deployment.ab_duration|2019-10-26 至 2019-11-08
+deployment.baseline|未接入 EdgeRec 的原手机淘宝推荐系统
+deployment.online_lifts.0.metric|GMV
+deployment.online_lifts.1.metric|CTR
+deployment.serving_latency|业务高峰系统响应 ≤100 ms，基线 ≤1 s
+deployment.notes.0|表 3 中行为感知延迟单列，EdgeRec 不超过 300 ms，对照不超过 1 min。

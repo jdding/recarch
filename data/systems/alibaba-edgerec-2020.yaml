@@ -1,0 +1,86 @@
+id: alibaba-edgerec-2020
+name: EdgeRec
+company: Alibaba
+surface: Mobile Taobao homepage feed
+year: 2020
+era: deep
+era_reason: Neural behavior encoders and an attention reranker jointly score the server-provided candidate set.
+first_public: '2020-05'
+venue: CIKM 2020
+venue_year: 2020
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3340531.3412700
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: Taobao keeps its candidate service and embedding tables in the cloud. The phone uses fresh activity to reorder unexposed candidates that it has already received.
+summary: The server sends item candidates with their features and looked-up embeddings. Mobile Taobao updates its exposure and item-interaction state from local events, then triggers a small attention-based reranker for the unseen part of the feed. The client sends interaction logs back for cloud training.
+paradigms: [learning-to-rank]
+stages:
+  - stage: retrieval
+    model_family: Existing Taobao recommendation service with key-value embedding lookup
+    details: The existing service provides initially ranked candidates and embedding features. The large embedding tables stay in the cloud.
+  - stage: re-rank
+    model_family: Recurrent behavior encoders and candidate-conditioned attention
+    details: The phone incrementally updates separate exposure and interaction histories, then reranks unexposed items after relevant local activity.
+id_tokenization: {approach: Learned item feature embeddings, details: Category and brand embeddings are looked up in the cloud and returned as candidate features.}
+features_signals:
+  - Item features and embeddings in the candidate response
+  - Locally observed exposures and item interactions
+training:
+  mode: Cloud training from interaction logs and versioned model delivery
+  objectives:
+    - Reorder upcoming items using the latest user behavior.
+  notes: The offline model is split into on-device behavior and reranking components and server-side embedding tables.
+serving_infra: The production client uses Alibaba MNN for neural inference. It reranks the cached candidates upon local triggers and continues paging from the server.
+scale:
+  - {metric: Cloud response and page size, value: '100 candidates returned for a page size of 50'}
+  - {metric: On-device model, value: About 3 MB excluding embedding tables}
+  - {metric: Cloud brand embedding table, value: About 230 MB}
+results_reported: The full system improved GMV by 10.92%, CTR by 7.18% and clicks by 8.87% against the previous Mobile Taobao recommender in a nearly two-week test. At peak traffic, the reported system response was at most 100 ms versus 1 s, and behavior capture took at most 300 ms versus 1 min.
+caveats:
+  - The production test covers the combined EdgeRec system with its candidate payload and mobile reranker.
+  - The latency figures describe system behavior and response in the reported deployment. The paper does not identify the handset hardware or CPU and energy impact.
+unknown_fields:
+  - Allocation percentages, device specification and per-request payload size
+  - Battery use and request-tail latency
+sources:
+  - {title: EdgeRec at CIKM, url: 'https://doi.org/10.1145/3340531.3412700', type: paper}
+  - {title: EdgeRec author full text, url: 'https://arxiv.org/pdf/2005.08416', type: paper}
+version_note: The CIKM proceedings list an eight-page paper. Architecture and numbers were checked in the author full text.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The paper names the MNN inference runtime. A public implementation of the EdgeRec recommender was not confirmed.
+core_idea: Send candidate embeddings from the cloud and refresh their order locally as user behavior arrives.
+deployed_in: Mobile Taobao homepage feed
+scale_short: 100 cloud candidates for a page of 50 and an on-device model of about 3 MB
+key_result: GMV +10.92% and CTR +7.18% versus the previous Mobile Taobao recommender.
+results_table:
+  online:
+    - {setting: Mobile Taobao homepage, method: Complete EdgeRec, metric: GMV, result: '+10.92%', versus: Conventional Taobao recommender}
+    - {setting: Mobile Taobao homepage, method: Complete EdgeRec, metric: CTR, result: '+7.18%', versus: Conventional Taobao recommender}
+    - {setting: Mobile Taobao homepage, method: Complete EdgeRec, metric: Clicks, result: '+8.87%', versus: Conventional Taobao recommender}
+deployment:
+  online_evidence: online_numbers
+  scenario: Mobile Taobao homepage feed with system-wide EdgeRec
+  ab_traffic: Millions of randomized users in each arm. The percentage is undisclosed.
+  ab_duration: '2019-10-26 to 2019-11-08'
+  baseline: Conventional Mobile Taobao recommender without EdgeRec
+  online_lifts:
+    - {metric: GMV, value: '+10.92%'}
+    - {metric: CTR, value: '+7.18%'}
+  training_compute: not_reported
+  serving_latency: 'System response ≤100 ms at peak traffic, versus ≤1 s'
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - Table 3 separately gives behavior-capture delay of at most 300 ms with EdgeRec and 1 min without it.
+  fulltext_refs:
+    - Section 2.1 reports candidate counts and model placement. Section 2.2.2 reports the device model and cloud embedding footprint.
+    - Section 4.2.1 dates the live experiment from 2019-10-26 to 2019-11-08. Section 4.2.2 and Table 3 report system measurements.
+  basis: full_text
+  checked_on: '2026-11-26'

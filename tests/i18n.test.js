@@ -115,7 +115,7 @@ const js = (n) => fs.readFileSync(path.join(dist, "static", n), "utf8");
     cw.fetch = () => Promise.resolve({ json: () => Promise.resolve(cd) }); cw.RECARCH_ROOT = "../"; cw.eval(L10N(cf)); cw.eval(js("compare.js"));
     await new Promise((r) => setTimeout(r, 300));
     const th = [...cw.document.querySelectorAll("#out th, #out td:first-child")].map((e) => e.textContent).join("|");
-    ok(lang === "zh" ? /线上收益/.test(th) && /A\/B 流量/.test(th) && !/Online lifts/.test(th) : /Online lifts/.test(th) && /A\/B traffic/.test(th), `${lang}: compare rows localized`);
+    ok(lang === "zh" ? /线上指标/.test(th) && /A\/B 流量/.test(th) && !/Online metrics/.test(th) : /Online metrics/.test(th) && /A\/B traffic/.test(th), `${lang}: compare rows localized`);
     const hrefs = [...cw.document.querySelectorAll("#out a[href]")].map((x) => x.getAttribute("href")); ok(hrefs.length > 0 && hrefs.every((h) => !h.startsWith("/") && !h.includes("/en/") ), `${lang}: compare links relative to this language root`);
     ok(!/undefined|\{n\}|\{y\}/.test(cw.document.getElementById("out").textContent), `${lang}: compare has no unfilled placeholders`);
   }

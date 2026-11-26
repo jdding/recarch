@@ -1,0 +1,104 @@
+id: taobao-recgpt-mobile
+name: RecGPT-Mobile
+company: Alibaba Taobao & Tmall Group
+surface: Personalized query recall for the Taobao feed
+year: 2026
+era: generative
+era_reason: A compact language model turns recent activity into a query for a product retrieval service.
+first_public: '2026-05'
+venue: null
+venue_year: null
+published_version_checked: null
+primary_source: https://arxiv.org/abs/2608.24295
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: Taobao generates personalized queries on the phone and retrieves items in the cloud. Ambiguous or expensive requests can use a stronger service.
+summary: RecGPT-Mobile compresses recent and longer-term behavior into a compact mobile input. A small estimator uses intent complexity and confidence to choose direct generation, additional local computation or escalation to a stronger service. The generated query passes format and grounding checks before the retrieval service uses it to select products for the feed.
+paradigms: [llm-based, rl-alignment]
+stages:
+  - stage: retrieval
+    model_family: Compact hybrid language model with a request-level device-cloud router
+    details: The phone builds an intent query from the compressed behavior history. The retrieval service returns items for that query as an additional candidate source for the feed.
+id_tokenization:
+  approach: Hierarchical semantic item tokens and readable product text
+  details: Coarse codes represent collaborative neighborhoods and finer codes distinguish nearby products. The codes help represent behavior while the output is a readable query.
+features_signals:
+  - Recent searches, clicks, favorites, cart actions and purchases
+  - Compressed longer-term sequences and current interaction context
+  - Estimated request complexity and confidence for serving decisions
+training:
+  mode: Domain adaptation, supervised alignment, quality-gated reinforcement learning and distillation
+  objectives:
+    - Predict a grounded and valid product query from the available behavior.
+    - Reduce reasoning cost only for outputs that satisfy the quality gate.
+  notes: The teacher trains with explicit reasoning. The compressed student learns from its queries and selected intermediate representations.
+serving_infra: The phone runs a mixed-precision, structurally compressed student and routes difficult or over-budget requests to a stronger service. Query recall is served by the product retrieval stack.
+scale:
+  - {metric: Client query path user coverage, value: '0.70% on Android and 1.20% on iOS in the reported serving snapshot'}
+results_reported: In the V2 report, Table 8 lists the client query path at 0.12% of exposed page views and 0.70% user coverage on Android, and 0.18% of exposed page views and 1.20% user coverage on iOS. Figure 12 reports an accelerator serving benchmark with mean latency of 0.76 s versus 3.00 s for the reference, and P95 latency of 1.70 s versus 8.00 s. Table 9 reports offline teacher query quality of 78.6% versus 73.2% for quality-only reinforcement learning, with median reasoning length of 14 versus 62 tokens.
+caveats:
+  - The exposure shares and user coverage describe the query path in a serving snapshot. A randomized business lift for this version was not reported.
+  - The latency comparison combines the decoding policy, model compression and optimized runtime. The benchmark covers query serving.
+  - The offline teacher comparison uses a frozen evaluator and a common training horizon. It is a separate measurement from mobile serving.
+unknown_fields:
+  - Snapshot period and experimental traffic allocation
+  - Mobile accelerator model and production throughput
+  - Latency for the entire feed request and energy consumption
+sources:
+  - {title: RecGPT-Mobile-V2 Technical Report, url: 'https://arxiv.org/abs/2608.24295', type: paper}
+  - {title: 'RecGPT-Mobile: On-Device Large Language Models for User Intent Understanding in Taobao Feed Recommendation', url: 'https://doi.org/10.1145/3805712.3808410', type: paper}
+  - {title: RecGPT-Mobile SIGIR version author full text, url: 'https://arxiv.org/html/2605.04726', type: paper}
+version: RecGPT-Mobile-V2
+versions:
+  - name: RecGPT-Mobile
+    first_public: '2026-05'
+    source: https://doi.org/10.1145/3805712.3808410
+    venue: SIGIR 2026
+    note: Introduces mobile intent queries for Taobao and tests the system against the existing feed strategy in production.
+  - name: RecGPT-Mobile-V2
+    first_public: '2026-08'
+    source: https://arxiv.org/abs/2608.24295
+    note: Adds adaptive reasoning and device-cloud routing, and reports query path contribution by client platform.
+version_note: This card presents the August technical report. The original production A/B belongs to the earlier SIGIR system.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: The technical report does not link an implementation of the production mobile and retrieval stack.
+core_idea: Generate a search query from phone-side behavior and pass it to a cloud product retrieval service.
+deployed_in: Taobao feed query recall on Android and iOS
+scale_short: Reported query path user coverage of 0.70% on Android and 1.20% on iOS
+key_result: The client query path accounted for 0.12% of exposed page views on Android and 0.18% on iOS in the reported serving snapshot.
+results_table:
+  online:
+    - {setting: Android serving snapshot, method: Client query recall, metric: Exposed-PV share, result: '0.12%', versus: Absolute share}
+    - {setting: iOS serving snapshot, method: Client query recall, metric: Exposed-PV share, result: '0.18%', versus: Absolute share}
+    - {setting: Android serving snapshot, method: Client query recall, metric: User coverage, result: '0.70%', versus: Absolute coverage}
+    - {setting: iOS serving snapshot, method: Client query recall, metric: User coverage, result: '1.20%', versus: Absolute coverage}
+  offline:
+    - {setting: Teacher reward ablation at a common training horizon, method: Full quality and length reward, metric: Query quality, result: '78.6%', versus: '73.2% under quality-only RL'}
+    - {setting: Teacher reward ablation at a common training horizon, method: Full quality and length reward, metric: Median reasoning length, result: 14 tokens, versus: 62 tokens under quality-only RL}
+  note: The online rows describe the path's contribution and reach. The offline rows compare teacher training objectives.
+deployment:
+  online_evidence: online_numbers
+  scenario: Client-generated queries as a candidate source for the Taobao feed
+  ab_traffic: not_reported
+  ab_duration: not_reported
+  baseline: not_reported
+  online_lifts:
+    - {metric: Android query path share of exposed PV, value: '0.12%'}
+    - {metric: iOS query path share of exposed PV, value: '0.18%'}
+  training_compute: not_reported
+  serving_latency: Accelerator query-serving benchmark at 0.76 s mean and 1.70 s P95, versus 3.00 s and 8.00 s for the reference
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: Mobile accelerator benchmark path. Chip and device models are undisclosed.
+  notes:
+    - Exposure shares are absolute online traffic measurements. The latency figures come from a separate serving benchmark.
+  fulltext_refs:
+    - Section 4.3 describes the routing decision. Section 10.4 and Table 8 report contributions and user coverage for the client query paths.
+    - Section 10.8 and Figure 12 give the accelerator latency comparison against the reference model.
+  basis: full_text
+  checked_on: '2026-11-26'

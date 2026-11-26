@@ -1,0 +1,55 @@
+title: 端云协同推荐
+summary: 比较端侧重排、缓存替换和端意图云检索，并说明怎样评估端侧补召的增量。
+problem: 手机比云端更早拿到最新行为和网络变化。推荐仍需要合格的候选、稳定的响应和可用的回退方案。
+question: 哪些推荐决策适合在端上做，候选又该从哪里来？
+framing:
+  - 从手机能用当前状态完成的决策入手。云端下发已排序的候选及嵌入或预估分，端侧依据即时行为更新顺序。
+  - 正文案例覆盖当前候选内重排、弱网时从云侧补充的缓存里替换下一条视频，以及在手机端生成意图查询。RecGPT-Mobile 用这个查询在云端检索商品。
+  - 端侧补召需要单独验证。先估算决策当时能在云候选之外增加哪些物品，再查这些物品在目标设备上能否获得、展示和打分。
+decisions:
+  - when: 物品嵌入表太大，难以放进手机。
+    then: 在云侧查好入选候选的嵌入再下发。端侧只保存轻量重排器与行为状态，并校验候选特征和模型版本是否一致。
+    cards: [alibaba-edgerec-2020]
+  - when: 用户在云端已经发来的候选中快速切换。
+    then: 随候选下发云侧预估分，让紧凑端模型用请求之间的新行为更新顺序。本地输入不可用时保留云候选原顺序作为回退。
+    cards: [kuaishou-on-device-video-2022]
+  - when: 弱网可能导致下一条选定内容播不出来。
+    then: 用端侧播放风险决定是否替换。从已经缓存的视频里选，网络或缓存变化后重新评估。
+    cards: [kuaishou-playback-grf-2024]
+  - when: 手机的最新行为能澄清意图，商品索引仍在云端。
+    then: 在端上生成查询，交给云侧检索。遇到较难或超出端侧预算的请求，再交给更强的服务。
+    cards: [taobao-recgpt-mobile]
+  - when: 手机可能提供云候选之外的新候选。
+    then: 用已经跑通的端重排做基线。只回放决策当时可得且可展示的物品，再对齐候选预算、排序器和展示规则测增量。
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022]
+members:
+  - id: alibaba-edgerec-2020
+    approach: 大型嵌入表留云，查表结果随候选下发。手机只重排信息流里尚未曝光的部分。
+  - id: kuaishou-on-device-video-2022
+    approach: 用自包含端模型结合最新播放上下文，给带云侧预估分的候选重排并选择下一条。
+  - id: kuaishou-playback-grf-2024
+    approach: 端侧检测播放风险，从云端补充的手机缓存里选择替代视频。
+  - id: taobao-recgpt-mobile
+    approach: 手机生成个性化查询，云端召回商品。意图复杂度和置信度决定端侧做多少计算。
+differences:
+  - heading: 云端向手机下发什么
+    text: EdgeRec 为拆分模型下发候选嵌入。快手短视频把云侧预估分交给端模型。Kwai Playback 在端上维护个性化视频缓存。RecGPT-Mobile 把查询交给云端发起新的召回。
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024, taobao-recgpt-mobile]
+  - heading: 什么时候改变下一次曝光
+    text: EdgeRec 观察行为后更新尚未展示的内容。快手短视频在连续观看过程中选择下一条。Kwai Playback 检测到潜在卡顿时替换即将播放的视频。
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024]
+  - heading: 延迟和线上指标各测了什么
+    text: EdgeRec 分别报告系统响应和行为感知。快手短视频分平台测量端模型和搜索耗时。Kwai 分开测门控和排序器的推理时间，并报告弱网下的实验结果。RecGPT-Mobile 测量查询服务的延迟，并报告查询路径的线上曝光份额。
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024, taobao-recgpt-mobile]
+  - heading: 怎样测端侧补召的增量
+    text: 以云候选加端重排为对照。先看云候选外有多少物品在决策时确实可得，再检查资格和打分字段。对齐候选预算后测质量，并在目标设备测索引新鲜度、尾延迟、存储和能耗。
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024]
+readings:
+  - 在请求预算下选择沿用列表、端侧重排或云侧刷新。论文用公开数据和支付宝日志比较调度策略。
+  - 华为与高校团队建模混排列表中各来源的行为。实验包含华为 Celia Suggestions 日志和单独的推理耗时对比。
+  - 云侧用大模型生成并排序候选，端侧用小模型重排。两侧排序差异较大时，手机向云侧请求新列表。
+  - Shaver 研究怎样为不同设备存储预算裁剪物品嵌入。
+  - 用针对序列推荐的压缩方法研究模型体积和推荐质量之间的取舍。
+  - 更广的设备侧推荐综述，涵盖本地推理、模型更新与隐私。可用于继续查推理和训练的不同方法。
+  - 用户授权后，对话助手调用已连接的推荐服务。官方公告说明了这种产品接入方式。
+scope: 资料覆盖 2020 年至 2026 年 11 月的 CIKM、SIGIR 论文、技术报告及其他公开来源，关注手机与云服务怎样分担推荐决策。

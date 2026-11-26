@@ -2225,6 +2225,42 @@
    }
   ]
  },
+ "taobao-recgpt-mobile": {
+  "count": 2,
+  "source": "Semantic Scholar",
+  "source_url": "https://www.semanticscholar.org/paper/15fc16cc25f850ed3103a59fe78a67547c289d98",
+  "fetched_on": "2026-11-26",
+  "matched_title": "RecGPT-Mobile-V2 Technical Report",
+  "matched_year": 2026,
+  "ids": [
+   "doi:10.1145/3805712.3808410",
+   "arxiv:2608.24295"
+  ],
+  "papers": [
+   {
+    "name": "RecGPT-Mobile",
+    "count": 2,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/9d51d28dd0dbbff318e4fc5559c888a1c2cc73ef",
+    "matched_title": "RecGPT-Mobile: On-Device Large Language Models for User Intent Understanding in Taobao Feed Recommendation",
+    "matched_year": 2026,
+    "ids": [
+     "doi:10.1145/3805712.3808410"
+    ]
+   },
+   {
+    "name": "RecGPT-Mobile-V2",
+    "count": 0,
+    "source": "Semantic Scholar",
+    "source_url": "https://www.semanticscholar.org/paper/15fc16cc25f850ed3103a59fe78a67547c289d98",
+    "matched_title": "RecGPT-Mobile-V2 Technical Report",
+    "matched_year": 2026,
+    "ids": [
+     "arxiv:2608.24295"
+    ]
+   }
+  ]
+ },
  "tencent-gpr-2025": {
   "count": 43,
   "source": "Semantic Scholar",

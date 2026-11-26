@@ -1,0 +1,69 @@
+title: Device-cloud recommendation
+summary: How production recommenders use fresh phone signals, decide locally within a cloud-supplied pool, and evaluate whether to add a device candidate source.
+problem: A phone sees fresh behavior and network changes before the cloud does. Recommendation still needs eligible items, stable response times and a usable fallback.
+question: Which decisions should run on the device, and where should their candidates come from?
+framing:
+  - Start with the decision the device can make using its current state. A server can send ranked candidates with embeddings or prediction scores. The phone can update the order using activity it observes immediately.
+  - The cases cover reranking the current pool, replacing the next video from a cloud-replenished cache, and generating an intent query on the phone. RecGPT-Mobile uses that query to retrieve items from the cloud catalog.
+  - A device candidate source needs its own evaluation. First estimate what it can contribute beyond the current cloud pool at the time of decision. Then test whether those items are available, eligible and scorable on the target device.
+decisions:
+  - when: Item embeddings are too large to store on the phone.
+    then: Look up embeddings for the delivered candidates in the cloud. Keep the local reranker and behavior state small, and synchronize the candidate features with the model version.
+    cards: [alibaba-edgerec-2020]
+  - when: The user is moving quickly through items the server has already sent.
+    then: Send prediction scores with each candidate and let a compact device model use fresh interactions between requests. Keep the existing cloud order available as a fallback when local inputs fail.
+    cards: [kuaishou-on-device-video-2022]
+  - when: A weak connection may prevent the next selected item from playing.
+    then: Gate the change on local playback risk. Choose among already cached candidates and reevaluate as the connection or cache changes.
+    cards: [kuaishou-playback-grf-2024]
+  - when: Recent phone activity can clarify intent while the product index stays in the cloud.
+    then: Generate a query on the device and send it to the retrieval service. Route difficult or over-budget requests to a stronger service.
+    cards: [taobao-recgpt-mobile]
+  - when: The device may contribute items beyond the cloud pool.
+    then: Compare with an already functioning local reranker. Replay only locally available and eligible items, then match the candidate budget, ranker and display rules before measuring any incremental value.
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022]
+members:
+  - id: alibaba-edgerec-2020
+    approach: Keep large embedding tables in the cloud and send their looked-up features with candidates. Reorder the unexposed part of the feed on the phone.
+  - id: kuaishou-on-device-video-2022
+    approach: Use a self-contained mobile model and fresh watch context to find the next video in a cloud-ranked slate that carries server scores.
+  - id: kuaishou-playback-grf-2024
+    approach: Use an on-device playback gate to replace a risky upcoming video with an item from a cloud-replenished phone cache.
+  - id: taobao-recgpt-mobile
+    approach: Generate a personalized query on the phone and retrieve products in the cloud. Intent complexity and confidence guide how much work the device does.
+differences:
+  - heading: What crosses the device and cloud boundary
+    text: EdgeRec sends candidate embeddings to its split model. The Kuaishou next-video system passes cloud scores as features to its mobile model. Kwai Playback maintains a personalized video cache. RecGPT-Mobile passes a query to the cloud for a new retrieval.
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024, taobao-recgpt-mobile]
+  - heading: When the local decision changes the next exposure
+    text: EdgeRec refreshes unseen items after local behavior. The Kuaishou model selects the next video as the session advances. Kwai Playback replaces an upcoming video when the phone detects a risk of stalling.
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024]
+  - heading: What the latency and online results measure
+    text: EdgeRec separates system response from behavior capture. Kuaishou measures device model and search time by platform. Kwai separates gate and ranker inference and reports weak-network results. RecGPT-Mobile measures query-serving latency and reports the query path's share of live exposures.
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024, taobao-recgpt-mobile]
+  - heading: How to measure the extra value of local candidates
+    text: Use the cloud pool and local reranker as the control. Measure how many additional items were available at decision time, retain valid display and scoring fields, then compare quality at equal candidate budgets. Measure index freshness, tail latency, storage and energy on devices that will serve the feature.
+    cards: [alibaba-edgerec-2020, kuaishou-on-device-video-2022, kuaishou-playback-grf-2024]
+readings:
+  - title: Device-cloud Collaborative Recommendation via Meta Controller
+    url: https://arxiv.org/html/2207.03066
+    note: A controller chooses when to reuse the current list, rerank it locally or refresh from the cloud under a request budget. The paper evaluates the policy with public data and Alipay logs.
+  - title: On-device Integrated Re-ranking with Heterogeneous Behavior Modeling
+    url: https://wnzhang.net/papers/2023-kdd-dir.pdf
+    note: Huawei and university researchers model source-specific behavior for mixed lists. Their evaluation includes logs from Huawei Celia Suggestions and a separate runtime comparison.
+  - title: Collaboration of Large Language Models and Small Recommendation Models for Device-Cloud Recommendation
+    url: https://arxiv.org/abs/2501.05647
+    note: Pairs a cloud LLM that generates and ranks candidates with a small device reranker. The device requests a fresh list when the two rankings diverge.
+  - title: 'On-device Content-based Recommendation with Single-shot Embedding Pruning: A Cooperative Game Perspective'
+    url: https://arxiv.org/abs/2411.13052
+    note: Shaver studies how to prune item embeddings for different device storage budgets.
+  - title: On-Device Large Language Models for Sequential Recommendation
+    url: https://arxiv.org/abs/2601.09306
+    note: Uses a recommendation-specific compression method to study the trade-off between model footprint and recommendation quality.
+  - title: 'On-Device Recommender Systems: A Comprehensive Survey'
+    url: https://doi.org/10.1007/s41019-025-00308-8
+    note: A broader reference for local inference, model updating and privacy. Use it to identify methods that address serving and training separately.
+  - title: 'Your Prompts, Spotify’s Personalized Picks: Introducing Spotify in ChatGPT'
+    url: https://newsroom.spotify.com/2025-10-06/spotify-personalized-prompts-chatgpt/
+    note: A product example of an assistant calling a connected recommendation service after account authorization. It documents the integration surface.
+scope: Covers CIKM and SIGIR papers, technical reports and other public sources from 2020 through November 2026 on how phones and cloud services divide recommendation work.

@@ -1,0 +1,85 @@
+id: kuaishou-playback-grf-2024
+name: Kwai Playback GRF
+company: Kuaishou
+surface: Playback-aware video decisions in the Kwai short-video feed
+year: 2024
+era: deep
+era_reason: A small gate and multitask ranker use on-device playback signals to select a replacement from cached videos.
+first_public: '2024-10'
+venue: CIKM 2024
+venue_year: 2024
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3627673.3680076
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: Kwai tests whether the upcoming video is likely to stutter. When the gate fires, the phone uses a ranker to choose a playable replacement from its personalized cache.
+summary: The cloud provides an ordered video feed and replenishes a cache on the phone. A local gate uses playback and network signals to decide when to substitute the upcoming video. The client then ranks the cached options, and can keep choosing from the existing cache during temporary network loss.
+paradigms: [multi-task, learning-to-rank]
+stages:
+  - stage: rank
+    model_family: Cloud ranker and cache replenishment service
+    details: The service supplies the initial video order, features and further items for the personalized cache when it runs low.
+  - stage: re-rank
+    model_family: Client playback gate and multitask cache ranker
+    details: The gate predicts a playback issue. If triggered, the phone ranks the cached videos to find a replacement.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - Cloud ranker features and predictions
+  - Network speed, buffer status and video bitrate on the phone
+  - Recent interactions and previously fetched cache entries
+training:
+  mode: Server-side offline training for the gate and streaming training for the cache ranker
+  objectives:
+    - Detect likely playback problems before an upcoming item is shown.
+    - Select a playable replacement that can retain engagement.
+  notes: The ranker trains on Kafka streams. Updated checkpoints are converted to TFLite and distributed via CDN.
+serving_infra: The client downloads model files from a CDN. It can rank videos already in its local cache during network loss until the cache runs out or connectivity returns.
+scale:
+  - {metric: Local cache size, value: '24 videos per user on average'}
+results_reported: The full system improved overall watch time by 0.839% and watch time under poor network conditions by 44.45% against no GRF. Table 5 averages the last seven days of the production test. A separate gate-only arm kept cloud scores for cache ranking.
+caveats:
+  - The poor-network result applies to the conditions defined in the paper. The overall result comes from a different aggregation in the same experiment.
+  - Local replacements come from a personalized cache with cloud replenishment. Temporary offline operation is bounded by the cached items.
+unknown_fields:
+  - Device models, energy use and end-to-end latency distribution
+  - Exact calendar start and end dates within the reported months
+sources:
+  - {title: Enhancing Playback Performance in Video Recommender Systems at CIKM, url: 'https://doi.org/10.1145/3627673.3680076', type: paper}
+  - {title: Playback GRF author full text, url: 'https://arxiv.org/pdf/2410.05863', type: paper}
+version_note: The CIKM proceedings list seven pages. Architecture and numbers were checked in the author full text.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: A public implementation of the production playback gate and ranking system was not confirmed.
+core_idea: Use a playback-risk gate to decide when cached candidates should replace the next cloud-ranked video.
+deployed_in: Kwai short-video feed
+scale_short: An average of 24 cloud-replenished videos cached per user
+key_result: Overall watch time +0.839% and poor-network watch time +44.45% versus no GRF.
+results_table:
+  online:
+    - {setting: Kwai playback, method: Full GRF, metric: Overall watch time, result: '+0.839%', versus: No GRF}
+    - {setting: Kwai playback in poor network conditions, method: Full GRF, metric: Watch time, result: '+44.45%', versus: No GRF}
+deployment:
+  online_evidence: online_numbers
+  scenario: Kwai production video feed with playback-aware local gating and ranking
+  ab_traffic: '10% of traffic per experiment arm'
+  ab_duration: 2023-08 to 2023-10. Results average the last seven days.
+  baseline: Control without GRF. The gate-only arm used cloud scores to choose a cached replacement.
+  online_lifts:
+    - {metric: Overall watch time, value: '+0.839%'}
+    - {metric: Poor-network watch time, value: '+44.45%'}
+  training_compute: not_reported
+  serving_latency: Gate inference 43 ms and ranker inference 69.7 ms, measured separately
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - Table 2 gives component measurements. It does not report end-to-end response.
+  fulltext_refs:
+    - Sections 3.4–3.6 describe the cache and offline behavior. Table 2 reports inference times of 43 ms for the gate and 69.7 ms for the ranker.
+    - Section 4.3 dates the production experiment from 2023-08 to 2023-10. Table 5 reports the results averaged over the final seven days.
+  basis: full_text
+  checked_on: '2026-11-26'

@@ -31,7 +31,7 @@
       [L('row_scale','Scale (stated)'),function(c){return c.scale.length?'<ul class="clean">'+c.scale.map(function(s){return '<li>'+esc(s.metric)+': '+esc(s.value)+'</li>'}).join('')+'</ul>':'<span class="unk">'+esc(L('none_stated','none stated'))+'</span>'}],
       [L('row_scenario','Scenario'),function(c){return dep(c,'scenario')}],[L('row_baseline','Compared with'),function(c){return dep(c,'baseline')}],
       [L('row_online_evidence','Online evidence'),function(c){return dep(c,'online_evidence',function(v){return esc(M('depev',v,v))})}],
-      [L('row_lifts','Online lifts'),function(c){var d=c.deployment;return d&&d.online_lifts!=='not_reported'?'<ul class="clean">'+d.online_lifts.map(function(x){return '<li>'+esc(x.metric)+': <b>'+esc(x.value)+'</b></li>'}).join('')+'</ul>':nr}],
+      [L('row_lifts','Online metrics'),function(c){var d=c.deployment;return d&&d.online_lifts!=='not_reported'?'<ul class="clean">'+d.online_lifts.map(function(x){return '<li>'+esc(x.metric)+': <b>'+esc(x.value)+'</b></li>'}).join('')+'</ul>':nr}],
       [L('row_ab_traffic','A/B traffic'),function(c){return dep(c,'ab_traffic')}],[L('row_ab_duration','A/B duration'),function(c){return dep(c,'ab_duration')}],
       [L('row_compute','Training compute'),function(c){return dep(c,'training_compute')}],[L('row_qps','Serving throughput'),function(c){return dep(c,'serving_qps')}],
       [L('row_latency','Serving latency'),function(c){return dep(c,'serving_latency')}],[L('row_cost','Inference cost'),function(c){return dep(c,'inference_cost')}],[L('row_hardware','Hardware'),function(c){return dep(c,'hardware')}],

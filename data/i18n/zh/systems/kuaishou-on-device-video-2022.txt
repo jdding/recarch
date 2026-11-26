@@ -1,0 +1,50 @@
+surface|单视频沉浸式信息流的下一条视频选择
+era_reason|手机用紧凑多任务模型给候选打分，并执行上下文感知的束搜索。
+tldr|每次滑动后，手机用自包含模型重排一小组云侧视频，结合最新行为、播放条件和服务器的预估分。
+summary|生产服务器先排序并随每个候选下发动作预估分。手机用轻量模型结合最新播放历史、交互、缓冲状态和端侧上下文。自适应束搜索根据模型分数选择下一条视频。
+stages.0.model_family|短视频生产云侧排序模型
+stages.0.details|云侧生成一页视频，下发动作预估分，供客户端决策使用。
+stages.1.model_family|端侧注意力模型、多门专家与自适应束搜索
+stages.1.details|端侧预测是否继续观看、是否有效观看与是否点赞，并用束搜索从当前候选选择下一条视频。
+features_signals.0|云侧动作预估分
+features_signals.1|手机上的最近播放历史与曝光位置
+features_signals.2|端侧缓冲长度和网络状况
+training.mode|云侧用日志训练，向手机下发轻量模型
+training.objectives.0|估计用户是否继续观看，以及对候选可能产生何种互动。
+training.objectives.1|根据最新播放历史选择下一条视频。
+training.notes|贪心与自适应搜索试验组使用相同的端侧模型。
+serving_infra|客户端运行包含自身全部参数的 TFLite 模型。达到设定消费数后向云端发起下一次翻页请求。
+scale.0.metric|候选数与分页方式
+scale.0.value|每消费 6 条，向云侧请求一页 9 条视频
+scale.1.metric|端侧模型
+scale.1.value|132 万参数，TFLite 文件小于 6 MB
+results_reported|表 6 的一周 A/B 中，上下文感知重排比没有端侧重排的线上对照提升有效观看 1.277%、点赞 8.218% 和关注 13.598%。表 7 的模型与束搜索平均耗时为 Android 120.80 ms、iOS 49.39 ms。
+caveats.0|结果对应单视频消费入口，客户端从当前云侧候选中选择下一条。
+caveats.1|表 7 衡量设备上的模型与搜索开销。线上互动提升对比的是云侧生产排序。
+unknown_fields.0|流量分配、手机型号与完整请求延迟
+unknown_fields.1|电量消耗与不同档位设备的分组表现
+version_note|CIKM 正式书目共十页。架构与数字已核作者全文。
+code.note|未确认有生产排序器和端侧搜索的公开实现。
+core_idea|端侧用最新行为完善下一条视频选择，云侧继续提供候选与预估分。
+deployed_in|快手沉浸式短视频信息流
+scale_short|9 个云侧候选，端侧模型 132 万参数
+key_result|对照无端侧重排，有效观看 +1.277%、点赞 +8.218%、关注 +13.598%。
+results_table.online.0.setting|沉浸式短视频
+results_table.online.0.method|上下文感知端侧重排
+results_table.online.0.metric|有效观看
+results_table.online.0.versus|无端侧重排的现网推荐
+results_table.online.1.setting|沉浸式短视频
+results_table.online.1.method|上下文感知端侧重排
+results_table.online.1.metric|点赞
+results_table.online.1.versus|无端侧重排的现网推荐
+results_table.online.2.setting|沉浸式短视频
+results_table.online.2.method|上下文感知端侧重排
+results_table.online.2.metric|关注
+results_table.online.2.versus|无端侧重排的现网推荐
+deployment.scenario|沉浸式短视频的端侧下一条视频选择
+deployment.ab_duration|一周
+deployment.baseline|无端侧重排的现网方案。另有同一端模型搭配逐个候选贪心排序的一组。
+deployment.online_lifts.0.metric|关注
+deployment.online_lifts.1.metric|有效观看
+deployment.serving_latency|模型与束搜索的端侧平均耗时为 Android 120.80 ms、iOS 49.39 ms
+deployment.notes.0|表 7 给出 Android 与 iOS 的 CPU 和内存占用变化。

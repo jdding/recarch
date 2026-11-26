@@ -1,0 +1,65 @@
+surface|淘宝信息流的个性化查询召回
+era_reason|紧凑语言模型把近期行为转成查询，再由商品检索服务返回候选。
+tldr|淘宝用手机上的轻量模型把用户行为转成个性化查询。意图含混或算力预算不足时交给更强的服务，云端根据生成的查询召回商品。
+summary|RecGPT-Mobile 将即时和较长期的行为压缩成端侧输入。轻量估计器根据意图复杂度和置信度，决定是直接生成、增加端侧计算，还是交给更强的服务。查询经过格式和依据校验后，进入商品检索服务，为信息流提供候选。
+stages.0.model_family|紧凑混合语言模型与逐请求端云路由
+stages.0.details|手机根据压缩后的行为生成意图查询。检索服务按查询返回商品，作为信息流的补充候选源。
+id_tokenization.approach|分层商品语义 ID 与可读商品文本
+id_tokenization.details|粗粒度编码表示协同邻域，细粒度编码区分相近商品。行为输入用这些编码表示，输出仍是可读查询。
+features_signals.0|最近的搜索、点击、收藏、加购和购买
+features_signals.1|压缩后的较长期行为与当前上下文
+features_signals.2|用于服务分流的请求复杂度和置信度预估
+training.mode|领域适配、监督对齐、带质量门槛的强化学习与蒸馏
+training.objectives.0|依据已有行为生成有根据且可用于检索的商品查询。
+training.objectives.1|查询通过质量门槛后再压缩推理开销。
+training.notes|教师训练保留显式推理。压缩后的学生学习教师的查询输出和选定的中间表示。
+serving_infra|端侧运行经结构压缩和混合精度处理的学生模型。困难或超出预算的请求交给更强的服务，商品召回由检索服务完成。
+scale.0.metric|客户端查询路径覆盖的用户比例
+scale.0.value|报告的线上快照中，Android 为 0.70%，iOS 为 1.20%
+results_reported|V2 报告表 8 中，客户端查询路径在 Android 的曝光 PV 占比为 0.12%，覆盖 0.70% 的用户，在 iOS 分别为 0.18% 和 1.20%。图 12 的加速器服务测试中，平均延迟为 0.76 秒，对照为 3.00 秒，P95 为 1.70 秒，对照为 8.00 秒。表 9 的离线教师模型对比中，完整奖励的查询质量为 78.6%，仅用质量奖励时为 73.2%，推理长度中位数分别为 14 和 62 个 token。
+caveats.0|曝光份额和用户覆盖来自所报服务快照。该版本的随机流量试验收益未报告。
+caveats.1|延迟结果包含解码策略、模型压缩和运行时优化的共同作用。该测试衡量查询生成服务。
+caveats.2|离线教师模型使用冻结评估器，在相同训练步数比较。端侧服务另行测量。
+unknown_fields.0|线上快照时间范围与试验分流比例
+unknown_fields.1|移动加速器型号与生产吞吐
+unknown_fields.2|整条信息流请求的延迟与能耗
+versions.0.note|淘宝在手机端生成意图查询，并与原有信息流策略做线上 A/B。
+versions.1.note|补充自适应推理、端云路由及按客户端划分的查询通道贡献。
+version_note|本卡呈现八月技术报告。生产 A/B 见早期 SIGIR 版本。
+code.note|技术报告没有提供生产端模型和检索链路的公开实现。
+core_idea|手机用端侧行为生成查询，再交给云侧服务召回商品。
+deployed_in|淘宝 Android 与 iOS 信息流的查询召回
+scale_short|报告的用户覆盖为 Android 0.70%、iOS 1.20%
+key_result|在报告的线上快照中，端侧查询路径贡献 Android 0.12% 和 iOS 0.18% 的曝光 PV。
+results_table.online.0.setting|Android 线上服务快照
+results_table.online.0.method|客户端查询召回
+results_table.online.0.metric|曝光 PV 占比
+results_table.online.0.versus|绝对占比
+results_table.online.1.setting|iOS 线上服务快照
+results_table.online.1.method|客户端查询召回
+results_table.online.1.metric|曝光 PV 占比
+results_table.online.1.versus|绝对占比
+results_table.online.2.setting|Android 线上服务快照
+results_table.online.2.method|客户端查询召回
+results_table.online.2.metric|用户覆盖
+results_table.online.2.versus|绝对覆盖率
+results_table.online.3.setting|iOS 线上服务快照
+results_table.online.3.method|客户端查询召回
+results_table.online.3.metric|用户覆盖
+results_table.online.3.versus|绝对覆盖率
+results_table.offline.0.setting|教师奖励消融，训练步数一致
+results_table.offline.0.method|质量与长度的完整奖励
+results_table.offline.0.metric|查询质量
+results_table.offline.0.versus|仅用质量奖励为 73.2%
+results_table.offline.1.setting|教师奖励消融，训练步数一致
+results_table.offline.1.method|质量与长度的完整奖励
+results_table.offline.1.metric|推理长度中位数
+results_table.offline.1.result|14 个 token
+results_table.offline.1.versus|仅用质量奖励为 62 个 token
+results_table.note|线上各行描述查询路径的贡献和覆盖。离线各行比较教师模型的训练目标。
+deployment.scenario|端侧生成查询，为淘宝信息流提供一条候选来源
+deployment.online_lifts.0.metric|Android 查询路径的曝光 PV 份额
+deployment.online_lifts.1.metric|iOS 查询路径的曝光 PV 份额
+deployment.serving_latency|加速器上的查询服务测试中，平均为 0.76 秒、P95 为 1.70 秒，对照分别为 3.00 秒和 8.00 秒
+deployment.hardware|移动加速器测试环境。芯片与设备型号未披露。
+deployment.notes.0|曝光份额是线上绝对占比，延迟取自单独的查询服务测试。

@@ -1,0 +1,45 @@
+surface|Kwai 短视频信息流中的播放质量决策
+era_reason|端侧轻量门控与多任务排序器使用播放信号，从缓存视频中选出替代项。
+tldr|Kwai 在下一条播放前判断是否容易卡顿。命中门控条件时，手机从个性化缓存中重排并选出替代视频。
+summary|云侧提供有序的视频流，并为手机补充缓存。端侧门控用播放和网络信号决定何时替换即将播出的视频，排序器再从缓存项选出替代。临时断网时，手机仍可利用已缓存视频。
+stages.0.model_family|云侧排序与缓存补齐服务
+stages.0.details|服务端提供初始视频顺序和特征，缓存见底时补充个性化候选。
+stages.1.model_family|端侧播放门控和多任务缓存排序
+stages.1.details|门控判断播放风险，触发后由手机从缓存中重排并选择替代视频。
+features_signals.0|云侧排序特征及预估分
+features_signals.1|端侧网络速度、缓冲状态与视频码率
+features_signals.2|最近交互和此前下载的缓存条目
+training.mode|云侧离线训练门控，使用日志流训练缓存排序器
+training.objectives.0|在展示候选前发现潜在的播放问题。
+training.objectives.1|选择可顺畅播放并能保持参与度的替代项。
+training.notes|排序器用 Kafka 日志流训练。新检查点转成 TFLite 后通过 CDN 分发。
+serving_infra|客户端从 CDN 下载模型。断网时使用已经缓存的视频，直到缓存用完或连接恢复。
+scale.0.metric|端侧缓存规模
+scale.0.value|每位用户平均缓存 24 条视频
+results_reported|完整系统对比无 GRF，整体观看时长提升 0.839%，弱网条件下观看时长提升 44.45%。表 5 统计生产实验最后七天的均值。另有只加门控、用云侧分数排缓存的试验组。
+caveats.0|弱网结果限于文中的弱网条件。整体观看时长使用同一实验的整体统计口径。
+caveats.1|本地替代项来自云侧持续补充的个性化缓存。临时断网下的服务范围由缓存决定。
+unknown_fields.0|端侧机型、能耗与端到端延迟分布
+unknown_fields.1|论文给出实验起止月份，未披露准确日期
+version_note|CIKM 正式书目共七页。架构与数字已核作者全文。
+code.note|未确认有生产门控与排序系统的公开实现。
+core_idea|先判断播放风险，再决定是否用已缓存的视频替换云侧排定的下一条。
+deployed_in|Kwai 短视频信息流
+scale_short|每位用户平均缓存 24 条来自云侧的视频
+key_result|对照无 GRF，整体观看时长 +0.839%，弱网观看时长 +44.45%。
+results_table.online.0.setting|Kwai 视频播放
+results_table.online.0.method|完整 GRF
+results_table.online.0.metric|整体观看时长
+results_table.online.0.versus|无 GRF
+results_table.online.1.setting|Kwai 弱网播放
+results_table.online.1.method|完整 GRF
+results_table.online.1.metric|观看时长
+results_table.online.1.versus|无 GRF
+deployment.scenario|Kwai 生产视频流接入播放门控与本地排序
+deployment.ab_traffic|每个试验组覆盖 10% 流量
+deployment.ab_duration|2023-08 至 2023-10，报告最后七天的均值。
+deployment.baseline|无 GRF 的对照组。仅加门控组用云侧分数给缓存候选排序。
+deployment.online_lifts.0.metric|整体观看时长
+deployment.online_lifts.1.metric|弱网观看时长
+deployment.serving_latency|分开测量的模型推理耗时，门控 43 ms，排序器 69.7 ms
+deployment.notes.0|表 2 的时间对应独立组件，端到端响应时间未报告。

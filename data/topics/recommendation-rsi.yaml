@@ -4,7 +4,7 @@ problem: Recommendation models are expensive to retrain, and online metrics arri
 question: Which agent-proposed changes deserve full training or live traffic?
 framing:
   - A research agent may edit a loss, a sequence encoder or several components together. Record what changed, what it was compared with and whether the results guided the next trial.
-  - The core cases compare model and training changes. The readings also cover evaluation benchmarks, training data and feedback alignment. The search record explains the evidence and scope behind each selection.
+  - The cases compare changes to models and training. Further reading covers evaluation benchmarks, training data and feedback alignment.
 decisions:
   - when: Full training and live traffic are expensive.
     then: Use an affordable proxy to screen changes. Validate promoted candidates with full training and independent online metrics, then write both outcomes to the experiment record.
@@ -73,46 +73,4 @@ readings:
   - title: 'Self-Evolving Recommender Systems: A Survey and an Evaluation Audit'
     url: https://www.preprints.org/manuscript/202610.2336/v1
     note: This preprint is a starting point for reference tracing and for checking how papers measure research progress.
-screening:
-  scope:
-    - We searched January 2023 through November 26, 2026 for work where a research agent changes a recommender model or training workflow and uses trial results to choose its next change.
-    - We used a read-only bibliography index, arXiv, RecSys 2026 proceedings, official research publications and references from the evaluation audit, RecHarness and NOVA. Queries combined recommender systems with recursive self-improvement, self-evolving, automated model optimization, architecture evolution and research agent. The index also searched Chinese equivalents and returned 85 rows across 12 queries, including repeats and references in other papers.
-    - We normalized DOI, arXiv ID and title, then checked company, product and system lineage. A case card needs an identifiable industrial workflow, full text and production evidence. Recent arXiv cases with a documented production A/B use the observation rule. The readings cover methods and benchmarks that answer part of the same engineering question.
-    - The selection record covers candidates screened from these sources and citation trails, including leads that need a further evidence check.
-  excluded:
-    - title: AgentX, June report
-      url: https://arxiv.org/abs/2606.26859
-      note: Merged into the existing AgentX lineage with the September model-research paper. It is linked from the same card.
-    - title: 'AgenticRecTune: Multi-Agent with Self-Evolving Skillhub for Recommendation System Optimization'
-      url: https://arxiv.org/abs/2604.26969
-      note: Deferred. It applies feedback to production pipeline configuration. The product, online comparison and relationship to the existing Google cases need a dedicated review.
-    - title: 'Verify, Don’t Trust: Agentic Model Development for Video Discovery Retrieval at Scale'
-      url: https://arxiv.org/abs/2609.21257
-      note: Deferred for the next industrial review. The paper reports a live Video Deep Dive retrieval evaluation separately from a corrected offline comparison. The card needs to map each result to its retrieval configuration and control.
-    - title: Agentic ML Exploration for Ads Ranking
-      url: https://arxiv.org/abs/2609.08248
-      note: Deferred. Check which changes reached live traffic and resolve the relationship with Meta’s Ranking Engineer Agent before creating a separate card.
-    - title: 'Astar: Learning to Propose Evolution Directions for Self-Evolving Industrial AI Systems'
-      url: https://arxiv.org/abs/2608.27287
-      note: Deferred. It has a Lazada production report. Follow-up review must trace the proposal model, downstream implementation and online control to the same tested intervention.
-    - title: Alibaba EvoRec
-      url: https://arxiv.org/abs/2606.28368
-      note: Deferred despite reported advertising A/B. The body of the available author manuscript ends on page five. Review an extended version under the long-paper rule. Kuaishou EvoRec is a separately authored system.
-    - title: TGR-EvoDAG
-      url: https://arxiv.org/abs/2610.32326
-      note: Deferred despite a reported live retrieval experiment. Confirm whether the promoted model should extend the existing Tencent TGR card or document an independent research workflow.
-    - title: Auto-RecSys
-      url: https://arxiv.org/abs/2609.10922
-      note: The reported outcomes center on research execution and experiment coordination. An attributable online recommendation effect is still required for a case card.
-    - title: GEARS
-      url: https://arxiv.org/abs/2602.18640
-      note: Adjacent scope. It designs heterogeneous treatment policies from randomized experiment data. The core comparison here concerns changes to model code, training or the recommender development process.
-    - title: PILOT
-      url: https://arxiv.org/abs/2608.18637
-      note: Adjacent scope. Its agent changes ranking-objective weights within a permitted action space. The reported policy intervention does not establish iterative development of the underlying model.
-    - title: Closing the Auto-Research Loop
-      url: https://arxiv.org/abs/2603.22376
-      note: Adjacent scope. This paper concerns search ranking, where the intervention responds to a user-issued query.
-    - title: Spotify Conversational Recommendation Agent
-      url: https://arxiv.org/abs/2609.30297
-      note: Covered in the Agent recommendation topic. Its development loop edits dialogue and tool-use instructions. Its production A/B compares complete listening experiences.
+scope: Covers papers and official research reports from January 2023 through November 2026 on agents that use experiment results to revise recommendation models or training workflows.

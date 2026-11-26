@@ -182,7 +182,7 @@ Every active card has one `deployment:` mapping that records what the sources sa
 | `ab_traffic` | string or `not_reported` | share of traffic, buckets or user counts in the test |
 | `ab_duration` | string or `not_reported` | length of the online test |
 | `baseline` | string or `not_reported` | what the online test compared against |
-| `online_lifts` | list or `not_reported` | items `{metric, value}`; required list when `online_numbers`, must be `not_reported` for the other three values |
+| `online_lifts` | list or `not_reported` | items `{metric, value}` for online metrics. State whether a value is an absolute measurement or a lift. Required when `online_numbers`. Use `not_reported` for the other three values. |
 | `training_compute` | string or `not_reported` | stated training compute, with its scope |
 | `serving_latency` | string or `not_reported` | stated latency, with percentile and conditions when given |
 | `serving_qps` | string or `not_reported` | stated throughput |
@@ -211,11 +211,11 @@ Rules. Values come only from verified card content or the full text, never from 
 | `members` | list, at least 3 | items `{id, approach}`; `id` is an active card, `approach` is one plain line |
 | `differences` | list | items `{heading, text, cards}`; `cards` are member ids |
 | `readings` | optional list | items `{title, url, note}` linking public primary sources with a qualitative note. The Chinese file lists the translated notes in the same order. |
-| `screening` | optional mapping | `scope` lists search and selection paragraphs. `excluded` lists items `{title, url, note}` with a public source and reason. The Chinese file translates the paragraphs and lists the reasons in the same order. |
+| `scope` | optional string | Briefly describe the topic's covered literature and time window. Supply corresponding Chinese text. |
 
 Table columns: System, Approach, Online result with baseline, Serving latency, Hardware. The last three come from the card's `deployment` block. Hand-written text may only use numbers found in the cited cards, and may not contain parentheses; `build.py` (`load_topics`) enforces both. `problem`, `question` and `decisions` follow the same rules, and every card in `decisions` must be a member. The Chinese file mirrors them, with the same card ids in each decision. Each page links its member cards and offers a Compare button for the first three.
 
-The page has a hero, overview, decision guide, timeline, system tiles, comparison table, differences, optional readings and screening record, related topics and a subscribe box. The four hero stats, era mix and deployment measurements come from the cards. Dates and hit counts in the screening record describe the literature search. Company marks use letters.
+The page has a hero, overview, decision guide, timeline, system tiles, comparison table, differences, optional readings and source coverage, related topics and a subscribe box. The four hero stats, era mix and deployment measurements come from the cards. Company marks use letters.
 
 
 ## Bilingual site (added 2026-10-31, owner decision: Chinese by default, English switchable)

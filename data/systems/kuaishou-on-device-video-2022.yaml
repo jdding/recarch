@@ -1,0 +1,87 @@
+id: kuaishou-on-device-video-2022
+name: Kuaishou On-device Short-video Reranking
+company: Kuaishou
+surface: Immersive single-video feed with next-video selection
+year: 2022
+era: deep
+era_reason: A compact multitask neural model scores candidates for context-aware beam search on a phone.
+first_public: '2022-08'
+venue: CIKM 2022
+venue_year: 2022
+published_version_checked: false
+primary_source: https://doi.org/10.1145/3511808.3557065
+added_on: '2026-11-26'
+last_verified: '2026-11-26'
+system_type: recommendation
+evidence_level: production_described
+tldr: The phone uses a self-contained ranker to rescore a small slate of cloud videos after each swipe. It combines fresh behavior and playback context with server predictions.
+summary: The production server ranks a page of videos and supplies its prediction scores with each candidate. The device runs a compact model using fresh watch history, interactions, buffer state and local context. Adaptive beam search uses the model to choose the next video.
+paradigms: [multi-task, learning-to-rank]
+stages:
+  - stage: rank
+    model_family: Production cloud model for short-video ranking
+    details: The cloud prepares each video page and returns its action predictions as input features for the following client decision.
+  - stage: re-rank
+    model_family: Client attention model with multi-gate experts and adaptive beam search
+    details: The model learns continuation, effective view and like signals. Beam search uses them to select the next video from the local slate.
+id_tokenization: {approach: null, details: null}
+features_signals:
+  - Cloud action prediction scores
+  - Recent watch history and impression position on the phone
+  - Local buffer length and network conditions
+training:
+  mode: Server training with logged features and deployment as a compact mobile model
+  objectives:
+    - Estimate whether the user continues and how they will engage with a candidate.
+    - Use the updated watch history to choose the next item.
+  notes: The greedy and adaptive-search experiment arms use the same mobile ranking model.
+serving_infra: The client runs a TFLite model carrying all of its own parameters. It receives another cloud page after the client consumes the configured number of videos.
+scale:
+  - {metric: Cloud candidates and paging, value: '9 videos returned after every 6 consumed'}
+  - {metric: On-device model, value: '1.32 million parameters and less than 6 MB as TFLite'}
+results_reported: Table 6 reports +1.277% effective view, +8.218% like and +13.598% follow for context-aware reranking versus no mobile reranking over one week. Table 7 reports average model plus beam-search costs of 120.80 ms on Android and 49.39 ms on iOS.
+caveats:
+  - The results come from a single-video viewing surface. The client chooses from the current cloud slate.
+  - Table 7 measures the model and search on the device. The paper reports engagement lifts against the server-only production order.
+unknown_fields:
+  - Traffic allocation, handset models and full request latency
+  - Battery use and subgroup behavior across device tiers
+sources:
+  - {title: Real-time Short Video Recommendation on Mobile Devices at CIKM, url: 'https://doi.org/10.1145/3511808.3557065', type: paper}
+  - {title: Real-time Short Video Recommendation author full text, url: 'https://arxiv.org/pdf/2208.09577v2', type: paper}
+version_note: The CIKM proceedings list ten pages. Architecture and numbers were checked in the author full text.
+code:
+  status: none
+  checked_on: '2026-11-26'
+  repos: []
+  note: A public implementation of the production ranker and client search was not confirmed.
+core_idea: Use live phone features to update the next-video choice while keeping the cloud's candidate and scoring service.
+deployed_in: Kuaishou immersive short-video feed
+scale_short: 9 cloud candidates and a mobile model of 1.32 million parameters
+key_result: Effective view +1.277%, like +8.218% and follow +13.598% versus no mobile reranking.
+results_table:
+  online:
+    - {setting: Full-screen short video, method: Context-aware mobile reranking, metric: Effective view, result: '+1.277%', versus: Existing recommender without mobile reranking}
+    - {setting: Full-screen short video, method: Context-aware mobile reranking, metric: Like, result: '+8.218%', versus: Existing recommender without mobile reranking}
+    - {setting: Full-screen short video, method: Context-aware mobile reranking, metric: Follow, result: '+13.598%', versus: Existing recommender without mobile reranking}
+deployment:
+  online_evidence: online_numbers
+  scenario: Context-aware mobile reranking for next-video selection
+  ab_traffic: not_reported
+  ab_duration: One week
+  baseline: Production recommendations without mobile reranking. A separate arm used the same mobile model with pointwise greedy order.
+  online_lifts:
+    - {metric: Follow, value: '+13.598%'}
+    - {metric: Effective view, value: '+1.277%'}
+  training_compute: not_reported
+  serving_latency: Average device model and beam search time of 120.80 ms on Android and 49.39 ms on iOS
+  serving_qps: not_reported
+  inference_cost: not_reported
+  hardware: not_reported
+  notes:
+    - The paper reports CPU and memory changes in Table 7 on Android and iOS.
+  fulltext_refs:
+    - Section 6.2 and Table 6 give the experiment arms, candidate counts, mobile model size and online lifts.
+    - Table 7 reports mobile computation with beam search.
+  basis: full_text
+  checked_on: '2026-11-26'

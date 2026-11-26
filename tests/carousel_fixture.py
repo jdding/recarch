@@ -80,6 +80,13 @@ def pill_tests():
         assert 'class="pill"' not in notice, "site events do not count as added system cards"
         expired = build.strip([dict(event, date=day(7))], "", TODAY, cards, topics)
         assert 'class="car-topics"' not in expired
+        same_day = {"events": [
+            {"date": TODAY, "title": "Z earlier", "title_zh": "早前发布", "topics": ["earlier-topic"]},
+            {"date": TODAY, "title": "A later", "title_zh": "新发布", "topics": ["example-topic"]},
+        ]}
+        notices = build.events([], build.loc_site(same_day, lang), [])
+        latest = build.strip(notices, "", TODAY, cards, [*topics, {"slug": "earlier-topic", "title": "Earlier topic"}])
+        assert 'href="topics/example-topic/"' in latest and "earlier-topic" not in latest
     build.set_lang("zh"); build.SITE = {"carousel_size": 6, "carousel_window_days": 7}
     print("pill baseline tests: ALL PASS")
 
